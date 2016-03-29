@@ -8,7 +8,8 @@ class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("in").hook(
-            self.in_command, min_args=2)
+            self.in_command, min_args=2,
+            help="Set a reminder")
         bot.events.on("received").on("numeric").on("001").hook(
             self.on_connect)
 

@@ -9,7 +9,7 @@ class Module(object):
         bot.events.on("received").on("message").on("channel").hook(
             self.channel_message)
         bot.events.on("received").on("command").on("karma").hook(
-            self.karma)
+            self.karma, help="Get your or someone else's karma")
 
     def new_user(self, event):
         event["user"].last_karma = None

@@ -8,7 +8,9 @@ class Module(object):
         self.bot = bot
         bot.events.on("boot").on("done").hook(self.boot_done)
         bot.events.on("received").on("command").on("nowwatching",
-            "nw").hook(self.now_watching)
+            "nw").hook(self.now_watching,
+            help="Get what you or another user is now watching "
+            "on trakt.tv")
 
     def boot_done(self, event):
         self.bot.events.on("postboot").on("configure").on("set"

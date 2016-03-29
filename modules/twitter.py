@@ -9,7 +9,7 @@ class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("twitter", "tw"
-            ).hook(self.twitter)
+            ).hook(self.twitter, help="Find a tweet")
 
     def make_timestamp(self, s):
         seconds_since = time.time()-datetime.datetime.strptime(s,
