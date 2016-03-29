@@ -11,7 +11,7 @@ To get BitBot off the ground, there's some API-keys and the like in bot.json.exa
 ## Running
 Just run `./start.py`
 
-On first boot, it'll ask for a first server to connect to then exit. do `./start.py` again and it'll connect to that server and join #bitbot.
+On first boot, he'll ask for a first server to connect to then exit. do `./start.py` again and he'll connect to that server and join #bitbot.
 
 ## Data storage
 The main data storage for Bitbot is done in his sqlite3 database, bot.db.
