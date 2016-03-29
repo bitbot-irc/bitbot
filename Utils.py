@@ -37,6 +37,12 @@ def get_url(url, **kwargs):
     if post_params:
         post_params = urllib.parse.urlencode(post_params).encode("utf8")
     url = "%s%s" % (url, get_params)
+    try:
+        url.encode("latin-1")
+    except UnicodeEncodeError:
+        if kwargs.get("code"):
+            return 0, False
+        return False
 
     request = urllib.request.Request(url, post_params)
     request.add_header("Accept-Language", "en-US")
