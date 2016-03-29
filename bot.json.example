@@ -1,0 +1,14 @@
+{
+    "openweathermap-api-key"   : "",
+    "wolframalpha-api-key"     : "",
+    "google-api-key"           : "",
+    "google-search-id"         : "",
+    "bighugethesaurus-api-key" : "",
+    "wordnik-api-key"          : "",
+    "lastfm-api-key"           : "",
+    "twitter-api-key"          : "",
+    "twitter-api-secret"       : "",
+    "twitter-access-token"     : "",
+    "twitter-access-secret"    : "",
+    "trakt-api-key"            : ""
+}

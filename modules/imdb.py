@@ -1,0 +1,26 @@
+import json
+import Utils
+
+URL_OMDB = "http://www.omdbapi.com/"
+URL_IMDBTITLE = "http://imdb.com/title/%s"
+
+class Module(object):
+    _name = "IMDb"
+    def __init__(self, bot):
+        bot.events.on("received").on("command").on("imdb").hook(
+            self.imdb, min_args=1,
+            help="Search for a given title on IMDb")
+
+    def imdb(self, event):
+        page = Utils.get_url(URL_OMDB, get_params={"t": event["args"]},
+            json=True)
+        if page:
+            if "Title" in page:
+                event["stdout"].write("%s, %s (%s) %s (%s/10.0) %s" % (
+                    page["Title"], page["Year"], page["Runtime"],
+                    page["Plot"], page["imdbRating"],
+                    URL_IMDBTITLE % page["imdbID"]))
+            else:
+                event["stderr"].write("Title not found")
+        else:
+            event["stderr"].write("Failed to load results")
