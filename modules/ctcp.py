@@ -17,7 +17,7 @@ class Module(object):
             ctcp_response = None
             if ctcp_command == "VERSION":
                 ctcp_response = self.bot.config.get("ctcp-version",
-                    "BitBot")
+                    "BitBot (https://github.com/jesopo/bitbot)")
             elif ctcp_command == "PING":
                 ctcp_response = " ".join(ctcp_args_split)
 
