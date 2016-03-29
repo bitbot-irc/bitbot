@@ -13,7 +13,7 @@ class Module(object):
     def translate(self, event):
         phrase = event["args"]
         if not phrase:
-            phrase = event["channel"].log.get()
+            phrase = event["log"].get()
             if phrase:
                 phrase = phrase.message
         if not phrase:

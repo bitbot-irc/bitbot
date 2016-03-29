@@ -183,12 +183,14 @@ class Server(object):
         self.send("QUIT :%s" % reason)
     def send_message(self, target, message):
         self.send("PRIVMSG %s :%s" % (target, message))
+        action = message.startswith("\01ACTION ") and message.endswith(
+            "\01")
+        if action:
+            message = message.split("\01ACTION ", 1)[1][:-1]
         if self.has_channel(target):
-            action = message.startswith("\01ACTION ") and message.endswith(
-                "\01")
-            if action:
-                message = message.split("\01ACTION ", 1)[1][:-1]
             self.get_channel(target).log.add_line(None, message, action, True)
+        else:
+            self.get_user(target).log.add_line(None, message, action, True)
     def send_notice(self, target, message):
         self.send("NOTICE %s :%s" % (target, message))
     def send_mode(self, target, mode=None, args=None):

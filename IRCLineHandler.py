@@ -247,6 +247,7 @@ def handle_PRIVMSG(line, line_split, bot, server):
             line=line, line_split=line_split, server=server,
             user=user, message=message, message_split=message_split,
             action=action)
+        user.log.add_line(user.nickname, message, action)
 @handler(description="response to a WHO command for user information")
 def handle_352(line, line_split, bot, server):
     user = server.get_user(line_split[7])

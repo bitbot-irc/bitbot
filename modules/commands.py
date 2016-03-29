@@ -4,10 +4,10 @@ STR_CONTINUED = "(...continued) "
 
 OUT_CUTOFF = 400
 
-class ChannelOut(object):
-    def __init__(self, module_name, channel):
+class Out(object):
+    def __init__(self, module_name, target):
         self.module_name = module_name
-        self.channel = channel
+        self.target = target
         self._text = ""
         self.written = False
     def write(self, text):
@@ -23,16 +23,16 @@ class ChannelOut(object):
                     ).rstrip(), STR_MORE)
                 self._text = "%s%s" % (STR_CONTINUED, text_encoded[OUT_CUTOFF:
                     ].decode("utf8").lstrip())
-            self.channel.send_message(text)
+            self.target.send_message(text)
     def set_prefix(self, prefix):
         self.module_name = prefix
     def has_text(self):
         return bool(self._text)
 
-class ChannelStdOut(ChannelOut):
+class StdOut(Out):
     def prefix(self):
         return self.module_name
-class ChannelStdErr(ChannelOut):
+class StdErr(Out):
     def prefix(self):
         return "!%s" % self.module_name
 
@@ -43,9 +43,11 @@ class Module(object):
             self.channel_message)
         bot.events.on("received").on("message").on("private").hook(
             self.private_message)
-        bot.events.on("received").on("command").on("help").hook(self.help)
+        bot.events.on("received").on("command").on("help").hook(self.help,
+            help="Show help on commands")
+        bot.events.on("received").on("command").on("more").hook(self.more,
+            help="Get more output from the last command")
         bot.events.on("new").on("user", "channel").hook(self.new)
-        bot.events.on("received").on("command").on("more").hook(self.more)
         bot.events.on("send").on("stdout").hook(self.send_stdout)
         bot.events.on("send").on("stderr").hook(self.send_stderr)
 
@@ -64,48 +66,62 @@ class Module(object):
         return self.bot.events.on("received").on("command").on(command
             ).get_hooks()[0]
 
+    def message(self, event, command):
+        if self.has_command(command):
+            hook = self.get_hook(command)
+            is_channel = False
+
+            if "channel" in event:
+                target = event["channel"]
+                is_channel = True
+            else:
+                target = event["user"]
+            if not is_channel and hook.kwargs.get("channel_only"):
+                return
+
+            log = target.log
+            log.skip_next()
+
+            module_name = hook.function.__self__._name
+            stdout, stderr = StdOut(module_name, target), StdErr(module_name,
+                target)
+
+            returns = self.bot.events.on("preprocess").on("command"
+                ).call(hook=hook, user=event["user"], server=event["server"])
+            for returned in returns:
+                if returned:
+                    stderr.write(returned).send()
+                    return
+            args_split = list(filter(None, event["message_split"][1:]))
+            min_args = hook.kwargs.get("min_args")
+            if min_args and len(args_split) < min_args:
+                stderr.write("Not enough arguments (minimum: %d)" % min_args
+                    ).send()
+            else:
+                args = " ".join(args_split)
+                server = event["server"]
+                user = event["user"]
+                self.bot.events.on("received").on("command").on(command).call(
+                    1, user=user, server=server, target=target, log=log,
+                    args=args, args_split=args_split, stdout=stdout, stderr=stderr,
+                    command=command.lower())
+                stdout.send()
+                target.last_stdout = stdout
+                stderr.send()
+                target.last_stderr = stderr
+
     def channel_message(self, event):
         command_prefix = event["channel"].get_setting("command_prefix",
             event["server"].get_setting("command_prefix", "!"))
         if event["message_split"][0].startswith(command_prefix):
             command = event["message_split"][0].replace(
                 command_prefix, "", 1).lower()
-            if self.has_command(command):
-                hook = self.get_hook(command)
-                module_name = hook.function.__self__._name
-                stdout = ChannelStdOut(module_name, event["channel"])
-                stderr = ChannelStdErr(module_name, event["channel"])
-                returns = self.bot.events.on("preprocess").on("command"
-                    ).call(hook=hook, user=event["user"], server=event[
-                    "server"])
-                for returned in returns:
-                    if returned:
-                        event["stderr"].write(returned).send()
-                        return
-                min_args = hook.kwargs.get("min_args")
-                # get rid of all the empty strings
-                args_split = list(filter(None, event["message_split"][1:]))
-                if min_args and len(args_split) < min_args:
-                    ChannelStdErr("Error", event["channel"]
-                        ).write("Not enough arguments ("
-                        "minimum: %d)" % min_args).send()
-                else:
-                    args = " ".join(args_split)
-                    self.bot.events.on("received").on("command").on(
-                        command).call(1, user=event["user"],
-                        channel=event["channel"], args=args,
-                        args_split=args_split, server=event["server"
-                        ], stdout=stdout, stderr=stderr, command=command,
-                        log=event["channel"].log, target=event["channel"])
-                    stdout.send()
-                    stderr.send()
-                    if stdout.has_text():
-                        event["channel"].last_stdout = stdout
-                    if stderr.has_text():
-                        event["channel"].last_stderr = stderr
-                event["channel"].log.skip_next()
+            self.message(event, command)
+
     def private_message(self, event):
-        pass
+        if event["message_split"]:
+            command = event["message_split"][0].lower()
+            self.message(event, command)
 
     def help(self, event):
         if event["args"]:
@@ -125,7 +141,7 @@ class Module(object):
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 
     def more(self, event):
-        if event["target"].last_stdout:
+        if event["target"].last_stdout and event["target"].last_stdout.has_text():
             event["target"].last_stdout.send()
 
     def send_stdout(self, event):
