@@ -1,4 +1,4 @@
-import json, re, traceback, urllib.request, urllib.parse
+import json, re, traceback, urllib.request, urllib.parse, urllib.error
 import bs4
 
 USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
@@ -47,9 +47,12 @@ def get_url(url, **kwargs):
 
     try:
         response = urllib.request.urlopen(request)
-    except:
+    except urllib.error.HTTPError as e:
         traceback.print_exc()
-        return False
+        if kwargs.get("code"):
+            return e.code, False
+        else:
+            return False
 
     response_content = response.read()
     encoding = response.info().get_content_charset()
