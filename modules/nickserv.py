@@ -7,7 +7,7 @@ class Module(object):
 
 	def on_connect(self, event):
 		nickserv_password = event["server"].get_setting(
-			"nickserv_password")
+			"nickserv-password")
 		if nickserv_password:
 			event["server"].send_message("nickserv",
 				"identify %s" % nickserv_password)

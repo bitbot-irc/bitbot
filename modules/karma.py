@@ -19,18 +19,20 @@ class Module(object):
         if match:
             if not event["user"].last_karma or (time.time()-event["user"
                     ].last_karma) >= KARMA_DELAY_SECONDS:
-                positive = match.group(2)[0] == "+"
-                setting = "karma-%s" % match.group(1).strip()
-                karma = event["server"].get_setting(setting, 0)
-                if positive:
-                    karma += 1
-                else:
-                    karma -= 1
-                if karma:
-                    event["server"].set_setting(setting, karma)
-                else:
-                    event["server"].del_setting(setting)
-                event["user"].last_karma = time.time()
+                target = match.group(1).lower().strip()
+                if not target == event["user"].name:
+                    positive = match.group(2)[0] == "+"
+                    setting = "karma-%s" % target
+                    karma = event["server"].get_setting(setting, 0)
+                    if positive:
+                        karma += 1
+                    else:
+                        karma -= 1
+                    if karma:
+                        event["server"].set_setting(setting, karma)
+                    else:
+                        event["server"].del_setting(setting)
+                    event["user"].last_karma = time.time()
 
     def karma(self, event):
         if event["args"]:
