@@ -83,7 +83,8 @@ class Module(object):
                         event["stderr"].write(returned).send()
                         return
                 min_args = hook.kwargs.get("min_args")
-                args_split = event["message_split"][1:]
+                # get rid of all the empty strings
+                args_split = list(filter(None, event["message_split"][1:]))
                 if min_args and len(args_split) < min_args:
                     ChannelStdErr("Error", event["channel"]
                         ).write("Not enough arguments ("
