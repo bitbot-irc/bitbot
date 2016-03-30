@@ -29,11 +29,11 @@ class Bot(object):
             sys.stderr.write("Failed to connect to %s\n" % str(server))
             traceback.print_exc()
             return False
+        self.poll.register(server.fileno(), select.EPOLLOUT)
         return True
     def connect_all(self):
         for server in self.servers.values():
-            if self.connect(server):
-                self.poll.register(server.fileno(), select.EPOLLOUT)
+            self.connect(server)
 
     def add_timer(self, function, delay, *args, **kwargs):
         timer = Timer.Timer(function, delay, *args, **kwargs)
@@ -64,6 +64,15 @@ class Bot(object):
     def since_last_read(self, server):
         return time.time()-server.last_read
 
+    def disconnect(self, server):
+        self.poll.unregister(server.fileno())
+        del self.servers[server.fileno()]
+
+    def reconnect(self, server):
+        IRCServer.Server.__init__(server)
+        if self.connect(server):
+            self.servers[server.fileno()] = server
+
     def run(self):
         while self.running:
             self.lock.acquire()
@@ -92,10 +101,13 @@ class Bot(object):
                         print("pingout from %s" % str(server))
                         server.disconnect()
                 if not server.connected:
-                    self.poll.unregister(server.fileno())
-                    del self.servers[server.fileno()]
-                    # add reconnect here
-                    print("disconnected from %s" % str(server))
+                    self.disconnect(server)
+
+                    reconnect_delay = self.config.get("reconnect-delay", 10)
+                    self.add_timer(self.reconnect, reconnect_delay, server)
+
+                    print("disconnected from %s, reconnecting in %d seconds" % (
+                        str(server), reconnect_delay))
                 elif server.waiting_send():
                     self.register_both(server)
             self.lock.release()
