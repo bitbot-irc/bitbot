@@ -86,7 +86,7 @@ def get_url(url, **kwargs):
                     break
     response_content = response_content.decode(encoding or "utf8")
     data = response_content
-    if kwargs.get("json"):
+    if kwargs.get("json") and data:
         try:
             data = json.loads(response_content)
         except json.decoder.JSONDecodeError:
