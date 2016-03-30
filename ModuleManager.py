@@ -1,4 +1,4 @@
-import glob, imp, inspect, os
+import glob, imp, inspect, os, sys
 
 class ModuleManager(object):
     def __init__(self, bot, directory="modules"):
@@ -12,11 +12,17 @@ class ModuleManager(object):
         with open(filename) as module_file:
             while True:
                 line = module_file.readline().strip()
+                line_split = line.split(" ")
                 if line and line.startswith("#--"):
                     # this is a hashflag
                     if line == "#--ignore":
                         # nope, ignore this module.
                         return None
+                    elif line_split[0] == "#--require-config" and len(
+                            line_split) > 1:
+                        if not line_split[1].lower() in self.bot.config:
+                            # nope, required config option not present.
+                            return None
                 else:
                     break
         module = imp.load_source("bitbot_%s" % name, filename)
@@ -35,3 +41,5 @@ class ModuleManager(object):
                 assert not module._name in self.modules, (
                     "module name '%s' attempted to be used twice.")
                 self.modules[module._name] = module
+            else:
+                sys.stderr.write("module '%s' not loaded.\n" % filename)

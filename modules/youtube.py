@@ -1,3 +1,5 @@
+#--require-config google-api-key
+
 import re
 import Utils
 

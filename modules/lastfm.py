@@ -1,3 +1,5 @@
+#--require-config lastfm-api-key
+
 import Utils
 
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse
+import argparse, time
 import IRCBot, Config, Database
 
 def bool_input(s):
@@ -19,6 +19,7 @@ for server in servers:
 if len(bot.servers):
     bot.modules.load_modules()
     bot.events.on("boot").on("done").call()
+    time.sleep(5)
     bot.connect_all()
     bot.run()
 else:

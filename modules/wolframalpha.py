@@ -1,3 +1,5 @@
+#--require-config wolframalpha-api-key
+
 import re
 import Utils
 
@@ -21,6 +23,7 @@ class Module(object):
             if int(soup.find("queryresult").get("numpods")) > 0:
                 input = soup.find(id="Input").find("subpod").find("plaintext"
                     ).text
+                answered = False
                 for pod in soup.find_all("pod"):
                     if pod.get("primary") == "true":
                         answer = pod.find("subpod").find("plaintext")
@@ -34,8 +37,11 @@ class Module(object):
                                     match.group(1), 16)), text)
                             else:
                                 break
+                        answered = True
                         event["stdout"].write(text)
                         break
+                if not answered:
+                    event["stderr"].write("No results found")
             else:
                 event["stderr"].write("No results found")
         else:

@@ -1,3 +1,5 @@
+#--require-config wordnik-api-key
+
 import Utils
 
 URL_WORDNIK = "http://api.wordnik.com:80/v4/word.json/%s/definitions"

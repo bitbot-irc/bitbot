@@ -1,3 +1,5 @@
+#--require-config bitly-api-key
+
 import re
 import Utils
 
