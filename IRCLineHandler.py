@@ -135,6 +135,7 @@ def handle_PART(line, line_split, bot, server):
             line_split=line_split, server=server, channel=channel,
             reason=reason, user=user)
         channel.remove_user(user)
+        user.part_channel(channel)
         if not len(user.channels):
             server.remove_user(user)
     else:
