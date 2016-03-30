@@ -19,8 +19,8 @@ class Module(object):
 
     def to(self, event):
         setting = "to-%s" % event["args_split"][0]
-        messages = event["channel"].get_setting(setting, [])
+        messages = event["target"].get_setting(setting, [])
         messages.append([event["user"].nickname,
             " ".join(event["args_split"][1:])])
-        event["channel"].set_setting(setting, messages)
+        event["target"].set_setting(setting, messages)
         event["stdout"].write("Message saved")
