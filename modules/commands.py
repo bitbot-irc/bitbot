@@ -1,4 +1,3 @@
-
 STR_MORE = " (more...)"
 STR_CONTINUED = "(...continued) "
 
@@ -66,7 +65,12 @@ class Module(object):
         return self.bot.events.on("received").on("command").on(command
             ).get_hooks()[0]
 
-    def message(self, event, command):
+    def is_highlight(self, server, s):
+        return s.lower() == server.nickname_lower or (s.lower().startswith(
+            server.nickname_lower) and len(s) == len(server.nickname_lower
+            )+1 and s[-1] in [":", ","])
+
+    def message(self, event, command, args_index=1):
         if self.has_command(command):
             hook = self.get_hook(command)
             is_channel = False
@@ -92,7 +96,7 @@ class Module(object):
                 if returned:
                     stderr.write(returned).send()
                     return
-            args_split = list(filter(None, event["message_split"][1:]))
+            args_split = list(filter(None, event["message_split"][args_index:]))
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
                 stderr.write("Not enough arguments (minimum: %d)" % min_args
@@ -117,6 +121,10 @@ class Module(object):
             command = event["message_split"][0].replace(
                 command_prefix, "", 1).lower()
             self.message(event, command)
+        elif len(event["message_split"]) > 1 and self.is_highlight(
+                event["server"], event["message_split"][0]):
+            command = event["message_split"][1].lower()
+            self.message(event, command, 2)
 
     def private_message(self, event):
         if event["message_split"]:
