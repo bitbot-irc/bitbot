@@ -4,7 +4,7 @@ import re
 import Utils
 
 REGEX_YOUTUBE = re.compile(
-    "https?://(?:www.)?(?:youtu.be/|youtube.com/watch\?[^\S]*v=)(\w{11})",
+    "https?://(?:www.)?(?:youtu.be/|youtube.com/watch\?[\S]*v=)([\w\-]{11})",
     re.I)
 REGEX_ISO8601 = re.compile("PT(\d+H)?(\d+M)?(\d+S)?", re.I)
 
