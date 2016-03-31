@@ -26,14 +26,14 @@ class Module(object):
     def postboot_channelset(self, event):
         self._postboot_set(self.channel_settings, event)
 
-    def _set(self, settings, target, event):
+    def _set(self, settings, event):
         if len(event["args_split"]) > 1:
             setting = event["args_split"][0].lower()
             if setting in settings:
                 value = " ".join(event["args_split"][1:])
                 value = settings[setting]["validate"](value)
                 if not value == None:
-                    target.set_setting(setting, value)
+                    event["target"].set_setting(setting, value)
                     event["stdout"].write("Saved setting")
                 else:
                     event["stderr"].write("Invalid value")
@@ -48,8 +48,8 @@ class Module(object):
         self._set(self.settings, event["user"], event)
 
     def channel_set(self, event):
-        if event["channel"].mode_or_above(event["user"].nickname,
+        if event["target"].mode_or_above(event["user"].nickname,
                 "o"):
-            self._set(self.channel_settings, event["channel"], event)
+            self._set(self.channel_settings, event)
         else:
             event["stderr"].write("You do not have the modes required")

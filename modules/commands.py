@@ -157,14 +157,12 @@ class Module(object):
             event["target"].last_stdout.send()
 
     def send_stdout(self, event):
-        if event["target"].name[0] in event["server"].channel_types:
-            stdout = ChannelStdOut(event["module_name"], event["target"])
+        stdout = StdOut(event["module_name"], event["target"])
         stdout.write(event["message"]).send()
         if stdout.has_text():
             event["target"].last_stdout = stdout
     def send_stderr(self, event):
-        if event["target"].name[0] in event["server"].channel_types:
-            stderr = ChannelStdErr(event["module_name"], event["target"])
+        stderr = StdErr(event["module_name"], event["target"])
         stderr.write(event["message"]).send()
         if stderr.has_text():
             event["target"].last_stderr = stderr
