@@ -7,9 +7,17 @@ def bool_input(s):
     result = input("%s (Y/n): " % s)
     return not result or result[0].lower() in ["", "y"]
 
+arg_parser = argparse.ArgumentParser(
+    description="Python3 event-driven asynchronous modular IRC bot")
+arg_parser.add_argument("--config", "-c", default="bot.json",
+    help="Location of the JSON config file")
+arg_parser.add_argument("--database", "-d", default="bot.db",
+    help="Location of the sqlite3 database file")
+args = arg_parser.parse_args()
+
 bot = IRCBot.Bot()
-database = Database.Database(bot)
-config_object = Config.Config(bot)
+database = Database.Database(bot, args.database)
+config_object = Config.Config(bot, args.config)
 bot.database = database
 bot.config_object = config_object
 
