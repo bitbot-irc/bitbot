@@ -7,6 +7,7 @@ class Timer(object):
         self.kwargs = kwargs
         self.args = args
         self._done = False
+        self.call_count = 0
 
     def set_started_time(self):
         self.started_time = time.time()
@@ -19,6 +20,7 @@ class Timer(object):
 
     def call(self):
         self._done = True
+        self.call_count +=1
         self.function(self, *self.args, **self.kwargs)
 
     def redo(self):

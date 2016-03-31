@@ -26,6 +26,7 @@ class Server(object):
         self.channel_modes = []
         self.channel_types = []
         self.last_read = None
+        self.attempted_join = {}
         if ipv4:
             self.socket = socket.socket(socket.AF_INET,
                 socket.SOCK_STREAM)
@@ -173,7 +174,11 @@ class Server(object):
         self.send("PING :%s" % nonce)
     def send_pong(self, nonce="hello"):
         self.send("PONG :%s" % nonce)
+    def try_rejoin(self, timer, channel_name, key):
+        if channel_name in self.attempted_join:
+            self.send_join(channel_name, key)
     def send_join(self, channel_name, key=None):
+        self.attempted_join[channel_name.lower()] = None
         self.send("JOIN %s%s" % (channel_name,
             "" if key == None else " %s" % key))
     def send_part(self, channel_name, reason=None):
