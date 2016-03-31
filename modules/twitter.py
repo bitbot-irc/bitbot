@@ -45,10 +45,12 @@ class Module(object):
                 except:
                     traceback.print_exc()
                     tweet = None
-            elif target.startswith("@"):
+            else:
+                if target.startswith("@"):
+                    taret = target[1:]
                 try:
                     tweet = twitter_object.statuses.user_timeline(
-                        screen_name=target[1:], count=1)[0]
+                        screen_name=target, count=1)[0]
                 except:
                     traceback.print_exc()
                     tweet = None
