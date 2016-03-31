@@ -1,4 +1,4 @@
-
+import datetime
 
 class Module(object):
     def __init__(self, bot):
@@ -18,8 +18,13 @@ class Module(object):
             if ctcp_command == "VERSION":
                 ctcp_response = self.bot.config.get("ctcp-version",
                     "BitBot (https://github.com/jesopo/bitbot)")
+            elif ctcp_command == "SOURCE":
+                ctcp_response = self.bot.config.get("ctcp-source",
+                    "https://github.com/jesopo/bitbot")
             elif ctcp_command == "PING":
                 ctcp_response = " ".join(ctcp_args_split)
+            elif ctcp_command == "TIME":
+                ctcp_response = datetime.datetime.now().strftime("%c")
 
             if ctcp_response:
                 event["user"].send_ctcp_response(ctcp_command,
