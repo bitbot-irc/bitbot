@@ -154,7 +154,7 @@ class Server(object):
         self.last_read = time.time()
         return decoded_lines
     def send(self, data):
-        encoded = data.encode("utf8")
+        encoded = data.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
             encoded = encoded[:450]
         self.write_buffer += b"%s\r\n" % encoded
