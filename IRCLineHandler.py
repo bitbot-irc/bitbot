@@ -215,7 +215,7 @@ def handle_MODE():
                         channel.add_mode(char, nickname)
                 else:
                     args.pop(0)
-         bot.events.on("received").on("mode").call(
+        bot.events.on("received").on("mode").call(
             line=line, line_split=line_split, server=server, bot=bot,
             modes=modes, args=args, channel=channel)
     elif server.is_own_nickname(target):
@@ -231,7 +231,7 @@ def handle_MODE():
                     server.remove_own_mode(char)
                 else:
                     server.add_own_mode(char)
-         bot.events.on("self").on("mode").call(
+        bot.events.on("self").on("mode").call(
             line=line, line_split=line_split, server=server, bot=bot,
             modes=modes)
 @handler(description="I've been invited somewhere")
