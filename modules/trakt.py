@@ -29,12 +29,9 @@ class Module(object):
             "trakt-api-version": "2", "trakt-api-key":
             self.bot.config["trakt-api-key"]}, json=True,
             code=True)
-        if page:
+        if page[0]:
             code, page = page
-            if code == 204:
-                event["stderr"].write(
-                    "%s is not watching anything" % username)
-            else:
+            if code == 200:
                 type = page["type"]
                 if type == "movie":
                     title = page["movie"]["title"]
@@ -58,5 +55,8 @@ class Module(object):
                         URL_TRAKTSLUG % ("shows", slug)))
                 else:
                     print("ack! unknown trakt media type!")
+            else:
+                event["stderr"].write(
+                    "%s is not watching anything" % username)
         else:
             event["stderr"].write("Failed to load results")

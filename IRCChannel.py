@@ -31,6 +31,8 @@ class Channel(object):
             self.modes[mode] = set([])
         if args:
             self.modes[mode].add(args.lower())
+        self.bot.events.on("mode").on("channel").call(
+            channel=self, mode=mode, args=args, remove=False)
     def remove_mode(self, mode, args=None):
         if not args:
             del self.modes[mode]
@@ -38,6 +40,8 @@ class Channel(object):
             self.modes[mode].remove(args.lower())
             if not len(self.modes[mode]):
                 del self.modes[mode]
+        self.bot.events.on("mode").on("channel").call(
+            channel=self, mode=mode, args=args, remove=True)
     def set_setting(self, setting, value):
         self.bot.database.set_channel_setting(self.server.id,
             self.name, setting, value)

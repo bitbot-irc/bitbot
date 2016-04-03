@@ -68,11 +68,14 @@ class Bot(object):
         self.poll.unregister(server.fileno())
         del self.servers[server.fileno()]
 
-    def reconnect(self, server):
-        IRCServer.Server.__init__(server)
+    def reconnect(self, timer, server):
+        IRCServer.Server.__init__(server, server.id, server.hostname,
+            server.port, server.password, server.ipv4, server.tls,
+            server.nickname, server.username, server.realname, self)
         if self.connect(server):
             self.servers[server.fileno()] = server
-
+        else:
+            timer.redo()
     def run(self):
         while self.running:
             self.lock.acquire()

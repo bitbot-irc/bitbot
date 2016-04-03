@@ -24,7 +24,7 @@ class Timer(object):
         self.function(self, *self.args, **self.kwargs)
 
     def redo(self):
-        self.done = False
+        self._done = False
         self.set_started_time()
 
     def done(self):

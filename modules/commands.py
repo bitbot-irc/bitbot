@@ -88,7 +88,6 @@ class Module(object):
                 return
 
             log = target.log
-            log.skip_next()
 
             module_name = hook.function.__self__._name
             stdout, stderr = StdOut(module_name, target), StdErr(module_name,
@@ -99,6 +98,7 @@ class Module(object):
             for returned in returns:
                 if returned:
                     stderr.write(returned).send()
+                    log.skip_next()
                     return
             args_split = list(filter(None, event["message_split"][args_index:]))
             min_args = hook.kwargs.get("min_args")
@@ -117,6 +117,8 @@ class Module(object):
                 target.last_stdout = stdout
                 stderr.send()
                 target.last_stderr = stderr
+            log.skip_next()
+
 
     def channel_message(self, event):
         command_prefix = event["channel"].get_setting("command_prefix",

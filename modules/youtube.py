@@ -58,9 +58,9 @@ class Module(object):
             video_duration += "%s:" % match.group(1)[:-1].zfill(2
                 ) if match.group(1) else ""
             video_duration += "%s:" % match.group(2)[:-1].zfill(2
-                ) if match.group(2) else ""
+                ) if match.group(2) else "00:"
             video_duration += "%s" % match.group(3)[:-1].zfill(2
-                ) if match.group(3) else ""
+                ) if match.group(3) else "00"
             return "%s (%s) uploaded by %s, %s views (%s%s%s%s) %s" % (
                 video_title, video_duration, video_uploader, "{:,}".format(
                 int(video_views)), video_likes, ARROW_UP, ARROW_DOWN, video_dislikes,
@@ -72,7 +72,7 @@ class Module(object):
         if event["args"]:
             search = event["args"]
         else:
-            last_youtube = event["channel"].log.find(REGEX_YOUTUBE)
+            last_youtube = event["log"].find(REGEX_YOUTUBE)
             if last_youtube:
                 video_id = re.search(REGEX_YOUTUBE, last_youtube.message).group(1)
         if search or video_id:
