@@ -49,9 +49,13 @@ class Module(object):
             video_uploader = snippet["channelTitle"]
             video_title = snippet["title"]
             video_views = statistics["viewCount"]
-            video_likes = statistics["likeCount"]
-            video_dislikes = statistics["dislikeCount"]
+            video_likes = statistics.get("likeCount")
+            video_dislikes = statistics.get("dislikeCount")
             video_duration = content["duration"]
+            video_opinions = ""
+            if video_likes and video_dislikes:
+                video_opinions = " (%s%s%s%s)" % (video_likes, ARROW_UP,
+                    ARROW_DOWN, video_dislikes)
 
             match = re.match(REGEX_ISO8601, video_duration)
             video_duration = ""
@@ -61,10 +65,9 @@ class Module(object):
                 ) if match.group(2) else "00:"
             video_duration += "%s" % match.group(3)[:-1].zfill(2
                 ) if match.group(3) else "00"
-            return "%s (%s) uploaded by %s, %s views (%s%s%s%s) %s" % (
+            return "%s (%s) uploaded by %s, %s views%s %s" % (
                 video_title, video_duration, video_uploader, "{:,}".format(
-                int(video_views)), video_likes, ARROW_UP, ARROW_DOWN, video_dislikes,
-                URL_YOUTUBESHORT % video_id)
+                int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
 
     def yt(self, event):
         video_id = None
