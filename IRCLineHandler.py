@@ -196,7 +196,8 @@ def handle_MODE():
         channel = server.get_channel(target)
         remove = False
         args = line_split[4:]
-        for i, char in enumerate(line_split[3]):
+        modes = line_split[3]
+        for i, char in enumerate(modes):
             if char == "+":
                 remove = False
             elif char == "-":
@@ -216,8 +217,8 @@ def handle_MODE():
                 else:
                     args.pop(0)
         bot.events.on("received").on("mode").call(
-            line=line, line_split=line_split, server=server, bot=bot,
-            modes=modes, args=args, channel=channel)
+            line=line, line_split=line_split, server=server, modes=modes,
+            args=args, channel=channel)
     elif server.is_own_nickname(target):
         modes = Utils.remove_colon(line_split[3])
         remove = False
@@ -232,8 +233,7 @@ def handle_MODE():
                 else:
                     server.add_own_mode(char)
         bot.events.on("self").on("mode").call(
-            line=line, line_split=line_split, server=server, bot=bot,
-            modes=modes)
+            line=line, line_split=line_split, server=server, modes=modes)
 @handler(description="I've been invited somewhere")
 def handle_INVITE():
     nickname, username, hostname = Utils.seperate_hostmask(line_split[0])

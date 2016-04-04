@@ -193,8 +193,6 @@ class Server(object):
         if action:
             message = message.split("\01ACTION ", 1)[1][:-1]
         if self.has_channel(target):
-            print("logging line:")
-            print("channel: %s" % target)
             self.get_channel(target).log.add_line(None, message, action, True)
         else:
             self.get_user(target).log.add_line(None, message, action, True)
