@@ -17,7 +17,7 @@ class Module(object):
         self._logout(event["user"])
 
     def on_part(self, event):
-        if len(event["user"].channels) == 0 and event["user"].identified:
+        if len(event["user"].channels) == 1 and event["user"].identified:
             event["user"].send_notice("You no longer share any channels "
                 "with me so you have been signed out")
 
@@ -37,6 +37,10 @@ class Module(object):
         user.identified = False
         user.permissions = []
     def identify(self, event):
+        if not event["user"].channels:
+            event["stderr"].write("You must share at least one channel "
+                "with me before you can identify")
+            return
         if not event["user"].identified:
             password = event["args_split"][0]
             hash, salt = self._get_hash(event["user"])
