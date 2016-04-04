@@ -86,7 +86,7 @@ class Module(object):
                 target = event["user"]
             if not is_channel and hook.kwargs.get("channel_only"):
                 return
-            if is_channel and hooks.kwargs.get("private_only"):
+            if is_channel and hook.kwargs.get("private_only"):
                 return
 
             log = target.log
