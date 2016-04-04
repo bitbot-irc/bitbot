@@ -2,8 +2,9 @@
 Python3 event-driven modular IRC bot!
 
 ## Dependencies
-* [BeautifulSoup4](https://pypi.python.org/pypi/beautifulsoup4/4.3.2)
+* [BeautifulSoup4](https://pypi.python.org/pypi/beautifulsoup4)
 * [twitter](https://pypi.python.org/pypi/twitter)
+* [scrypt](https://pypi.python.org/pypi/scrypt)
 
 ## Configurating
 To get BitBot off the ground, there's some API-keys and the like in bot.json.example. move it to bot.json, fill in the API keys you want (and remove the modules that rely on those configs.)
