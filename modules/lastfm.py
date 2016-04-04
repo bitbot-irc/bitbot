@@ -34,22 +34,27 @@ class Module(object):
                 track_name = now_playing["name"]
                 artist = now_playing["artist"]["#text"]
 
-                tags_page = Utils.get_url(URL_SCROBBLER, get_params={
-                    "method": "track.getTags", "artist": artist,
+                info_page = Utils.get_url(URL_SCROBBLER, get_params={
+                    "method": "track.getInfo", "artist": artist,
                     "track": track_name, "autocorrect": "1",
                     "api_key": self.bot.config["lastfm-api-key"],
                     "user": username, "format": "json"}, json=True)
                 tags = []
-                if tags_page.get("tags", {}).get("tag"):
-                    for tag in tags_page["tags"]["tag"]:
+                print(info_page.keys())
+                if "toptags" in info_page["track"]:
+                    for tag in info_page["track"]["toptags"]["tag"]:
                         tags.append(tag["name"])
                 if tags:
                     tags = " (%s)" % ", ".join(tags)
                 else:
                     tags = ""
+                play_count = int(info_page["track"]["userplaycount"])
+                play_count = "%d play%s" % (play_count,
+                    "s" if play_count > 1 else "")
 
-                event["stdout"].write("%s is now playing: %s - %s%s" % (
-                    username, artist, track_name, tags))
+                event["stdout"].write(
+                    "%s is now playing: %s - %s (%s)%s" % (
+                    username, artist, track_name, play_count, tags))
             else:
                 event["stderr"].write(
                     "The user '%s' has never scrobbled before" % (
