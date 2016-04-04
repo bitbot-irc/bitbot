@@ -10,5 +10,6 @@
     "twitter-api-secret"       : "",
     "twitter-access-token"     : "",
     "twitter-access-secret"    : "",
-    "trakt-api-key"            : ""
+    "trakt-api-key"            : "",
+    "bitly-api-key"            : ""
 }
