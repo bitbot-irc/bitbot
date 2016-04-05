@@ -40,7 +40,6 @@ class Module(object):
                     "api_key": self.bot.config["lastfm-api-key"],
                     "user": username, "format": "json"}, json=True)
                 tags = []
-                print(info_page.keys())
                 if "toptags" in info_page["track"]:
                     for tag in info_page["track"]["toptags"]["tag"]:
                         tags.append(tag["name"])
