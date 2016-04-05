@@ -10,10 +10,12 @@ class Module(object):
         bot.events.on("postboot").on("configure").on("channelset"
             ).hook(self.postboot_channelset)
         bot.events.on("received").on("command").on("set").hook(
-            self.set, help="Set a specified user setting")
+            self.set, help="Set a specified user setting",
+            usage="<setting> <value>")
         bot.events.on("received").on("command").on("channelset"
             ).hook(self.channel_set, channel_only=True,
-            help="Set a specified setting for the current channel")
+            help="Set a specified setting for the current channel",
+            usage="<setting> <value>")
 
     def _postboot_set(self, settings, event):
         settings[event["setting"]] = {}
