@@ -47,7 +47,9 @@ class Module(object):
         bot.events.on("received").on("message").on("private").hook(
             self.private_message)
         bot.events.on("received").on("command").on("help").hook(self.help,
-            help="Show help on commands")
+            help="Show help for commands")
+        bot.events.on("received").on("command").on("usage").hook(self.usage,
+            help="Show usage help for commands", min_args=1)
         bot.events.on("received").on("command").on("more").hook(self.more,
             help="Get more output from the last command")
         bot.events.on("new").on("user", "channel").hook(self.new)
@@ -147,6 +149,10 @@ class Module(object):
                 hooks = self.bot.events.on("received").on("command").on(command).get_hooks()
                 if hooks and "help" in hooks[0].kwargs:
                     event["stdout"].write("%s: %s" % (command, hooks[0].kwargs["help"]))
+                else:
+                    event["stderr"].write("No help available for %s" % command)
+            else:
+                event["stderr"].write("Unknown command '%s'" % command)
         else:
             help_available = []
             for child in self.bot.events.on("received").on("command").get_children():
@@ -155,6 +161,18 @@ class Module(object):
                     help_available.append(child)
             help_available = sorted(help_available)
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
+
+    def usage(self, event):
+        command = event["args_split"][0].lower()
+        if command in self.bot.events.on("received").on(
+                "command").get_children():
+            hooks = self.bot.events.on("received").on("command").on(command).get_hooks()
+            if hooks and "usage" in hooks[0].kwargs:
+                event["stdout"].write("Usage: %s %s" % (command, hooks[0].kwargs["usage"]))
+            else:
+                event["stderr"].write("No usage help available for %s" % command)
+        else:
+            event["stderr"].write("Unknown command '%s'" % command)
 
     def more(self, event):
         if event["target"].last_stdout and event["target"].last_stdout.has_text():
