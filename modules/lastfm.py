@@ -47,12 +47,15 @@ class Module(object):
                     tags = " (%s)" % ", ".join(tags)
                 else:
                     tags = ""
-                play_count = int(info_page["track"]["userplaycount"])
-                play_count = "%d play%s" % (play_count,
-                    "s" if play_count > 1 else "")
+
+                play_count = ""
+                if "userplaycount" in info_page["track"]:
+                    play_count = int(info_page["track"]["userplaycount"])
+                    play_count = " (%d play%s)" % (play_count,
+                        "s" if play_count > 1 else "")
 
                 event["stdout"].write(
-                    "%s is now playing: %s - %s (%s)%s" % (
+                    "%s is now playing: %s - %s%s%s" % (
                     username, artist, track_name, play_count, tags))
             else:
                 event["stderr"].write(
