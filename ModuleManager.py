@@ -25,7 +25,8 @@ class ModuleManager(object):
                         return None
                     elif line_split[0] == "#--require-config" and len(
                             line_split) > 1:
-                        if not line_split[1].lower() in self.bot.config:
+                        if not line_split[1].lower() in self.bot.config or not self.bot.config[
+                                    line_split[1].lower()]:
                             # nope, required config option not present.
                             return None
                     elif line_split[0] == "#--require-module" and len(
