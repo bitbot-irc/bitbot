@@ -11,5 +11,6 @@
     "twitter-access-token"     : "",
     "twitter-access-secret"    : "",
     "trakt-api-key"            : "",
-    "bitly-api-key"            : ""
+    "bitly-api-key"            : "",
+    "soundcloud-api-key"       : ""
 }
