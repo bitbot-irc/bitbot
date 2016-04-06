@@ -7,7 +7,7 @@ Python3 event-driven modular IRC bot!
 * [scrypt](https://pypi.python.org/pypi/scrypt)
 
 ## Configurating
-To get BitBot off the ground, there's some API-keys and the like in bot.json.example. move it to bot.json, fill in the API keys you want (and remove the modules that rely on those configs.)
+To get BitBot off the ground, there's some API-keys and the like in bot.json.example. move it to bot.json, fill in the API keys you want (and remove the ones you don't want - this will automatically disable the modules that rely on them.)
 
 ## Running
 Just run `./start.py`
