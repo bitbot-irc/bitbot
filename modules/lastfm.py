@@ -41,7 +41,7 @@ class Module(object):
                     "api_key": self.bot.config["lastfm-api-key"],
                     "user": username, "format": "json"}, json=True)
                 tags = []
-                if "toptags" in info_page["track"]:
+                if "toptags" in info_page.get("track", []):
                     for tag in info_page["track"]["toptags"]["tag"]:
                         tags.append(tag["name"])
                 if tags:
@@ -50,7 +50,7 @@ class Module(object):
                     tags = ""
 
                 play_count = ""
-                if "userplaycount" in info_page["track"]:
+                if "userplaycount" in info_page.get("track", []):
                     play_count = int(info_page["track"]["userplaycount"])
                     play_count = " (%d play%s)" % (play_count,
                         "s" if play_count > 1 else "")
