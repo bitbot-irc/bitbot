@@ -19,6 +19,7 @@ class Bot(object):
             nickname, username, realname, connect=False):
         new_server = IRCServer.Server(id, hostname, port, password,
              ipv4, tls, nickname, username, realname, self)
+        self.events.on("new").on("server").call(server=new_server)
         self.servers[new_server.fileno()] = new_server
         if connect:
             self.connect(new_server)

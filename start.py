@@ -20,12 +20,12 @@ database = Database.Database(bot, args.database)
 config_object = Config.Config(bot, args.config)
 bot.database = database
 bot.config_object = config_object
+bot.modules.load_modules()
 
 servers = database.get_servers()
 for server in servers:
     bot.add_server(*server)
 if len(bot.servers):
-    bot.modules.load_modules()
     bot.events.on("boot").on("done").call()
     time.sleep(5)
     bot.connect_all()
