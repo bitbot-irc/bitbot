@@ -7,11 +7,14 @@ class Module(object):
         bot.events.on("new").on("user").hook(self.new_user)
         bot.events.on("received").on("part").hook(self.on_part)
         bot.events.on("received").on("command").on("identify"
-            ).hook(self.identify, private_only=True, min_args=1)
+            ).hook(self.identify, private_only=True, min_args=1,
+            usage="<password>", help="Identify yourself")
         bot.events.on("received").on("command").on("register"
-            ).hook(self.register, private_only=True, min_args=1)
+            ).hook(self.register, private_only=True, min_args=1,
+            usage="<password>", help="Register your nickname")
         bot.events.on("received").on("command").on("logout"
-            ).hook(self.logout, private_only=True)
+            ).hook(self.logout, private_only=True,
+            help="Sign out from the bot")
 
     def new_user(self, event):
         self._logout(event["user"])

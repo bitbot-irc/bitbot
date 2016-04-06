@@ -11,7 +11,8 @@ class Module(object):
         self.bot = bot
         bot.events.on("get").on("shortlink").hook(self.shortlink)
         bot.events.on("received").on("command").on("shorten"
-            ).hook(self.shorten, min_args=1)
+            ).hook(self.shorten, min_args=1, help="Shorten a URL.",
+            usage="<url>")
 
     def shortlink(self, event):
         url = event["url"]

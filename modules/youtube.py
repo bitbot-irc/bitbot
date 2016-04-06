@@ -21,7 +21,7 @@ class Module(object):
         self.bot = bot
         bot.events.on("received").on("command").on("yt", "youtube"
             ).hook(self.yt,
-            help="Find a video on youtube")
+            help="Find a video on youtube", usage="[query]")
         bot.events.on("received").on("message").on("channel").hook(
             self.channel_message)
         bot.events.on("boot").on("done").hook(self.boot_done)

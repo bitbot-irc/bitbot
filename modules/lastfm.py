@@ -10,7 +10,8 @@ class Module(object):
         bot.events.on("boot").on("done").hook(self.boot_done)
         bot.events.on("received").on("command").on("np",
             "listening", "nowplaying").hook(self.np,
-            help="Get the last listen to track from a user")
+            help="Get the last listen to track from a user",
+            usage="[username]")
 
     def boot_done(self, event):
         self.bot.events.on("postboot").on("configure").on(

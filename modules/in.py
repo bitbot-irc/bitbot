@@ -9,7 +9,7 @@ class Module(object):
         self.bot = bot
         bot.events.on("received").on("command").on("in").hook(
             self.in_command, min_args=2,
-            help="Set a reminder")
+            help="Set a reminder", usage="<time> <message>")
         bot.events.on("received").on("numeric").on("001").hook(
             self.on_connect)
 

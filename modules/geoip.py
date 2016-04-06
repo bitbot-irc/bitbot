@@ -7,7 +7,8 @@ class Module(object):
     def __init__(self, bot):
         bot.events.on("received").on("command").on("geoip").hook(
             self.geoip, min_args=1,
-            help="Get geoip data on a given IPv4/IPv6 address")
+            help="Get geoip data on a given IPv4/IPv6 address",
+            usage="<IP>")
 
     def geoip(self, event):
         page = Utils.get_url(URL_GEOIP % event["args_split"][0],

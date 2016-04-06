@@ -9,7 +9,8 @@ class Module(object):
         self.bot = bot
         bot.events.on("received").on("command").on("synonym",
             "antonym").hook(self.thesaurus, min_args=1,
-            help="Get synonyms/antonyms for a provided phrase")
+            help="Get synonyms/antonyms for a provided phrase",
+            usage="<word> [type]")
 
     def thesaurus(self, event):
         phrase = event["args_split"][0]

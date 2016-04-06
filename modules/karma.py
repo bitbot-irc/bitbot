@@ -5,11 +5,22 @@ KARMA_DELAY_SECONDS = 3
 
 class Module(object):
     def __init__(self, bot):
+        self.bot = bot
         bot.events.on("new").on("user").hook(self.new_user)
         bot.events.on("received").on("message").on("channel").hook(
             self.channel_message)
         bot.events.on("received").on("command").on("karma").hook(
-            self.karma, help="Get your or someone else's karma")
+            self.karma, help="Get your or someone else's karma",
+            usage="[target]")
+        bot.events.on("boot").on("done").hook(self.boot_done)
+
+    def validate_setchannel(self, s):
+        return s.lower() == "true"
+    def boot_done(self, event):
+        self.bot.events.on("postboot").on("configure").on(
+            "channelset").call(setting="karmaverbose",
+            help="Disable/Enable automatically responding to karma changes",
+            validate=self.validate_setchannel)
 
     def new_user(self, event):
         event["user"].last_karma = None
@@ -20,6 +31,7 @@ class Module(object):
             if not event["user"].last_karma or (time.time()-event["user"
                     ].last_karma) >= KARMA_DELAY_SECONDS:
                 target = match.group(1).lower().strip()
+                verbose = event["channel"].get_setting("karmaverbose", False)
                 if not target == event["user"].name:
                     positive = match.group(2)[0] == "+"
                     setting = "karma-%s" % target
@@ -32,7 +44,14 @@ class Module(object):
                         event["server"].set_setting(setting, karma)
                     else:
                         event["server"].del_setting(setting)
+                    if verbose:
+                        self.bot.events.on("send").on("stdout").call(
+                            module_name="Karma", target=event["channel"],
+                            message="%s now has %d karma" % (target, karma))
                     event["user"].last_karma = time.time()
+                elif verbose:
+                    self.bot.events.on("send").on("stderr").call(module_name="Karma",
+                        target=event["channel"], message="You cannot change your own karma")
 
     def karma(self, event):
         if event["args"]:

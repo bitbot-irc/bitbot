@@ -8,7 +8,7 @@ class Module(object):
     def __init__(self, bot):
         bot.events.on("received").on("command").on("translate", "tr").hook(
             self.translate, help="Translate the provided phrase or the "
-            "last line seen.")
+            "last line seen.", usage="[phrase]")
 
     def translate(self, event):
         phrase = event["args"]

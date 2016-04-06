@@ -11,10 +11,10 @@ class Module(object):
         self.bot = bot
         bot.events.on("received").on("command").on("isbn").hook(
             self.isbn, help="Get book information from a provided ISBN",
-            min_args=1)
+            min_args=1, usage="<isbn>")
         bot.events.on("received").on("command").on("book").hook(
             self.book, help="Get book information from a provided title",
-            min_args=1)
+            min_args=1, usage="<book title>")
 
     def get_book(self, query, event):
         page = Utils.get_url(URL_GOOGLEBOOKS, get_params={

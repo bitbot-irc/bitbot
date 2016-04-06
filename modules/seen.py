@@ -7,7 +7,8 @@ class Module(object):
             ).hook(self.channel_message)
         bot.events.on("received").on("command").on("seen").hook(
             self.seen, min_args=1,
-            help="Find out when a user was last seen")
+            help="Find out when a user was last seen",
+            usage="<username>")
 
     def channel_message(self, event):
         seen_seconds = time.time()

@@ -47,9 +47,10 @@ class Module(object):
         bot.events.on("received").on("message").on("private").hook(
             self.private_message)
         bot.events.on("received").on("command").on("help").hook(self.help,
-            help="Show help for commands")
+            help="Show help for commands", usage="<command>")
         bot.events.on("received").on("command").on("usage").hook(self.usage,
-            help="Show usage help for commands", min_args=1)
+            help="Show usage help for commands", min_args=1,
+            usage="<command>")
         bot.events.on("received").on("command").on("more").hook(self.more,
             help="Get more output from the last command")
         bot.events.on("new").on("user", "channel").hook(self.new)

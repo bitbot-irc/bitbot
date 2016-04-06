@@ -3,7 +3,8 @@ import random
 class Module(object):
     def __init__(self, bot):
         bot.events.on("received").on("command").on("random",
-            "rand").hook(self.random, help="Get a random number")
+            "rand").hook(self.random, help="Get a random number",
+            usage="[start] [end]")
 
     def random(self, event):
         start, end = "1", "100"

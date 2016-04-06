@@ -11,7 +11,8 @@ class Module(object):
     def __init__(self, bot):
         bot.events.on("received").on("command").on("wolframalpha", "wa"
             ).hook(self.wa, min_args=1, help=
-            "Evauate a given string on Wolfram|Alpha")
+            "Evauate a given string on Wolfram|Alpha",
+            usage="<query>")
         self.bot = bot
 
     def wa(self, event):

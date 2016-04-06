@@ -9,7 +9,8 @@ class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("google",
-            "g").hook(self.google, help="Google feeling lucky")
+            "g").hook(self.google, help="Google feeling lucky",
+            usage="[search term]")
 
     def google(self, event):
         phrase = event["args"] or event["log"].get()

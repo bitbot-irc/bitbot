@@ -7,7 +7,7 @@ class Module(object):
 	def __init__(self, bot):
 		bot.events.on("received").on("command").on("title", "t").hook(
 			self.title, help="Get the title of the provided or most "
-            "recent URL.")
+            "recent URL.", usage="[URL]")
 
 	def title(self, event):
 		url = None

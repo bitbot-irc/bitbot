@@ -6,10 +6,11 @@ URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
 
 class Module(object):
     def __init__(self, bot):
+        self.bot = bot
         bot.events.on("received").on("command").on("weather").hook(
             self.weather, min_args=1,
-            help="Get current weather data for a provided location")
-        self.bot = bot
+            help="Get current weather data for a provided location",
+            usage="<location>")
 
     def weather(self, event):
         api_key = self.bot.config["openweathermap-api-key"]

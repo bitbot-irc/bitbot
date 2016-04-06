@@ -8,7 +8,8 @@ class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("define").hook(
-            self.define, help="Define a provided term")
+            self.define, help="Define a provided term",
+            usage="<phrase>")
 
     def define(self, event):
         if event["args"]:

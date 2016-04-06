@@ -5,7 +5,8 @@ class Module(object):
     def __init__(self, bot):
         bot.events.on("received").on("command").on("dns").hook(
             self.dns, min_args=1,
-            help="Get all addresses for a given hostname (IPv4/IPv6)")
+            help="Get all addresses for a given hostname (IPv4/IPv6)",
+            usage="<hostname>")
 
     def dns(self, event):
         hostname = event["args_split"][0]

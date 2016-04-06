@@ -7,7 +7,8 @@ class Module(object):
         bot.events.on("received").on("message").on("channel"
             ).hook(self.channel_message)
         bot.events.on("received").on("command").on("words"
-            ).hook(self.words, channel_only=True)
+            ).hook(self.words, channel_only=True,
+            usage="<nickname>")
 
     def new_server(self, event):
         event["server"].tracked_words = set([])
