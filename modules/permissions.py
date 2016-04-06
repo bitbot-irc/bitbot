@@ -5,6 +5,8 @@ class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("new").on("user").hook(self.new_user)
+        bot.events.on("preprocess").on("command").hook(
+            self.preprocess_command)
         bot.events.on("received").on("part").hook(self.on_part)
         bot.events.on("received").on("command").on("identify"
             ).hook(self.identify, private_only=True, min_args=1,
@@ -27,18 +29,23 @@ class Module(object):
     def _get_hash(self, user):
         hash, salt = user.get_setting("authentication", (None, None))
         return hash, salt
+
     def _make_salt(self):
         return base64.b64encode(os.urandom(64)).decode("utf8")
+
     def _make_hash(self, password, salt=None):
         salt = salt or self._make_salt()
         hash = base64.b64encode(scrypt.hash(password, salt)).decode("utf8")
         return hash, salt
+
     def _identified(self, user):
         user.identified = True
         user.permissions = user.get_setting("permissions", [])
+
     def _logout(self, user):
         user.identified = False
         user.permissions = []
+
     def identify(self, event):
         if not event["user"].channels:
             event["stderr"].write("You must share at least one channel "
@@ -77,3 +84,9 @@ class Module(object):
             event["stdout"].write("You have been logged out")
         else:
             event["stderr"].write("You are not logged in")
+
+    def preprocess_command(self, event):
+        permission = event["hook"].kwargs.get("permission", None)
+        if permission and not permission in event["user"
+                ].permissions and not "*" in event["user"].permissions:
+            return "You do not have permission to do that"
