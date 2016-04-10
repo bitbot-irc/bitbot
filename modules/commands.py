@@ -108,8 +108,12 @@ class Module(object):
             args_split = list(filter(None, event["message_split"][args_index:]))
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
-                stderr.write("Not enough arguments (minimum: %d)" % min_args
-                    ).send()
+                if "usage" in hook.kwargs:
+                    stderr.write("Not enough arguments, usage: %s %s" % (
+                        command, hook.kwargs["usage"])).send()
+                else:
+                    stderr.write("Not enough arguments (minimum: %d)" % min_args
+                       ).send()
             else:
                 args = " ".join(args_split)
                 server = event["server"]
