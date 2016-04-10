@@ -27,6 +27,7 @@ class Server(object):
         self.channel_types = []
         self.last_read = None
         self.attempted_join = {}
+        self.ping_sent = False
         if ipv4:
             self.socket = socket.socket(socket.AF_INET,
                 socket.SOCK_STREAM)
@@ -152,6 +153,7 @@ class Server(object):
         if not decoded_lines:
             self.disconnect()
         self.last_read = time.time()
+        self.ping_sent = False
         return decoded_lines
     def send(self, data):
         encoded = data.split("\n")[0].strip("\r").encode("utf8")
