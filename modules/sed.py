@@ -1,4 +1,5 @@
 import re, traceback
+import Utils
 
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^s/")
@@ -10,13 +11,11 @@ class Module(object):
         bot.events.on("received").on("message").on("channel").hook(
             self.channel_message)
 
-    def validate_setchannel(self, s):
-        return s.lower() == "true"
     def boot_done(self, event):
         self.bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="sed",
             help="Disable/Enable sed in a channel",
-            validate=self.validate_setchannel)
+            validate=Utils.bool_or_none)
 
     def channel_message(self, event):
         if event["action"] or not event["channel"].get_setting("sed", True):

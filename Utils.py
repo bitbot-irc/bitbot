@@ -165,3 +165,12 @@ def from_pretty_time(pretty_time):
         seconds += number
     if seconds > 0:
         return seconds
+
+IS_TRUE = ["true", "yes", "on", "y"]
+IS_FALSE = ["false", "no", "off", "n"]
+def bool_or_none(s):
+    s = s.lower()
+    if s in IS_TRUE:
+        return True
+    elif s in IS_FALSE:
+        return False

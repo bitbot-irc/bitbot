@@ -1,4 +1,5 @@
 import re, time
+import Utils
 
 REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})")
 KARMA_DELAY_SECONDS = 3
@@ -14,13 +15,11 @@ class Module(object):
             usage="[target]")
         bot.events.on("boot").on("done").hook(self.boot_done)
 
-    def validate_setchannel(self, s):
-        return s.lower() == "true"
     def boot_done(self, event):
         self.bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="karmaverbose",
             help="Disable/Enable automatically responding to karma changes",
-            validate=self.validate_setchannel)
+            validate=Utils.bool_or_none)
 
     def new_user(self, event):
         event["user"].last_karma = None

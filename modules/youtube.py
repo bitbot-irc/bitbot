@@ -26,13 +26,11 @@ class Module(object):
             self.channel_message)
         bot.events.on("boot").on("done").hook(self.boot_done)
 
-    def validate_setchannel(self, s):
-        return s.lower() == "true"
     def boot_done(self, event):
         self.bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="autoyoutube",
             help="Disable/Enable automatically getting info from youtube URLs",
-            validate=self.validate_setchannel)
+            validate=Utils.bool_or_none)
 
     def get_video_page(self, video_id, part):
         return Utils.get_url(URL_YOUTUBEVIDEO, get_params={"part": part,
