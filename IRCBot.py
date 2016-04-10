@@ -13,7 +13,6 @@ class Bot(object):
         self.modules = ModuleManager.ModuleManager(self)
         self.events = EventManager.EventHook(self)
         self.timers = []
-        self.last_ping = None
 
     def add_server(self, id, hostname, port, password, ipv4, tls,
             nickname, username, realname, connect=False):
@@ -63,7 +62,8 @@ class Bot(object):
             select.EPOLLIN|select.EPOLLOUT)
 
     def since_last_read(self, server):
-        return time.time()-server.last_read
+        return None if not server.last_read else time.time(
+            )-server.last_read
 
     def disconnect(self, server):
         self.poll.unregister(server.fileno())
@@ -95,15 +95,17 @@ class Bot(object):
                         self.register_read(server)
                     elif event & select.EPULLHUP:
                         print("hangup")
-            if not self.last_ping or time.time()-self.last_ping >= 60:
-                for server in self.servers.values():
-                    server.send_ping()
-                self.last_ping = time.time()
+                        server.disconnect()
+
             for server in list(self.servers.values()):
-                if server.last_read and self.since_last_read(server
-                            ) > 160:
+                since_last_read = self.since_last_read(server)
+                if since_last_read:
+                    if since_last_read > 120:
                         print("pingout from %s" % str(server))
                         server.disconnect()
+                    elif since_last_read > 30 and not server.ping_sent:
+                        server.send_ping()
+                        server.ping_sent = True
                 if not server.connected:
                     self.disconnect(server)
 
