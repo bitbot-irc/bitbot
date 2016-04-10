@@ -37,7 +37,7 @@ class Channel(object):
         if not args:
             del self.modes[mode]
         else:
-            self.modes[mode].remove(args.lower())
+            self.modes[mode].discard(args.lower())
             if not len(self.modes[mode]):
                 del self.modes[mode]
         self.bot.events.on("mode").on("channel").call(
