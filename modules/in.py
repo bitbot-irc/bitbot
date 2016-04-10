@@ -60,6 +60,7 @@ class Module(object):
                     target=event["target"].name, due_time=due_time,
                     server_id=event["server"].id, nickname=event["user"].nickname,
                     message=message)
+                event["stdout"].write("Saved")
             else:
                 event["stderr"].write(
                     "The given time is above the max (%s)" % (
