@@ -70,7 +70,7 @@ class Bot(object):
         del self.servers[server.fileno()]
 
     def reconnect(self, timer, server):
-        IRCServer.Server.__init__(server, server.id, server.hostname,
+        IRCServer.Server.__init__(server, server.id, server.target_hostname,
             server.port, server.password, server.ipv4, server.tls,
             server.nickname, server.username, server.realname, self)
         if self.connect(server):
