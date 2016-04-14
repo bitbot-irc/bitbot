@@ -77,6 +77,16 @@ class Bot(object):
             self.servers[server.fileno()] = server
         else:
             timer.redo()
+
+    def set_setting(self, setting, value):
+        self.database.set_bot_setting(setting, value)
+    def get_setting(self, setting, default=None):
+        return self.database.get_bot_setting(setting, default)
+    def find_settings(self, pattern, default=[]):
+        return self.database.find_bot_settings(pattern, default)
+    def del_setting(self, setting):
+        self.database.del_bot_setting(setting)
+
     def run(self):
         while self.running:
             self.lock.acquire()
