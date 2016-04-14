@@ -46,6 +46,8 @@ class EventHook(object):
         if self._hook_notify:
             self._hook_notify(self, callback)
         self._hooks.append(callback)
+    def _unhook(self, hook):
+        self._hooks.remove(hook)
     def on(self, subevent, *extra_subevents):
         if extra_subevents:
             multiple_event_hook = MultipleEventHook()

@@ -1,4 +1,4 @@
-import glob, imp, inspect, os, sys
+import gc, glob, imp, inspect, os, sys
 
 class ModuleManager(object):
     def __init__(self, bot, directory="modules"):
@@ -38,7 +38,8 @@ class ModuleManager(object):
                             return None
                 else:
                     break
-        module = imp.load_source("bitbot_%s" % name, filename)
+        import_name = "bitbot_%s" % name
+        module = imp.load_source(import_name, filename)
         assert hasattr(module, "Module"
             ), "module '%s' doesn't have a Module class."
         assert inspect.isclass(module.Module
@@ -46,6 +47,8 @@ class ModuleManager(object):
         module_object = module.Module(self.bot)
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
+        module_object._is_unloaded = False
+        module_object._import_name = import_name
         assert not module_object._name in self.modules, (
             "module name '%s' attempted to be used twice.")
         return module_object
@@ -60,7 +63,24 @@ class ModuleManager(object):
                     self.load_module(filename)
         else:
             sys.stderr.write("module '%s' not loaded.\n" % filename)
-
     def load_modules(self):
         for filename in self.list_modules():
             self.load_module(filename)
+
+    def unload_module(self, module):
+        # this is such a bad idea
+        module._is_unloaded = True
+        self.unhook_check(self.bot.events)
+        del sys.modules[module._import_name]
+        del self.modules[module._name]
+        del module
+        gc.collect()
+
+    def unhook_check(self, event):
+        for hook in event.get_hooks():
+            if hasattr(hook.function, "__self__") and hasattr(
+                    hook.function.__self__, "_is_unloaded"
+                    ) and hook.function.__self__._is_unloaded:
+                event._unhook(hook)
+        for child in event.get_children():
+            self.unhook_check(event.get_child(child))
