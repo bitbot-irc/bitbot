@@ -53,9 +53,15 @@ class Module(object):
             usage="<command>")
         bot.events.on("received").on("command").on("more").hook(self.more,
             help="Get more output from the last command")
+        bot.events.on("boot").on("done").hook(self.boot_done)
         bot.events.on("new").on("user", "channel").hook(self.new)
         bot.events.on("send").on("stdout").hook(self.send_stdout)
         bot.events.on("send").on("stderr").hook(self.send_stderr)
+
+    def boot_done(self, event):
+        self.bot.events.on("postboot").on("configure").on(
+            "channelset").call(setting="command-prefix",
+            help="Set the command prefix used in this channel")
 
     def new(self, event):
         if "user" in event:
@@ -130,8 +136,8 @@ class Module(object):
 
 
     def channel_message(self, event):
-        command_prefix = event["channel"].get_setting("command_prefix",
-            event["server"].get_setting("command_prefix", "!"))
+        command_prefix = event["channel"].get_setting("command-prefix",
+            event["server"].get_setting("command-prefix", "!"))
         if event["message_split"][0].startswith(command_prefix):
             command = event["message_split"][0].replace(
                 command_prefix, "", 1).lower()
@@ -193,4 +199,3 @@ class Module(object):
         stderr.write(event["message"]).send()
         if stderr.has_text():
             event["target"].last_stderr = stderr
-
