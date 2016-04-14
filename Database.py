@@ -11,6 +11,7 @@ class Database(object):
         self.cursors = {}
 
         self.make_servers_table()
+        self.make_bot_settings_table()
         self.make_server_settings_table()
         self.make_channel_settings_table()
         self.make_user_settings_table()
@@ -28,6 +29,12 @@ class Database(object):
                 hostname TEXT, port INTEGER, password TEXT,
                 ipv4 BOOLEAN, tls BOOLEAN, nickname TEXT,
                 username TEXT, realname TEXT)""")
+        except sqlite3.Error as e:
+            pass
+    def make_bot_settings_table(self):
+        try:
+            self.cursor().execute("""CREATE TABLE bot_settings
+                (setting TEXT PRIMARY KEY, value TEXT)""")
         except sqlite3.Error as e:
             pass
     def make_server_settings_table(self):
@@ -57,6 +64,29 @@ class Database(object):
                 PRIMARY KEY (server_id, nickname, setting))""")
         except sqlite3.Error as e:
             pass
+
+    def set_bot_setting(self, setting, value):
+        self.cursor().execute("""INSERT OR REPLACE INTO bot_settings
+            VALUES (?, ?)""", [setting.lower(), json.dumps(value)])
+    def get_bot_setting(self, setting, default=None):
+        self.cursor().execute("""SELECT value FROM bot_settings
+            WHERE setting=?""", [setting.lower()])
+        value = self.cursor().fetchone()
+        if value:
+            return json.loads(value[0])
+        return default
+    def find_bot_settings(self, pattern, default=[]):
+        self.cursor().execute("""SELECT setting, value FROM bot_settings
+            WHERE setting LIKE ?""", [pattern.lower()])
+        values = self.cursor().fetchall()
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def del_bot_setting(self, setting):
+        self.cursor().execute("""DELETE FROM bot_settings WHERE
+            setting=?""", [setting.lower()])
 
     def set_server_setting(self, server_id, setting, value):
         self.cursor().execute("""INSERT OR REPLACE INTO server_settings
