@@ -53,6 +53,10 @@ class Module(object):
             FROM user_settings WHERE setting='alias' AND value=?
             AND server_id=?""", [json.dumps(target.lower()),
             server.id]).fetchall()
+    def _change_nick(self, old_nickname, new_nickname):
+        self.bot.database.cursor().execute("""UPDATE user_settings
+            SET nickname=? WHERE nickname=?""", [new_nickname.lower(),
+            old_nickname.lower()])
 
     def alias(self, event):
         if event["args"]:
@@ -78,6 +82,7 @@ class Module(object):
                 for nickname in aliases:
                     event["server"].get_user(nickname).set_setting(
                         "alias", alias)
+            self._change_nick()
             event["stdout"].write("This nickname has been set as the "
                 "main alias for it's group of aliases")
         else:
