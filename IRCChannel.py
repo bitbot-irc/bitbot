@@ -26,6 +26,8 @@ class Channel(object):
         self.users.add(user)
     def remove_user(self, user):
         self.users.remove(user)
+    def has_user(self, user):
+        return user in self.users
     def add_mode(self, mode, args=None):
         if not mode in self.modes:
             self.modes[mode] = set([])
@@ -59,6 +61,11 @@ class Channel(object):
         self.server.send_message(self.name, text)
     def send_mode(self, mode=None, target=None):
         self.server.send_mode(self.name, mode, target)
+    def send_kick(self, target, reason=None):
+        self.server.send_kick(self.name, target, reason)
+    def send_ban(self, hostmask):
+        self.server.send_mode(self.name, "+b", hostmask)
+
     def mode_or_above(self, nickname, mode):
         mode_orders = list(self.server.mode_prefixes.values())
         mode_index = mode_orders.index(mode)
