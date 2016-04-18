@@ -36,6 +36,7 @@ class Server(object):
                 socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        self.socket.settimeout(5.0)
         if self.tls:
             context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
             self.socket = context.wrap_socket(self.socket)
