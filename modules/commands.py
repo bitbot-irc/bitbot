@@ -105,7 +105,8 @@ class Module(object):
                 target)
 
             returns = self.bot.events.on("preprocess").on("command"
-                ).call(hook=hook, user=event["user"], server=event["server"])
+                ).call(hook=hook, user=event["user"], server=event["server"],
+                target=target, is_channel=is_channel)
             for returned in returns:
                 if returned:
                     stderr.write(returned).send()
