@@ -69,7 +69,8 @@ class Module(object):
         word = event["args_split"][0].lower()
         if word in event["server"].tracked_words:
             word_users = event["server"].get_setting("word-%s" % word)
-            top_10 = sorted(word_users, key=word_users.get, reverse=True)[:10]
+            top_10 = sorted(word_users.keys())
+            top_10 = sorted(top_10, key=word_users.get, reverse=True)[:10]
             top_10 = ", ".join("%s (%d)" % (nickname, word_users[nickname
                 ]) for nickname in top_10)
             event["stdout"].write("Top '%s' users: %s" % (word, top_10))
