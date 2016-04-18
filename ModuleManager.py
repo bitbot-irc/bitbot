@@ -71,6 +71,8 @@ class ModuleManager(object):
         # this is such a bad idea
         module._is_unloaded = True
         self.unhook_check(self.bot.events)
+        if hasattr(module, "_cleanup"):
+            module._cleanup()
         del sys.modules[module._import_name]
         del self.modules[module._name]
         del module
