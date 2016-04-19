@@ -12,6 +12,7 @@ class Module(object):
             help="Set a reminder", usage="<time> <message>")
         bot.events.on("received").on("numeric").on("001").hook(
             self.on_connect)
+        bot.events.on("timer").on("in").hook(self.timer_due)
 
     def on_connect(self, event):
         self.load_reminders(event["server"])
@@ -36,7 +37,7 @@ class Module(object):
             for target, due_time, server_id, nickname, message in user_reminders[1]:
                 time_left = due_time-time.time()
                 if time_left > 0:
-                    self.bot.add_timer(self.timer_due, time_left, target=target,
+                    self.bot.add_timer("in", time_left, target=target,
                         due_time=due_time, server_id=server_id, nickname=nickname,
                         message=message)
                 else:
@@ -56,7 +57,7 @@ class Module(object):
                     event["server"].id, event["user"].nickname, message])
                 event["server"].set_setting(setting, reminders)
 
-                self.bot.add_timer(self.timer_due, seconds,
+                self.bot.add_timer("in", seconds,
                     target=event["target"].name, due_time=due_time,
                     server_id=event["server"].id, nickname=event["user"].nickname,
                     message=message)
@@ -69,13 +70,12 @@ class Module(object):
             event["stderr"].write(
                 "Please provided a valid time above 0 seconds")
 
-    def timer_due(self, timer, **kwargs):
+    def timer_due(self, event):
         for server in self.bot.servers.values():
-            if kwargs["server_id"] == server.id:
-                server.send_message(kwargs["target"],
+            if event["server_id"] == server.id:
+                server.send_message(event["target"],
                     "%s, this is your reminder: %s" % (
-                    kwargs["nickname"], kwargs["message"]))
+                    event["nickname"], event["message"]))
                 break
-        setting = "in-%s" % kwargs["nickname"]
-        self.remove_timer(kwargs["target"], kwargs["due_time"],
-            kwargs["server_id"], kwargs["nickname"], kwargs["message"])
+        self.remove_timer(event["target"], event["due_time"],
+            event["server_id"], event["nickname"], event["message"])

@@ -1,11 +1,11 @@
 import time
 
 class Timer(object):
-    def __init__(self, function, delay, *args, **kwargs):
-        self.function = function
+    def __init__(self, bot, event_name, delay, **kwargs):
+        self.bot = bot
+        self.event_name = event_name
         self.delay = delay
         self.kwargs = kwargs
-        self.args = args
         self._done = False
         self.call_count = 0
 
@@ -21,7 +21,8 @@ class Timer(object):
     def call(self):
         self._done = True
         self.call_count +=1
-        self.function(self, *self.args, **self.kwargs)
+        self.bot.events.on("timer").on(self.event_name).call(
+            timer=self, **self.kwargs)
 
     def redo(self):
         self._done = False

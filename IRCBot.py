@@ -13,6 +13,7 @@ class Bot(object):
         self.modules = ModuleManager.ModuleManager(self)
         self.events = EventManager.EventHook(self)
         self.timers = []
+        self.events.on("timer").on("reconnect").hook(self.reconnect)
 
     def add_server(self, id, hostname, port, password, ipv4, tls,
             nickname, username, realname, connect=False):
@@ -35,8 +36,8 @@ class Bot(object):
         for server in self.servers.values():
             self.connect(server)
 
-    def add_timer(self, function, delay, *args, **kwargs):
-        timer = Timer.Timer(function, delay, *args, **kwargs)
+    def add_timer(self, event_name, delay, **kwargs):
+        timer = Timer.Timer(self, event_name, delay, **kwargs)
         timer.set_started_time()
         self.timers.append(timer)
     def next_timer(self):
@@ -49,6 +50,7 @@ class Bot(object):
     def call_timers(self):
         for timer in self.timers[:]:
             if timer.due():
+                print(timer.event_name)
                 timer.call()
                 if timer.done():
                     self.timers.remove(timer)
@@ -69,14 +71,16 @@ class Bot(object):
         self.poll.unregister(server.fileno())
         del self.servers[server.fileno()]
 
-    def reconnect(self, timer, server):
+    def reconnect(self, event):
+        server = event["server"]
         IRCServer.Server.__init__(server, server.id, server.target_hostname,
             server.port, server.password, server.ipv4, server.tls,
-            server.nickname, server.username, server.realname, self)
+            server.original_nickname, server.original_username,
+            server.original_realname, self)
         if self.connect(server):
             self.servers[server.fileno()] = server
         else:
-            timer.redo()
+            event["timer"].redo()
 
     def set_setting(self, setting, value):
         self.database.set_bot_setting(setting, value)
@@ -120,7 +124,7 @@ class Bot(object):
                     self.disconnect(server)
 
                     reconnect_delay = self.config.get("reconnect-delay", 10)
-                    self.add_timer(self.reconnect, reconnect_delay, server)
+                    self.add_timer("reconnect", reconnect_delay, server=server)
 
                     print("disconnected from %s, reconnecting in %d seconds" % (
                         str(server), reconnect_delay))

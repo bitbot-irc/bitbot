@@ -12,9 +12,9 @@ class Server(object):
         self.tls = tls
         self.password = password
         self.ipv4 = ipv4
-        self.nickname = nickname
-        self.username = username or nickname
-        self.realname = realname or nickname
+        self.original_nickname = nickname
+        self.original_username = username or nickname
+        self.original_realname = realname or nickname
         self.write_buffer = b""
         self.read_buffer = b""
         self.users = {}
@@ -53,8 +53,8 @@ class Server(object):
         self.socket.connect((self.target_hostname, self.port))
         if self.password:
             self.send_pass(self.password)
-        self.send_user(self.username, self.realname)
-        self.send_nick(self.nickname)
+        self.send_user(self.original_username, self.original_realname)
+        self.send_nick(self.original_nickname)
         self.connected = True
     def disconnect(self):
         self.connected = False
