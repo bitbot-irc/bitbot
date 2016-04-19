@@ -1,22 +1,27 @@
-import time
+import time, uuid
 
 class Timer(object):
-    def __init__(self, bot, event_name, delay, **kwargs):
+    def __init__(self, bot, event_name, delay, next_due=None, **kwargs):
+        self.id = uuid.uuid4().hex
         self.bot = bot
         self.event_name = event_name
         self.delay = delay
+        if next_due:
+            self.next_due = next_due
+        else:
+            self.set_next_due()
         self.kwargs = kwargs
         self._done = False
         self.call_count = 0
 
-    def set_started_time(self):
-        self.started_time = time.time()
+    def set_next_due(self):
+        self.next_due = time.time()+self.delay
 
     def due(self):
         return self.time_left() <= 0
 
     def time_left(self):
-        return (self.started_time+self.delay)-time.time()
+        return self.next_due-time.time()
 
     def call(self):
         self._done = True
@@ -26,7 +31,7 @@ class Timer(object):
 
     def redo(self):
         self._done = False
-        self.set_started_time()
+        self.set_next_due()
 
     def done(self):
         return self._done

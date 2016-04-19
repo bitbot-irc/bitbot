@@ -14,6 +14,7 @@ class Bot(object):
         self.events = EventManager.EventHook(self)
         self.timers = []
         self.events.on("timer").on("reconnect").hook(self.reconnect)
+        self.events.on("boot").on("done").hook(self.setup_timers)
 
     def add_server(self, id, hostname, port, password, ipv4, tls,
             nickname, username, realname, connect=False):
@@ -36,9 +37,24 @@ class Bot(object):
         for server in self.servers.values():
             self.connect(server)
 
-    def add_timer(self, event_name, delay, **kwargs):
-        timer = Timer.Timer(self, event_name, delay, **kwargs)
-        timer.set_started_time()
+    def setup_timers(self, event):
+        for setting, value in self.find_settings("timer-%"):
+            id = setting.split("timer-", 1)[1]
+            self.add_timer(value["event-name"], value["delay"], value[
+                "next-due"], id, **value["kwargs"])
+    def timer_setting(self, timer):
+        self.set_setting("timer-%s" % timer.id, {
+            "event-name": timer.event_name, "delay": timer.delay,
+            "next-due": timer.next_due, "kwargs": timer.kwargs})
+    def timer_setting_remove(self, timer):
+        self.timers.remove(timer)
+        self.del_setting("timer-%s" % timer.id)
+    def add_timer(self, event_name, delay, next_due=None, id=None, **kwargs):
+        timer = Timer.Timer(self, event_name, delay, next_due, **kwargs)
+        if id:
+            timer.id = id
+        else:
+            self.timer_setting(timer)
         self.timers.append(timer)
     def next_timer(self):
         next = None
@@ -50,10 +66,11 @@ class Bot(object):
     def call_timers(self):
         for timer in self.timers[:]:
             if timer.due():
-                print(timer.event_name)
                 timer.call()
                 if timer.done():
-                    self.timers.remove(timer)
+                    self.timer_setting_remove(timer)
+                else:
+                    self.timer_setting(timer)
 
     def register_read(self, server):
         self.poll.modify(server.fileno(), select.EPOLLIN)
