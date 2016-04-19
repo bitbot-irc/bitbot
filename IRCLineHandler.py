@@ -288,6 +288,7 @@ def handle_433():
     pass
 @handler(description="we need a registered nickname for this channel")
 def handle_477():
-    bot.add_timer(server.try_rejoin, 5, line_split[3],
-        server.attempted_join[line_split[3].lower()])
+    bot.add_timer("rejoin", 5, channel_name=line_split[3],
+        key=server.attempted_join[line_split[3].lower()],
+        server_id=server.id)
 #:newirc.tripsit.me 477 BitBot ##nope :Cannot join channel (+r) - you need to be identified with services
