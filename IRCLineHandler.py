@@ -77,14 +77,17 @@ def handle_005():
         isupport=isupport_line)
 @handler(description="whois respose (nickname, username, realname, hostname)")
 def handle_311():
-    nickname = line_split[2]
+    nickname = line_split[3]
     if server.is_own_nickname(nickname):
         target = server
     else:
         target = server.get_user(nickname)
-    target.username = line_split[4]
-    target.realname = Utils.arbitrary(line_split, 7)
-    target.hostname = line_split[5]
+    username = line_split[4]
+    realname = Utils.arbitrary(line_split, 7)
+    hostname = line_split[5]
+    target.username = username
+    target.realname = realname
+    target.hostname = hostname
 @handler(description="on-join channel topic line")
 def handle_332():
     channel = server.get_channel(line_split[3])
@@ -121,6 +124,7 @@ def handle_JOIN():
     nickname, username, realname = Utils.seperate_hostmask(line_split[0])
     channel = server.get_channel(Utils.remove_colon(line_split[2]))
     if not server.is_own_nickname(nickname):
+        server.send_whois(nickname)
         user = server.get_user(nickname)
         channel.add_user(user)
         user.join_channel(channel)
