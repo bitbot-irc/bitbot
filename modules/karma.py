@@ -1,7 +1,7 @@
 import re, time
 import Utils
 
-REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})")
+REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
 
 class Module(object):
@@ -25,12 +25,12 @@ class Module(object):
         event["user"].last_karma = None
 
     def channel_message(self, event):
-        match = re.match(REGEX_KARMA, event["message"])
+        match = re.match(REGEX_KARMA, event["message"].strip())
         if match:
+            verbose = event["channel"].get_setting("karmaverbose", False)
             if not event["user"].last_karma or (time.time()-event["user"
                     ].last_karma) >= KARMA_DELAY_SECONDS:
                 target = match.group(1).lower().strip()
-                verbose = event["channel"].get_setting("karmaverbose", False)
                 if not target == event["user"].name:
                     positive = match.group(2)[0] == "+"
                     setting = "karma-%s" % target
@@ -51,7 +51,8 @@ class Module(object):
                 elif verbose:
                     self.bot.events.on("send").on("stderr").call(module_name="Karma",
                         target=event["channel"], message="You cannot change your own karma")
-
+            elif verbose:
+                event["stderr"].write("Try again in a couple of seconds")
     def karma(self, event):
         if event["args"]:
             target = event["args"]
