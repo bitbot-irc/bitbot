@@ -5,7 +5,6 @@ class User(object):
     def __init__(self, nickname, server, bot):
         self.set_nickname(nickname)
         self.username = None
-        self.realname = None
         self.hostname = None
         self.server = server
         self.bot = bot

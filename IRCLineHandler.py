@@ -83,10 +83,8 @@ def handle_311():
     else:
         target = server.get_user(nickname)
     username = line_split[4]
-    realname = Utils.arbitrary(line_split, 7)
     hostname = line_split[5]
     target.username = username
-    target.realname = realname
     target.hostname = hostname
 @handler(description="on-join channel topic line")
 def handle_332():
@@ -121,11 +119,13 @@ def handle_353():
                 channel.add_mode(mode, nickname)
 @handler(description="on user joining channel")
 def handle_JOIN():
-    nickname, username, realname = Utils.seperate_hostmask(line_split[0])
+    nickname, username, hostname = Utils.seperate_hostmask(line_split[0])
     channel = server.get_channel(Utils.remove_colon(line_split[2]))
     if not server.is_own_nickname(nickname):
-        server.send_whois(nickname)
         user = server.get_user(nickname)
+        if not server.has_user(nickname):
+            user.username = username
+            user.hostname = hostname
         channel.add_user(user)
         user.join_channel(channel)
         bot.events.on("received").on("join").call(line=line,
@@ -273,7 +273,6 @@ def handle_PRIVMSG():
 def handle_352():
     user = server.get_user(line_split[7])
     user.username = line_split[4]
-    user.realname = Utils.arbitrary(line_split, 10)
     user.hostname = line_split[5]
 @handler(description="response to an empty mode command")
 def handle_324():
