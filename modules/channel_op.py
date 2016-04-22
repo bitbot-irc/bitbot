@@ -13,6 +13,9 @@ class Module(object):
         bot.events.on("received").on("command").on("kickban", "kb"
             ).hook(self.kickban, channel_only=True, require_mode="o",
             min_args=1)
+        bot.events.on("received").on("command").on("op"
+            ).hook(self.op, channel_only=True, require_mode="o",
+            min_args=1)
 
     def kick(self, event):
         target = event["args_split"][0]
@@ -42,3 +45,6 @@ class Module(object):
         if event["server"].has_user(event["args_split"][0]):
             self.ban(event)
             self.kick(event)
+
+    def op(self, event):
+        event["target"].send_mode("+o", event["args_split"][0])
