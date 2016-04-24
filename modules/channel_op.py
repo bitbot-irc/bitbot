@@ -45,6 +45,8 @@ class Module(object):
         if event["server"].has_user(event["args_split"][0]):
             self.ban(event)
             self.kick(event)
+        else:
+            event["stderr"].write("That user is not in this channel")
 
     def op(self, event):
         event["target"].send_mode("+o", event["args_split"][0])
