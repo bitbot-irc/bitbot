@@ -20,9 +20,11 @@ class Bot(object):
             nickname, username, realname, connect=False):
         new_server = IRCServer.Server(id, hostname, port, password,
              ipv4, tls, nickname, username, realname, self)
+        if not new_server.get_setting("connect", True):
+            return
         self.events.on("new").on("server").call(server=new_server)
         self.servers[new_server.fileno()] = new_server
-        if connect:
+        if connect and new_server.get_setting("connect", True):
             self.connect(new_server)
     def connect(self, server):
         try:
@@ -35,7 +37,8 @@ class Bot(object):
         return True
     def connect_all(self):
         for server in self.servers.values():
-            self.connect(server)
+            if server.get_setting("connect", True):
+                self.connect(server)
 
     def setup_timers(self, event):
         for setting, value in self.find_settings("timer-%"):
