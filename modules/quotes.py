@@ -1,4 +1,4 @@
-import time
+import random, time
 
 class Module(object):
     def __init__(self, bot):
@@ -15,6 +15,10 @@ class Module(object):
             "qdel").hook(self.quote_del, min_args=1,
             help="Delete a quote from a category",
             usage="<category> = <quote>")
+        bot.events.on("received").on("command").on("quote",
+            "q").hook(self.quote, min_args=1,
+            help="Get a random quote from a category",
+            usage="<category>")
 
     def category_and_quote(self, s):
         if "=" in s:
@@ -69,3 +73,13 @@ class Module(object):
         else:
             event["stderr"].write("Please provide a category and a quote "
                 "to remove")
+
+    def quote(self, event):
+        category = event["args"].strip().lower()
+        quotes = event["server"].get_setting("quotes-%s" % category, [])
+        if quotes:
+            index = random.randint(0, len(quotes)-1)
+            nickname, time_added, quote = quotes[index]
+            event["stdout"].write("%s: %s" % (category, quote))
+        else:
+            event["stderr"].write("There are no quotes for this category")
