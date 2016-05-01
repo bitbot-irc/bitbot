@@ -28,7 +28,7 @@ class Module(object):
 
     def boot_done(self, event):
         self.bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="autoyoutube",
+            "channelset").call(setting="auto-youtube",
             help="Disable/Enable automatically getting info from youtube URLs",
             validate=Utils.bool_or_none)
 
@@ -99,7 +99,7 @@ class Module(object):
 
     def channel_message(self, event):
         match = re.search(REGEX_YOUTUBE, event["message"])
-        if match and event["channel"].get_setting("autoyoutube", False):
+        if match and event["channel"].get_setting("auto-youtube", False):
             youtube_id = match.group(1)
             video_details = self.video_details(youtube_id)
             if video_details:

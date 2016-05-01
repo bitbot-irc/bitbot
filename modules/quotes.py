@@ -30,7 +30,7 @@ class Module(object):
         if category and quote:
             setting = "quotes-%s" % category
             quotes = event["server"].get_setting(setting, [])
-            quotes.append([event["user"].name, time.time(), quote])
+            quotes.append([event["user"].name, int(time.time()), quote])
             event["server"].set_setting(setting, quotes)
             event["stdout"].write("Quote added")
         else:

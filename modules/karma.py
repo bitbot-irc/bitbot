@@ -17,7 +17,7 @@ class Module(object):
 
     def boot_done(self, event):
         self.bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="karmaverbose",
+            "channelset").call(setting="karma-verbose",
             help="Disable/Enable automatically responding to karma changes",
             validate=Utils.bool_or_none)
 
@@ -27,7 +27,7 @@ class Module(object):
     def channel_message(self, event):
         match = re.match(REGEX_KARMA, event["message"].strip())
         if match:
-            verbose = event["channel"].get_setting("karmaverbose", False)
+            verbose = event["channel"].get_setting("karma-verbose", False)
             if not event["user"].last_karma or (time.time()-event["user"
                     ].last_karma) >= KARMA_DELAY_SECONDS:
                 target = match.group(1).lower().strip()
