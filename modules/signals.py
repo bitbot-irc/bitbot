@@ -22,7 +22,14 @@ QUOTES = {
     "I'm an Internet expert too." : "Kim Jong Il",
     "So long, and thanks for all the fish" : "",
     "It is a lie that I made the people starve." : "Nicolae Ceaușescu",
-    "As far as I know - effective immediately, without delay." : "Günter Schabowski"
+    "As far as I know - effective immediately, without delay." : "Günter Schabowski",
+    "Not all those who wander are lost." : "J.R.R. Tolkien",
+    "Life would be tragic if it weren't funny." : "Stephen Hawking",
+    "We are such stuff as dreams are made on; and our little life is rounded with a sleep." : "",
+    "Do androids dream of electric sheep?" : "",
+    "Love all, trust a few, do wrong to none." : "William Shakespeare",
+    "Patriotism is not enough. I must have no hatred or bitterness towards any one." : "Edith Cavell",
+    "The monuments of wit survive the monuments of power." : "Francis Bacon"
 }
 
 class Module(object):
