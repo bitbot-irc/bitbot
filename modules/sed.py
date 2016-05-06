@@ -18,7 +18,7 @@ class Module(object):
             validate=Utils.bool_or_none)
 
     def channel_message(self, event):
-        if event["action"] or not event["channel"].get_setting("sed", True):
+        if event["action"] or not Utils.get_closest_setting(event, "sed", True):
             return
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
         if event["message"].startswith("s/") and len(sed_split) > 2:

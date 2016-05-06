@@ -174,3 +174,13 @@ def bool_or_none(s):
         return True
     elif s in IS_FALSE:
         return False
+
+def get_closest_setting(event, setting, default=None):
+    server = event["server"]
+    if "channel" in event:
+        closest = event["channel"]
+    elif "target" in event and "is_channel" in event and event["is_channel"]:
+        closest = event["target"]
+    else:
+        closest = event["user"]
+    return closest.get_setting(setting, server.get_setting(setting, default))

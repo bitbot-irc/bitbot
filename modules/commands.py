@@ -128,7 +128,7 @@ class Module(object):
                 self.bot.events.on("received").on("command").on(command).call(
                     1, user=user, server=server, target=target, log=log,
                     args=args, args_split=args_split, stdout=stdout, stderr=stderr,
-                    command=command.lower())
+                    command=command.lower(), is_channel=is_channel)
                 stdout.send()
                 target.last_stdout = stdout
                 stderr.send()
