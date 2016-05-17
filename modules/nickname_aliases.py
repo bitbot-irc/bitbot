@@ -27,13 +27,15 @@ class Module(object):
         bot.events.on("received").on("nick").hook(self.nickname_change)
         bot.events.on("received").on("command").on("alias").hook(
             self.alias)
-        bot.events.on("received").on("command").on("mainalias").hook(
-            self.main_alias)
+        #bot.events.on("received").on("command").on("mainalias").hook(
+        #    self.main_alias)
 
     def new_user(self, event):
         method_type = types.MethodType
         user = event["user"]
         event["user"].alias = user.get_setting("alias")
+        if not event["user"].alias:
+            event["user"].set_setting("root-alias", True)
         event["user"].set_setting = method_type(set_setting, user)
         event["user"].get_setting = method_type(get_setting, user)
         event["user"].find_settings = method_type(find_settings, user)
@@ -43,8 +45,12 @@ class Module(object):
         old_nickname = event["old_nickname"]
         new_nickname = event["new_nickname"]
         if not event["user"].alias:
-            event["user"].set_setting("alias", old_nickname.lower())
-            event["user"].alias = old_nickname.lower()
+            root_alias = event["user"].get_setting("root-alias", False)
+            if not root_alias:
+                event["user"].set_setting("alias", old_nickname.lower())
+                event["user"].alias = old_nickname.lower()
+            else:
+                event["user"].alias = None
         elif event["user"].nickname_lower == event["user"].alias:
             event["user"].alias = None
 
