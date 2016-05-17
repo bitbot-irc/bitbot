@@ -188,7 +188,7 @@ class Server(object):
             "" if key == None else " %s" % key))
     def send_part(self, channel_name, reason=None):
         self.send("PART %s%s" % (channel_name,
-            "" if key == None else " %s" % reason))
+            "" if reason == None else " %s" % reason))
     def send_quit(self, reason="Leaving"):
         self.send("QUIT :%s" % reason)
     def send_message(self, target, message):
