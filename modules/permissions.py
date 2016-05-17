@@ -17,6 +17,8 @@ class Module(object):
         bot.events.on("received").on("command").on("logout"
             ).hook(self.logout, private_only=True,
             help="Sign out from the bot")
+        bot.events.on("received").on("command").on("mypermissions"
+            ).hook(self.my_permissions, private_only=True)
 
     def new_user(self, event):
         self._logout(event["user"])
@@ -90,3 +92,7 @@ class Module(object):
         if permission and not permission in event["user"
                 ].permissions and not "*" in event["user"].permissions:
             return "You do not have permission to do that"
+
+    def my_permissions(self, event):
+        permissions = event["user"].get_setting("permissions", [])
+        event["stdout"].write("Your permissions: %s" % ", ".join(permissions))
