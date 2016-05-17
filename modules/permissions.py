@@ -94,5 +94,5 @@ class Module(object):
             return "You do not have permission to do that"
 
     def my_permissions(self, event):
-        permissions = event["user"].get_setting("permissions", [])
+        permissions = event["user"].permissions
         event["stdout"].write("Your permissions: %s" % ", ".join(permissions))
