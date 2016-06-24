@@ -59,6 +59,12 @@ def get_url(url, **kwargs):
             return e.code, False
         else:
             return False
+    except urllib.error.URLError as e:
+        traceback.print_exc()
+        if kwargs.get("code"):
+            return -1, False
+        else:
+            return False
 
     response_content = response.read()
     encoding = response.info().get_content_charset()
