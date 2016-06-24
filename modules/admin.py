@@ -10,6 +10,10 @@ class Module(object):
             ).hook(self.raw, permission="raw", min_args=1,
             help="Send a raw IRC line through the bot",
             usage="<raw line>")
+        bot.events.on("received").on("command").on("part"
+            ).hook(self.part, permission="part", min_args=1,
+            help="Part from a channel",
+            usage="<#channel>")
 
     def change_nickname(self, event):
         nickname = event["args_split"][0]
@@ -17,3 +21,6 @@ class Module(object):
 
     def raw(self, event):
         event["server"].send(event["args"])
+
+    def part(self, event):
+        event["server"].send_part(event["args_split"][0])
