@@ -26,12 +26,12 @@ class Module(object):
 
     def channel_message(self, event):
         match = re.match(REGEX_KARMA, event["message"].strip())
-        if match:
+        if match and not event["action"]:
             verbose = event["channel"].get_setting("karma-verbose", False)
             if not event["user"].last_karma or (time.time()-event["user"
                     ].last_karma) >= KARMA_DELAY_SECONDS:
                 target = match.group(1).lower().strip()
-                if not target == event["user"].name:
+                if not target == event["user"].name and target:
                     positive = match.group(2)[0] == "+"
                     setting = "karma-%s" % target
                     karma = event["server"].get_setting(setting, 0)
@@ -49,8 +49,9 @@ class Module(object):
                             message="%s now has %d karma" % (target, karma))
                     event["user"].last_karma = time.time()
                 elif verbose:
-                    self.bot.events.on("send").on("stderr").call(module_name="Karma",
-                        target=event["channel"], message="You cannot change your own karma")
+                    if target:
+                        self.bot.events.on("send").on("stderr").call(module_name="Karma",
+                            target=event["channel"], message="You cannot change your own karma")
             elif verbose:
                 event["stderr"].write("Try again in a couple of seconds")
     def karma(self, event):
