@@ -52,7 +52,8 @@ class Bot(object):
     def timer_setting_remove(self, timer):
         self.timers.remove(timer)
         self.del_setting("timer-%s" % timer.id)
-    def add_timer(self, event_name, delay, next_due=None, id=None, **kwargs):
+    def add_timer(self, event_name, delay, next_due=None, id=None, persist=True,
+            **kwargs):
         timer = Timer.Timer(self, event_name, delay, next_due, **kwargs)
         if id:
             timer.id = id
@@ -92,11 +93,8 @@ class Bot(object):
         del self.servers[server.fileno()]
 
     def reconnect(self, event):
-        server = event["server"]
-        IRCServer.Server.__init__(server, server.id, server.target_hostname,
-            server.port, server.password, server.ipv4, server.tls,
-            server.original_nickname, server.original_username,
-            server.original_realname, self)
+        server_details = self.database.get_server(event["server_id"])
+        server = IRCServer.Server(*server_details, self)
         if self.connect(server):
             self.servers[server.fileno()] = server
         else:
@@ -144,7 +142,8 @@ class Bot(object):
                     self.disconnect(server)
 
                     reconnect_delay = self.config.get("reconnect-delay", 10)
-                    self.add_timer("reconnect", reconnect_delay, server=server)
+                    self.add_timer("reconnect", reconnect_delay, None, None, False,
+                        server_id=server.id)
 
                     print("disconnected from %s, reconnecting in %d seconds" % (
                         str(server), reconnect_delay))
