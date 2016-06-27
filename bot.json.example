@@ -12,5 +12,7 @@
     "twitter-access-secret"    : "",
     "trakt-api-key"            : "",
     "bitly-api-key"            : "",
-    "soundcloud-api-key"       : ""
+    "soundcloud-api-key"       : "",
+    "tfl-app-id"               : "",
+    "tfl-app-key"              : ""
 }
