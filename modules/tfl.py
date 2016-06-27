@@ -17,7 +17,6 @@ class Module(object):
         if stop_id.isdigit():
             bus_search = Utils.get_url(URL_BUS_SEARCH % stop_id, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)
-            print(bus_search)
             if bus_search["matches"]:
                 bus_stop = bus_search["matches"][0]
                 real_stop_id = bus_stop["id"]
@@ -34,9 +33,15 @@ class Module(object):
                     busses.append([bus_number, time_until])
                 if busses:
                     busses = sorted(busses, key=lambda b: b[-1])
+                    for i, bus in enumerate(busses):
+                        if bus[-1] == 0:
+                            bus[-1] = "due"
+                        elif bus[-1] == 1:
+                            bus[-1] = "in 1 minute"
+                        else:
+                            bus[-1] = "in %d minutes" % bus[-1]
                     event["stdout"].write("%s: %s" % (stop_id, ", ".join(
-                        ["%s (in %d minutes)" % (line, due
-                        ) for line, due in busses])))
+                        ["%s (%s)" % (number, due) for number, due in busses])))
                 else:
                     event["stderr"].write("%s: No busses due" % stop_id)
             else:
