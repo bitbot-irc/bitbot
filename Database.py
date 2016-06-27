@@ -184,4 +184,4 @@ class Database(object):
         self.cursor().execute("""SELECT server_id, hostname, port, password,
             ipv4, tls, nickname, username, realname FROM servers WHERE
             server_id=?""", [id])
-        return self.cursors.fetchall()
+        return self.cursor().fetchone()
