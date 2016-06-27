@@ -30,7 +30,9 @@ QUOTES = {
     "Love all, trust a few, do wrong to none." : "William Shakespeare",
     "Patriotism is not enough. I must have no hatred or bitterness towards any one." : "Edith Cavell",
     "The monuments of wit survive the monuments of power." : "Francis Bacon",
-    "Human ingenuity cannot concoct a cipher which human ingenuity cannot resolve" : "Edgar Allan Poe"
+    "Human ingenuity cannot concoct a cipher which human ingenuity cannot resolve" : "Edgar Allan Poe",
+    "Nobody has the intention to erect a wall" : "Walter Ulbricht",
+    "We're all completely fucked. I'm fucked. You're fucked. [...] It has been the biggest cock-up ever and we're all completely fucked" : "Richard Mottram"
 }
 
 class Module(object):
