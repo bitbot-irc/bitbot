@@ -5,10 +5,13 @@ URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
 URL_BUS_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
 
 class Module(object):
+    _name = "TFL"
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("tflbus"
-            ).hook(self.bus, min_args=1)
+            ).hook(self.bus, min_args=1,
+            help="Get bus due times for a TfL bus stop",
+            usage="<stop_id>")
 
     def bus(self, event):
         app_id = self.bot.config["tfl-api-id"]
@@ -20,6 +23,7 @@ class Module(object):
             if bus_search["matches"]:
                 bus_stop = bus_search["matches"][0]
                 real_stop_id = bus_stop["id"]
+                stop_name = bus_stop["name"]
                 bus_stop = Utils.get_url(URL_BUS % real_stop_id, get_params={
                     "app_id": app_id, "app_key": app_key}, json=True)
                 busses = []
@@ -40,8 +44,9 @@ class Module(object):
                             bus[-1] = "in 1 minute"
                         else:
                             bus[-1] = "in %d minutes" % bus[-1]
-                    event["stdout"].write("%s: %s" % (stop_id, ", ".join(
-                        ["%s (%s)" % (number, due) for number, due in busses])))
+                    event["stdout"].write("%s (%s): %s" % (stop_name, stop_id,
+                        ", ".join(["%s (%s)" % (number, due) for number, due in busses]
+                        )))
                 else:
                     event["stderr"].write("%s: No busses due" % stop_id)
             else:
