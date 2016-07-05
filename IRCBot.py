@@ -26,6 +26,7 @@ class Bot(object):
         self.servers[new_server.fileno()] = new_server
         if connect and new_server.get_setting("connect", True):
             self.connect(new_server)
+        return new_server
     def connect(self, server):
         try:
             server.connect()
@@ -94,7 +95,7 @@ class Bot(object):
 
     def reconnect(self, event):
         server_details = self.database.get_server(event["server_id"])
-        server = IRCServer.Server(*server_details, self)
+        server = self.add_server(*server_details, False)
         if self.connect(server):
             self.servers[server.fileno()] = server
         else:
