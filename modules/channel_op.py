@@ -14,17 +14,13 @@ class Module(object):
             ).hook(self.kickban, channel_only=True, require_mode="o",
             min_args=1)
         bot.events.on("received").on("command").on("op"
-            ).hook(self.op, channel_only=True, require_mode="o",
-            min_args=1)
+            ).hook(self.op, channel_only=True, require_mode="o")
         bot.events.on("received").on("command").on("deop"
-            ).hook(self.deop, channel_only=True, require_mode="o",
-            min_args=1)
+            ).hook(self.deop, channel_only=True, require_mode="o")
         bot.events.on("received").on("command").on("voice"
-            ).hook(self.voice, channel_only=True, require_mode="o",
-            min_args=1)
+            ).hook(self.voice, channel_only=True, require_mode="o")
         bot.events.on("received").on("command").on("devoice"
-            ).hook(self.devoice, channel_only=True, require_mode="o",
-            min_args=1)
+            ).hook(self.devoice, channel_only=True, require_mode="o")
 
     def kick(self, event):
         target = event["args_split"][0]
@@ -58,10 +54,18 @@ class Module(object):
             event["stderr"].write("That user is not in this channel")
 
     def op(self, event):
-        event["target"].send_mode("+o", event["args_split"][0])
+        target = event["user"].nickname if not event["args_split"] else event[
+            "args_split"][0]
+        event["target"].send_mode("+o", target)
     def deop(self, event):
-        event["target"].send_mode("-o", event["args_split"][0])
+        target = event["user"].nickname if not event["args_split"] else event[
+            "args_split"][0]
+        event["target"].send_mode("-o", target)
     def voice(self, event):
-        event["target"].send_mode("+v", event["args_split"][0])
+        target = event["user"].nickname if not event["args_split"] else event[
+            "args_split"][0]
+        event["target"].send_mode("+v", target)
     def devoice(self, event):
-        event["target"].send_mode("-v", event["args_split"][0])
+        target = event["user"].nickname if not event["args_split"] else event[
+            "args_split"][0]
+        event["target"].send_mode("-v", target)
