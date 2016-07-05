@@ -1,4 +1,4 @@
-import json, re, traceback, urllib.request, urllib.parse, urllib.error
+import json, re, traceback, urllib.request, urllib.parse, urllib.error, ssl
 import bs4
 
 USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
@@ -24,9 +24,9 @@ def seperate_hostmask(hostmask):
     return nickname, username, hostname
 
 def get_url(url, **kwargs):
-    scheme = urllib.parse.urlparse(url).scheme
-    if not scheme:
+    if not urllib.parse.urlparse(url).scheme:
         url = "http://%s" % url
+    url_parsed = urllib.parse.urlparse(url)
 
     method = kwargs.get("method", "GET")
     get_params = kwargs.get("get_params", "")
@@ -57,14 +57,17 @@ def get_url(url, **kwargs):
         traceback.print_exc()
         if kwargs.get("code"):
             return e.code, False
-        else:
-            return False
+        return False
     except urllib.error.URLError as e:
         traceback.print_exc()
         if kwargs.get("code"):
             return -1, False
-        else:
-            return False
+        return False
+    except ssl.CertificateError as e:
+        traceback.print_exc()
+        if kwargs.get("code"):
+            return -1, False,
+        return False
 
     response_content = response.read()
     encoding = response.info().get_content_charset()
