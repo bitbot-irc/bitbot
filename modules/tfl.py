@@ -17,6 +17,9 @@ class Module(object):
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
         stop_id = event["args_split"][0]
+        bus_route = None
+        if len(event["args_split"]) > 1:
+            bus_route = event["args_split"][1].lower()
         if stop_id.isdigit():
             bus_search = Utils.get_url(URL_BUS_SEARCH % stop_id, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)
@@ -37,16 +40,19 @@ class Module(object):
                     busses.append([bus_number, time_until])
                 if busses:
                     busses = sorted(busses, key=lambda b: b[-1])
-                    for i, bus in enumerate(busses):
+                    busses_formatted = []
+                    for bus in busses:
                         if bus[-1] == 0:
                             bus[-1] = "due"
                         elif bus[-1] == 1:
                             bus[-1] = "in 1 minute"
                         else:
                             bus[-1] = "in %d minutes" % bus[-1]
+                        if not bus_route or bus[0].lower() == bus_route:
+                            busses_formatted.append(bus)
                     event["stdout"].write("%s (%s): %s" % (stop_name, stop_id,
-                        ", ".join(["%s (%s)" % (number, due) for number, due in busses]
-                        )))
+                        ", ".join(["%s (%s)" % (number, due) for number, due in
+                        busses_formatted])))
                 else:
                     event["stderr"].write("%s: No busses due" % stop_id)
             else:
