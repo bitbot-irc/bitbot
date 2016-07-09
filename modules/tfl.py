@@ -1,4 +1,4 @@
-import datetime
+import collections, datetime
 import Utils
 
 URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
@@ -17,9 +17,9 @@ class Module(object):
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
         stop_id = event["args_split"][0]
-        bus_route = None
+        target_bus_route = None
         if len(event["args_split"]) > 1:
-            bus_route = event["args_split"][1].lower()
+            target_bus_route = event["args_split"][1].lower()
         if stop_id.isdigit():
             bus_search = Utils.get_url(URL_BUS_SEARCH % stop_id, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)
@@ -40,19 +40,22 @@ class Module(object):
                     busses.append([bus_number, time_until])
                 if busses:
                     busses = sorted(busses, key=lambda b: b[-1])
-                    busses_formatted = []
-                    for bus in busses:
-                        if bus[-1] == 0:
-                            bus[-1] = "due"
-                        elif bus[-1] == 1:
-                            bus[-1] = "in 1 minute"
+                    busses_formatted = collections.OrderedDict()
+                    for bus_route, time_until in busses:
+                        if bus_route in busses_formatted:
+                            continue
+                        if time_until == 0:
+                            time_until = "due"
+                        elif time_until == 1:
+                            time_until = "in 1 minute"
                         else:
-                            bus[-1] = "in %d minutes" % bus[-1]
-                        if not bus_route or bus[0].lower() == bus_route:
-                            busses_formatted.append(bus)
+                            time_until = "in %d minutes" % time_until
+                        if not target_bus_route or bus_route.lower() == target_bus_route:
+                            busses_formatted[bus_route] = time_until
+                    busses_string = ", ".join(["%s (%s)" % (bus_route, time_until
+                        ) for bus_route, time_until in busses_formatted.items()])
                     event["stdout"].write("%s (%s): %s" % (stop_name, stop_id,
-                        ", ".join(["%s (%s)" % (number, due) for number, due in
-                        busses_formatted])))
+                        busses_string))
                 else:
                     event["stderr"].write("%s: No busses due" % stop_id)
             else:
