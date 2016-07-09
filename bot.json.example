@@ -13,6 +13,6 @@
     "trakt-api-key"            : "",
     "bitly-api-key"            : "",
     "soundcloud-api-key"       : "",
-    "tfl-app-id"               : "",
-    "tfl-app-key"              : ""
+    "tfl-api-id"               : "",
+    "tfl-api-key"              : ""
 }
