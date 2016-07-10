@@ -22,8 +22,8 @@ class Module(object):
             ).hook(self.line,
             help="Get line status for TfL underground lines",
             usage="<line_name>")
-        bot.events.on("received").on("command").on("tflstop"
-            ).hook(self.stop, min_args=1,
+        bot.events.on("received").on("command").on("tflsearch"
+            ).hook(self.search, min_args=1,
             help="Get a list of TfL stop IDs for a given name",
             usage="<name>")
 
@@ -126,7 +126,7 @@ class Module(object):
         else:
             event["stderr"].write("No results")
 
-    def stop(self, event):
+    def search(self, event):
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
         stop_name = event["args"]
