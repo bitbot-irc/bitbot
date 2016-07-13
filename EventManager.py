@@ -1,7 +1,8 @@
 
 class Event(object):
-    def __init__(self, bot, **kwargs):
+    def __init__(self, bot, subevent, **kwargs):
         self.bot = bot
+        self.subevent = subevent
         self.kwargs = kwargs
         self.eaten = False
     def __getitem__(self, key):
@@ -34,8 +35,9 @@ class MultipleEventHook(object):
             event_hook.call(max, **kwargs)
 
 class EventHook(object):
-    def __init__(self, bot):
+    def __init__(self, bot, name=None):
         self.bot = bot
+        self.name = name
         self._children = {}
         self._hooks = []
         self._hook_notify = None
@@ -56,7 +58,7 @@ class EventHook(object):
             return multiple_event_hook
         return self.get_child(subevent)
     def call(self, max=None, **kwargs):
-        event = Event(self.bot, **kwargs)
+        event = Event(self.bot, self.name, **kwargs)
         if self._call_notify:
             self._call_notify(self, event)
         called = 0
@@ -72,7 +74,8 @@ class EventHook(object):
     def get_child(self, child_name):
         child_name_lower = child_name.lower()
         if not child_name_lower in self._children:
-            self._children[child_name_lower] = EventHook(self.bot)
+            self._children[child_name_lower] = EventHook(self.bot,
+                child_name)
             if self._child_notify:
                 self._child_notify(self, self._children[
                     child_name_lower])
