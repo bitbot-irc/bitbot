@@ -11,6 +11,9 @@ class Module(object):
         log_level = event.name
         timestamp = self.timestamp()
         message = event["message"]
+        data = event.get("data")
         with open("bot.log", "a") as log_file:
-            log_file.write("%s [%s] %s" % (timestamp, log_level,
+            log_file.write("%s [%s] %s\n" % (timestamp, log_level,
                 message))
+            if data:
+                log_file.write("%s\n" % data)

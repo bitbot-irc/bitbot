@@ -1,8 +1,9 @@
+import traceback
 
 class Event(object):
-    def __init__(self, bot, subevent, **kwargs):
+    def __init__(self, bot, name, **kwargs):
         self.bot = bot
-        self.subevent = subevent
+        self.name = name
         self.kwargs = kwargs
         self.eaten = False
     def __getitem__(self, key):
@@ -68,7 +69,14 @@ class EventHook(object):
                 break
             if event.eaten:
                 break
-            returns.append(hook.call(event))
+            try:
+                returns.append(hook.call(event))
+            except Exception as e:
+                traceback.print_exc()
+                # TODO don't make this an event call. can lead to error cycles!
+                self.bot.events.on("log").on("error").call(
+                    message="Failed to call event callback",
+                    data=traceback.format_exc())
             called += 1
         return returns
     def get_child(self, child_name):
