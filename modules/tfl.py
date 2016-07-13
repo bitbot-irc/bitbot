@@ -140,4 +140,4 @@ class Module(object):
             results = ["%s (%s): %s" % (stop["name"], ", ".join(stop["modes"]), stop["id"]) for stop in stop_search["matches"]]
             event["stdout"].write("; ".join(results))
         else:
-            event["stderr"].write("Stop not found")
+            event["stderr"].write("No results")
