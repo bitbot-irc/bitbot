@@ -59,8 +59,10 @@ class Module(object):
             for bus in bus_stop:
                 bus_number = bus["lineName"]
                 bus_due_iso8601 = bus["expectedArrival"]
-                bus_due = datetime.datetime.strptime(bus_due_iso8601.split(".")[0],
-                    "%Y-%m-%dT%H:%M:%S")
+                if "." in bus_due_iso8601:
+                    bus_due_iso8601 = bus_due_iso8601.split(".")[0]+"Z"
+                bus_due = datetime.datetime.strptime(bus_due_iso8601,
+                    "%Y-%m-%dT%H:%M:%SZ")
                 time_until = bus_due-datetime.datetime.utcnow()
                 time_until = int(time_until.total_seconds()/60)
                 busses.append([bus_number, time_until])
@@ -130,12 +132,11 @@ class Module(object):
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
         stop_name = event["args"]
-        print(URL_STOP_SEARCH % stop_name)
         stop_search = Utils.get_url(URL_STOP_SEARCH % stop_name, get_params={
             "app_id": app_id, "app_key": app_key, "maxResults": "4", "faresOnly": "False"}, json=True)
-        print(stop_search)
-        for stop in stop_search["matches"]:
-            print(stop)
-
-        results = ["%s (%s): %s" % (stop["name"], ", ".join(stop["modes"]), stop["id"]) for stop in stop_search["matches"]]
-        event["stdout"].write("; ".join(results))
+        if stop_search:
+            for stop in stop_search["matches"]:
+                print(stop)
+            results = ["%s (%s): %s" % (stop["name"], ", ".join(stop["modes"]), stop["id"]) for stop in stop_search["matches"]]
+            event["stdout"].write("; ".join(results))
+        event["stderr"].write("Stop not found")
