@@ -90,7 +90,10 @@ class Bot(object):
             )-server.last_read
 
     def disconnect(self, server):
-        self.poll.unregister(server.fileno())
+        try:
+            self.poll.unregister(server.fileno())
+        except FileNotFoundError:
+            pass
         del self.servers[server.fileno()]
 
     def reconnect(self, event):
