@@ -193,9 +193,6 @@ class Module(object):
             platform = "platform %s (%s)" % (m.group(2), m.group(1))
         ###
 
-        # Leicester Square Underground Station (940GZZLULSQ): Heathrow Terminals 1-2-3 (Piccadilly, due),
-        # (Northern): Brent Cross Underground Station (in 4 minutes)→Edgware Underground Station
-        # "045 (Northern): to Edgeware Underground Station. Approaching Brent Cross."
         event["stdout"].write("%s (%s) to %s. %s. Arrival at %s (%s) %s on %s" % (
             vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
                 vehicle["stationName"], vehicle["naptanId"], human_time, platform))
