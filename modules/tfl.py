@@ -1,4 +1,4 @@
-import collections, datetime
+import collections, datetime, re
 import Utils
 
 URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
@@ -9,6 +9,8 @@ LINE_NAMES = ["bakerloo", "central", "circle", "district", "hammersmith and city
 
 URL_STOP = "https://api.tfl.gov.uk/StopPoint/%s"
 URL_STOP_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
+
+URL_VEHICLE = "https://api.tfl.gov.uk/Vehicle/%s/Arrivals"
 
 class Module(object):
     _name = "TFL"
@@ -26,6 +28,10 @@ class Module(object):
             ).hook(self.search, min_args=1,
             help="Get a list of TfL stop IDs for a given name",
             usage="<name>")
+        bot.events.on("received").on("command").on("tflvehicle"
+            ).hook(self.vehicle, min_args=1,
+            help="Get information for a given vehicle",
+            usage="<ID>")
 
     def bus(self, event):
         app_id = self.bot.config["tfl-api-id"]
@@ -54,7 +60,6 @@ class Module(object):
         if real_stop_id:
             bus_stop = Utils.get_url(URL_BUS % real_stop_id, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)
-            print(bus_stop)
             busses = []
             for bus in bus_stop:
                 bus_number = bus["lineName"]
@@ -65,23 +70,37 @@ class Module(object):
                     "%Y-%m-%dT%H:%M:%SZ")
                 time_until = bus_due-datetime.datetime.utcnow()
                 time_until = int(time_until.total_seconds()/60)
-                busses.append([bus_number, time_until])
+
+                # Nice human friendly time (also consistent with how TfL display it)
+                if time_until == 0: human_time = "due"
+                elif time_until == 1: human_time = "in 1 minute"
+                else: human_time = "in %d minutes" % time_until
+
+                # If the mode is "tube", "Underground Station" is redundant
+                destination = bus.get("destinationName", "?")
+                if (bus["modeName"] == "tube"): destination = destination.replace(" Underground Station", "")
+
+                busses.append({"route": bus_number, "time": time_until, "id": bus["vehicleId"],
+                    "destination": destination, "human_time": human_time,
+                    "mode" : bus["modeName"]})
             if busses:
-                busses = sorted(busses, key=lambda b: b[-1])
-                busses_formatted = collections.OrderedDict()
-                for bus_route, time_until in busses:
-                    if bus_route in busses_formatted:
-                        continue
-                    if time_until == 0:
-                        time_until = "due"
-                    elif time_until == 1:
-                        time_until = "in 1 minute"
+                busses = sorted(busses, key=lambda b: b["time"])
+                busses_filtered = []
+                bus_routes = []
+
+                # dedup if target route isn't "*", filter if target route isn't None or "*"
+                for b in busses:
+                    if target_bus_route != "*":
+                        if b["route"] in bus_routes: continue
+                        bus_routes.append(b["route"])
+                        if b["route"] == target_bus_route or not target_bus_route:
+                            busses_filtered.append(b)
                     else:
-                        time_until = "in %d minutes" % time_until
-                    if not target_bus_route or bus_route.lower() == target_bus_route:
-                        busses_formatted[bus_route] = time_until
-                busses_string = ", ".join(["%s (%s)" % (bus_route, time_until
-                    ) for bus_route, time_until in busses_formatted.items()])
+                        busses_filtered.append(b)
+
+                # do the magic formatty things!
+                busses_string = ", ".join(["%s (%s, %s)" % (b["destination"], b["route"], b["human_time"]
+                    ) for b in busses_filtered])
                 event["stdout"].write("%s (%s): %s" % (stop_name, stop_id,
                     busses_string))
             else:
@@ -133,7 +152,7 @@ class Module(object):
         app_key = self.bot.config["tfl-api-key"]
         stop_name = event["args"]
         stop_search = Utils.get_url(URL_STOP_SEARCH % stop_name, get_params={
-            "app_id": app_id, "app_key": app_key, "maxResults": "4", "faresOnly": "False"}, json=True)
+            "app_id": app_id, "app_key": app_key, "maxResults": "6", "faresOnly": "False"}, json=True)
         if stop_search:
             for stop in stop_search["matches"]:
                 print(stop)
@@ -143,3 +162,41 @@ class Module(object):
                 event["stderr"].write("No results")
         else:
             event["stderr"].write("No results")
+
+    def vehicle(self, event):
+        app_id = self.bot.config["tfl-api-id"]
+        app_key = self.bot.config["tfl-api-key"]
+
+        vehicle_id = event["args_split"][0]
+
+        vehicle = Utils.get_url(URL_VEHICLE % vehicle_id, get_params={
+                "app_id": app_id, "app_key": app_key}, json=True)[0]
+
+        #Stolen from bus
+        vehicle_due_iso8601 = vehicle["expectedArrival"]
+        if "." in vehicle_due_iso8601:
+            vehicle_due_iso8601 = vehicle_due_iso8601.split(".")[0]+"Z"
+        vehicle_due = datetime.datetime.strptime(vehicle_due_iso8601,
+            "%Y-%m-%dT%H:%M:%SZ")
+        time_until = vehicle_due-datetime.datetime.utcnow()
+        time_until = int(time_until.total_seconds()/60)
+
+        if time_until == 0: human_time = "due"
+        elif time_until == 1: human_time = "in 1 minute"
+        else: human_time = "in %d minutes" % time_until
+
+        platform = vehicle["platformName"]
+
+        p = re.compile("(.*) - Platform (\\d+)")
+        m = p.match(platform)
+        if m:
+            platform = "platform %s (%s)" % (m.group(2), m.group(1))
+        ###
+
+        # Leicester Square Underground Station (940GZZLULSQ): Heathrow Terminals 1-2-3 (Piccadilly, due),
+        # (Northern): Brent Cross Underground Station (in 4 minutes)→Edgware Underground Station
+        # "045 (Northern): to Edgeware Underground Station. Approaching Brent Cross."
+        event["stdout"].write("%s (%s) to %s. %s. Arrival at %s (%s) %s on %s" % (
+            vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
+                vehicle["stationName"], vehicle["naptanId"], human_time, platform))
+
