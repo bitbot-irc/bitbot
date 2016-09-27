@@ -150,7 +150,10 @@ class Module(object):
     def search(self, event):
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
-        stop_name = event["args"]
+
+        #As awful as this is, it also makes it ~work~.
+        stop_name = event["args"].replace(" ", "%20")
+
         stop_search = Utils.get_url(URL_STOP_SEARCH % stop_name, get_params={
             "app_id": app_id, "app_key": app_key, "maxResults": "6", "faresOnly": "False"}, json=True)
         if stop_search:
