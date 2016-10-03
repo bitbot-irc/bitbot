@@ -12,6 +12,8 @@ URL_STOP_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
 
 URL_VEHICLE = "https://api.tfl.gov.uk/Vehicle/%s/Arrivals"
 
+PLATFORM_TYPES = ["Northbound", "Southbound", "Eastbound", "Westbound", "Inner Rail", "Outer Rail"]
+
 class Module(object):
     _name = "TFL"
     def __init__(self, bot):
@@ -32,6 +34,30 @@ class Module(object):
             ).hook(self.vehicle, min_args=1,
             help="Get information for a given vehicle",
             usage="<ID>")
+
+    def vehicle_span(self, arrival_time, human=True):
+        vehicle_due_iso8601 = arrival_time
+        if "." in vehicle_due_iso8601:
+            vehicle_due_iso8601 = vehicle_due_iso8601.split(".")[0]+"Z"
+        vehicle_due = datetime.datetime.strptime(vehicle_due_iso8601,
+            "%Y-%m-%dT%H:%M:%SZ")
+        time_until = vehicle_due-datetime.datetime.utcnow()
+        time_until = int(time_until.total_seconds()/60)
+
+        if time_until == 0: human_time = "due"
+        else: human_time = "in %s min" % time_until
+
+        if human: return human_time
+        else: return time_until
+
+    def platform(self, platform, short=False):
+        p = re.compile("(?:(.*) - Platform (\\d+)|(.*bound) Platform (\\d+))")
+        m = p.match(platform)
+        if m:
+            platform = "platform %s (%s)" % (m.group(2), m.group(1))
+            if short and m.group(1) in PLATFORM_TYPES:
+                platform = m.group(2)
+        return platform
 
     def bus(self, event):
         app_id = self.bot.config["tfl-api-id"]
@@ -63,44 +89,39 @@ class Module(object):
             busses = []
             for bus in bus_stop:
                 bus_number = bus["lineName"]
-                bus_due_iso8601 = bus["expectedArrival"]
-                if "." in bus_due_iso8601:
-                    bus_due_iso8601 = bus_due_iso8601.split(".")[0]+"Z"
-                bus_due = datetime.datetime.strptime(bus_due_iso8601,
-                    "%Y-%m-%dT%H:%M:%SZ")
-                time_until = bus_due-datetime.datetime.utcnow()
-                time_until = int(time_until.total_seconds()/60)
-
-                # Nice human friendly time (also consistent with how TfL display it)
-                if time_until == 0: human_time = "due"
-                elif time_until == 1: human_time = "in 1 minute"
-                else: human_time = "in %d minutes" % time_until
+                human_time = self.vehicle_span(bus["expectedArrival"])
+                time_until = self.vehicle_span(bus["expectedArrival"], human=False)
 
                 # If the mode is "tube", "Underground Station" is redundant
                 destination = bus.get("destinationName", "?")
                 if (bus["modeName"] == "tube"): destination = destination.replace(" Underground Station", "")
 
                 busses.append({"route": bus_number, "time": time_until, "id": bus["vehicleId"],
-                    "destination": destination, "human_time": human_time,
-                    "mode" : bus["modeName"]})
+                    "destination": destination, "human_time": human_time, "mode": bus["modeName"],
+                    "platform": bus["platformName"],
+                    "platform_short" : self.platform(bus["platformName"], short=True)})
             if busses:
                 busses = sorted(busses, key=lambda b: b["time"])
                 busses_filtered = []
-                bus_routes = []
+                bus_route_dest = []
+                bus_route_plat = []
 
                 # dedup if target route isn't "*", filter if target route isn't None or "*"
                 for b in busses:
                     if target_bus_route != "*":
-                        if b["route"] in bus_routes: continue
-                        bus_routes.append(b["route"])
+                        if (b["route"], b["destination"]) in bus_route_dest: continue
+                        if bus_route_plat.count((b["route"], b["platform"])) >= 2: continue
+                        bus_route_plat.append((b["route"], b["platform"]))
+                        bus_route_dest.append((b["route"], b["destination"]))
                         if b["route"] == target_bus_route or not target_bus_route:
                             busses_filtered.append(b)
                     else:
                         busses_filtered.append(b)
 
                 # do the magic formatty things!
-                busses_string = ", ".join(["%s (%s, %s)" % (b["destination"], b["route"], b["human_time"]
+                busses_string = ", ".join(["%s (%s, %s)" % (b["destination"], b["route"], b["human_time"],
                     ) for b in busses_filtered])
+
                 event["stdout"].write("%s (%s): %s" % (stop_name, stop_id,
                     busses_string))
             else:
@@ -158,11 +179,9 @@ class Module(object):
             "app_id": app_id, "app_key": app_key, "maxResults": "6", "faresOnly": "False"}, json=True)
         if stop_search:
             for stop in stop_search["matches"]:
-                print(stop)
+                pass
             results = ["%s (%s): %s" % (stop["name"], ", ".join(stop["modes"]), stop["id"]) for stop in stop_search["matches"]]
-            event["stdout"].write("; ".join(results))
-            if not results:
-                event["stderr"].write("No results")
+            event["stdout"].write("[%s results] %s" % (stop_search["total"], "; ".join(results)))
         else:
             event["stderr"].write("No results")
 
@@ -174,29 +193,11 @@ class Module(object):
 
         vehicle = Utils.get_url(URL_VEHICLE % vehicle_id, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)[0]
+        
+        arrival_time = self.vehicle_span(vehicle["expectedArrival"], human=False)
+        platform = self.platform(vehicle["platformName"])
 
-        #Stolen from bus
-        vehicle_due_iso8601 = vehicle["expectedArrival"]
-        if "." in vehicle_due_iso8601:
-            vehicle_due_iso8601 = vehicle_due_iso8601.split(".")[0]+"Z"
-        vehicle_due = datetime.datetime.strptime(vehicle_due_iso8601,
-            "%Y-%m-%dT%H:%M:%SZ")
-        time_until = vehicle_due-datetime.datetime.utcnow()
-        time_until = int(time_until.total_seconds()/60)
-
-        if time_until == 0: human_time = "due"
-        elif time_until == 1: human_time = "in 1 minute"
-        else: human_time = "in %d minutes" % time_until
-
-        platform = vehicle["platformName"]
-
-        p = re.compile("(.*) - Platform (\\d+)")
-        m = p.match(platform)
-        if m:
-            platform = "platform %s (%s)" % (m.group(2), m.group(1))
-        ###
-
-        event["stdout"].write("%s (%s) to %s. %s. Arrival at %s (%s) %s on %s" % (
+        event["stdout"].write("%s (%s) to %s. %s. Arrival at %s (%s) in %s minutes on %s" % (
             vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
-                vehicle["stationName"], vehicle["naptanId"], human_time, platform))
+                vehicle["stationName"], vehicle["naptanId"], arrival_time, platform))
 
