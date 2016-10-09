@@ -32,7 +32,9 @@ QUOTES = {
     "The monuments of wit survive the monuments of power." : "Francis Bacon",
     "Human ingenuity cannot concoct a cipher which human ingenuity cannot resolve" : "Edgar Allan Poe",
     "Nobody has the intention to erect a wall" : "Walter Ulbricht",
-    "We're all completely fucked. I'm fucked. You're fucked. [...] It has been the biggest cock-up ever and we're all completely fucked" : "Richard Mottram"
+    "We're all completely fucked. I'm fucked. You're fucked. [...] It has been the biggest cock-up ever and we're all completely fucked" : "Richard Mottram",
+    "The security aspect of cyber is very, very tough. And maybe it's hardly doable." : "Donald Trump",
+    "The Internet. The hate machine, the love machine, the machine powered by many machines. We are all part of it, helping it grow, and helping it grow on us." : ""
 }
 
 class Module(object):
