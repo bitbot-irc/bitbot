@@ -55,7 +55,7 @@ class Module(object):
 #                "via": t["destination"][0][0]["via"],
                 ""
                 "via": "",
-                "platform": t["platform"]
+                "platform": "?" if not "platform" in t else t["platform"]
                 })
 
         trains = sorted(trains, key=lambda t: int(t["scheduled"].replace(":", "")))
