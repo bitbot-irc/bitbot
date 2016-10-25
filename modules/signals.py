@@ -4,7 +4,6 @@ from random import randint
 QUOTES = {
     "You can build a throne with bayonets, but it's difficult to sit on it." : "Boris Yeltsin",
     "We don't appreciate what we have until it's gone. Freedom is like that. It's like air. When you have it, you don't notice it." : "Boris Yeltsin",
-    "Storm clouds of terror and dictatorship are gathering over the whole country... They must not be allowed to bring eternal night." : "Boris Yeltsin",
     "They accused us of suppressing freedom of expression. This was a lie and we could not let them publish it." : "Nelba Blandon, as director of censorship, Nicaragua",
     "Death solves all problems - no man, no problem." : "Joseph Stalin",
     "Make the lie big, make it simple, keep saying it, and eventually they will believe it." : "Adolf Hitler",
@@ -37,7 +36,9 @@ QUOTES = {
     "The Internet. The hate machine, the love machine, the machine powered by many machines. We are all part of it, helping it grow, and helping it grow on us." : "",
     "Every great historical event began as a utopia and ended as a reality." : "Richard Nikolaus Eijiro",
     "Strange women lying in ponds distributing swords is no basis for a system of government!" : "",
-    "My hovercraft is full of eels." : ""
+    "My hovercraft is full of eels." : "",
+    "You may burn my books and the books of the best minds in Europe, but the ideas those books contain have passed through millions of channels and will go on." : "Helen Keller",
+    "That was only a prelude; where they burn books, they will in the end also burn people" : "Heinrich Heine"
 }
 
 class Module(object):
