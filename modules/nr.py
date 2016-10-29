@@ -34,7 +34,7 @@ class Module(object):
 
     def arrivals(self, event):
         token = self.bot.config["nre-api-key"]
-        crs = event["args_split"][0]
+        crs = event["args_split"][0].upper()
 
         client = Client(URL)
 
@@ -52,9 +52,7 @@ class Module(object):
                 "time" : self.span(query["generatedAt"], t["std"], t["etd"]),
                 "dest_name": t["destination"][0][0]["locationName"],
                 "dest_id": t["destination"][0][0]["crs"],
-#                "via": t["destination"][0][0]["via"],
-                ""
-                "via": "",
+                "via": '' if not "via" in t["destination"][0][0] else t["destination"][0][0]["via"],
                 "platform": "?" if not "platform" in t else t["platform"]
                 })
 
@@ -68,7 +66,7 @@ class Module(object):
             train_dest_plat.append((train["dest_name"] + train["via"], train["platform"]))
             trains_filtered.append(train)
 
-        trains_string = ", ".join(["%s (plat %s, %s)" % (t["dest_name"], t["platform"], t["time"],
+        trains_string = ", ".join(["%s %s (plat %s, %s)" % (t["dest_name"], t["via"], t["platform"], t["time"],
             ) for t in trains_filtered])
 
         event["stdout"].write("%s (%s): %s" % (query["locationName"], crs,
