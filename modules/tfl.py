@@ -34,6 +34,10 @@ class Module(object):
             ).hook(self.vehicle, min_args=1,
             help="Get information for a given vehicle",
             usage="<ID>")
+        bot.events.on("received").on("command").on("tflstop"
+            ).hook(self.stop, min_args=1,
+            help="Get information for a given stop",
+            usage="<stop_id>")
 
     def vehicle_span(self, arrival_time, human=True):
         vehicle_due_iso8601 = arrival_time
@@ -201,3 +205,9 @@ class Module(object):
             vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
                 vehicle["stationName"], vehicle["naptanId"], arrival_time, platform))
 
+    def stop(self, event):
+        app_id = self.bot.config["tfl-api-id"]
+        app_key = self.bot.config["tfl-api-key"]
+
+        stop = Utils.get_url(URL_STOP % vehicle_id, get_params={
+            "app_id": app_id, "app_key": app_key}, json=True)
