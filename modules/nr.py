@@ -12,6 +12,10 @@ class Module(object):
             ).hook(self.arrivals, min_args=1,
             help="Get train information for a station (Powered by NRE)",
             usage="<crs_id>")
+        bot.events.on("received").on("command").on("nrservice"
+            ).hook(self.service, min_args=1,
+            help="Get train service information for a Darwin ID (Powered by NRE)",
+            usage="<service_id>")
 
     def time_compare(self, one, two):
         return (one.hour - two.hour) * 60 + (one.minute - two.minute)
@@ -71,3 +75,44 @@ class Module(object):
 
         event["stdout"].write("%s (%s): %s" % (query["locationName"], crs,
             trains_string))
+
+    def service(self, event):
+        token = self.bot.config["nre-api-key"]
+        service_id = event["args_split"][0]
+
+        client = Client(URL)
+
+        header_token = client.factory.create('ns2:AccessToken')
+        header_token.TokenValue = token
+        client.set_options(soapheaders=header_token)
+        query = client.service.GetServiceDetails(service_id)
+
+        stations = [{
+            "name": query["locationName"], "crs": query["crs"],
+            "scheduled": query["std"],
+            "time": query["etd"] if "etd" in query else query["atd"],
+            "length": query["length"],
+            "called": "atd" in query
+            }]
+        for station in query["subsequentCallingPoints"][0][0][0]:
+            stations.append(
+                {"name": station["locationName"],
+                 "crs": station["crs"],
+                 "scheduled": station["st"],
+                 "time": station["et"] if "et" in station else station["at"],
+                 "length": station["length"],
+                 "called": "at" in station
+                })
+
+        for station in stations:
+            if station["time"] == "On time": station["time"] = station["scheduled"]
+
+            format = "(%s/%s at %s)" if station["called"] else "%s/%s, %s"
+            station["summary"] = format % (station["crs"], station["name"], station["time"])
+
+        done_count = len([s for s in stations if s["called"]])
+        total_count = len(stations)
+
+        event["stdout"].write("%s car %s train (%s/%s): %s" % (query["length"],
+            query["operator"], done_count, total_count,
+            "-> ".join([s["summary"] for s in stations])))
