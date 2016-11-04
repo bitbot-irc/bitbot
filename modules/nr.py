@@ -77,6 +77,8 @@ class Module(object):
             trains_string))
 
     def service(self, event):
+        colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED]
+
         token = self.bot.config["nre-api-key"]
         service_id = event["args_split"][0]
 
@@ -105,14 +107,23 @@ class Module(object):
                 })
 
         for station in stations:
+            station["on_time"] = station["time"] == "On time"
+
+            station["status"] = 1 if station["on_time"] else 2
+            if station["called"]: station["status"] = 0
+
             if station["time"] == "On time": station["time"] = station["scheduled"]
 
-            format = "(%s/%s at %s)" if station["called"] else "%s/%s, %s"
-            station["summary"] = format % (station["crs"], station["name"], station["time"])
+            station["summary"] = "%s (%s, %s %s%s%s)" % (
+                station["name"], station["crs"], "at" if station["called"] else "est",
+                Utils.color(colours[station["status"]]),
+                station["time"],
+                Utils.color(Utils.FONT_RESET)
+                )
 
         done_count = len([s for s in stations if s["called"]])
         total_count = len(stations)
 
         event["stdout"].write("%s car %s train (%s/%s): %s" % (query["length"],
             query["operator"], done_count, total_count,
-            "-> ".join([s["summary"] for s in stations])))
+            ", ".join([s["summary"] for s in stations])))
