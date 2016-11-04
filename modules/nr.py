@@ -5,9 +5,11 @@ from suds.client import Client
 URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBWS/wsdl.aspx?2016-02-16'
 
 class Module(object):
+
     _name = "NR"
     def __init__(self, bot):
         self.bot = bot
+        self.result_map = {}
         bot.events.on("received").on("command").on("nrtrains"
             ).hook(self.arrivals, min_args=1,
             help="Get train information for a station (Powered by NRE)",
@@ -53,14 +55,21 @@ class Module(object):
             trains.append({
                 "estimated" : t["etd"],
                 "scheduled" : t["std"],
-                "time" : self.span(query["generatedAt"], t["std"], t["etd"]),
+                "time" : t["std"] if t["etd"] == "On time" else t["etd"],
+                "on_time" : t["etd"] == "On time",
                 "dest_name": t["destination"][0][0]["locationName"],
                 "dest_id": t["destination"][0][0]["crs"],
+                "service_id" : t["serviceID"],
                 "via": '' if not "via" in t["destination"][0][0] else t["destination"][0][0]["via"],
                 "platform": "?" if not "platform" in t else t["platform"]
                 })
 
+        for t in trains:
+            t["dest_via"] = t["dest_name"] + (" " if t["via"] else '') + t["via"]
+
         trains = sorted(trains, key=lambda t: int(t["scheduled"].replace(":", "")))
+
+        self.result_map[event["target"].name] = trains
 
         trains_filtered = []
         train_dest_plat = []
@@ -70,7 +79,10 @@ class Module(object):
             train_dest_plat.append((train["dest_name"] + train["via"], train["platform"]))
             trains_filtered.append(train)
 
-        trains_string = ", ".join(["%s %s (plat %s, %s)" % (t["dest_name"], t["via"], t["platform"], t["time"],
+        trains_string = ", ".join(["%s (plat %s, %s%s%s)" % (t["dest_via"], t["platform"],
+            Utils.color(Utils.COLOR_GREEN if t["on_time"] else Utils.COLOR_RED),
+            t["time"],
+            Utils.color(Utils.FONT_RESET)
             ) for t in trains_filtered])
 
         event["stdout"].write("%s (%s): %s" % (query["locationName"], crs,
@@ -81,6 +93,16 @@ class Module(object):
 
         token = self.bot.config["nre-api-key"]
         service_id = event["args_split"][0]
+
+        if service_id.isdigit():
+            if not event["target"].name in self.result_map:
+                event["stdout"].write("No history")
+                return
+            results = self.result_map[event["target"].name]
+            if int(service_id) >= len(results):
+                event["stdout"].write("%s is too high. Remember that the first departure is 0" % service_id)
+                return
+            service_id = results[int(service_id)]["service_id"]
 
         client = Client(URL)
 
