@@ -119,7 +119,7 @@ FONT_COLOR, FONT_RESET = "\x03", "\x0F"
 def color(foreground, background=None):
     foreground = str(foreground).zfill(2)
     if background:
-        background = str(backbround).zfill(2)
+        background = str(background).zfill(2)
     return "%s%s%s" % (FONT_COLOR, foreground,
         "" if not background else ",%s" % background)
 
