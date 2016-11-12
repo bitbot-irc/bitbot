@@ -69,7 +69,7 @@ class Module(object):
 
         trains = sorted(trains, key=lambda t: int(t["scheduled"].replace(":", "")))
 
-        self.result_map[event["target"].name] = trains
+        self.result_map[event["target"].id] = trains
 
         trains_filtered = []
         train_dest_plat = []
@@ -95,10 +95,10 @@ class Module(object):
         service_id = event["args_split"][0]
 
         if service_id.isdigit():
-            if not event["target"].name in self.result_map:
+            if not event["target"].id in self.result_map:
                 event["stdout"].write("No history")
                 return
-            results = self.result_map[event["target"].name]
+            results = self.result_map[event["target"].id]
             if int(service_id) >= len(results):
                 event["stdout"].write("%s is too high. Remember that the first departure is 0" % service_id)
                 return
