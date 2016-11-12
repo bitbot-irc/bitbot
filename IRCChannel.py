@@ -1,7 +1,9 @@
+import uuid
 import IRCLog
 
 class Channel(object):
     def __init__(self, name, server, bot):
+        self.id = uuid.uuid1().hex
         self.name = name.lower()
         self.server = server
         self.bot = bot

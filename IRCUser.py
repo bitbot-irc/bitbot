@@ -3,6 +3,7 @@ import IRCLog
 
 class User(object):
     def __init__(self, nickname, server, bot):
+        self.id = uuid.uuid1().hex
         self.set_nickname(nickname)
         self.username = None
         self.hostname = None
@@ -10,8 +11,6 @@ class User(object):
         self.bot = bot
         self.channels = set([])
         self.id = None
-        while self.id == None or self.id in server.users:
-            self.id = uuid.uuid1().hex
         self.log = IRCLog.Log(bot)
     def set_nickname(self, nickname):
         self.nickname = nickname
