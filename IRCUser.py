@@ -10,7 +10,6 @@ class User(object):
         self.server = server
         self.bot = bot
         self.channels = set([])
-        self.id = None
         self.log = IRCLog.Log(bot)
     def set_nickname(self, nickname):
         self.nickname = nickname
