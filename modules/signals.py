@@ -39,7 +39,9 @@ QUOTES = {
     "My hovercraft is full of eels." : "",
     "You may burn my books and the books of the best minds in Europe, but the ideas those books contain have passed through millions of channels and will go on." : "Helen Keller",
     "That was only a prelude; where they burn books, they will in the end also burn people" : "Heinrich Heine",
-    'Never, "for the sake of peace and quiet", deny your own experience or convictions.' : "Dag Hammarskjöld"
+    'Never, "for the sake of peace and quiet", deny your own experience or convictions.' : "Dag Hammarskjöld",
+    "Quis custodiet ipsos custodes?" : "",
+    "Unless someone like you cares a whole awful lot, nothing is going to get better. It's not." : "Theodor Seuss Geisel"
 }
 
 class Module(object):
