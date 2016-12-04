@@ -69,7 +69,6 @@ class Module(object):
 
         trains = sorted(trains, key=lambda t: int(t["scheduled"].replace(":", "")))
 
-        self.result_map[event["target"].id] = trains
 
         trains_filtered = []
         train_dest_plat = []
@@ -78,6 +77,8 @@ class Module(object):
             if (train["dest_name"] + train["via"], train["platform"]) in train_dest_plat: continue
             train_dest_plat.append((train["dest_name"] + train["via"], train["platform"]))
             trains_filtered.append(train)
+
+        self.result_map[event["target"].id] = trains_filtered
 
         trains_string = ", ".join(["%s (plat %s, %s%s%s)" % (t["dest_via"], t["platform"],
             Utils.color(Utils.COLOR_GREEN if t["on_time"] else Utils.COLOR_RED),
