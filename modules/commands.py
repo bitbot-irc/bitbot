@@ -1,6 +1,6 @@
 import Utils
 
-STR_MORE = " (more...)"
+STR_MORE = "%s (more...)" % Utils.FONT_RESET
 STR_CONTINUED = "(...continued) "
 
 OUT_CUTOFF = 400
