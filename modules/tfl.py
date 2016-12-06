@@ -4,6 +4,8 @@ import Utils
 URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
 URL_BUS_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
 
+URL_LINE_ARRIVALS = "https://api.tfl.gov.uk/Line/%s/Arrivals"
+
 URL_LINE = "https://api.tfl.gov.uk/Line/Mode/tube/Status"
 LINE_NAMES = ["bakerloo", "central", "circle", "district", "hammersmith and city", "jubilee", "metropolitan", "piccadilly", "victoria", "waterloo and city"]
 
@@ -12,12 +14,15 @@ URL_STOP_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
 
 URL_VEHICLE = "https://api.tfl.gov.uk/Vehicle/%s/Arrivals"
 
+URL_ROUTE = "https://api.tfl.gov.uk/Line/%s/Route/Sequence/all?excludeCrowding=True"
+
 PLATFORM_TYPES = ["Northbound", "Southbound", "Eastbound", "Westbound", "Inner Rail", "Outer Rail"]
 
 class Module(object):
     _name = "TFL"
     def __init__(self, bot):
         self.bot = bot
+        self.result_map = {}
         bot.events.on("received").on("command").on("tflbus"
             ).hook(self.bus, min_args=1,
             help="Get bus due times for a TfL bus stop",
@@ -38,6 +43,10 @@ class Module(object):
             ).hook(self.stop, min_args=1,
             help="Get information for a given stop",
             usage="<stop_id>")
+        bot.events.on("received").on("command").on("tflservice"
+            ).hook(self.service, min_args=1,
+            help="Get service information and arrival estimates",
+            usage="<service index>")
 
     def vehicle_span(self, arrival_time, human=True):
         vehicle_due_iso8601 = arrival_time
@@ -122,6 +131,8 @@ class Module(object):
                     else:
                         busses_filtered.append(b)
 
+                self.result_map[event["target"].id] = busses_filtered
+
                 # do the magic formatty things!
                 busses_string = ", ".join(["%s (%s, %s)" % (b["destination"], b["route"], b["human_time"],
                     ) for b in busses_filtered])
@@ -205,9 +216,50 @@ class Module(object):
             vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
                 vehicle["stationName"], vehicle["naptanId"], arrival_time, platform))
 
+    def service(self, event):
+        app_id = self.bot.config["tfl-api-id"]
+        app_key = self.bot.config["tfl-api-key"]
+
+        service_id = event["args_split"][0]
+
+        if service_id.isdigit():
+            if not event["target"].id in self.result_map:
+                event["stdout"].write("No history")
+                return
+            results = self.result_map[event["target"].id]
+            if int(service_id) >= len(results):
+                event["stdout"].write("%s is too high. Remember that the first arrival is 0" % service_id)
+                return
+            service = results[int(service_id)]
+        arrivals = Utils.get_url(URL_LINE_ARRIVALS % service["route"], get_params={
+            "app_id": app_id, "app_key": app_key}, json=True)
+
+        arrivals = [a for a in arrivals if a["vehicleId"] == service["id"]]
+        arrivals = sorted(arrivals, key=lambda b: b["timeToStation"])
+
+        event["stdout"].write(
+            "%s (%s) to %s: " % (arrivals[0]["vehicleId"], arrivals[0]["lineName"], arrivals[0]["destinationName"]) +
+            ", ".join(["%s (%s, %s)" %
+            (a["stationName"], self.platform(a.get("platformName", "?"), True),
+            a["expectedArrival"][11:16]
+            ) for a in arrivals]))
+
     def stop(self, event):
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
 
-        stop = Utils.get_url(URL_STOP % vehicle_id, get_params={
+        stop_id = event["args_split"][0]
+
+        stop = Utils.get_url(URL_STOP % stop_id, get_params={
             "app_id": app_id, "app_key": app_key}, json=True)
+
+    def route(self, event):
+        app_id = self.bot.config["tfl-api-id"]
+        app_key = self.bot.config["tfl-api-key"]
+
+        route_id = event["args_split"][0]
+
+        route = Utils.get_url(URL_ROUTE % route_id, get_params={
+            "app_id": app_id, "app_key": app_key}, json=True)
+
+        event["stdout"].write("")
