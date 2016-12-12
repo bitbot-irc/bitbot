@@ -80,7 +80,7 @@ class Module(object):
 
         self.result_map[event["target"].id] = trains_filtered
 
-        trains_string = ", ".join(["%s (plat %s, %s%s%s)" % (t["dest_via"], t["platform"],
+        trains_string = ", ".join(["%s (%s, %s%s%s)" % (t["dest_via"], t["platform"],
             Utils.color(Utils.COLOR_GREEN if t["on_time"] else Utils.COLOR_RED),
             t["time"],
             Utils.color(Utils.FONT_RESET)
