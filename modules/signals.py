@@ -41,7 +41,8 @@ QUOTES = {
     "That was only a prelude; where they burn books, they will in the end also burn people" : "Heinrich Heine",
     'Never, "for the sake of peace and quiet", deny your own experience or convictions.' : "Dag Hammarskjöld",
     "Quis custodiet ipsos custodes?" : "",
-    "Unless someone like you cares a whole awful lot, nothing is going to get better. It's not." : "Theodor Seuss Geisel"
+    "Unless someone like you cares a whole awful lot, nothing is going to get better. It's not." : "Theodor Seuss Geisel",
+    "Wer nichts zu verbergen hat, hat auch nichts zu befürchten" : ""
 }
 
 class Module(object):
