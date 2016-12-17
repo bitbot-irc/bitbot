@@ -64,8 +64,7 @@ class Module(object):
         trains = []
 
         for t in query["trainServices"][0]:
-            trains.append({
-                "scheduled" : datetime.strptime(t["std"], "%Y-%m-%dT%H:%M:%S"),
+            parsed = { "scheduled" : datetime.strptime(t["std"], "%Y-%m-%dT%H:%M:%S"),
                 "called" : "atd" in t,
                 "dest_name": t["destination"][0][0]["locationName"],
                 "dest_id": t["destination"][0][0]["crs"] if "crs" in t["destination"][0][0] else "---",
@@ -74,20 +73,21 @@ class Module(object):
                 "head" : t["trainid"],
                 "via": '' if not "via" in t["destination"][0][0] else t["destination"][0][0]["via"],
                 "platform": "?" if not "platform" in t else t["platform"]
-                })
+                }
 
             if "etd" in t or "atd" in t:
-                trains[-1]["departure"] = datetime.strptime(t["etd"] if "etd" in t else t["atd"], "%Y-%m-%dT%H:%M:%S")
-                trains[-1]["time"] = trains[-1]["departure"].strftime("%H%M")
+                parsed["departure"] = datetime.strptime(t["etd"] if "etd" in t else t["atd"], "%Y-%m-%dT%H:%M:%S")
+                parsed["time"] = parsed["departure"].strftime("%H%M")
             elif "isCancelled" in t and t["isCancelled"]:
-                trains[-1]["departure"] = "Cancelled"
-                trains[-1]["time"] = "Cancelled"
+                parsed["departure"] = "Cancelled"
+                parsed["time"] = "Cancelled"
             else:
-                trains[-1]["departure"] = t["departureType"]
-                trains[-1]["time"] = t["departureType"]
+                parsed["departure"] = t["departureType"]
+                parsed["time"] = t["departureType"]
 
-            trains[-1]["on_time"] = trains[-1]["scheduled"] == trains[-1]["departure"]
+            parsed["on_time"] = parsed["scheduled"] == parsed["departure"]
 
+            trains.append(parsed)
 
         for t in trains:
             t["dest_via"] = t["dest_name"] + (" " if t["via"] else '') + t["via"]
@@ -117,7 +117,6 @@ class Module(object):
     def service(self, event):
         colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN]
 
-
         service_id = event["args_split"][0]
         filter = event["args_split"][1] if len(event["args_split"]) > 1 else ""
 
@@ -139,33 +138,47 @@ class Module(object):
 
         query = client.service.GetServiceDetailsByRID(rid)
 
+        disruptions = []
+        if "cancelReason" in query:
+            disruptions.append("Cancelled (%s at %s)" % (query["cancelReason"]["value"], query["cancelReason"]["_tiploc"]))
+        if "delayReason" in query:
+            disruptions.append("Delayed (%s at %s)" % (query["delayReason"]["value"], query["delayReason"]["_tiploc"]))
+        if disruptions:
+            disruptions = Utils.color(Utils.COLOR_RED) + ", ".join(disruptions) + Utils.color(Utils.FONT_RESET) + " "
+        else: disruptions = ""
+
         stations = []
         for station in query["locations"][0]:
-            stations.append(
-                {"name": station["locationName"],
-                 "crs": (station["crs"] if "crs" in station else station["tiploc"]).rstrip(),
-                 "scheduled": datetime.strptime(station["sta"] if "sta" in station else station["std"], "%Y-%m-%dT%H:%M:%S"),
-                 "scheduled_type" : "arrival" if "sta" in station else "departure",
-                 "scheduled_short": '' if "sta" in station else "d",
-                 "called": "atd" in station or "ata" in station,
-                 "passing": station["isPass"] if "isPass" in station else False,
-                 "prediction": "eta" in station or "etd" in station and not "atd" in station,
-                 "first": len(stations) == 0,
-                 "last" : False
-                })
-            stations[-1]["arrival"] = datetime.strptime(station["eta"] if "eta" in station else station["ata"], "%Y-%m-%dT%H:%M:%S") if "eta" in station or "ata" in station else None
-            stations[-1]["departure"] = datetime.strptime(station["etd"] if "etd" in station else station["atd"], "%Y-%m-%dT%H:%M:%S") if "etd" in station or "atd" in station else None
-            stations[-1]["time"], stations[-1]["timeprefix"] = [a for a in [(stations[-1]["arrival"], ''), (stations[-1]["departure"], "d"), (stations[-1]["scheduled"], stations[-1]["scheduled_short"] + "s")] if a[0] != None][0]
-            stations[-1]["time"] = stations[-1]["time"].strftime("%H%M")
+            parsed = {"name": station["locationName"],
+                "crs": (station["crs"] if "crs" in station else station["tiploc"]).rstrip(),
+                "scheduled": datetime.strptime(station["sta"] if "sta" in station else station["std"], "%Y-%m-%dT%H:%M:%S"),
+                "scheduled_type" : "arrival" if "sta" in station else "departure",
+                "scheduled_short": '' if "sta" in station else "d",
+                "called": "atd" in station or "ata" in station,
+                "passing": station["isPass"] if "isPass" in station else False,
+                "prediction": "eta" in station or "etd" in station and not "atd" in station,
+                "first": len(stations) == 0,
+                "last" : False,
+                "cancelled" : station["isCancelled"] if "isCancelled" in station else False
+                }
+            parsed["arrival"] = datetime.strptime(station["eta"] if "eta" in station else station["ata"], "%Y-%m-%dT%H:%M:%S") if "eta" in station or "ata" in station else None
+            parsed["departure"] = datetime.strptime(station["etd"] if "etd" in station else station["atd"], "%Y-%m-%dT%H:%M:%S") if "etd" in station or "atd" in station else None
+            parsed["time"], parsed["timeprefix"] = [a for a in [(parsed["arrival"], ''), (parsed["departure"], "d"), (parsed["scheduled"], parsed["scheduled_short"] + "s")] if a[0] != None][0]
+            parsed["datetime"] = parsed["time"]
+            if parsed["cancelled"]:
+                parsed["time"], parsed["timeprefix"], parsed["prediction"] = ("Cancelled", '', False)
+            else:
+                parsed["time"] = parsed["time"].strftime("%H%M")
+            parsed["on_time"] = parsed["datetime"] == parsed["scheduled"]
+
+            stations.append(parsed)
 
         [a for a in stations if a["called"] or a["first"]][-1]["last"] = True
 
-        for station in stations[0:[(k,v) for k,v in enumerate(stations) if v["last"]][0][0]]:
+        for station in stations[0:[k for k,v in enumerate(stations) if v["last"]][0]]:
             if not station["first"]: station["called"] = True
 
         for station in stations:
-            station["on_time"] = station["time"] == "On time"
-
             station["status"] = 1 if station["on_time"] else 2
             if station["called"]: station["status"] = 0
             if station["passing"]: station["status"] = 3
@@ -192,8 +205,9 @@ class Module(object):
         done_count = len([s for s in stations if s["called"]])
         total_count = len(stations)
 
-        event["stdout"].write("%s train (%s/%s/%s): %s" % (query["operator"],
-            done_count, len(stations_filtered), total_count,
+        event["stdout"].write("%s%s train (%s%s%s/%s/%s): %s" % (disruptions, query["operator"],
+            Utils.color(Utils.COLOR_LIGHTBLUE), done_count, Utils.color(Utils.FONT_RESET),
+            len(stations_filtered), total_count,
             ", ".join([s["summary"] for s in stations_filtered])))
 
     def head(self, event):
