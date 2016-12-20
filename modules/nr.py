@@ -23,11 +23,11 @@ class Module(object):
             usage="<crs_id>")
         bot.events.on("received").on("command").on("nrservice"
             ).hook(self.service, min_args=1,
-            help="Get train service information for a headcode or RID (Powered by NRE)",
+            help="Get train service information for a UID, headcode or RID (Powered by NRE)",
             usage="<service_id>")
         bot.events.on("received").on("command").on("nrhead"
             ).hook(self.head, min_args=1,
-            help="Get information for a given headcode (Powered by NRE)",
+            help="Get information for a given headcode/UID/RID (Powered by NRE)",
             usage="<headcode>")
 
     def time_compare(self, one, two):
@@ -50,14 +50,16 @@ class Module(object):
         else: return time_until
 
     def arrivals(self, event):
-        token = self.bot.config["nre-api-key"]
+        colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED]
+
         location_code = event["args_split"][0].upper()
 
+        token = self.bot.config["nre-api-key"]
         client = Client(URL)
-
         header_token = client.factory.create('ns2:AccessToken')
         header_token.TokenValue = token
         client.set_options(soapheaders=header_token)
+
         method = client.service.GetDepartureBoardByCRS if len(location_code) == 3 else client.service.GetDepartureBoardByTIPLOC
         query = method(50, location_code, datetime.now().isoformat().split(".")[0], 120,
             client.factory.create("filterList"), "to", '', "PBS", False)
@@ -87,13 +89,15 @@ class Module(object):
 
             parsed["on_time"] = parsed["scheduled"] == parsed["departure"]
 
+            parsed["status"] = 1 if parsed["on_time"] else 2
+            if parsed["called"]: parsed["status"] = 0
+
             trains.append(parsed)
 
         for t in trains:
             t["dest_via"] = t["dest_name"] + (" " if t["via"] else '') + t["via"]
 
         trains = sorted(trains, key=lambda t: t["scheduled"])
-
 
         trains_filtered = []
         train_dest_plat = []
@@ -106,7 +110,7 @@ class Module(object):
         self.result_map[event["target"].id] = trains_filtered
 
         trains_string = ", ".join(["%s (%s, %s, %s%s%s)" % (t["dest_via"], t["uid"], t["platform"],
-            Utils.color(Utils.COLOR_GREEN if t["on_time"] else Utils.COLOR_RED),
+            Utils.color(colours[t["status"]]),
             t["time"],
             Utils.color(Utils.FONT_RESET)
             ) for t in trains_filtered])
@@ -169,7 +173,7 @@ class Module(object):
                 parsed["time"], parsed["timeprefix"], parsed["prediction"] = ("Cancelled", '', False)
             else:
                 parsed["time"] = parsed["time"].strftime("%H%M")
-            parsed["on_time"] = parsed["datetime"] == parsed["scheduled"]
+            parsed["on_time"] = parsed["datetime"] == parsed["scheduled"] and not parsed["cancelled"]
 
             stations.append(parsed)
 
