@@ -60,21 +60,32 @@ class Module(object):
         client.set_options(soapheaders=header_token)
 
         method = client.service.GetDepartureBoardByCRS if len(location_code) == 3 else client.service.GetDepartureBoardByTIPLOC
-        query = method(50, location_code, datetime.now().isoformat().split(".")[0], 120,
+        query = method(50, location_code, datetime.now().isoformat().split(".")[0], 240,
             client.factory.create("filterList"), "to", '', "PBS", False)
+        if not "trainServices" in query:
+            event["stdout"].write("%s (%s): No services for the next 240 minutes" % (query["locationName"], query["crs"]))
+            return
+
         trains = []
 
         for t in query["trainServices"][0]:
             parsed = { "scheduled" : datetime.strptime(t["std"], "%Y-%m-%dT%H:%M:%S"),
                 "called" : "atd" in t,
-                "dest_name": t["destination"][0][0]["locationName"],
-                "dest_id": t["destination"][0][0]["crs"] if "crs" in t["destination"][0][0] else "---",
                 "rid" : t["rid"],
                 "uid" : t["uid"],
                 "head" : t["trainid"],
                 "via": '' if not "via" in t["destination"][0][0] else t["destination"][0][0]["via"],
                 "platform": "?" if not "platform" in t else t["platform"]
                 }
+            parsed["destinations"] = [{"name": a["locationName"], "tiploc": a["tiploc"],
+                "crs": a["crs"] if "crs" in a else '', "code": a["crs"] if "crs"
+                in a else a["tiploc"], "via": a["via"] if "via" in a else ''}
+                for a in t["destination"][0]]
+
+            parsed["origins"] = [{"name": a["locationName"], "tiploc": a["tiploc"],
+                "crs": a["crs"] if "crs" in a else '', "code": a["crs"] if "crs"
+                in a else a["tiploc"], "via": a["via"] if "via" in a else ''}
+                for a in t["origin"][0]]
 
             if "etd" in t or "atd" in t:
                 parsed["departure"] = datetime.strptime(t["etd"] if "etd" in t else t["atd"], "%Y-%m-%dT%H:%M:%S")
@@ -94,7 +105,8 @@ class Module(object):
             trains.append(parsed)
 
         for t in trains:
-            t["dest_via"] = t["dest_name"] + (" " if t["via"] else '') + t["via"]
+            t["dest_summary"] = "/".join(["%s%s" %(a["name"], " " + a["via"]
+                if a["via"] else '') for a in t["destinations"]])
 
         trains = sorted(trains, key=lambda t: t["scheduled"])
 
@@ -102,11 +114,11 @@ class Module(object):
         train_dest_plat = []
 
         for train in trains:
-            if (train["dest_name"] + train["via"], train["platform"]) in train_dest_plat: continue
-            train_dest_plat.append((train["dest_name"] + train["via"], train["platform"]))
+            if (train["destinations"], train["platform"]) in train_dest_plat: continue
+            train_dest_plat.append((train["destinations"], train["platform"]))
             trains_filtered.append(train)
 
-        trains_string = ", ".join(["%s (%s, %s, %s%s%s)" % (t["dest_via"], t["uid"], t["platform"],
+        trains_string = ", ".join(["%s (%s, %s, %s%s%s)" % (t["dest_summary"], t["uid"], t["platform"],
             Utils.color(colours[t["status"]]),
             t["time"],
             Utils.color(Utils.FONT_RESET)
@@ -131,6 +143,9 @@ class Module(object):
         if len(service_id) <= 8:
             query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
                 datetime.utcnow().time().strftime("%H:%M:%S+0000"))
+            if not query:
+                event["stderr"].write("No service information is available for this identifier.")
+                return
             if len(query["serviceList"][0]) > 1:
                 event["stderr"].write("Headcode refers to multiple services: " +
                     ", ".join(["%s (%s->%s)" % (a["rid"], a["originCrs"], a["destinationCrs"]) for a in query["serviceList"][0]]))
