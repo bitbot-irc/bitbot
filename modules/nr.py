@@ -16,7 +16,6 @@ class Module(object):
     _name = "NR"
     def __init__(self, bot):
         self.bot = bot
-        self.result_map = {}
         bot.events.on("received").on("command").on("nrtrains"
             ).hook(self.arrivals, min_args=1,
             help="Get train information for a station (Powered by NRE)",
@@ -106,8 +105,6 @@ class Module(object):
             if (train["dest_name"] + train["via"], train["platform"]) in train_dest_plat: continue
             train_dest_plat.append((train["dest_name"] + train["via"], train["platform"]))
             trains_filtered.append(train)
-
-        self.result_map[event["target"].id] = trains_filtered
 
         trains_string = ", ".join(["%s (%s, %s, %s%s%s)" % (t["dest_via"], t["uid"], t["platform"],
             Utils.color(colours[t["status"]]),
