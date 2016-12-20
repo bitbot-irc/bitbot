@@ -144,10 +144,10 @@ class Module(object):
             query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
                 datetime.utcnow().time().strftime("%H:%M:%S+0000"))
             if not query:
-                event["stderr"].write("No service information is available for this identifier.")
+                event["stdout"].write("No service information is available for this identifier.")
                 return
             if len(query["serviceList"][0]) > 1:
-                event["stderr"].write("Headcode refers to multiple services: " +
+                event["stdout"].write("Identifier refers to multiple services: " +
                     ", ".join(["%s (%s->%s)" % (a["rid"], a["originCrs"], a["destinationCrs"]) for a in query["serviceList"][0]]))
                 return
             rid = query["serviceList"][0][0]["rid"]
