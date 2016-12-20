@@ -29,25 +29,6 @@ class Module(object):
             help="Get information for a given headcode/UID/RID (Powered by NRE)",
             usage="<headcode>")
 
-    def time_compare(self, one, two):
-        return (one.hour - two.hour) * 60 + (one.minute - two.minute)
-
-    def span(self, gen, std, etd, human=True):
-        expected = std
-        if etd.replace(":", "").isdigit():
-            expected = etd
-        elif etd != "On time":
-            return etd
-
-        time_due = datetime.datetime.strptime(expected, "%H:%M")
-        time_until = self.time_compare(time_due.time(), gen.time())
-
-        if time_until == 0: human_time = "due"
-        else: human_time = "in %s min" % time_until
-
-        if human: return human_time
-        else: return time_until
-
     def arrivals(self, event):
         colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED]
 
