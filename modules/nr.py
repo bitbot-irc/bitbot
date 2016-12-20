@@ -52,6 +52,7 @@ class Module(object):
         colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED]
 
         location_code = event["args_split"][0].upper()
+        filter = event["args_split"][1] if len(event["args_split"]) > 1 else ""
 
         token = self.bot.config["nre-api-key"]
         client = Client(URL)
@@ -114,7 +115,7 @@ class Module(object):
         train_dest_plat = []
 
         for train in trains:
-            if (train["destinations"], train["platform"]) in train_dest_plat: continue
+            if (train["destinations"], train["platform"]) in train_dest_plat and not filter: continue
             train_dest_plat.append((train["destinations"], train["platform"]))
             trains_filtered.append(train)
 
@@ -175,7 +176,8 @@ class Module(object):
                 "prediction": "eta" in station or "etd" in station and not "atd" in station,
                 "first": len(stations) == 0,
                 "last" : False,
-                "cancelled" : station["isCancelled"] if "isCancelled" in station else False
+                "cancelled" : station["isCancelled"] if "isCancelled" in station else False,
+                "divide_summary": ""
                 }
             parsed["arrival"] = datetime.strptime(station["eta"] if "eta" in station else station["ata"], "%Y-%m-%dT%H:%M:%S") if "eta" in station or "ata" in station else None
             parsed["departure"] = datetime.strptime(station["etd"] if "etd" in station else station["atd"], "%Y-%m-%dT%H:%M:%S") if "etd" in station or "atd" in station else None
@@ -186,6 +188,17 @@ class Module(object):
             else:
                 parsed["time"] = parsed["time"].strftime("%H%M")
             parsed["on_time"] = parsed["datetime"] == parsed["scheduled"] and not parsed["cancelled"]
+
+            parsed["associations"] = {a["category"] : a for a in station["associations"][0]} if "associations" in station else {}
+            parsed["divides"] = "divide" in parsed["associations"].keys()
+            if parsed["divides"]:
+                divide = parsed["associations"]["divide"]
+                parsed["divide_summary"] = "%sDividing as %s to %s (%s)%s at " % (
+                    Utils.color(Utils.FONT_BOLD),
+                    divide["uid"], divide["destination"],
+                    divide["destCRS"] if "destCRS" in divide else divide["destTiploc"],
+                    Utils.color(Utils.FONT_RESET)
+                    )
 
             stations.append(parsed)
 
@@ -199,7 +212,8 @@ class Module(object):
             if station["called"]: station["status"] = 0
             if station["passing"]: station["status"] = 3
 
-            station["summary"] = "%s%s(%s, %s%s%s%s)" % (
+            station["summary"] = "%s%s%s(%s, %s%s%s%s)" % (
+                station["divide_summary"],
                 "*" if station["passing"] else '',
                 station["name"] + " " if station["name"] != station["crs"] else '',
                 station["crs"], ("~" if station["prediction"] else '') + station["timeprefix"],
