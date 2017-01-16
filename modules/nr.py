@@ -44,14 +44,18 @@ class Module(object):
 
         ret = {k: v[0] for k,v in defaults.items()}
         ret["default"] = True
+        ret["errors"] = []
 
         for k,v in params.items():
             if not k in defaults.keys():
-                raise Exception("Not a valid parameter")
+                ret["errors"].append((k, "Invalid parameter"))
+                continue
             if not defaults[k][1](v):
-                raise Exception("Not a valid value")
+                ret["errors"].append((v, 'Invalid value for "%s"' % k))
+                continue
             ret["default"] = False
             ret[k] = v if len(defaults[k]) == 2 else defaults[k][2](v)
+        ret["errors_summary"] = ", ".join(['"%s": %s' % (a[0], a[1]) for a in ret["errors"]])
         return ret
 
     def arrivals(self, event):
@@ -66,8 +70,13 @@ class Module(object):
             "dedup": (False, lambda x: type(x)==type(True)),
             "plat": ('', lambda x: len(x) <= 3),
             "type": ("departures", lambda x: x in ["departures", "arrivals", "both"]),
-            "terminating": (False, lambda x: type(x)==type(True))
+            "terminating": (False, lambda x: type(x)==type(True)),
+            "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 240, lambda x: int(x))
             })
+
+        if filter["errors"]:
+            event["stderr"].write("Filter: " + filter["errors_summary"])
+            return
 
         if filter["inter"] and filter["type"]!="departures":
             event["stderr"].write("Filtering by intermediate stations is only supported for departures.")
@@ -83,10 +92,11 @@ class Module(object):
         if filter["inter"]: nr_filterlist.crs.append(filter["inter"])
 
         method = client.service.GetArrivalDepartureBoardByCRS if len(location_code) == 3 else client.service.GetArrivalDepartureBoardByTIPLOC
-        query = method(100, location_code, datetime.now().isoformat().split(".")[0], 120,
+        query = method(100, location_code, datetime.now().isoformat().split(".")[0], filter["period"],
             nr_filterlist, "to", '', "PBS", False)
         if not "trainServices" in query and not "busServices" in query:
-            event["stdout"].write("%s (%s): No services for the next 120 minutes" % (query["locationName"], query["crs"]))
+            event["stdout"].write("%s (%s): No services for the next %s minutes" % (
+                query["locationName"], query["crs"], filter["period"]))
             return
 
         trains = []
@@ -184,6 +194,10 @@ class Module(object):
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
             "passing": (False, lambda x: type(x)==type(True))
             })
+
+        if filter["errors"]:
+            event["stderr"].write("Filter: " + filter["errors_summary"])
+            return
 
         token = self.bot.config["nre-api-key"]
         client = Client(URL)
