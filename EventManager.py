@@ -74,9 +74,9 @@ class EventHook(object):
             except Exception as e:
                 traceback.print_exc()
                 # TODO don't make this an event call. can lead to error cycles!
-                self.bot.events.on("log").on("error").call(
-                    message="Failed to call event callback",
-                    data=traceback.format_exc())
+                #self.bot.events.on("log").on("error").call(
+                #    message="Failed to call event callback",
+                #    data=traceback.format_exc())
             called += 1
         return returns
     def get_child(self, child_name):
