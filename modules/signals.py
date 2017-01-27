@@ -37,12 +37,13 @@ QUOTES = {
     "Every great historical event began as a utopia and ended as a reality." : "Richard Nikolaus Eijiro",
     "Strange women lying in ponds distributing swords is no basis for a system of government!" : "",
     "My hovercraft is full of eels." : "",
-    "You may burn my books and the books of the best minds in Europe, but the ideas those books contain have passed through millions of channels and will go on." : "Helen Keller",
     "That was only a prelude; where they burn books, they will in the end also burn people" : "Heinrich Heine",
     'Never, "for the sake of peace and quiet", deny your own experience or convictions.' : "Dag Hammarskjöld",
     "Quis custodiet ipsos custodes?" : "",
     "Unless someone like you cares a whole awful lot, nothing is going to get better. It's not." : "Theodor Seuss Geisel",
-    "Wer nichts zu verbergen hat, hat auch nichts zu befürchten" : ""
+    "Wer nichts zu verbergen hat, hat auch nichts zu befürchten" : "",
+    "Words will always retain their power. Words offer the means to meaning, and for those who will listen, the enunciation of truth." : "Alan Moore",
+    "Сейчас я вам заявляю, что вы провалились!" : "",
 }
 
 class Module(object):
