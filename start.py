@@ -13,6 +13,8 @@ arg_parser.add_argument("--config", "-c", default="bot.json",
     help="Location of the JSON config file")
 arg_parser.add_argument("--database", "-d", default="bot.db",
     help="Location of the sqlite3 database file")
+arg_parser.add_argument("--verbose", "-v", action="store_true")
+
 args = arg_parser.parse_args()
 
 bot = IRCBot.Bot()
@@ -20,6 +22,7 @@ database = Database.Database(bot, args.database)
 config_object = Config.Config(bot, args.config)
 bot.database = database
 bot.config_object = config_object
+bot.args = args
 bot.modules.load_modules()
 
 servers = database.get_servers()
@@ -28,8 +31,8 @@ for server in servers:
 if len(bot.servers):
     bot.events.on("boot").on("done").call()
     time.sleep(5)
-    bot.connect_all()
-    bot.run()
+    if bot.connect_all():
+        bot.run()
 else:
     try:
         if bool_input("no servers found, add one?"):

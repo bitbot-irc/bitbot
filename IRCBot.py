@@ -4,6 +4,7 @@ import EventManager, IRCServer, ModuleManager, Timer
 class Bot(object):
     def __init__(self):
         self.lock = threading.Lock()
+        self.args = None
         self.database = None
         self.config = None
         self.bot_directory = os.path.dirname(os.path.realpath(__file__))
@@ -39,7 +40,9 @@ class Bot(object):
     def connect_all(self):
         for server in self.servers.values():
             if server.get_setting("connect", True):
-                self.connect(server)
+                if not self.connect(server):
+                    return False
+        return True
 
     def setup_timers(self, event):
         for setting, value in self.find_settings("timer-%"):
@@ -58,7 +61,7 @@ class Bot(object):
         timer = Timer.Timer(self, event_name, delay, next_due, **kwargs)
         if id:
             timer.id = id
-        else:
+        elif persist:
             self.timer_setting(timer)
         self.timers.append(timer)
     def next_timer(self):
@@ -67,15 +70,14 @@ class Bot(object):
             time_left = timer.time_left()
             if not next or time_left < next:
                 next = time_left
-        return next or 30
+
+        return next if not next == None and next <= 30 else 30;
     def call_timers(self):
         for timer in self.timers[:]:
             if timer.due():
                 timer.call()
                 if timer.done():
                     self.timer_setting_remove(timer)
-                else:
-                    self.timer_setting(timer)
 
     def register_read(self, server):
         self.poll.modify(server.fileno(), select.EPOLLIN)
@@ -124,7 +126,8 @@ class Bot(object):
                     if event & select.EPOLLIN:
                         lines = server.read()
                         for line in lines:
-                            print(line)
+                            if self.args.verbose:
+                                print(line)
                             server.parse_line(line)
                     elif event & select.EPOLLOUT:
                         server._send()
