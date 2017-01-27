@@ -212,13 +212,13 @@ def handle_MODE():
                         channel.remove_mode(char)
                     else:
                         channel.add_mode(char)
-                elif char in server.mode_prefixes.values():
+                elif char in server.mode_prefixes.values() and len(args):
                     nickname = args.pop(0)
                     if remove:
                         channel.remove_mode(char, nickname)
                     else:
                         channel.add_mode(char, nickname)
-                else:
+                elif len(args):
                     args.pop(0)
         bot.events.on("received").on("mode").call(
             line=line, line_split=line_split, server=server, modes=modes,
