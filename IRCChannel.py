@@ -75,3 +75,10 @@ class Channel(object):
             if nickname.lower() in self.modes.get(mode, []):
                 return True
         return False
+
+    def get_user_status(self, nickname):
+        modes = ""
+        for mode in self.server.mode_prefixes.values():
+            if nickname.lower() in self.modes.get(mode, []):
+                modes += mode
+        return modes
