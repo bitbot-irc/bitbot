@@ -16,6 +16,7 @@ class Module(object):
     _name = "NR"
     def __init__(self, bot):
         self.bot = bot
+        self._client = None
         bot.events.on("received").on("command").on("nrtrains"
             ).hook(self.arrivals, min_args=1,
             help="Get train information for a station (Powered by NRE)",
@@ -28,7 +29,24 @@ class Module(object):
             ).hook(self.head, min_args=1,
             help="Get information for a given headcode/UID/RID (Powered by NRE)",
             usage="<headcode>")
+        bot.events.on("received").on("command").on("nrcode"
+            ).hook(self.service_code, min_args=1,
+            help="Get the text for a given delay/cancellation code (Powered by NRE)",
+            usage="<code>")
 
+    @property
+    def client(self):
+        if self._client: return self._client
+        try:
+            token = self.bot.config["nre-api-key"]
+            client = Client(URL)
+            header_token = client.factory.create('ns2:AccessToken')
+            header_token.TokenValue = token
+            client.set_options(soapheaders=header_token)
+            self._client = client
+        except:
+            pass
+        return self._client
 
     def filter(self, args, defaults):
         args = re.findall(r"[^\s,]+", args)
@@ -59,6 +77,7 @@ class Module(object):
         return ret
 
     def arrivals(self, event):
+        client = self.client
         colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN]
 
         location_code = event["args_split"][0].upper()
@@ -81,12 +100,6 @@ class Module(object):
         if filter["inter"] and filter["type"]!="departures":
             event["stderr"].write("Filtering by intermediate stations is only supported for departures.")
             return
-
-        token = self.bot.config["nre-api-key"]
-        client = Client(URL)
-        header_token = client.factory.create('ns2:AccessToken')
-        header_token.TokenValue = token
-        client.set_options(soapheaders=header_token)
 
         nr_filterlist = client.factory.create("filterList")
         if filter["inter"]: nr_filterlist.crs.append(filter["inter"])
@@ -187,6 +200,7 @@ class Module(object):
             trains_string))
 
     def service(self, event):
+        client = self.client
         colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN]
 
         service_id = event["args_split"][0]
@@ -198,12 +212,6 @@ class Module(object):
         if filter["errors"]:
             event["stderr"].write("Filter: " + filter["errors_summary"])
             return
-
-        token = self.bot.config["nre-api-key"]
-        client = Client(URL)
-        header_token = client.factory.create('ns2:AccessToken')
-        header_token.TokenValue = token
-        client.set_options(soapheaders=header_token)
 
         rid = service_id
         if len(service_id) <= 8:
@@ -310,21 +318,28 @@ class Module(object):
         done_count = len([s for s in stations if s["called"]])
         total_count = len(stations)
 
-        event["stdout"].write("%s%s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operator"],
-            query["serviceType"],
+        event["stdout"].write("%s%s %s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operator"],
+            query["trainid"], query["serviceType"],
             Utils.color(Utils.COLOR_LIGHTBLUE), done_count, Utils.color(Utils.FONT_RESET),
             len(stations_filtered), total_count,
             ", ".join([s["summary"] for s in stations_filtered])))
 
     def head(self, event):
+        client = self.client
         service_id = event["args_split"][0]
-
-        token = self.bot.config["nre-api-key"]
-        client = Client(URL)
-        header_token = client.factory.create('ns2:AccessToken')
-        header_token.TokenValue = token
-        client.set_options(soapheaders=header_token)
 
         query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
             datetime.utcnow().time().strftime("%H:%M:%S+0000"))
         event["stdout"].write(", ".join(["h/%s r/%s u/%s rs/%s %s (%s) -> %s (%s)" % (a["trainid"], a["rid"], a["uid"], a["rsid"], a["originName"], a["originCrs"], a["destinationName"], a["destinationCrs"]) for a in query["serviceList"][0]]))
+
+    def service_code(self, event):
+        client = self.client
+
+        if not event["args"].isnumeric():
+            event["stderr"].write("The delay/cancellation code must be a number")
+            return
+        reasons = {a["code"]:(a["lateReason"], a["cancReason"]) for a in client.service.GetReasonCodeList()[0]}
+        if event["args"] in reasons:
+            event["stdout"].write("%s: %s" % (event["args"], " / ".join(reasons[event["args"]])))
+        else:
+            event["stdout"].write("This doesn't seem to be a valid reason code")
