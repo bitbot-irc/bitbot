@@ -78,7 +78,7 @@ class Module(object):
 
     def arrivals(self, event):
         client = self.client
-        colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN]
+        colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY]
 
         location_code = event["args_split"][0].upper()
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
@@ -155,6 +155,7 @@ class Module(object):
             parsed["on_time"] = parsed["datetime"] == parsed["scheduled"] and not parsed["cancelled"]
 
             parsed["status"] = 1 if parsed["on_time"] else 2
+            if "s" in parsed["timeprefix"]: parsed["status"] = 4
             if parsed["departed"]: parsed["status"] = 3
             if parsed["arrived"]:  parsed["status"] = 0
 
@@ -189,7 +190,7 @@ class Module(object):
             "from " if not filter["type"] in ["arrivals", "departures"] and t["terminating"] else '',
             t["origin_summary"] if t["terminating"] or filter["type"]=="arrivals" else t["dest_summary"],
             t["uid"], "bus" if t["bus"] else t["platform"],
-            t["timeprefix"] if t["timeprefix"]!=filter["type"][0] else '',
+            t["timeprefix"].replace(filter["type"][0], ""),
             Utils.color(colours[t["status"]]),
             t["time"],
             Utils.color(Utils.FONT_RESET)
@@ -201,7 +202,7 @@ class Module(object):
 
     def service(self, event):
         client = self.client
-        colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN]
+        colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY]
 
         service_id = event["args_split"][0]
 
@@ -230,9 +231,9 @@ class Module(object):
 
         disruptions = []
         if "cancelReason" in query:
-            disruptions.append("Cancelled (%s at %s)" % (query["cancelReason"]["value"], query["cancelReason"]["_tiploc"]))
+            disruptions.append("Cancelled (%s%s)" % (query["cancelReason"]["value"], " at " + query["cancelReason"]["_tiploc"] if query["cancelReason"]["_tiploc"] else ""))
         if "delayReason" in query:
-            disruptions.append("Delayed (%s at %s)" % (query["delayReason"]["value"], query["delayReason"]["_tiploc"]))
+            disruptions.append("Delayed (%s%s)" % (query["delayReason"]["value"], " at " + query["delayReason"]["_tiploc"] if query["delayReason"]["_tiploc"] else ""))
         if disruptions:
             disruptions = Utils.color(Utils.COLOR_RED) + ", ".join(disruptions) + Utils.color(Utils.FONT_RESET) + " "
         else: disruptions = ""
@@ -291,6 +292,7 @@ class Module(object):
 
         for station in stations:
             station["status"] = 1 if station["on_time"] else 2
+            if "s" in station["timeprefix"]: station["status"] = 4
             if station["called"]: station["status"] = 0
             if station["passing"]: station["status"] = 3
 
