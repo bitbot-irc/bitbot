@@ -223,7 +223,7 @@ class Module(object):
                 return
             if len(query["serviceList"][0]) > 1:
                 event["stdout"].write("Identifier refers to multiple services: " +
-                    ", ".join(["%s (%s->%s)" % (a["rid"], a["originCrs"], a["destinationCrs"]) for a in query["serviceList"][0]]))
+                    ", ".join(["%s (%s->%s)" % (a["uid"], a["originCrs"], a["destinationCrs"]) for a in query["serviceList"][0]]))
                 return
             rid = query["serviceList"][0][0]["rid"]
 
