@@ -125,6 +125,7 @@ class Module(object):
                 "uid" : t["uid"],
                 "head" : t["trainid"],
                 "platform": "?" if not "platform" in t else t["platform"],
+                "platform_hidden": "platformIsHidden" in t and t["platformIsHidden"],
                 "toc": t["operatorCode"],
                 "cancelled" : t["isCancelled"] if "isCancelled" in t else False,
                 "terminating" : not "std" in t and not "etd" in t and not "atd" in t,
@@ -186,10 +187,11 @@ class Module(object):
                 train_locs_toc.append((train["destinations"], train["toc"]))
                 trains_filtered.append(train)
 
-        trains_string = ", ".join(["%s%s (%s, %s, %s%s%s%s)" % (
+        trains_string = ", ".join(["%s%s (%s, %s%s, %s%s%s%s)" % (
             "from " if not filter["type"] in ["arrivals", "departures"] and t["terminating"] else '',
             t["origin_summary"] if t["terminating"] or filter["type"]=="arrivals" else t["dest_summary"],
-            t["uid"], "bus" if t["bus"] else t["platform"],
+            t["uid"],
+            "bus" if t["bus"] else t["platform"], "?" if t["platform_hidden"] else '',
             t["timeprefix"].replace(filter["type"][0], ""),
             Utils.color(colours[t["status"]]),
             t["time"],
