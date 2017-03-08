@@ -58,7 +58,7 @@ class Module(object):
             elif "=" in arg:
                 params[arg.split("=", 1)[0]] = arg.split("=", 1)[1]
             else:
-                params[arg] = True
+                params[arg.replace("!", "")] = '!' not in arg
 
         ret = {k: v[0] for k,v in defaults.items()}
         ret["default"] = True
@@ -107,9 +107,16 @@ class Module(object):
         method = client.service.GetArrivalDepartureBoardByCRS if len(location_code) == 3 else client.service.GetArrivalDepartureBoardByTIPLOC
         query = method(100, location_code, datetime.now().isoformat().split(".")[0], filter["period"],
             nr_filterlist, "to", '', "PBS", False)
+
+        nrcc_severe = len([a for a in query["nrccMessages"][0] if a["severity"] == "Major"]) if "nrccMessages" in query else 0
+
+        station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"],
+            ", %s%s severe messages%s" % (Utils.color(Utils.COLOR_RED), nrcc_severe, Utils.color(Utils.FONT_RESET)) if nrcc_severe else ""
+            )
+
+
         if not "trainServices" in query and not "busServices" in query:
-            event["stdout"].write("%s (%s): No services for the next %s minutes" % (
-                query["locationName"], query["crs"], filter["period"]))
+            event["stdout"].write("%s: No services for the next %s minutes" % (station_summary, filter["period"]))
             return
 
         trains = []
@@ -128,6 +135,7 @@ class Module(object):
                 "platform_hidden": "platformIsHidden" in t and t["platformIsHidden"],
                 "toc": t["operatorCode"],
                 "cancelled" : t["isCancelled"] if "isCancelled" in t else False,
+                "cancel_reason" : t["cancelReason"]["value"] if "cancelReason" in t else "",
                 "terminating" : not "std" in t and not "etd" in t and not "atd" in t,
                 "bus" : t["trainid"]=="0B00"
                 }
@@ -149,7 +157,7 @@ class Module(object):
             parsed["datetime"] = parsed["time"]
 
             if parsed["cancelled"]:
-                parsed["time"], parsed["timeprefix"], parsed["prediction"] = ("Cancelled", '', False)
+                parsed["time"], parsed["timeprefix"], parsed["prediction"] = ("Cancelled: %s" % parsed["cancel_reason"], '', False)
             else:
                 parsed["time"] = parsed["time"].strftime("%H%M")
 
@@ -198,7 +206,9 @@ class Module(object):
             Utils.color(Utils.FONT_RESET)
             ) for t in trains_filtered])
 
-        event["stdout"].write("%s (%s)%s: %s" % (query["locationName"], query["crs"],
+        event["stdout"].write("%s (%s, %s%s)%s: %s" % (query["locationName"], query["crs"],
+            query["stationManagerCode"],
+            ", %s%s severe messages%s" % (Utils.color(Utils.COLOR_RED), nrcc_severe, Utils.color(Utils.FONT_RESET)) if nrcc_severe else "",
             " departures calling at %s" % filter["inter"] if filter["inter"] else '',
             trains_string))
 
