@@ -21,8 +21,8 @@ class Module(object):
         self.bot = bot
         self._client = None
         bot.events.on("received").on("command").on("nrtrains"
-            ).hook(self.arrivals, min_args=1,
-            help="Get train information for a station (Powered by NRE)",
+            ).hook(self.trains, min_args=1,
+            help="Get train/bus services for a station (Powered by NRE)",
             usage="<crs_id>")
         bot.events.on("received").on("command").on("nrservice"
             ).hook(self.service, min_args=1,
@@ -79,7 +79,7 @@ class Module(object):
         ret["errors_summary"] = ", ".join(['"%s": %s' % (a[0], a[1]) for a in ret["errors"]])
         return ret
 
-    def arrivals(self, event):
+    def trains(self, event):
         client = self.client
         colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY]
 
