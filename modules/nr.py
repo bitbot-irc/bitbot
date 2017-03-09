@@ -1,8 +1,11 @@
 import collections, re, time
 from datetime import datetime
-import Utils
-from suds.client import Client
 from collections import Counter
+
+import Utils
+
+from suds.client import Client
+from suds import WebFault
 
 # Note that this module requires the open *Staff Version* of the Darwin API
 # You can register for an API key here: http://openldbsv.nationalrail.co.uk/
@@ -94,19 +97,23 @@ class Module(object):
             })
 
         if filter["errors"]:
-            event["stderr"].write("Filter: " + filter["errors_summary"])
-            return
+            return event["stderr"].write("Filter: " + filter["errors_summary"])
 
         if filter["inter"] and filter["type"]!="departures":
-            event["stderr"].write("Filtering by intermediate stations is only supported for departures.")
-            return
+            return event["stderr"].write("Filtering by intermediate stations is only supported for departures.")
 
         nr_filterlist = client.factory.create("filterList")
         if filter["inter"]: nr_filterlist.crs.append(filter["inter"])
 
         method = client.service.GetArrivalDepartureBoardByCRS if len(location_code) == 3 else client.service.GetArrivalDepartureBoardByTIPLOC
-        query = method(100, location_code, datetime.now().isoformat().split(".")[0], filter["period"],
-            nr_filterlist, "to", '', "PBS", False)
+        try:
+            query = method(100, location_code, datetime.now().isoformat().split(".")[0], filter["period"],
+                nr_filterlist, "to", '', "PBS", False)
+        except WebFault as detail:
+            if str(detail) == "Server raised fault: 'Invalid crs code supplied'":
+                return event["stderr"].write("Invalid CRS code.")
+            else:
+                return event["stderr"].write("An error occurred.")
 
         nrcc_severe = len([a for a in query["nrccMessages"][0] if a["severity"] == "Major"]) if "nrccMessages" in query else 0
 
@@ -114,10 +121,9 @@ class Module(object):
             ", %s%s severe messages%s" % (Utils.color(Utils.COLOR_RED), nrcc_severe, Utils.color(Utils.FONT_RESET)) if nrcc_severe else ""
             )
 
-
         if not "trainServices" in query and not "busServices" in query:
-            event["stdout"].write("%s: No services for the next %s minutes" % (station_summary, filter["period"]))
-            return
+            return event["stdout"].write("%s: No services for the next %s minutes" % (
+                station_summary, filter["period"]))
 
         trains = []
 
@@ -231,12 +237,10 @@ class Module(object):
             query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
                 datetime.utcnow().time().strftime("%H:%M:%S+0000"))
             if not query:
-                event["stdout"].write("No service information is available for this identifier.")
-                return
+                return event["stdout"].write("No service information is available for this identifier.")
             if len(query["serviceList"][0]) > 1:
-                event["stdout"].write("Identifier refers to multiple services: " +
+                return event["stdout"].write("Identifier refers to multiple services: " +
                     ", ".join(["%s (%s->%s)" % (a["uid"], a["originCrs"], a["destinationCrs"]) for a in query["serviceList"][0]]))
-                return
             rid = query["serviceList"][0][0]["rid"]
 
         query = client.service.GetServiceDetailsByRID(rid)
@@ -350,8 +354,7 @@ class Module(object):
         client = self.client
 
         if not event["args"].isnumeric():
-            event["stderr"].write("The delay/cancellation code must be a number")
-            return
+            return event["stderr"].write("The delay/cancellation code must be a number")
         reasons = {a["code"]:(a["lateReason"], a["cancReason"]) for a in client.service.GetReasonCodeList()[0]}
         if event["args"] in reasons:
             event["stdout"].write("%s: %s" % (event["args"], " / ".join(reasons[event["args"]])))
