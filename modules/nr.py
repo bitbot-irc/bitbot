@@ -15,7 +15,6 @@ from suds import WebFault
 URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/wsdl.aspx?ver=2016-02-16'
 
 class Module(object):
-
     _name = "NR"
     def __init__(self, bot):
         self.bot = bot
@@ -79,6 +78,34 @@ class Module(object):
         ret["errors_summary"] = ", ".join(['"%s": %s' % (a[0], a[1]) for a in ret["errors"]])
         return ret
 
+    def process(self, service):
+        times = {}
+        a_types = ["eta", "ata", "sta"]
+        d_types = ["etd", "atd", "std"]
+
+        for a in a_types + d_types:
+            if a in service:
+                times[a] = {"orig": service[a]}
+                times[a]["datetime"] = datetime.strptime(service[a], "%Y-%m-%dT%H:%M:%S")
+                times[a]["ut"] = times[a]["datetime"].timestamp()
+            else:
+                times[a] = {"orig": None, "datetime": None, "ut": 0,
+                    "short": "None", "prefix": '', "on_time": False}
+
+        for k, a in times.items():
+            if not a["orig"]: continue
+            a["short"] = a["datetime"].strftime("%H%M")
+            a["prefix"] = k[2] + ("s" if k[0] == "s" else "")
+            a["on_time"] = a["ut"] - times["s"+ k[1:]]["ut"] < 300
+            a["status"] = 1 if a["on_time"] else 2
+            if "a" + k[1:] in service: status = {"d": 3, "a": 0}[k[2]]
+
+        times["arrival"] = [times[a] for a in a_types + d_types if times[a]["ut"]][0]
+        times["departure"] = [times[a] for a in d_types + a_types if times[a]["ut"]][0]
+        times["both"] = times["departure"]
+        times["stb"] = times["std"]
+        return times
+
     def trains(self, event):
         client = self.client
         colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY]
@@ -91,7 +118,7 @@ class Module(object):
             "toc": ('',   lambda x: x.isalpha() and len(x) == 2),
             "dedup": (False, lambda x: type(x)==type(True)),
             "plat": ('',     lambda x: len(x) <= 3),
-            "type": ("departures", lambda x: x in ["departures", "arrivals", "both"]),
+            "type": ("departure", lambda x: x in ["departure", "arrival", "both"]),
             "terminating": (False, lambda x: type(x)==type(True)),
             "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 240, lambda x: int(x))
             })
@@ -99,7 +126,7 @@ class Module(object):
         if filter["errors"]:
             return event["stderr"].write("Filter: " + filter["errors_summary"])
 
-        if filter["inter"] and filter["type"]!="departures":
+        if filter["inter"] and filter["type"]!="departure":
             return event["stderr"].write("Filtering by intermediate stations is only supported for departures.")
 
         nr_filterlist = client.factory.create("filterList")
@@ -129,11 +156,6 @@ class Module(object):
 
         for t in query["trainServices"][0] if "trainServices" in query else [] + query["busServices"][0] if "busServices" in query else []:
             parsed = {
-                "scheduled": datetime.strptime(t["std"] if "std" in t else t["sta"], "%Y-%m-%dT%H:%M:%S"),
-                "scheduled_type" : "departure" if "std" in t else "arrival",
-                "scheduled_short": 'd' if "std" in t else "a",
-                "arrived" : "ata" in t,
-                "departed": "atd" in t,
                 "rid" : t["rid"],
                 "uid" : t["uid"],
                 "head" : t["trainid"],
@@ -143,7 +165,8 @@ class Module(object):
                 "cancelled" : t["isCancelled"] if "isCancelled" in t else False,
                 "cancel_reason" : t["cancelReason"]["value"] if "cancelReason" in t else "",
                 "terminating" : not "std" in t and not "etd" in t and not "atd" in t,
-                "bus" : t["trainid"]=="0B00"
+                "bus" : t["trainid"]=="0B00",
+                "times" : self.process(t)
                 }
             parsed["destinations"] = [{"name": a["locationName"], "tiploc": a["tiploc"],
                 "crs": a["crs"] if "crs" in a else '', "code": a["crs"] if "crs"
@@ -157,22 +180,9 @@ class Module(object):
 
             parsed["departure_only"] = location_code in [a["code"] for a in parsed["origins"]]
 
-            parsed["arrival"] = datetime.strptime(t["eta"] if "eta" in t else t["ata"], "%Y-%m-%dT%H:%M:%S") if "eta" in t or "ata" in t else None
-            parsed["departure"] = datetime.strptime(t["etd"] if "etd" in t else t["atd"], "%Y-%m-%dT%H:%M:%S") if "etd" in t or "atd" in t else None
-            parsed["time"], parsed["timeprefix"] = [a for a in [(parsed["departure"], "d"), (parsed["arrival"], "a"), (parsed["scheduled"], parsed["scheduled_short"] + "s")] if a[0] != None][0]
-            parsed["datetime"] = parsed["time"]
-
             if parsed["cancelled"]:
-                parsed["time"], parsed["timeprefix"], parsed["prediction"] = ("Cancelled: %s" % parsed["cancel_reason"], '', False)
-            else:
-                parsed["time"] = parsed["time"].strftime("%H%M")
-
-            parsed["on_time"] = parsed["datetime"] == parsed["scheduled"] and not parsed["cancelled"]
-
-            parsed["status"] = 1 if parsed["on_time"] else 2
-            if "s" in parsed["timeprefix"]: parsed["status"] = 4
-            if parsed["departed"]: parsed["status"] = 3
-            if parsed["arrived"]:  parsed["status"] = 0
+                for k, time in parsed["times"].items():
+                    time["short"], time["on_time"], time["status"] = "Cancelled: %s" % parsed["cancel_reason"], False, 2
 
             trains.append(parsed)
 
@@ -182,7 +192,7 @@ class Module(object):
             t["origin_summary"] = "/".join(["%s%s" %(a["name"], " " + a["via"]
                 if a["via"] else '') for a in t["origins"]])
 
-        trains = sorted(trains, key=lambda t: t["scheduled"])
+        trains = sorted(trains, key=lambda t: max(t["times"]["std"]["ut"], t["times"]["sta"]["ut"]) if filter["type"]=="both" else t["times"]["st" + filter["type"][0]]["ut"])
 
         trains_filtered = []
         train_locs_toc = []
@@ -194,21 +204,21 @@ class Module(object):
                 filter["origin"] and not filter["origin"].upper() in [a["code"] for a in train["origins"]],
                 filter["toc"] and not filter["toc"].upper() == train["toc"],
                 filter["plat"] and not filter["plat"] == train["platform"],
-                filter["type"] == "departures" and train["terminating"],
-                filter["type"] == "arrivals" and train["departure_only"],
+                filter["type"] == "departure" and train["terminating"],
+                filter["type"] == "arrival" and train["departure_only"],
                 filter["terminating"] and not train["terminating"]
             ]:
                 train_locs_toc.append((train["destinations"], train["toc"]))
                 trains_filtered.append(train)
 
         trains_string = ", ".join(["%s%s (%s, %s%s, %s%s%s%s)" % (
-            "from " if not filter["type"] in ["arrivals", "departures"] and t["terminating"] else '',
-            t["origin_summary"] if t["terminating"] or filter["type"]=="arrivals" else t["dest_summary"],
+            "from " if not filter["type"][0] in "ad" and t["terminating"] else '',
+            t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"],
             t["uid"],
-            "bus" if t["bus"] else t["platform"], "?" if t["platform_hidden"] else '',
-            t["timeprefix"].replace(filter["type"][0], ""),
-            Utils.color(colours[t["status"]]),
-            t["time"],
+            "bus" if t["bus"] else t["platform"], "*" if t["platform_hidden"] else '',
+            t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
+            Utils.color(colours[t["times"][filter["type"]]["status"]]),
+            t["times"][filter["type"]]["short"],
             Utils.color(Utils.FONT_RESET)
             ) for t in trains_filtered])
 
