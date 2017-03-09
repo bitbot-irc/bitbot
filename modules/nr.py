@@ -85,12 +85,12 @@ class Module(object):
 
         location_code = event["args_split"][0].upper()
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
-            "dest": ('', lambda x: x.isalpha() and len(x)==3),
+            "dest": ('',  lambda x: x.isalpha() and len(x)==3),
             "origin":('', lambda x: x.isalpha() and len(x)==3),
             "inter": ('', lambda x: x.isalpha() and len(x)==3, lambda x: x.upper()),
-            "toc": ('', lambda x: x.isalpha() and len(x) == 2),
+            "toc": ('',   lambda x: x.isalpha() and len(x) == 2),
             "dedup": (False, lambda x: type(x)==type(True)),
-            "plat": ('', lambda x: len(x) <= 3),
+            "plat": ('',     lambda x: len(x) <= 3),
             "type": ("departures", lambda x: x in ["departures", "arrivals", "both"]),
             "terminating": (False, lambda x: type(x)==type(True)),
             "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 240, lambda x: int(x))
@@ -212,11 +212,7 @@ class Module(object):
             Utils.color(Utils.FONT_RESET)
             ) for t in trains_filtered])
 
-        event["stdout"].write("%s (%s, %s%s)%s: %s" % (query["locationName"], query["crs"],
-            query["stationManagerCode"],
-            ", %s%s severe messages%s" % (Utils.color(Utils.COLOR_RED), nrcc_severe, Utils.color(Utils.FONT_RESET)) if nrcc_severe else "",
-            " departures calling at %s" % filter["inter"] if filter["inter"] else '',
-            trains_string))
+        event["stdout"].write("%s%s: %s" % (station_summary, " departures calling at %s" % filter["inter"] if filter["inter"] else '', trains_string))
 
     def service(self, event):
         client = self.client
