@@ -103,7 +103,7 @@ class Module(object):
         times["arrival"] = [times[a] for a in a_types + d_types if times[a]["ut"]][0]
         times["departure"] = [times[a] for a in d_types + a_types if times[a]["ut"]][0]
         times["both"] = times["departure"]
-        times["stb"] = times["std"]
+        times["max_sched"] = {"ut": max(times["sta"]["ut"], times["std"]["ut"])}
         return times
 
     def trains(self, event):
@@ -192,7 +192,7 @@ class Module(object):
             t["origin_summary"] = "/".join(["%s%s" %(a["name"], " " + a["via"]
                 if a["via"] else '') for a in t["origins"]])
 
-        trains = sorted(trains, key=lambda t: max(t["times"]["std"]["ut"], t["times"]["sta"]["ut"]) if filter["type"]=="both" else t["times"]["st" + filter["type"][0]]["ut"])
+        trains = sorted(trains, key=lambda t: t["times"]["max_sched"]["ut"] if filter["type"]=="both" else t["times"]["st" + filter["type"][0]]["ut"])
 
         trains_filtered = []
         train_locs_toc = []
@@ -273,7 +273,8 @@ class Module(object):
                 "first": len(stations) == 0,
                 "last" : False,
                 "cancelled" : station["isCancelled"] if "isCancelled" in station else False,
-                "divide_summary": ""
+                "divide_summary": "",
+                "length": station["length"] if "length" in station else None,
                 }
             parsed["arrival"] = datetime.strptime(station["eta"] if "eta" in station else station["ata"], "%Y-%m-%dT%H:%M:%S") if "eta" in station or "ata" in station else None
             parsed["departure"] = datetime.strptime(station["etd"] if "etd" in station else station["atd"], "%Y-%m-%dT%H:%M:%S") if "etd" in station or "atd" in station else None
@@ -318,11 +319,13 @@ class Module(object):
             if station["called"]: station["status"] = 0
             if station["passing"]: station["status"] = 3
 
-            station["summary"] = "%s%s%s(%s, %s%s%s%s)" % (
+            station["summary"] = "%s%s%s (%s%s%s%s%s%s)" % (
                 station["divide_summary"],
                 "*" if station["passing"] else '',
-                station["name"] + " " if station["name"] != station["crs"] else '',
-                station["crs"], ("~" if station["prediction"] else '') + station["timeprefix"],
+                station["name"],
+                station["crs"] + ", " if station["name"] != station["crs"] else '',
+                station["length"] + " cars, " if station["length"] and (station["first"] or station["last"] or station["divide_summary"]) else '',
+                ("~" if station["prediction"] else '') + station["timeprefix"],
                 Utils.color(colours[station["status"]]),
                 station["time"],
                 Utils.color(Utils.FONT_RESET)
