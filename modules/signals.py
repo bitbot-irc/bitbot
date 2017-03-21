@@ -33,7 +33,7 @@ QUOTES = {
     "Nobody has the intention to erect a wall" : "Walter Ulbricht",
     "We're all completely fucked. I'm fucked. You're fucked. [...] It has been the biggest cock-up ever and we're all completely fucked" : "Richard Mottram",
     "The security aspect of cyber is very, very tough. And maybe it's hardly doable." : "Donald Trump",
-    "The Internet. The hate machine, the love machine, the machine powered by many machines. We are all part of it, helping it grow, and helping it grow on us." : "",
+    "The Internet. The hate machine, the love machine, the machine powered by many machines. We are all part of it, helping it grow, and helping it grow on us." : "Topiary",
     "Every great historical event began as a utopia and ended as a reality." : "Richard Nikolaus Eijiro",
     "Strange women lying in ponds distributing swords is no basis for a system of government!" : "",
     "My hovercraft is full of eels." : "",
