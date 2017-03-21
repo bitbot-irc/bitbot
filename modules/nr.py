@@ -291,8 +291,9 @@ class Module(object):
             parsed["joins"] = "join" in parsed["associations"].keys()
             if parsed["divides"]:
                 divide = parsed["associations"]["divide"]
-                parsed["divide_summary"] = "%sDividing as %s to %s (%s)%s at " % (
+                parsed["divide_summary"] = "%sDividing %s %s to %s (%s)%s at " % (
                     Utils.color(Utils.FONT_BOLD),
+                    "from" if parsed["first"] else "as",
                     divide["uid"], divide["destination"],
                     divide["destCRS"] if "destCRS" in divide else divide["destTiploc"],
                     Utils.color(Utils.FONT_RESET)
