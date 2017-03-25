@@ -134,7 +134,7 @@ class Module(object):
 
         method = client.service.GetArrivalDepartureBoardByCRS if len(location_code) == 3 else client.service.GetArrivalDepartureBoardByTIPLOC
         try:
-            query = method(100, location_code, datetime.now().isoformat().split(".")[0], filter["period"],
+            query = method(100, location_code, datetime.now().isoformat().split(".")[0] + "Z", filter["period"],
                 nr_filterlist, "to", '', "PBS", False)
         except WebFault as detail:
             if str(detail) == "Server raised fault: 'Invalid crs code supplied'":
