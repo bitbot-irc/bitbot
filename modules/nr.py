@@ -90,12 +90,14 @@ class Module(object):
                 times[a]["ut"] = times[a]["datetime"].timestamp()
             else:
                 times[a] = {"orig": None, "datetime": None, "ut": 0,
-                    "short": "None", "prefix": '', "on_time": False}
+                    "short": "None", "prefix": '', "on_time": False,
+                    "estimate": False}
 
         for k, a in times.items():
             if not a["orig"]: continue
             a["short"] = a["datetime"].strftime("%H%M")
             a["prefix"] = k[2] + ("s" if k[0] == "s" else "")
+            a["estimate"] = k[0] == "e"
             a["on_time"] = a["ut"] - times["s"+ k[1:]]["ut"] < 300
             a["status"] = 1 if a["on_time"] else 2
             if "a" + k[1:] in service: status = {"d": 3, "a": 0}[k[2]]
@@ -231,7 +233,8 @@ class Module(object):
         service_id = event["args_split"][0]
 
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
-            "passing": (False, lambda x: type(x)==type(True))
+            "passing": (False, lambda x: type(x)==type(True)),
+            "type": ("arrival", lambda x: x in ["arrival", "departure"])
             })
 
         if filter["errors"]:
@@ -264,27 +267,18 @@ class Module(object):
         for station in query["locations"][0]:
             parsed = {"name": station["locationName"],
                 "crs": (station["crs"] if "crs" in station else station["tiploc"]).rstrip(),
-                "scheduled": datetime.strptime(station["sta"] if "sta" in station else station["std"], "%Y-%m-%dT%H:%M:%S"),
-                "scheduled_type" : "arrival" if "sta" in station else "departure",
-                "scheduled_short": '' if "sta" in station else "d",
                 "called": "atd" in station or "ata" in station,
                 "passing": station["isPass"] if "isPass" in station else False,
-                "prediction": "eta" in station or "etd" in station and not "atd" in station,
                 "first": len(stations) == 0,
                 "last" : False,
                 "cancelled" : station["isCancelled"] if "isCancelled" in station else False,
                 "divide_summary": "",
                 "length": station["length"] if "length" in station else None,
+                "times": self.process(station)
                 }
-            parsed["arrival"] = datetime.strptime(station["eta"] if "eta" in station else station["ata"], "%Y-%m-%dT%H:%M:%S") if "eta" in station or "ata" in station else None
-            parsed["departure"] = datetime.strptime(station["etd"] if "etd" in station else station["atd"], "%Y-%m-%dT%H:%M:%S") if "etd" in station or "atd" in station else None
-            parsed["time"], parsed["timeprefix"] = [a for a in [(parsed["arrival"], ''), (parsed["departure"], "d"), (parsed["scheduled"], parsed["scheduled_short"] + "s")] if a[0] != None][0]
-            parsed["datetime"] = parsed["time"]
+
             if parsed["cancelled"]:
-                parsed["time"], parsed["timeprefix"], parsed["prediction"] = ("Cancelled", '', False)
-            else:
-                parsed["time"] = parsed["time"].strftime("%H%M")
-            parsed["on_time"] = parsed["datetime"] == parsed["scheduled"] and not parsed["cancelled"]
+                time["arrival"]["short"], time["arrival"]["on_time"], time["arrival"]["status"] = "Cancelled", False, 2
 
             parsed["associations"] = {a["category"] : a for a in station["associations"][0]} if "associations" in station else {}
             parsed["divides"] = "divide" in parsed["associations"].keys()
@@ -315,10 +309,8 @@ class Module(object):
             if not station["first"]: station["called"] = True
 
         for station in stations:
-            station["status"] = 1 if station["on_time"] else 2
-            if "s" in station["timeprefix"]: station["status"] = 4
-            if station["called"]: station["status"] = 0
-            if station["passing"]: station["status"] = 3
+            if station["passing"]:
+                station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 3, 3
 
             station["summary"] = "%s%s%s (%s%s%s%s%s%s)" % (
                 station["divide_summary"],
@@ -326,9 +318,10 @@ class Module(object):
                 station["name"],
                 station["crs"] + ", " if station["name"] != station["crs"] else '',
                 station["length"] + " cars, " if station["length"] and (station["first"] or station["last"] or station["divide_summary"]) else '',
-                ("~" if station["prediction"] else '') + station["timeprefix"],
-                Utils.color(colours[station["status"]]),
-                station["time"],
+                ("~" if station["times"][filter["type"]]["estimate"] else '') +
+                station["times"][filter["type"]]["prefix"].replace(filter["type"][0], ""),
+                Utils.color(colours[station["times"][filter["type"]]["status"]]),
+                station["times"][filter["type"]]["short"],
                 Utils.color(Utils.FONT_RESET)
                 )
 
