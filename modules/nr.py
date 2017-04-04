@@ -100,7 +100,7 @@ class Module(object):
             a["estimate"] = k[0] == "e"
             a["on_time"] = a["ut"] - times["s"+ k[1:]]["ut"] < 300
             a["status"] = 1 if a["on_time"] else 2
-            if "a" + k[1:] in service: status = {"d": 3, "a": 0}[k[2]]
+            if "a" + k[1:] in service: a["status"] = {"d": 3, "a": 0}[k[2]]
 
         times["arrival"] = [times[a] for a in a_types + d_types if times[a]["ut"]][0]
         times["departure"] = [times[a] for a in d_types + a_types if times[a]["ut"]][0]
@@ -213,11 +213,13 @@ class Module(object):
                 train_locs_toc.append((train["destinations"], train["toc"]))
                 trains_filtered.append(train)
 
-        trains_string = ", ".join(["%s%s (%s, %s%s, %s%s%s%s)" % (
+        trains_string = ", ".join(["%s%s (%s, %s%s%s, %s%s%s%s)" % (
             "from " if not filter["type"][0] in "ad" and t["terminating"] else '',
             t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"],
             t["uid"],
-            "bus" if t["bus"] else t["platform"], "*" if t["platform_hidden"] else '',
+            "bus" if t["bus"] else t["platform"],
+            "*" if t["platform_hidden"] else '',
+            "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
             t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
             Utils.color(colours[t["times"][filter["type"]]["status"]]),
             t["times"][filter["type"]]["short"],
