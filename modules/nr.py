@@ -101,7 +101,7 @@ class Module(object):
             a["on_time"] = a["ut"] - times["s"+ k[1:]]["ut"] < 300
             a["status"] = 1 if a["on_time"] else 2
             if "a" + k[1:] in service: a["status"] = {"d": 3, "a": 0}[k[2]]
-            if k[0] = "s": a["status"] = 4
+            if k[0] == "s": a["status"] = 4
 
         times["arrival"] = [times[a] for a in a_types + d_types if times[a]["ut"]][0]
         times["departure"] = [times[a] for a in d_types + a_types if times[a]["ut"]][0]
