@@ -345,7 +345,7 @@ class Module(object):
         done_count = len([s for s in stations if s["called"]])
         total_count = len(stations)
 
-        event["stdout"].write("%s%s %s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operator"],
+        event["stdout"].write("%s%s %s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operatorCode"],
             query["trainid"], query["serviceType"],
             Utils.color(Utils.COLOR_LIGHTBLUE), done_count, Utils.color(Utils.FONT_RESET),
             len(stations_filtered), total_count,
