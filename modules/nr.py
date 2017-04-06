@@ -16,6 +16,7 @@ URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/wsdl.aspx?ver=2016-0
 
 class Module(object):
     _name = "NR"
+    COLOURS = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY, Utils.COLOR_ORANGE]
     def __init__(self, bot):
         self.bot = bot
         self._client = None
@@ -100,7 +101,7 @@ class Module(object):
             a["estimate"] = k[0] == "e"
             a["on_time"] = a["ut"] - times["s"+ k[1:]]["ut"] < 300
             a["status"] = 1 if a["on_time"] else 2
-            if "a" + k[1:] in service: a["status"] = {"d": 3, "a": 0}[k[2]]
+            if "a" + k[1:] in service: a["status"] = {"d": 0, "a": 3}[k[2]]
             if k[0] == "s": a["status"] = 4
 
         times["arrival"] = [times[a] for a in a_types + d_types if times[a]["ut"]][0]
@@ -111,7 +112,7 @@ class Module(object):
 
     def trains(self, event):
         client = self.client
-        colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY]
+        colours = self.COLOURS
 
         location_code = event["args_split"][0].upper()
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
@@ -231,7 +232,7 @@ class Module(object):
 
     def service(self, event):
         client = self.client
-        colours = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY]
+        colours = self.COLOURS
 
         service_id = event["args_split"][0]
 
@@ -270,7 +271,7 @@ class Module(object):
         for station in query["locations"][0]:
             parsed = {"name": station["locationName"],
                 "crs": (station["crs"] if "crs" in station else station["tiploc"]).rstrip(),
-                "called": "atd" in station or "ata" in station,
+                "called": "atd" in station,
                 "passing": station["isPass"] if "isPass" in station else False,
                 "first": len(stations) == 0,
                 "last" : False,
@@ -313,14 +314,16 @@ class Module(object):
 
         for station in stations:
             if station["passing"]:
-                station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 3, 3
+                station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 5, 5
+            elif station["called"]:
+                station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 0, 0
 
             station["summary"] = "%s%s%s (%s%s%s%s%s%s)" % (
                 station["divide_summary"],
                 "*" if station["passing"] else '',
                 station["name"],
                 station["crs"] + ", " if station["name"] != station["crs"] else '',
-                station["length"] + " cars, " if station["length"] and (station["first"] or station["last"] or station["divide_summary"]) else '',
+                station["length"] + " cars, " if station["length"] and (station["first"] or (station["last"]) or station["divide_summary"]) else '',
                 ("~" if station["times"][filter["type"]]["estimate"] else '') +
                 station["times"][filter["type"]]["prefix"].replace(filter["type"][0], ""),
                 Utils.color(colours[station["times"][filter["type"]]["status"]]),
