@@ -85,9 +85,16 @@ class Module(object):
         d_types = ["etd", "atd", "std"]
 
         for a in a_types + d_types:
-            if a in service:
+            if a in service and service[a]:
                 times[a] = {"orig": service[a]}
-                times[a]["datetime"] = datetime.strptime(service[a], "%Y-%m-%dT%H:%M:%S")
+
+                if len(service[a]) > 5:
+                    times[a]["datetime"] = datetime.strptime(service[a], "%Y-%m-%dT%H:%M:%S")
+                else:
+                    times[a]["datetime"] = datetime.strptime(
+                        datetime.now().date().isoformat() + "T" + service[a][:4],
+                        "%Y-%m-%dT%H%M"
+                    )
                 times[a]["ut"] = times[a]["datetime"].timestamp()
             else:
                 times[a] = {"orig": None, "datetime": None, "ut": 0,
@@ -96,7 +103,7 @@ class Module(object):
 
         for k, a in times.items():
             if not a["orig"]: continue
-            a["short"] = a["datetime"].strftime("%H%M")
+            a["short"] = a["datetime"].strftime("%H%M") if len(a["orig"]) > 5 else a["orig"]
             a["prefix"] = k[2] + ("s" if k[0] == "s" else "")
             a["estimate"] = k[0] == "e"
             a["on_time"] = a["ut"] - times["s"+ k[1:]]["ut"] < 300
@@ -234,6 +241,14 @@ class Module(object):
         client = self.client
         colours = self.COLOURS
 
+        SCHEDULE_STATUS = {"B": "perm bus", "F": "freight train", "P": "train",
+            "S": "ship", "T": "trip", "1": "train", "2": "freight",
+            "3": "trip", "4": "ship", "5": "bus"}
+
+        eagle_key = self.bot.config["eagle-api-key"]
+        eagle_url = self.bot.config["eagle-api-url"]
+        schedule = {}
+
         service_id = event["args_split"][0]
 
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
@@ -249,14 +264,26 @@ class Module(object):
         if len(service_id) <= 8:
             query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
                 datetime.utcnow().time().strftime("%H:%M:%S+0000"))
-            if not query:
+            if eagle_url:
+                schedule_query = Utils.get_url("%s/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True)
+                schedule = schedule_query["current"]
+            if not query and not schedule:
                 return event["stdout"].write("No service information is available for this identifier.")
-            if len(query["serviceList"][0]) > 1:
+
+            if query and len(query["serviceList"][0]) > 1:
                 return event["stdout"].write("Identifier refers to multiple services: " +
                     ", ".join(["%s (%s->%s)" % (a["uid"], a["originCrs"], a["destinationCrs"]) for a in query["serviceList"][0]]))
-            rid = query["serviceList"][0][0]["rid"]
+            if query: rid = query["serviceList"][0][0]["rid"]
 
-        query = client.service.GetServiceDetailsByRID(rid)
+            if query:
+                query = client.service.GetServiceDetailsByRID(rid)
+            if schedule:
+                for k,v in {
+                    "trainid": schedule["schedule_segment"]["signalling_id"],
+                    "operatorCode": schedule["atoc_code"],
+                    "serviceType": "class " + schedule_query["tops_inferred"] if schedule_query["tops_inferred"] else SCHEDULE_STATUS.get(schedule["train_status"], "?"),
+                }.items():
+                    query[k] = v
 
         disruptions = []
         if "cancelReason" in query:
@@ -268,43 +295,55 @@ class Module(object):
         else: disruptions = ""
 
         stations = []
-        for station in query["locations"][0]:
-            parsed = {"name": station["locationName"],
-                "crs": (station["crs"] if "crs" in station else station["tiploc"]).rstrip(),
-                "called": "atd" in station,
-                "passing": station["isPass"] if "isPass" in station else False,
-                "first": len(stations) == 0,
-                "last" : False,
-                "cancelled" : station["isCancelled"] if "isCancelled" in station else False,
-                "divide_summary": "",
-                "length": station["length"] if "length" in station else None,
-                "times": self.process(station)
-                }
+        for station in query["locations"][0] if "locations" in query else schedule["schedule_segment"]["schedule_location"]:
+            if "locations" in query:
+                parsed = {"name": station["locationName"],
+                    "crs": (station["crs"] if "crs" in station else station["tiploc"]).rstrip(),
+                    "called": "atd" in station,
+                    "passing": station["isPass"] if "isPass" in station else False,
+                    "first": len(stations) == 0,
+                    "last" : False,
+                    "cancelled" : station["isCancelled"] if "isCancelled" in station else False,
+                    "divide_summary": "",
+                    "length": station["length"] if "length" in station else None,
+                    "times": self.process(station)
+                    }
 
-            if parsed["cancelled"]:
-                time["arrival"]["short"], time["arrival"]["on_time"], time["arrival"]["status"] = "Cancelled", False, 2
+                if parsed["cancelled"]:
+                    time["arrival"]["short"], time["arrival"]["on_time"], time["arrival"]["status"] = "Cancelled", False, 2
 
-            parsed["associations"] = {a["category"] : a for a in station["associations"][0]} if "associations" in station else {}
-            parsed["divides"] = "divide" in parsed["associations"].keys()
-            parsed["joins"] = "join" in parsed["associations"].keys()
-            if parsed["divides"]:
-                divide = parsed["associations"]["divide"]
-                parsed["divide_summary"] = "%sDividing %s %s to %s (%s)%s at " % (
-                    Utils.color(Utils.FONT_BOLD),
-                    "from" if parsed["first"] else "as",
-                    divide["uid"], divide["destination"],
-                    divide["destCRS"] if "destCRS" in divide else divide["destTiploc"],
-                    Utils.color(Utils.FONT_RESET)
-                    )
-            if parsed["joins"]:
-                divide = parsed["associations"]["join"]
-                parsed["divide_summary"] = "%sJoining %s from %s (%s)%s at " % (
-                    Utils.color(Utils.FONT_BOLD),
-                    divide["uid"], divide["origin"],
-                    divide["originCRS"] if "originCRS" in divide else divide["originTiploc"],
-                    Utils.color(Utils.FONT_RESET)
-                    )
-
+                parsed["associations"] = {a["category"] : a for a in station["associations"][0]} if "associations" in station else {}
+                parsed["divides"] = "divide" in parsed["associations"].keys()
+                parsed["joins"] = "join" in parsed["associations"].keys()
+                if parsed["divides"]:
+                    divide = parsed["associations"]["divide"]
+                    parsed["divide_summary"] = "%sDividing %s %s to %s (%s)%s at " % (
+                        Utils.color(Utils.FONT_BOLD),
+                        "from" if parsed["first"] else "as",
+                        divide["uid"], divide["destination"],
+                        divide["destCRS"] if "destCRS" in divide else divide["destTiploc"],
+                        Utils.color(Utils.FONT_RESET)
+                        )
+                if parsed["joins"]:
+                    divide = parsed["associations"]["join"]
+                    parsed["divide_summary"] = "%sJoining %s from %s (%s)%s at " % (
+                        Utils.color(Utils.FONT_BOLD),
+                        divide["uid"], divide["origin"],
+                        divide["originCRS"] if "originCRS" in divide else divide["originTiploc"],
+                        Utils.color(Utils.FONT_RESET)
+                        )
+            else:
+                parsed = {"name": station["name"],
+                    "crs": station["crs"] if station["crs"] else station["tiploc_code"],
+                    "called": False,
+                    "passing": station.get("pass", None),
+                    "first": len(stations) == 0,
+                    "last" : False,
+                    "cancelled" : False,
+                    "divide_summary": "",
+                    "length": None,
+                    "times": self.process(station["dolphin_times"])
+                    }
             stations.append(parsed)
 
         [a for a in stations if a["called"] or a["first"]][-1]["last"] = True
