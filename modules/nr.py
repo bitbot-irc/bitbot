@@ -278,9 +278,8 @@ class Module(object):
             if query:
                 query = client.service.GetServiceDetailsByRID(rid)
             if schedule:
-                if not query: query = {}
+                if not query: query = {"trainid": schedule["schedule_segment"]["signalling_id"]}
                 for k,v in {
-                    "trainid": schedule["schedule_segment"]["signalling_id"],
                     "operatorCode": schedule["atoc_code"],
                     "serviceType": "class " + schedule_query["tops_inferred"] if schedule_query["tops_inferred"] else SCHEDULE_STATUS.get(schedule["train_status"], "?"),
                 }.items():
