@@ -278,6 +278,7 @@ class Module(object):
             if query:
                 query = client.service.GetServiceDetailsByRID(rid)
             if schedule:
+                if not query: query = {}
                 for k,v in {
                     "trainid": schedule["schedule_segment"]["signalling_id"],
                     "operatorCode": schedule["atoc_code"],
