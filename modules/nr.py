@@ -80,6 +80,9 @@ class Module(object):
         return ret
 
     def process(self, service):
+        nonetime = {"orig": None, "datetime": None, "ut": 0,
+                    "short": "None", "prefix": '', "on_time": False,
+                    "estimate": False, "status": 4}
         times = {}
         a_types = ["eta", "ata", "sta"]
         d_types = ["etd", "atd", "std"]
@@ -97,9 +100,7 @@ class Module(object):
                     )
                 times[a]["ut"] = times[a]["datetime"].timestamp()
             else:
-                times[a] = {"orig": None, "datetime": None, "ut": 0,
-                    "short": "None", "prefix": '', "on_time": False,
-                    "estimate": False}
+                times[a] = nonetime
 
         for k, a in times.items():
             if not a["orig"]: continue
@@ -111,8 +112,8 @@ class Module(object):
             if "a" + k[1:] in service: a["status"] = {"d": 0, "a": 3}[k[2]]
             if k[0] == "s": a["status"] = 4
 
-        times["arrival"] = [times[a] for a in a_types + d_types if times[a]["ut"]][0]
-        times["departure"] = [times[a] for a in d_types + a_types if times[a]["ut"]][0]
+        times["arrival"] = ([times[a] for a in a_types + d_types if times[a]["ut"]] + [nonetime])[0]
+        times["departure"] = ([times[a] for a in d_types + a_types if times[a]["ut"]] + [nonetime])[0]
         times["both"] = times["departure"]
         times["max_sched"] = {"ut": max(times["sta"]["ut"], times["std"]["ut"])}
         return times
@@ -267,6 +268,7 @@ class Module(object):
             if eagle_url:
                 schedule_query = Utils.get_url("%s/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True)
                 schedule = schedule_query["current"]
+                segment = schedule["schedule_segment"]
             if not query and not schedule:
                 return event["stdout"].write("No service information is available for this identifier.")
 
@@ -279,9 +281,10 @@ class Module(object):
                 query = client.service.GetServiceDetailsByRID(rid)
             if schedule:
                 if not query: query = {"trainid": schedule["schedule_segment"]["signalling_id"]}
+                stype = "class %s %s" % (schedule_query["tops_inferred"], segment["CIF_power_type"]) if schedule_query["tops_inferred"] else segment["CIF_power_type"]
                 for k,v in {
                     "operatorCode": schedule["atoc_code"],
-                    "serviceType": "class " + schedule_query["tops_inferred"] if schedule_query["tops_inferred"] else SCHEDULE_STATUS.get(schedule["train_status"], "?"),
+                    "serviceType": stype if stype else SCHEDULE_STATUS[schedule["train_status"]],
                 }.items():
                     query[k] = v
 
@@ -310,7 +313,7 @@ class Module(object):
                     }
 
                 if parsed["cancelled"]:
-                    time["arrival"]["short"], time["arrival"]["on_time"], time["arrival"]["status"] = "Cancelled", False, 2
+                    parsed["times"]["arrival"]["short"], parsed["times"]["arrival"]["on_time"], parsed["times"]["arrival"]["status"] = "Cancelled", False, 2
 
                 parsed["associations"] = {a["category"] : a for a in station["associations"][0]} if "associations" in station else {}
                 parsed["divides"] = "divide" in parsed["associations"].keys()
@@ -333,7 +336,7 @@ class Module(object):
                         Utils.color(Utils.FONT_RESET)
                         )
             else:
-                parsed = {"name": station["name"],
+                parsed = {"name": station["name"].title(),
                     "crs": station["crs"] if station["crs"] else station["tiploc_code"],
                     "called": False,
                     "passing": station.get("pass", None),
