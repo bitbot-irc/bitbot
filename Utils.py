@@ -72,9 +72,9 @@ def get_url(url, **kwargs):
     response_content = response.read()
     encoding = response.info().get_content_charset()
     if kwargs.get("soup"):
-        return bs4.BeautifulSoup(response_content, "lxml")
+        return bs4.BeautifulSoup(response_content, kwargs.get("parser", "lxml"))
     if not encoding:
-        soup = bs4.BeautifulSoup(response_content, "lxml")
+        soup = bs4.BeautifulSoup(response_content, kwargs.get("parser", "lxml"))
         metas = soup.find_all("meta")
         for meta in metas:
             if "charset=" in meta.get("content", ""):
