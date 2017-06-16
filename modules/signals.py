@@ -44,6 +44,7 @@ QUOTES = {
     "Wer nichts zu verbergen hat, hat auch nichts zu befürchten" : "",
     "Words will always retain their power. Words offer the means to meaning, and for those who will listen, the enunciation of truth." : "Alan Moore",
     "Сейчас я вам заявляю, что вы провалились!" : "",
+    "Godhet är något så enkelt: att alltid finnas för andra, att aldrig söka sig själv." : "Dag Hammarskjöld",
 }
 
 class Module(object):
