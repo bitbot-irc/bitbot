@@ -45,6 +45,7 @@ QUOTES = {
     "Words will always retain their power. Words offer the means to meaning, and for those who will listen, the enunciation of truth." : "Alan Moore",
     "Сейчас я вам заявляю, что вы провалились!" : "",
     "Godhet är något så enkelt: att alltid finnas för andra, att aldrig söka sig själv." : "Dag Hammarskjöld",
+    "Fire, water and government know nothing of mercy" : "",
 }
 
 class Module(object):
