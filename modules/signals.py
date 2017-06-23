@@ -46,6 +46,9 @@ QUOTES = {
     "Сейчас я вам заявляю, что вы провалились!" : "",
     "Godhet är något så enkelt: att alltid finnas för andra, att aldrig söka sig själv." : "Dag Hammarskjöld",
     "Fire, water and government know nothing of mercy" : "",
+    "The optimist proclaims that we live in the best of all possible worlds; and the pessimist fears this is true. So I elect for neither label" : "James Branch Cabell",
+    "微乎微乎，至于无形；神乎神乎，至于无声；故能为敌之司命" : "孫子",
+    "If you know your enemy and know yourself, one hundred battles will not defeat you" : "Sun Tzu",
 }
 
 class Module(object):
