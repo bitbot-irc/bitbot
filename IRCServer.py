@@ -52,8 +52,14 @@ class Server(object):
         return self.cached_fileno if fileno == -1 else fileno
     def connect(self):
         self.socket.connect((self.target_hostname, self.port))
+
         if self.password:
             self.send_pass(self.password)
+        # In principle, this belongs in the NS module. In reality, it's more practical to put this
+        # One-off case here for SASL
+        if "Nickserv" in self.bot.modules.modules and self.get_setting("nickserv-password"):
+            self.send_capability_request("sasl")
+
         self.send_user(self.original_username, self.original_realname)
         self.send_nick(self.original_nickname)
         self.connected = True
@@ -172,6 +178,14 @@ class Server(object):
         self.send("USER %s - - :%s" % (username, realname))
     def send_nick(self, nickname):
         self.send("NICK %s" % nickname)
+
+    def send_capability_request(self, capname):
+        self.send("CAP REQ :%s" % capname)
+    def send_capability_end(self):
+        self.send("CAP END")
+    def send_authenticate(self, text):
+        self.send("AUTHENTICATE %s" % text)
+
     def send_pass(self, password):
         self.send("PASS %s" % password)
     def send_ping(self, nonce="hello"):

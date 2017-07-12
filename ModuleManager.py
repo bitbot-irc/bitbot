@@ -14,6 +14,10 @@ class ModuleManager(object):
 
     def _load_module(self, filename):
         name = self.module_name(filename)
+
+        whitelist = self.bot.config.get("module_whitelist", [])
+        if whitelist and name not in whitelist: return
+
         with open(filename) as module_file:
             while True:
                 line = module_file.readline().strip()
@@ -61,6 +65,7 @@ class ModuleManager(object):
             if name in self.waiting_requirement:
                 for filename in self.waiting_requirement:
                     self.load_module(filename)
+            sys.stderr.write("module '%s' loaded.\n" % filename)
         else:
             sys.stderr.write("module '%s' not loaded.\n" % filename)
     def load_modules(self):
