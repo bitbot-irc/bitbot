@@ -43,10 +43,10 @@ def handler(f=None, description=None, default_event=False):
     default_events[name] = current_default_event
     current_description, current_default_event = None, False
 
-def handle(line, prefix, command, args, is_final, _bot, _server):
+def handle(line, prefix, command, args, is_final, _bot, server):
     global bot
     line_split = line.split(" ")
-    data = LineData(line, line_split, prefix, command, args, is_final, _server)
+    data = LineData(line, line_split, prefix, command, args, is_final, server)
     handler_function = None
 
     if command in handlers:
