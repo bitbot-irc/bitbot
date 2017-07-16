@@ -7,6 +7,7 @@ class User(object):
         self.set_nickname(nickname)
         self.username = None
         self.hostname = None
+        self.realname = None
         self.server = server
         self.bot = bot
         self.channels = set([])

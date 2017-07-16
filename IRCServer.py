@@ -128,10 +128,20 @@ class Server(object):
             user.part_channel(channel)
         del self.channels[channel.name]
     def parse_line(self, line):
-        if line:
-            line_split = line.split(" ")
-            IRCLineHandler.handle(line, line_split, self.bot, self)
-            self.check_users()
+        if not line: return
+        original_line = line
+        prefix, final = None, None
+        if line[0]==":":
+            prefix, line = line[1:].split(" ", 1)
+        command, line = (line.split(" ", 1) + [""])[:2]
+        if line[:1]==":":
+            final, line = line[1:], ""
+        elif " :" in line:
+            line, final = line.split(" :", 1)
+        args_split = line.split(" ") if line else []
+        if final: args_split.append(final)
+        IRCLineHandler.handle(original_line, prefix, command, args_split, final!=None, self.bot, self)
+        self.check_users()
     def check_users(self):
         for user in self.new_users:
             if not len(user.channels):

@@ -59,6 +59,7 @@ class EventHook(object):
             return multiple_event_hook
         return self.get_child(subevent)
     def call(self, max=None, **kwargs):
+        if "data" in kwargs: kwargs.update(kwargs["data"].map())
         event = Event(self.bot, self.name, **kwargs)
         if self._call_notify:
             self._call_notify(self, event)
