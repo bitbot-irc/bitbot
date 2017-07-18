@@ -298,7 +298,7 @@ def handle_PRIVMSG(data):
     if action:
         message = message.replace("\01ACTION ", "", 1)[:-1]
     if target[0] in server.channel_types:
-        channel = server.get_channel(line_split[2])
+        channel = server.get_channel(data.args[0])
         bot.events.on("received").on("message").on("channel").call(
             data=data, user=user, message=message, message_split=message_split,
             channel=channel, action=action)
