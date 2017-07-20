@@ -167,7 +167,7 @@ def handle_PART(data):
     server = data.server
     nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
     channel = server.get_channel(data.args[0])
-    reason = data.args[1]
+    reason = data.args[1] if len(args)>1 else ""
     if not server.is_own_nickname(nickname):
         user = server.get_user(nickname)
         bot.events.on("received").on("part").call(data=data, channel=channel,
