@@ -5,7 +5,7 @@ QUOTES = {
     "You can build a throne with bayonets, but it's difficult to sit on it." : "Boris Yeltsin",
     "We don't appreciate what we have until it's gone. Freedom is like that. It's like air. When you have it, you don't notice it." : "Boris Yeltsin",
     "They accused us of suppressing freedom of expression. This was a lie and we could not let them publish it." : "Nelba Blandon, as director of censorship, Nicaragua",
-    "Death solves all problems - no man, no problem." : "Joseph Stalin",
+    "Death solves all problems - no man, no problem." : "Anatoly Rybakov",
     "Make the lie big, make it simple, keep saying it, and eventually they will believe it." : "Adolf Hitler",
     "If we don't end war, war will end us." : "H.G. Wells",
     "All that is necessary for evil to succeed is for good men to do nothing." : "Edmund Burke",
