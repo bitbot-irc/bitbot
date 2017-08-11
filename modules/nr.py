@@ -122,6 +122,10 @@ class Module(object):
         client = self.client
         colours = self.COLOURS
 
+        eagle_key = self.bot.config["eagle-api-key"]
+        eagle_url = self.bot.config["eagle-api-url"]
+        schedule = {}
+
         location_code = event["args_split"][0].upper()
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
             "dest": ('',  lambda x: x.isalpha() and len(x)==3),
@@ -132,7 +136,11 @@ class Module(object):
             "plat": ('',     lambda x: len(x) <= 3),
             "type": ("departure", lambda x: x in ["departure", "arrival", "both"]),
             "terminating": (False, lambda x: type(x)==type(True)),
-            "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 240, lambda x: int(x))
+            "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 240, lambda x: int(x)),
+            "nonpassenger": (False, lambda x: type(x)==type(True)),
+            "timebase": ("0000", lambda x: len(x)==4 and x.isdigit()),
+            "tops": (None, lambda x: len(x)<4 and x.isdigit()),
+            "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST"], lambda x: x.upper()),
             })
 
         if filter["errors"]:
@@ -147,7 +155,7 @@ class Module(object):
         method = client.service.GetArrivalDepartureBoardByCRS if len(location_code) == 3 else client.service.GetArrivalDepartureBoardByTIPLOC
         try:
             query = method(100, location_code, datetime.now().isoformat().split(".")[0], filter["period"],
-                nr_filterlist, "to", '', "PBS", False)
+                nr_filterlist, "to", '', "PBS", filter["nonpassenger"])
         except WebFault as detail:
             if str(detail) == "Server raised fault: 'Invalid crs code supplied'":
                 return event["stderr"].write("Invalid CRS code.")
@@ -198,6 +206,12 @@ class Module(object):
 
             trains.append(parsed)
 
+        if eagle_url:
+            summary_query = Utils.get_url("%s/summaries/%s?uids=%s" % (eagle_url, datetime.now().date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True)
+            if summary_query:
+                for t in trains:
+                    t.update(summary_query[t["uid"]])
+
         for t in trains:
             t["dest_summary"] = "/".join(["%s%s" %(a["name"], " " + a["via"]
                 if a["via"] else '') for a in t["destinations"]])
@@ -218,7 +232,9 @@ class Module(object):
                 filter["plat"] and not filter["plat"] == train["platform"],
                 filter["type"] == "departure" and train["terminating"],
                 filter["type"] == "arrival" and train["departure_only"],
-                filter["terminating"] and not train["terminating"]
+                filter["terminating"] and not train["terminating"],
+                filter["tops"] and not filter["tops"] in train.get("tops_possible", []),
+                filter["power"] and not filter["power"]==train.get("power_type", None),
             ]:
                 train_locs_toc.append((train["destinations"], train["toc"]))
                 trains_filtered.append(train)
