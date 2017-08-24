@@ -6,7 +6,6 @@ QUOTES = {
     "We don't appreciate what we have until it's gone. Freedom is like that. It's like air. When you have it, you don't notice it." : "Boris Yeltsin",
     "They accused us of suppressing freedom of expression. This was a lie and we could not let them publish it." : "Nelba Blandon, as director of censorship, Nicaragua",
     "Death solves all problems - no man, no problem." : "Anatoly Rybakov",
-    "Make the lie big, make it simple, keep saying it, and eventually they will believe it." : "Adolf Hitler",
     "If we don't end war, war will end us." : "H.G. Wells",
     "All that is necessary for evil to succeed is for good men to do nothing." : "Edmund Burke",
     "Live well. It is the greatest revenge." : "The Talmud",
@@ -49,6 +48,7 @@ QUOTES = {
     "The optimist proclaims that we live in the best of all possible worlds; and the pessimist fears this is true. So I elect for neither label" : "James Branch Cabell",
     "微乎微乎，至于无形；神乎神乎，至于无声；故能为敌之司命" : "孫子",
     "If you know your enemy and know yourself, one hundred battles will not defeat you" : "Sun Tzu",
+    "Come here to this gate! Mr Gorbachev, open this gate! Mr Gorbachev, tear down this wall!" : "Ronald Reagan",
 }
 
 class Module(object):
