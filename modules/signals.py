@@ -49,6 +49,7 @@ QUOTES = {
     "微乎微乎，至于无形；神乎神乎，至于无声；故能为敌之司命" : "孫子",
     "If you know your enemy and know yourself, one hundred battles will not defeat you" : "Sun Tzu",
     "Come here to this gate! Mr Gorbachev, open this gate! Mr Gorbachev, tear down this wall!" : "Ronald Reagan",
+    "The lamps are going out all over Europe, we shall not see them lit again in our lifetime" : "Edward Grey",
 }
 
 class Module(object):
