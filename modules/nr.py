@@ -136,7 +136,7 @@ class Module(object):
             "plat": ('',     lambda x: len(x) <= 3),
             "type": ("departure", lambda x: x in ["departure", "arrival", "both"]),
             "terminating": (False, lambda x: type(x)==type(True)),
-            "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 240, lambda x: int(x)),
+            "period": (30, lambda x: x.isdigit() and 1 <= int(x) <= 480, lambda x: int(x)),
             "nonpassenger": (False, lambda x: type(x)==type(True)),
             "time": ("", lambda x: len(x)==4 and x.isdigit()),
             "tops": (None, lambda x: len(x)<4 and x.isdigit()),
