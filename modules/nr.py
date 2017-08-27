@@ -138,7 +138,7 @@ class Module(object):
             "terminating": (False, lambda x: type(x)==type(True)),
             "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 240, lambda x: int(x)),
             "nonpassenger": (False, lambda x: type(x)==type(True)),
-            "timebase": ("0000", lambda x: len(x)==4 and x.isdigit()),
+            "time": ("", lambda x: len(x)==4 and x.isdigit()),
             "tops": (None, lambda x: len(x)<4 and x.isdigit()),
             "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST"], lambda x: x.upper()),
             })
@@ -152,9 +152,14 @@ class Module(object):
         nr_filterlist = client.factory.create("filterList")
         if filter["inter"]: nr_filterlist.crs.append(filter["inter"])
 
+        now = datetime.now()
+        if filter["time"]:
+            now = now.replace(hour=int(filter["time"][:2]))
+            now = now.replace(minute=int(filter["time"][2:]))
+
         method = client.service.GetArrivalDepartureBoardByCRS if len(location_code) == 3 else client.service.GetArrivalDepartureBoardByTIPLOC
         try:
-            query = method(100, location_code, datetime.now().isoformat().split(".")[0], filter["period"],
+            query = method(100, location_code, now.isoformat().split(".")[0], filter["period"],
                 nr_filterlist, "to", '', "PBS", filter["nonpassenger"])
         except WebFault as detail:
             if str(detail) == "Server raised fault: 'Invalid crs code supplied'":
