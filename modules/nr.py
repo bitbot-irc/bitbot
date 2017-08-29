@@ -188,7 +188,9 @@ class Module(object):
                 "platform_hidden": "platformIsHidden" in t and t["platformIsHidden"],
                 "toc": t["operatorCode"],
                 "cancelled" : t["isCancelled"] if "isCancelled" in t else False,
+                "delayed"   : t["departureType"]=="Delayed" if "departureType" in t else None,
                 "cancel_reason" : t["cancelReason"]["value"] if "cancelReason" in t else "",
+                "delay_reason" : t["delayReason"]["value"] if "delayReason" in t else "",
                 "terminating" : not "std" in t and not "etd" in t and not "atd" in t,
                 "bus" : t["trainid"]=="0B00",
                 "times" : self.process(t)
@@ -205,9 +207,12 @@ class Module(object):
 
             parsed["departure_only"] = location_code in [a["code"] for a in parsed["origins"]]
 
-            if parsed["cancelled"]:
+            if parsed["cancelled"] or parsed["delayed"]:
                 for k, time in parsed["times"].items():
-                    time["short"], time["on_time"], time["status"] = "Cancelled: %s" % parsed["cancel_reason"], False, 2
+                    time["short"], time["on_time"], time["status"], time["prefix"] = (
+                        "%s: %s" % ("Cancelled" if parsed["cancel_reason"] else "Delayed", parsed["cancel_reason"] or parsed["delay_reason"] or "?"),
+                        False, 2, ""
+                        )
 
             trains.append(parsed)
 
