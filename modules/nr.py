@@ -184,8 +184,9 @@ class Module(object):
                 "rid" : t["rid"],
                 "uid" : t["uid"],
                 "head" : t["trainid"],
-                "platform": "?" if not "platform" in t else t["platform"],
+                "platform": '?' if not "platform" in t else t["platform"],
                 "platform_hidden": "platformIsHidden" in t and t["platformIsHidden"],
+                "platform_prefix": "",
                 "toc": t["operatorCode"],
                 "cancelled" : t["isCancelled"] if "isCancelled" in t else False,
                 "delayed"   : t["departureType"]=="Delayed" if "departureType" in t else None,
@@ -220,7 +221,11 @@ class Module(object):
             summary_query = Utils.get_url("%s/summaries/%s?uids=%s" % (eagle_url, datetime.now().date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True)
             if summary_query:
                 for t in trains:
-                    t.update(summary_query[t["uid"]])
+                    summary = summary_query[t["uid"]]
+                    t.update(summary)
+                    summary_plat = summary["platforms"].get(query["crs"])
+                    if summary_plat and t["platform"]=="?":
+                        t["platform"], t["platform_prefix"] = summary_plat, "s"
 
         for t in trains:
             t["dest_summary"] = "/".join(["%s%s" %(a["name"], " " + a["via"]
@@ -249,10 +254,11 @@ class Module(object):
                 train_locs_toc.append((train["destinations"], train["toc"]))
                 trains_filtered.append(train)
 
-        trains_string = ", ".join(["%s%s (%s, %s%s%s, %s%s%s%s)" % (
+        trains_string = ", ".join(["%s%s (%s, %s%s%s%s, %s%s%s%s)" % (
             "from " if not filter["type"][0] in "ad" and t["terminating"] else '',
             t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"],
             t["uid"],
+            t["platform_prefix"],
             "bus" if t["bus"] else t["platform"],
             "*" if t["platform_hidden"] else '',
             "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
