@@ -368,7 +368,7 @@ class Module(object):
                         Utils.color(Utils.FONT_RESET)
                         )
             else:
-                parsed = {"name": (station["long_name"] or "none").title(),
+                parsed = {"name": (station["name"] or "none").title(),
                     "crs": station["crs"] if station["crs"] else station["tiploc_code"],
                     "called": False,
                     "passing": station.get("pass", None),
