@@ -141,6 +141,7 @@ class Module(object):
             "time": ("", lambda x: len(x)==4 and x.isdigit()),
             "tops": (None, lambda x: len(x)<4 and x.isdigit()),
             "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST", "D", "E"], lambda x: x.upper()),
+            "crs": (False, lambda x: type(x)==type(True))
             })
 
         if filter["errors"]:
@@ -228,9 +229,9 @@ class Module(object):
                         t["platform"], t["platform_prefix"] = summary_plat, "s"
 
         for t in trains:
-            t["dest_summary"] = "/".join(["%s%s" %(a["name"], " " + a["via"]
+            t["dest_summary"] = "/".join(["%s%s" %(a["code"]*filter["crs"] or a["name"], " " + a["via"]
                 if a["via"] else '') for a in t["destinations"]])
-            t["origin_summary"] = "/".join(["%s%s" %(a["name"], " " + a["via"]
+            t["origin_summary"] = "/".join(["%s%s" %(a["code"]*filter["crs"] or a["name"], " " + a["via"]
                 if a["via"] else '') for a in t["origins"]])
 
         trains = sorted(trains, key=lambda t: t["times"]["max_sched"]["ut"] if filter["type"]=="both" else t["times"]["st" + filter["type"][0]]["ut"])
