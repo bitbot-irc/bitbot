@@ -140,7 +140,7 @@ class Module(object):
             "nonpassenger": (False, lambda x: type(x)==type(True)),
             "time": ("", lambda x: len(x)==4 and x.isdigit()),
             "tops": (None, lambda x: len(x)<4 and x.isdigit()),
-            "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST"], lambda x: x.upper()),
+            "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST", "D", "E"], lambda x: x.upper()),
             })
 
         if filter["errors"]:
@@ -218,12 +218,12 @@ class Module(object):
             trains.append(parsed)
 
         if eagle_url:
-            summary_query = Utils.get_url("%s/summaries/%s?uids=%s" % (eagle_url, datetime.now().date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True)
+            summary_query = Utils.get_url("%s/summaries/%s?uids=%s" % (eagle_url, datetime.now().date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True, headers={"x-eagle-key": self.bot.config["eagle-api-key"]})
             if summary_query:
                 for t in trains:
                     summary = summary_query[t["uid"]]
                     t.update(summary)
-                    summary_plat = summary["platforms"].get(query["crs"])
+                    summary_plat = summary.get("platforms", {}).get(query["crs"])
                     if summary_plat and t["platform"]=="?":
                         t["platform"], t["platform_prefix"] = summary_plat, "s"
 
@@ -298,7 +298,7 @@ class Module(object):
             query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
                 datetime.utcnow().time().strftime("%H:%M:%S+0000"))
             if eagle_url:
-                schedule_query = Utils.get_url("%s/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True)
+                schedule_query = Utils.get_url("%s/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True, headers={"x-eagle-key": eagle_key})
                 schedule = schedule_query["current"]
                 segment = schedule["schedule_segment"]
             if not query and not schedule:
