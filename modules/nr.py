@@ -80,6 +80,7 @@ class Module(object):
         return ret
 
     def process(self, service):
+        ut_now = datetime.now().timestamp()
         nonetime = {"orig": None, "datetime": None, "ut": 0,
                     "short": "None", "prefix": '', "on_time": False,
                     "estimate": False, "status": 4}
@@ -105,6 +106,7 @@ class Module(object):
         for k, a in times.items():
             if not a["orig"]: continue
             a["short"] = a["datetime"].strftime("%H%M") if len(a["orig"]) > 5 else a["orig"]
+            a["shortest"] = "%02d" % a["datetime"].minute if -300 < a["ut"]-ut_now < 1800 else a["short"]
             a["prefix"] = k[2] + ("s" if k[0] == "s" else "")
             a["estimate"] = k[0] == "e"
             a["on_time"] = a["ut"] - times["s"+ k[1:]]["ut"] < 300
@@ -265,7 +267,7 @@ class Module(object):
             "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
             t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
             Utils.color(colours[t["times"][filter["type"]]["status"]]),
-            t["times"][filter["type"]]["short"],
+            t["times"][filter["type"]]["shortest"],
             Utils.color(Utils.FONT_RESET)
             ) for t in trains_filtered])
 
