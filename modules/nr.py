@@ -138,12 +138,13 @@ class Module(object):
             "plat": ('',     lambda x: len(x) <= 3),
             "type": ("departure", lambda x: x in ["departure", "arrival", "both"]),
             "terminating": (False, lambda x: type(x)==type(True)),
-            "period": (30, lambda x: x.isdigit() and 1 <= int(x) <= 480, lambda x: int(x)),
+            "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 480, lambda x: int(x)),
             "nonpassenger": (False, lambda x: type(x)==type(True)),
             "time": ("", lambda x: len(x)==4 and x.isdigit()),
             "tops": (None, lambda x: len(x)<4 and x.isdigit()),
             "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST", "D", "E"], lambda x: x.upper()),
-            "crs": (False, lambda x: type(x)==type(True))
+            "crs": (False, lambda x: type(x)==type(True)),
+            "st": (False, lambda x: type(x)==type(True))
             })
 
         if filter["errors"]:
@@ -267,7 +268,7 @@ class Module(object):
             "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
             t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
             Utils.color(colours[t["times"][filter["type"]]["status"]]),
-            t["times"][filter["type"]]["shortest"],
+            t["times"][filter["type"]]["shortest"*filter["st"] or "short"],
             Utils.color(Utils.FONT_RESET)
             ) for t in trains_filtered])
 
