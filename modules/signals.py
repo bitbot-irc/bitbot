@@ -60,6 +60,7 @@ class Module(object):
 
     def SIGINT(self, signum, frame):
         print()
+        self.bot.events.on("signal").on("interrupt").call(signum=signum, frame=frame)
         for server in self.bot.servers.values():
             server.send_quit(self.random_quote())
             self.bot.register_write(server)

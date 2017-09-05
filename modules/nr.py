@@ -36,6 +36,10 @@ class Module(object):
             ).hook(self.service_code, min_args=1,
             help="Get the text for a given delay/cancellation code (Powered by NRE)",
             usage="<code>")
+        bot.events.on("telegram").on("command").on("nrtrains").hook(self.trains)
+        bot.events.on("telegram").on("command").on("nrcode").hook(self.service_code)
+        bot.events.on("telegram").on("command").on("nrhead").hook(self.head)
+        bot.events.on("telegram").on("command").on("nrservice").hook(self.service)
 
     @property
     def client(self):
@@ -172,10 +176,13 @@ class Module(object):
                 return event["stderr"].write("An error occurred.")
 
         nrcc_severe = len([a for a in query["nrccMessages"][0] if a["severity"] == "Major"]) if "nrccMessages" in query else 0
-
-        station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"],
-            ", %s%s severe messages%s" % (Utils.color(Utils.COLOR_RED), nrcc_severe, Utils.color(Utils.FONT_RESET)) if nrcc_severe else ""
-            )
+        if event.get("external"):
+            station_summary = "%s (%s) - %s (%s):\n" % (query["locationName"], query["crs"], query["stationManager"],
+                query["stationManagerCode"])
+        else:
+            station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"],
+                ", %s%s severe messages%s" % (Utils.color(Utils.COLOR_RED), nrcc_severe, Utils.color(Utils.FONT_RESET)) if nrcc_severe else ""
+                )
 
         if not "trainServices" in query and not "busServices" in query:
             return event["stdout"].write("%s: No services for the next %s minutes" % (
@@ -215,7 +222,7 @@ class Module(object):
             if parsed["cancelled"] or parsed["delayed"]:
                 for k, time in parsed["times"].items():
                     time["short"], time["on_time"], time["status"], time["prefix"] = (
-                        "%s: %s" % ("Cancelled" if parsed["cancel_reason"] else "Delayed", parsed["cancel_reason"] or parsed["delay_reason"] or "?"),
+                        "%s:%s" % ("C" if parsed["cancel_reason"] else "D", parsed["cancel_reason"] or parsed["delay_reason"] or "?"),
                         False, 2, ""
                         )
 
@@ -257,26 +264,38 @@ class Module(object):
             ]:
                 train_locs_toc.append((train["destinations"], train["toc"]))
                 trains_filtered.append(train)
-
-        trains_string = ", ".join(["%s%s (%s, %s%s%s%s, %s%s%s%s)" % (
-            "from " if not filter["type"][0] in "ad" and t["terminating"] else '',
-            t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"],
-            t["uid"],
-            t["platform_prefix"],
-            "bus" if t["bus"] else t["platform"],
-            "*" if t["platform_hidden"] else '',
-            "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
-            t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
-            Utils.color(colours[t["times"][filter["type"]]["status"]]),
-            t["times"][filter["type"]]["shortest"*filter["st"] or "short"],
-            Utils.color(Utils.FONT_RESET)
-            ) for t in trains_filtered])
-
-        event["stdout"].write("%s%s: %s" % (station_summary, " departures calling at %s" % filter["inter"] if filter["inter"] else '', trains_string))
+        if event.get("external"):
+            trains_string = "\n".join(["%-6s %-4s %-2s %-3s %1s%-6s %1s %s" % (
+                t["uid"], t["head"], t["toc"], "bus" if t["bus"] else t["platform"],
+                "~" if t["times"]["both"]["estimate"] else '',
+                t["times"]["both"]["prefix"] + t["times"]["both"]["short"],
+                "←" if not filter["type"][0] in "ad" and t["terminating"] else "→",
+                t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"]
+                ) for t in trains_filtered])
+        else:
+            trains_string = ", ".join(["%s%s (%s, %s%s%s%s, %s%s%s%s)" % (
+                "from " if not filter["type"][0] in "ad" and t["terminating"] else '',
+                t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"],
+                t["uid"],
+                t["platform_prefix"],
+                "bus" if t["bus"] else t["platform"],
+                "*" if t["platform_hidden"] else '',
+                "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
+                t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
+                Utils.color(colours[t["times"][filter["type"]]["status"]]),
+                t["times"][filter["type"]]["shortest"*filter["st"] or "short"],
+                Utils.color(Utils.FONT_RESET)
+                ) for t in trains_filtered])
+        if event.get("external"):
+            event["stdout"].write("%s%s\n%s" % (
+                station_summary, "\n calling at %s" % filter["inter"] if filter["inter"] else '', trains_string))
+        else:
+            event["stdout"].write("%s%s: %s" % (station_summary, " departures calling at %s" % filter["inter"] if filter["inter"] else '', trains_string))
 
     def service(self, event):
         client = self.client
         colours = self.COLOURS
+        external = event.get("external", False)
 
         SCHEDULE_STATUS = {"B": "perm bus", "F": "freight train", "P": "train",
             "S": "ship", "T": "trip", "1": "train", "2": "freight",
@@ -285,6 +304,7 @@ class Module(object):
         eagle_key = self.bot.config["eagle-api-key"]
         eagle_url = self.bot.config["eagle-api-url"]
         schedule = {}
+        sources = []
 
         service_id = event["args_split"][0]
 
@@ -314,9 +334,11 @@ class Module(object):
             if query: rid = query["serviceList"][0][0]["rid"]
 
             if query:
+                sources.append("LDBSVWS")
                 query = client.service.GetServiceDetailsByRID(rid)
             if schedule:
-                if not query: query = {"trainid": schedule["schedule_segment"]["signalling_id"]}
+                sources.append("SCHEDULE/Eagle")
+                if not query: query = {"trainid": schedule["schedule_segment"]["signalling_id"], "operator": schedule["atoc_code"]}
                 stype = "class %s %s" % (schedule_query["tops_inferred"], segment["CIF_power_type"]) if schedule_query["tops_inferred"] else segment["CIF_power_type"]
                 for k,v in {
                     "operatorCode": schedule["atoc_code"],
@@ -329,8 +351,10 @@ class Module(object):
             disruptions.append("Cancelled (%s%s)" % (query["cancelReason"]["value"], " at " + query["cancelReason"]["_tiploc"] if query["cancelReason"]["_tiploc"] else ""))
         if "delayReason" in query:
             disruptions.append("Delayed (%s%s)" % (query["delayReason"]["value"], " at " + query["delayReason"]["_tiploc"] if query["delayReason"]["_tiploc"] else ""))
-        if disruptions:
+        if disruptions and not external:
             disruptions = Utils.color(Utils.COLOR_RED) + ", ".join(disruptions) + Utils.color(Utils.FONT_RESET) + " "
+        elif disruptions and external:
+            disruptions = ", ".join(disruptions)
         else: disruptions = ""
 
         stations = []
@@ -338,6 +362,7 @@ class Module(object):
             if "locations" in query:
                 parsed = {"name": station["locationName"],
                     "crs": (station["crs"] if "crs" in station else station["tiploc"]).rstrip(),
+                    "tiploc": station["tiploc"].rstrip(),
                     "called": "atd" in station,
                     "passing": station["isPass"] if "isPass" in station else False,
                     "first": len(stations) == 0,
@@ -345,7 +370,8 @@ class Module(object):
                     "cancelled" : station["isCancelled"] if "isCancelled" in station else False,
                     "divide_summary": "",
                     "length": station["length"] if "length" in station else None,
-                    "times": self.process(station)
+                    "times": self.process(station),
+                    "platform": station["platform"] if "platform" in station else None
                     }
 
                 if parsed["cancelled"]:
@@ -374,6 +400,7 @@ class Module(object):
             else:
                 parsed = {"name": (station["name"] or "none").title(),
                     "crs": station["crs"] if station["crs"] else station["tiploc_code"],
+                    "tiploc": station["tiploc_code"],
                     "called": False,
                     "passing": station.get("pass", None),
                     "first": len(stations) == 0,
@@ -381,7 +408,8 @@ class Module(object):
                     "cancelled" : False,
                     "divide_summary": "",
                     "length": None,
-                    "times": self.process(station["dolphin_times"])
+                    "times": self.process(station["dolphin_times"]),
+                    "platform": station["platform"]
                     }
             stations.append(parsed)
 
@@ -408,26 +436,43 @@ class Module(object):
                 station["times"][filter["type"]]["short"],
                 Utils.color(Utils.FONT_RESET)
                 )
+            station["summary_external"] = "%1s%-7s %1s%-7s %-3s %-2s %-3s %s" % (
+                "~"*station["times"]["arrival"]["estimate"],
+                station["times"]["arrival"]["prefix"] + station["times"]["arrival"]["short"],
+                "~"*station["times"]["departure"]["estimate"],
+                station["times"]["departure"]["prefix"] + station["times"]["departure"]["short"],
+                station["platform"] or "?",
+                station["length"] or "?",
+                station["crs"] or station["tiploc"],
+                station["name"]
+                )
 
         stations_filtered = []
         for station in stations:
             if station["passing"] and not filter["passing"]: continue
-            if station["called"] and filter["default"]:
+            if station["called"] and filter["default"] and not external:
                 if not station["first"] and not station["last"]:
                     continue
 
             stations_filtered.append(station)
-            if station["first"] and not station["last"] and filter["default"]:
-                stations_filtered.append({"summary": "(...)"})
+            if station["first"] and not station["last"] and filter["default"] and not external:
+                stations_filtered.append({"summary": "(...)", "summary_external": "(...)"})
 
         done_count = len([s for s in stations if s["called"]])
         total_count = len(stations)
-
-        event["stdout"].write("%s%s %s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operatorCode"],
-            query["trainid"], query["serviceType"],
-            Utils.color(Utils.COLOR_LIGHTBLUE), done_count, Utils.color(Utils.FONT_RESET),
-            len(stations_filtered), total_count,
-            ", ".join([s["summary"] for s in stations_filtered])))
+        if external:
+            event["stdout"].write("%s: %s\n%s%s (%s) %s %s\n\n%s" % (
+                service_id, ", ".join(sources),
+                disruptions + "\n" if disruptions else '',
+                query["operator"], query["operatorCode"], query["trainid"], query["serviceType"],
+                "\n".join([s["summary_external"] for s in stations_filtered])
+                ))
+        else:
+            event["stdout"].write("%s%s %s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operatorCode"],
+                query["trainid"], query["serviceType"],
+                Utils.color(Utils.COLOR_LIGHTBLUE), done_count, Utils.color(Utils.FONT_RESET),
+                len(stations_filtered), total_count,
+                ", ".join([s["summary"] for s in stations_filtered])))
 
     def head(self, event):
         client = self.client
