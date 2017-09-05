@@ -59,7 +59,11 @@ class ModuleManager(object):
 
     def load_module(self, filename):
         name = self.module_name(filename)
-        module = self._load_module(filename)
+        try:
+            module = self._load_module(filename)
+        except ImportError as e:
+            sys.stderr.write("module '%s' not loaded: Could not resolve import.\n" % filename)
+            return
         if module:
             self.modules[module._name] = module
             if name in self.waiting_requirement:
@@ -68,6 +72,7 @@ class ModuleManager(object):
             sys.stderr.write("module '%s' loaded.\n" % filename)
         else:
             sys.stderr.write("module '%s' not loaded.\n" % filename)
+
     def load_modules(self):
         for filename in self.list_modules():
             self.load_module(filename)
