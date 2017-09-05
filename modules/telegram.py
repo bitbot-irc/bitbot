@@ -9,9 +9,12 @@ class Module(Thread):
     _name = "telegram"
 
     def __init__(self, dolphin):
+        key = dolphin.config.get("telegram-api-key")
+        if not key: return
+
         self.dolphin = dolphin
 
-        self.updater = Updater(dolphin.config["telegram-api-key"])
+        self.updater = Updater(key)
         self.dispatcher = self.updater.dispatcher
 
         start_handler = CommandHandler("start", self.start)
