@@ -189,7 +189,7 @@ def handle_421(data):
 def handle_QUIT(data):
     server = data.server
     nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    reason = data.args[0]
+    reason = data.args[0] if len(data.args) else None
     if not server.is_own_nickname(nickname):
         user = server.get_user(nickname)
         server.remove_user(user)
