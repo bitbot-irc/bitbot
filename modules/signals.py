@@ -50,6 +50,7 @@ QUOTES = {
     "If you know your enemy and know yourself, one hundred battles will not defeat you" : "Sun Tzu",
     "Come here to this gate! Mr Gorbachev, open this gate! Mr Gorbachev, tear down this wall!" : "Ronald Reagan",
     "The lamps are going out all over Europe, we shall not see them lit again in our lifetime" : "Edward Grey",
+    "The laws of mathematics are very commendable, but the only law that applies in Australia is the law of Australia" : "Malcolm Turnbull",
 }
 
 class Module(object):
