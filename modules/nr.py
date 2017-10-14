@@ -184,13 +184,16 @@ class Module(object):
                 ", %s%s severe messages%s" % (Utils.color(Utils.COLOR_RED), nrcc_severe, Utils.color(Utils.FONT_RESET)) if nrcc_severe else ""
                 )
 
-        if not "trainServices" in query and not "busServices" in query:
+        if not "trainServices" in query and not "busServices" in query and not "ferryServices" in query:
             return event["stdout"].write("%s: No services for the next %s minutes" % (
                 station_summary, filter["period"]))
 
         trains = []
-
-        for t in query["trainServices"][0] if "trainServices" in query else [] + query["busServices"][0] if "busServices" in query else []:
+        services = []
+        if "trainServices" in query: services += query["trainServices"][0]
+        if "busServices" in query: services += query["busServices"][0]
+        if "ferryServices" in query: services += query["ferryServices"][0]
+        for t in services:
             parsed = {
                 "rid" : t["rid"],
                 "uid" : t["uid"],
@@ -269,7 +272,7 @@ class Module(object):
                 t["uid"], t["head"], t["toc"], "bus" if t["bus"] else t["platform"],
                 "~" if t["times"]["both"]["estimate"] else '',
                 t["times"]["both"]["prefix"] + t["times"]["both"]["short"],
-                "←" if not filter["type"][0] in "ad" and t["terminating"] else "→",
+                "←" if t["terminating"] or filter["type"]=="arrival" else "→",
                 t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"]
                 ) for t in trains_filtered])
         else:
@@ -480,7 +483,11 @@ class Module(object):
 
         query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
             datetime.utcnow().time().strftime("%H:%M:%S+0000"))
-        event["stdout"].write(", ".join(["h/%s r/%s u/%s rs/%s %s (%s) -> %s (%s)" % (a["trainid"], a["rid"], a["uid"], a["rsid"], a["originName"], a["originCrs"], a["destinationName"], a["destinationCrs"]) for a in query["serviceList"][0]]))
+        services = query["serviceList"][0]
+        if event.get("external"):
+            event["stdout"].write("\n".join(["{a.uid:6} {a.trainid:4} {a.originName} ({a.originCrs}) → {a.destinationName} ({a.destinationCrs})".format(a=a) for a in services]))
+        else:
+            event["stdout"].write(", ".join(["h/%s r/%s u/%s rs/%s %s (%s) -> %s (%s)" % (a["trainid"], a["rid"], a["uid"], a["rsid"], a["originName"], a["originCrs"], a["destinationName"], a["destinationCrs"]) for a in services]))
 
     def service_code(self, event):
         client = self.client
