@@ -411,7 +411,7 @@ class Module(object):
                     "times": self.process(station["dolphin_times"]),
                     "platform": station["platform"]
                     }
-                for assoc in station["associations"]:
+                for assoc in station["associations"] or []:
                     parsed["divide_summary"] += ", " if parsed["divide_summary"] else ""
                     parsed["divide_summary"] += {"NP": "Next service is %s at ", "JJ": "Joins %s at ", "VV": "Detaches as %s at "}[assoc["category"]] % assoc["uid_assoc"]
             stations.append(parsed)
