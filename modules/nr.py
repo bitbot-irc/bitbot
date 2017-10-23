@@ -378,27 +378,24 @@ class Module(object):
                     }
 
                 if parsed["cancelled"]:
-                    parsed["times"]["arrival"]["short"], parsed["times"]["arrival"]["on_time"], parsed["times"]["arrival"]["status"] = "Cancelled", False, 2
+                    parsed["times"]["arrival"].update({"short": "Cancelled", "on_time": False, "status": 2})
+                    parsed["times"]["departure"].update({"short": "Cancelled", "on_time": False, "status": 2})
 
                 parsed["associations"] = {a["category"] : a for a in station["associations"][0]} if "associations" in station else {}
                 parsed["divides"] = "divide" in parsed["associations"].keys()
                 parsed["joins"] = "join" in parsed["associations"].keys()
                 if parsed["divides"]:
                     divide = parsed["associations"]["divide"]
-                    parsed["divide_summary"] = "%sDividing %s %s to %s (%s)%s at " % (
-                        Utils.color(Utils.FONT_BOLD),
+                    parsed["divide_summary"] = "Dividing %s %s to %s (%s) at " % (
                         "from" if parsed["first"] else "as",
                         divide["uid"], divide["destination"],
                         divide["destCRS"] if "destCRS" in divide else divide["destTiploc"],
-                        Utils.color(Utils.FONT_RESET)
                         )
                 if parsed["joins"]:
                     divide = parsed["associations"]["join"]
-                    parsed["divide_summary"] = "%sJoining %s from %s (%s)%s at " % (
-                        Utils.color(Utils.FONT_BOLD),
+                    parsed["divide_summary"] = "Joining %s from %s (%s) at " % (
                         divide["uid"], divide["origin"],
                         divide["originCRS"] if "originCRS" in divide else divide["originTiploc"],
-                        Utils.color(Utils.FONT_RESET)
                         )
             else:
                 parsed = {"name": (station["name"] or "none").title(),
@@ -414,6 +411,9 @@ class Module(object):
                     "times": self.process(station["dolphin_times"]),
                     "platform": station["platform"]
                     }
+                for assoc in station["associations"]:
+                    parsed["divide_summary"] += ", " if parsed["divide_summary"] else ""
+                    parsed["divide_summary"] += {"NP": "Next service is %s at ", "JJ": "Joins %s at ", "VV": "Detaches as %s at "}[assoc["category"]] % assoc["uid_assoc"]
             stations.append(parsed)
 
         [a for a in stations if a["called"] or a["first"]][-1]["last"] = True
@@ -439,7 +439,8 @@ class Module(object):
                 station["times"][filter["type"]]["short"],
                 Utils.color(Utils.FONT_RESET)
                 )
-            station["summary_external"] = "%1s%-7s %1s%-7s %-3s %-2s %-3s %s" % (
+            station["summary_external"] = "%s%1s%-7s %1s%-7s %-3s %-2s %-3s %s" % (
+                station["divide_summary"] + "\n" if station["divide_summary"] else "",
                 "~"*station["times"]["arrival"]["estimate"],
                 station["times"]["arrival"]["prefix"] + station["times"]["arrival"]["short"],
                 "~"*station["times"]["departure"]["estimate"],
@@ -483,6 +484,10 @@ class Module(object):
 
         query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
             datetime.utcnow().time().strftime("%H:%M:%S+0000"))
+
+        if not query:
+            return event["stderr"].write("No currently running services match this identifier")
+
         services = query["serviceList"][0]
         if event.get("external"):
             event["stdout"].write("\n".join(["{a.uid:6} {a.trainid:4} {a.originName} ({a.originCrs}) → {a.destinationName} ({a.destinationCrs})".format(a=a) for a in services]))
