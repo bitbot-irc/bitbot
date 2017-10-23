@@ -413,7 +413,7 @@ class Module(object):
                     }
                 for assoc in station["associations"] or []:
                     parsed["divide_summary"] += ", " if parsed["divide_summary"] else ""
-                    parsed["divide_summary"] += {"NP": "Next service is %s at ", "JJ": "Joins %s at ", "VV": "Detaches as %s at "}[assoc["category"]] % assoc["uid_assoc"]
+                    parsed["divide_summary"] += {"NP": "Next service is %s at ", "JJ": "Joining %s at ", "VV": "Dividing as %s at "}[assoc["category"]] % assoc["uid_assoc"]
             stations.append(parsed)
 
         [a for a in stations if a["called"] or a["first"]][-1]["last"] = True
