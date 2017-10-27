@@ -200,9 +200,10 @@ def handle_QUIT(data):
 
 @handler(description="The server is telling us about its capabilities!")
 def handle_CAP(data):
-    capability_list = data.args[2].split()
-    bot.events.on("received").on("cap").call(data=data,
-        subcommand=data.args[1], capabilities=capability_list)
+    if len(data.args) > 2:
+        capability_list = data.args[2].split()
+        bot.events.on("received").on("cap").call(data=data,
+            subcommand=data.args[1], capabilities=capability_list)
 
 @handler(description="The server is asking for authentication")
 def handle_AUTHENTICATE(data):

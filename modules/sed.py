@@ -16,6 +16,11 @@ class Module(object):
             "channelset").call(setting="sed",
             help="Disable/Enable sed in a channel",
             validate=Utils.bool_or_none)
+        self.bot.events.on("postboot").on("configure").on(
+            "channelset").call(setting="sed-sender-only",
+            help=
+            "Disable/Enable sed only looking at the messages sent by the user",
+            validate=Utils.bool_or_none)
 
     def channel_message(self, event):
         if event["action"] or not Utils.get_closest_setting(event, "sed", True):
@@ -51,7 +56,11 @@ class Module(object):
                 return
             replace = sed_split[2].replace("\\/", "/")
 
-            line = event["channel"].log.find(pattern, from_self=False, not_pattern=REGEX_SED)
+            for_user = event["user"].nickname if Utils.get_closest_setting(
+                event, "sed-sender-only", False
+            ) else None
+            line = event["channel"].log.find(pattern, from_self=False,
+                for_user=for_user, not_pattern=REGEX_SED)
             if line:
                 new_message = re.sub(pattern, replace, line.message, count)
                 if line.action:

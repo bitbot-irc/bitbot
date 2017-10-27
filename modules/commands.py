@@ -1,9 +1,12 @@
+import re
 import Utils
 
 STR_MORE = "%s (more...)" % Utils.FONT_RESET
 STR_CONTINUED = "(...continued) "
 
 OUT_CUTOFF = 400
+
+REGEX_CUTOFF = re.compile("^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
 
 class Out(object):
     def __init__(self, module_name, target):

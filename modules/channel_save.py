@@ -22,8 +22,12 @@ class Module(object):
         if event["line_split"][3].lower() == "#bitbot" or event["number"]=="001":
             channels =  event["server"].get_setting("autojoin", [])
             chan_keys = event["server"].get_setting("channel_keys", {})
-            for channel in channels:
-                if channel in chan_keys:
-                    event["server"].send_join(channel, key=chan_keys[channel])
-                else:
-                    event["server"].send_join(channel)
+            channels_sorted = sorted(channels,
+                key=lambda x: 0 if x in chan_keys else 1)
+
+            keys_sorted = map(lambda x: x[1],
+                sorted(chan_keys.items(),
+                    key=lambda x: channels_sorted.index(x[0])))
+            event["server"].send_join(
+                ",".join(channels_sorted), ",".join(keys_sorted))
+

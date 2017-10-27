@@ -38,7 +38,9 @@ class Server(object):
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.socket.settimeout(5.0)
         if self.tls:
-            context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+            context.options |= ssl.OP_NO_SSLv2
+            context.options |= ssl.OP_NO_SSLv3
             self.socket = context.wrap_socket(self.socket)
         self.cached_fileno = self.socket.fileno()
         self.bot.events.on("timer").on("rejoin").hook(self.try_rejoin)
@@ -178,7 +180,8 @@ class Server(object):
         if len(encoded) > 450:
             encoded = encoded[:450]
         self.write_buffer += b"%s\r\n" % encoded
-        print(encoded.decode("utf8"))
+        if self.bot.args.verbose:
+            print(encoded.decode("utf8"))
     def _send(self):
         self.write_buffer = self.write_buffer[self.socket.send(
             self.write_buffer):]
