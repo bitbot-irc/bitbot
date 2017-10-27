@@ -52,6 +52,7 @@ QUOTES = {
     "The lamps are going out all over Europe, we shall not see them lit again in our lifetime" : "Edward Grey",
     "The laws of mathematics are very commendable, but the only law that applies in Australia is the law of Australia" : "Malcolm Turnbull",
     "He had to download the entire iOS system on his computer, he had to decrypt it, he had to do all of these things I don't even understand" : "Glenn Moramarco, as assistant U.S. attorney",
+    "I don’t need to understand how encryption works" : "Amber Rudd",
 }
 
 class Module(object):
