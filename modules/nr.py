@@ -1,5 +1,5 @@
 import collections, re, time
-from datetime import datetime
+from datetime import datetime, date
 from collections import Counter
 
 import Utils
@@ -145,6 +145,7 @@ class Module(object):
             "period": (120, lambda x: x.isdigit() and 1 <= int(x) <= 480, lambda x: int(x)),
             "nonpassenger": (False, lambda x: type(x)==type(True)),
             "time": ("", lambda x: len(x)==4 and x.isdigit()),
+            "date": ("", lambda x: len(x)==10),
             "tops": (None, lambda x: len(x)<4 and x.isdigit()),
             "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST", "D", "E"], lambda x: x.upper()),
             "crs": (False, lambda x: type(x)==type(True)),
@@ -164,6 +165,9 @@ class Module(object):
         if filter["time"]:
             now = now.replace(hour=int(filter["time"][:2]))
             now = now.replace(minute=int(filter["time"][2:]))
+        if filter["date"]:
+            newdate = datetime.strptime(filter["date"], "%Y-%m-%d").date()
+            now = now.replace(day=newdate.day, month=newdate.month, year=newdate.year)
 
         method = client.service.GetArrivalDepartureBoardByCRS if len(location_code) == 3 else client.service.GetArrivalDepartureBoardByTIPLOC
         try:
