@@ -390,7 +390,7 @@ class Module(object):
                     parsed_assoc = {
                         "uid_assoc": assoc.uid,
                         "category": {"divide": "VV", "join": "JJ", "next": "NP"}[assoc["category"]],
-                        "from": parsed["first"],
+                        "from": parsed["first"], "direction": assoc["destTiploc"].rstrip()==parsed["tiploc"],
                         "origin_name": assoc["origin"], "origin_tiploc": assoc["originTiploc"],
                         "origin_crs": assoc["originCRS"] if "originCRS" in assoc else None,
 
@@ -400,8 +400,7 @@ class Module(object):
                         "far_name": assoc["destination"], "far_tiploc": assoc["destTiploc"],
                         "far_crs": assoc["destCRS"] if "destCRS" in assoc else None,
                         }
-
-                    if parsed["first"]:
+                    if parsed_assoc["direction"]:
                         parsed_assoc.update({"far_name": parsed_assoc["origin_name"],
                             "far_tiploc": parsed_assoc["origin_tiploc"], "far_crs": parsed_assoc["origin_crs"]})
                     parsed["associations"].append(parsed_assoc)
@@ -430,7 +429,7 @@ class Module(object):
             station["divide_summary"] = ""
             for assoc in station["associations"]:
                 station["divide_summary"] += ", " if station["divide_summary"] else ""
-                station["divide_summary"] += "{arrow} {assoc[category]} {assoc[uid_assoc]} {arrow} {assoc[far_name]} ({code})".format(assoc=assoc, arrow=assoc["from"]*"<-" or "->", code=assoc["far_crs"] or assoc["far_tiploc"])
+                station["divide_summary"] += "{arrow} {assoc[category]} {assoc[uid_assoc]} {dir_arrow} {assoc[far_name]} ({code})".format(assoc=assoc, arrow=assoc["from"]*"<-" or "->", dir_arrow=(assoc["direction"])*"<-" or "->", code=assoc["far_crs"] or assoc["far_tiploc"])
 
             if station["passing"]:
                 station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 5, 5
