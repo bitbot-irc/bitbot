@@ -426,10 +426,8 @@ class Module(object):
             if not station["first"]: station["called"] = True
 
         for station in stations:
-            station["divide_summary"] = ""
             for assoc in station["associations"]:
-                station["divide_summary"] += ", " if station["divide_summary"] else ""
-                station["divide_summary"] += "{arrow} {assoc[category]} {assoc[uid_assoc]} {dir_arrow} {assoc[far_name]} ({code})".format(assoc=assoc, arrow=assoc["from"]*"<-" or "->", dir_arrow=(assoc["direction"])*"<-" or "->", code=assoc["far_crs"] or assoc["far_tiploc"])
+                assoc["summary"] = "{arrow} {assoc[category]} {assoc[uid_assoc]} {dir_arrow} {assoc[far_name]} ({code})".format(assoc=assoc, arrow=assoc["from"]*"<-" or "->", dir_arrow=(assoc["direction"])*"<-" or "->", code=assoc["far_crs"] or assoc["far_tiploc"])
 
             if station["passing"]:
                 station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 5, 5
@@ -446,7 +444,7 @@ class Module(object):
                 Utils.color(colours[station["times"][filter["type"]]["status"]]),
                 station["times"][filter["type"]]["short"],
                 Utils.color(Utils.FONT_RESET),
-                station["divide_summary"],
+                ", ".join([a["summary"] for a in station["associations"]]),
                 )
             station["summary_external"] = "%1s%-7s %1s%-7s %-3s %-2s %-3s %s%s" % (
                 "~"*station["times"]["arrival"]["estimate"],
@@ -457,7 +455,7 @@ class Module(object):
                 station["length"] or "?",
                 station["crs"] or station["tiploc"],
                 station["name"],
-                "\n" + station["divide_summary"] if station["divide_summary"] else "",
+                "\n" + "\n".join([a["summary"] for a in station["associations"]]) if station["associations"] else "",
                 )
 
         stations_filtered = []
