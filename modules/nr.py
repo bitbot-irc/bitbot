@@ -375,7 +375,7 @@ class Module(object):
                     "first": len(stations) == 0,
                     "last" : False,
                     "cancelled" : station["isCancelled"] if "isCancelled" in station else False,
-                    "divide_summary": "",
+                    "associations": [],
                     "length": station["length"] if "length" in station else None,
                     "times": self.process(station),
                     "platform": station["platform"] if "platform" in station else None
@@ -385,39 +385,40 @@ class Module(object):
                     parsed["times"]["arrival"].update({"short": "Cancelled", "on_time": False, "status": 2})
                     parsed["times"]["departure"].update({"short": "Cancelled", "on_time": False, "status": 2})
 
-                parsed["associations"] = {a["category"] : a for a in station["associations"][0]} if "associations" in station else {}
-                parsed["divides"] = "divide" in parsed["associations"].keys()
-                parsed["joins"] = "join" in parsed["associations"].keys()
-                if parsed["divides"]:
-                    divide = parsed["associations"]["divide"]
-                    parsed["divide_summary"] = "Dividing %s %s to %s (%s) at " % (
-                        "from" if parsed["first"] else "as",
-                        divide["uid"], divide["destination"],
-                        divide["destCRS"] if "destCRS" in divide else divide["destTiploc"],
-                        )
-                if parsed["joins"]:
-                    divide = parsed["associations"]["join"]
-                    parsed["divide_summary"] = "Joining %s from %s (%s) at " % (
-                        divide["uid"], divide["origin"],
-                        divide["originCRS"] if "originCRS" in divide else divide["originTiploc"],
-                        )
+                associations = station["associations"][0] if "associations" in station else []
+                for assoc in associations:
+                    parsed_assoc = {
+                        "uid_assoc": assoc.uid,
+                        "category": {"divide": "VV", "join": "JJ", "next": "NP"}[assoc["category"]],
+                        "from": parsed["first"],
+                        "origin_name": assoc["origin"], "origin_tiploc": assoc["originTiploc"],
+                        "origin_crs": assoc["originCRS"] if "originCRS" in assoc else None,
+
+                        "dest_name": assoc["destination"], "dest_tiploc": assoc["destTiploc"],
+                        "dest_crs": assoc["destCRS"] if "destCRS" in assoc else None,
+
+                        "far_name": assoc["destination"], "far_tiploc": assoc["destTiploc"],
+                        "far_crs": assoc["destCRS"] if "destCRS" in assoc else None,
+                        }
+
+                    if parsed["first"]:
+                        parsed_assoc.update({"far_name": parsed_assoc["origin_name"],
+                            "far_tiploc": parsed_assoc["origin_tiploc"], "far_crs": parsed_assoc["origin_crs"]})
+                    parsed["associations"].append(parsed_assoc)
             else:
                 parsed = {"name": (station["name"] or "none").title(),
                     "crs": station["crs"] if station["crs"] else station["tiploc_code"],
                     "tiploc": station["tiploc_code"],
                     "called": False,
-                    "passing": station.get("pass", None),
+                    "passing": bool(station.get("pass")),
                     "first": len(stations) == 0,
                     "last" : False,
                     "cancelled" : False,
-                    "divide_summary": "",
                     "length": None,
                     "times": self.process(station["dolphin_times"]),
-                    "platform": station["platform"]
+                    "platform": station["platform"],
+                    "associations": station["associations"] or []
                     }
-                for assoc in station["associations"] or []:
-                    parsed["divide_summary"] += ", " if parsed["divide_summary"] else ""
-                    parsed["divide_summary"] += {"NP": "Next service is %s at ", "JJ": "Joining %s at ", "VV": "Dividing as %s at "}[assoc["category"]] % assoc["uid_assoc"]
             stations.append(parsed)
 
         [a for a in stations if a["called"] or a["first"]][-1]["last"] = True
@@ -426,14 +427,18 @@ class Module(object):
             if not station["first"]: station["called"] = True
 
         for station in stations:
+            station["divide_summary"] = ""
+            for assoc in station["associations"]:
+                station["divide_summary"] += ", " if station["divide_summary"] else ""
+                station["divide_summary"] += "{arrow} {assoc[category]} {assoc[uid_assoc]} {arrow} {assoc[far_name]} ({code})".format(assoc=assoc, arrow=assoc["from"]*"<-" or "->", code=assoc["far_crs"] or assoc["far_tiploc"])
+
             if station["passing"]:
                 station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 5, 5
             elif station["called"]:
                 station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 0, 0
 
-            station["summary"] = "%s%s%s (%s%s%s%s%s%s)" % (
-                station["divide_summary"],
-                "*" if station["passing"] else '',
+            station["summary"] = "%s%s (%s%s%s%s%s%s)%s" % (
+                "*" * station["passing"],
                 station["name"],
                 station["crs"] + ", " if station["name"] != station["crs"] else '',
                 station["length"] + " cars, " if station["length"] and (station["first"] or (station["last"]) or station["divide_summary"]) else '',
@@ -441,10 +446,10 @@ class Module(object):
                 station["times"][filter["type"]]["prefix"].replace(filter["type"][0], ""),
                 Utils.color(colours[station["times"][filter["type"]]["status"]]),
                 station["times"][filter["type"]]["short"],
-                Utils.color(Utils.FONT_RESET)
+                Utils.color(Utils.FONT_RESET),
+                station["divide_summary"],
                 )
-            station["summary_external"] = "%s%1s%-7s %1s%-7s %-3s %-2s %-3s %s" % (
-                station["divide_summary"] + "\n" if station["divide_summary"] else "",
+            station["summary_external"] = "%1s%-7s %1s%-7s %-3s %-2s %-3s %s%s" % (
                 "~"*station["times"]["arrival"]["estimate"],
                 station["times"]["arrival"]["prefix"] + station["times"]["arrival"]["short"],
                 "~"*station["times"]["departure"]["estimate"],
@@ -452,7 +457,8 @@ class Module(object):
                 station["platform"] or "?",
                 station["length"] or "?",
                 station["crs"] or station["tiploc"],
-                station["name"]
+                station["name"],
+                "\n" + station["divide_summary"] if station["divide_summary"] else "",
                 )
 
         stations_filtered = []
