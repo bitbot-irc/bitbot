@@ -35,7 +35,10 @@ class Module(object):
         if event["subcommand"] == "NAK":
             event["server"].send_capability_end()
         elif event["subcommand"] == "ACK":
-            event["server"].send_authenticate("PLAIN")
+            if not "sasl" in event["capability_list"]:
+                event["server"].send_capability_end()
+            else:
+                event["server"].send_authenticate("PLAIN")
         else:
             pass
 
