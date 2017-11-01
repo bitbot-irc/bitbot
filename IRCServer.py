@@ -1,6 +1,10 @@
 import collections, socket, ssl, sys, time
 import IRCChannel, IRCLineHandler, IRCUser
 
+OUR_TLS_PROTOCOL = ssl.PROTOCOL_SSLv23
+if hasattr(ssl, "PROTOCOL_TLS"):
+    OUR_TLS_PROTOCOL = ssl.PROTOCOL_TLS
+
 class Server(object):
     def __init__(self, id, hostname, port, password, ipv4, tls,
             nickname, username, realname, bot):
@@ -38,7 +42,7 @@ class Server(object):
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.socket.settimeout(5.0)
         if self.tls:
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+            context = ssl.SSLContext(OUR_TLS_PROTOCOL)
             context.options |= ssl.OP_NO_SSLv2
             context.options |= ssl.OP_NO_SSLv3
             self.socket = context.wrap_socket(self.socket)
