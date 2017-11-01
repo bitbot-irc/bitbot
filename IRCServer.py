@@ -188,7 +188,7 @@ class Server(object):
         encoded = data.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
             encoded = encoded[:450]
-        self.write_buffer += b"%s\r\n" % encoded
+        self.write_buffer += encoded + b"\r\n"
         if self.bot.args.verbose:
             print(encoded.decode("utf8"))
     def _send(self):
