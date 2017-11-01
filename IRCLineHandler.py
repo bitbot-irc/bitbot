@@ -200,7 +200,7 @@ def handle_QUIT(data):
 
 @handler(description="The server is telling us about its capabilities!")
 def handle_CAP(data):
-    capibility_list = []
+    capability_list = []
     if len(data.args) > 2:
         capability_list = data.args[2].split()
     bot.events.on("received").on("cap").call(data=data,
