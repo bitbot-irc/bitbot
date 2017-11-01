@@ -100,7 +100,8 @@ class Bot(object):
 
     def reconnect(self, event):
         server_details = self.database.get_server(event["server_id"])
-        server = self.add_server(*server_details, False)
+        add_server_args = server_details + [False]
+        server = self.add_server(*add_server_args)
         if self.connect(server):
             self.servers[server.fileno()] = server
         else:

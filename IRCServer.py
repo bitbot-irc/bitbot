@@ -154,7 +154,12 @@ class Server(object):
             "encoding", "utf8")
         fallback_encoding = self.bot.database.get_server_setting(
             self.id, "fallback-encoding", "latin-1")
-        data = self.read_buffer + self.socket.recv(4096)
+        data = b""
+        try:
+            data = self.read_buffer + self.socket.recv(4096)
+        except ConnectionResetError:
+            self.disconnect()
+            return []
         self.read_buffer = b""
         data_lines = [line.strip(b"\r") for line in data.split(b"\n")]
         if data_lines[-1]:
