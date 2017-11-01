@@ -86,8 +86,8 @@ class Module(object):
     def process(self, service):
         ut_now = datetime.now().timestamp()
         nonetime = {"orig": None, "datetime": None, "ut": 0,
-                    "short": "None", "prefix": '', "on_time": False,
-                    "estimate": False, "status": 4}
+                    "short": "----", "prefix": '', "on_time": False,
+                    "estimate": False, "status": 4, "schedule": False}
         times = {}
         a_types = ["eta", "ata", "sta"]
         d_types = ["etd", "atd", "std"]
@@ -113,13 +113,16 @@ class Module(object):
             a["shortest"] = "%02d" % a["datetime"].minute if -300 < a["ut"]-ut_now < 1800 else a["short"]
             a["prefix"] = k[2] + ("s" if k[0] == "s" else "")
             a["estimate"] = k[0] == "e"
+            a["schedule"] = k[0] == "s"
             a["on_time"] = a["ut"] - times["s"+ k[1:]]["ut"] < 300
             a["status"] = 1 if a["on_time"] else 2
             if "a" + k[1:] in service: a["status"] = {"d": 0, "a": 3}[k[2]]
             if k[0] == "s": a["status"] = 4
 
-        times["arrival"] = ([times[a] for a in a_types + d_types if times[a]["ut"]] + [nonetime])[0]
-        times["departure"] = ([times[a] for a in d_types + a_types if times[a]["ut"]] + [nonetime])[0]
+        arr, dep = [times[a] for a in a_types if times[a]["ut"]], [times[a] for a in d_types if times[a]["ut"]]
+        times["arrival"] = (arr + dep + [nonetime])[0]
+        times["departure"] = (dep + arr + [nonetime])[0]
+        times["a"], times["d"] = (arr + [nonetime])[0], (dep + [nonetime])[0]
         times["both"] = times["departure"]
         times["max_sched"] = {"ut": max(times["sta"]["ut"], times["std"]["ut"])}
         return times
@@ -438,7 +441,7 @@ class Module(object):
                 "*" * station["passing"],
                 station["name"],
                 station["crs"] + ", " if station["name"] != station["crs"] else '',
-                station["length"] + " cars, " if station["length"] and (station["first"] or (station["last"]) or station["divide_summary"]) else '',
+                station["length"] + " cars, " if station["length"] and (station["first"] or (station["last"]) or station["associations"]) else '',
                 ("~" if station["times"][filter["type"]]["estimate"] else '') +
                 station["times"][filter["type"]]["prefix"].replace(filter["type"][0], ""),
                 Utils.color(colours[station["times"][filter["type"]]["status"]]),
@@ -446,11 +449,11 @@ class Module(object):
                 Utils.color(Utils.FONT_RESET),
                 ", ".join([a["summary"] for a in station["associations"]]),
                 )
-            station["summary_external"] = "%1s%-7s %1s%-7s %-3s %-2s %-3s %s%s" % (
-                "~"*station["times"]["arrival"]["estimate"],
-                station["times"]["arrival"]["prefix"] + station["times"]["arrival"]["short"],
-                "~"*station["times"]["departure"]["estimate"],
-                station["times"]["departure"]["prefix"] + station["times"]["departure"]["short"],
+            station["summary_external"] = "%1s%-5s %1s%-5s %-3s %-2s %-3s %s%s" % (
+                "~"*station["times"]["a"]["estimate"] + "s"*station["times"]["a"]["schedule"],
+                station["times"]["a"]["short"],
+                "~"*station["times"]["d"]["estimate"] + "s"*station["times"]["d"]["schedule"],
+                station["times"]["d"]["short"],
                 station["platform"] or "?",
                 station["length"] or "?",
                 station["crs"] or station["tiploc"],
