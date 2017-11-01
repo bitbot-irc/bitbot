@@ -45,6 +45,7 @@ class Server(object):
             context = ssl.SSLContext(OUR_TLS_PROTOCOL)
             context.options |= ssl.OP_NO_SSLv2
             context.options |= ssl.OP_NO_SSLv3
+            context.options |= ssl.OP_NO_TLSv1
             self.socket = context.wrap_socket(self.socket)
         self.cached_fileno = self.socket.fileno()
         self.bot.events.on("timer").on("rejoin").hook(self.try_rejoin)
