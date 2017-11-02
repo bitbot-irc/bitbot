@@ -347,7 +347,7 @@ class Module(object):
                 sources.append("LDBSVWS")
                 query = client.service.GetServiceDetailsByRID(rid)
             if schedule:
-                sources.append("SCHEDULE/Eagle")
+                sources.append("Eagle/SCHEDULE")
                 if not query: query = {"trainid": schedule["schedule_segment"]["signalling_id"], "operator": schedule["atoc_code"]}
                 stype = "class %s %s" % (schedule_query["tops_inferred"], segment["CIF_power_type"]) if schedule_query["tops_inferred"] else segment["CIF_power_type"]
                 for k,v in {
