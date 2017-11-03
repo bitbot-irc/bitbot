@@ -333,8 +333,9 @@ class Module(object):
                 datetime.utcnow().time().strftime("%H:%M:%S+0000"))
             if eagle_url:
                 schedule_query = Utils.get_url("%s/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True, headers={"x-eagle-key": eagle_key})
-                schedule = schedule_query.get("current")
-                segment = schedule.get("schedule_segment")
+                if schedule_query:
+                    schedule = schedule_query["current"]
+                    segment = schedule["schedule_segment"]
             if not query and not schedule:
                 return event["stdout"].write("No service information is available for this identifier.")
 
