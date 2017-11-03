@@ -52,7 +52,7 @@ def get_url(url, **kwargs):
     request.method = method
 
     try:
-        response = urllib.request.urlopen(request)
+        response = urllib.request.urlopen(request, timeout=5)
     except urllib.error.HTTPError as e:
         traceback.print_exc()
         if kwargs.get("code"):
