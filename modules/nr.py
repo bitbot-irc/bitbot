@@ -348,7 +348,7 @@ class Module(object):
                 query = client.service.GetServiceDetailsByRID(rid)
             if schedule:
                 sources.append("Eagle/SCHEDULE")
-                if not query: query = {"trainid": schedule["signalling_id"], "operator": schedule["operator_name"] or schedule["atoc_code"]}
+                if not query: query = {"trainid": schedule["signalling_id"] or "0000", "operator": schedule["operator_name"] or schedule["atoc_code"]}
                 stype = "class %s %s" % (schedule_query["tops_inferred"], schedule["power_type"]) if schedule_query["tops_inferred"] else schedule["power_type"]
                 for k,v in {
                     "operatorCode": schedule["atoc_code"],
