@@ -335,7 +335,6 @@ class Module(object):
                 schedule_query = Utils.get_url("%s/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True, headers={"x-eagle-key": eagle_key})
                 if schedule_query:
                     schedule = schedule_query["current"]
-                    segment = schedule["schedule_segment"]
             if not query and not schedule:
                 return event["stdout"].write("No service information is available for this identifier.")
 
@@ -349,11 +348,11 @@ class Module(object):
                 query = client.service.GetServiceDetailsByRID(rid)
             if schedule:
                 sources.append("Eagle/SCHEDULE")
-                if not query: query = {"trainid": schedule["schedule_segment"]["signalling_id"], "operator": schedule["atoc_code"]}
-                stype = "class %s %s" % (schedule_query["tops_inferred"], segment["CIF_power_type"]) if schedule_query["tops_inferred"] else segment["CIF_power_type"]
+                if not query: query = {"trainid": schedule["signalling_id"], "operator": schedule["operator_name"] or schedule["atoc_code"]}
+                stype = "class %s %s" % (schedule_query["tops_inferred"], schedule["power_type"]) if schedule_query["tops_inferred"] else schedule["power_type"]
                 for k,v in {
                     "operatorCode": schedule["atoc_code"],
-                    "serviceType": stype if stype else SCHEDULE_STATUS[schedule["train_status"]],
+                    "serviceType": stype if stype else SCHEDULE_STATUS[schedule["status"]],
                 }.items():
                     query[k] = v
 
@@ -369,7 +368,7 @@ class Module(object):
         else: disruptions = ""
 
         stations = []
-        for station in query["locations"][0] if "locations" in query else schedule["schedule_segment"]["schedule_location"]:
+        for station in query["locations"][0] if "locations" in query else schedule["locations"]:
             if "locations" in query:
                 parsed = {"name": station["locationName"],
                     "crs": (station["crs"] if "crs" in station else station["tiploc"]).rstrip(),
@@ -410,8 +409,8 @@ class Module(object):
                     parsed["associations"].append(parsed_assoc)
             else:
                 parsed = {"name": (station["name"] or "none").title(),
-                    "crs": station["crs"] if station["crs"] else station["tiploc_code"],
-                    "tiploc": station["tiploc_code"],
+                    "crs": station["crs"] if station["crs"] else station["tiploc"],
+                    "tiploc": station["tiploc"],
                     "called": False,
                     "passing": bool(station.get("pass")),
                     "first": len(stations) == 0,
