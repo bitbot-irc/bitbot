@@ -7,7 +7,7 @@ class Database(object):
             self.location)
         self.database = sqlite3.connect(self.full_location,
             check_same_thread=False, isolation_level=None)
-        self.database.execute("PRAGMA foreign_keys")
+        self.database.execute("PRAGMA foreign_keys = ON")
         self.cursors = {}
 
         self.make_servers_table()
