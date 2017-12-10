@@ -16,7 +16,10 @@ URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/wsdl.aspx?ver=2016-0
 
 class Module(object):
     _name = "NR"
+
+    PASSENGER_ACTIVITIES = ["U", "P", "R"]
     COLOURS = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY, Utils.COLOR_ORANGE]
+
     def __init__(self, bot):
         self.bot = bot
         self._client = None
@@ -86,7 +89,7 @@ class Module(object):
     def process(self, service):
         ut_now = datetime.now().timestamp()
         nonetime = {"orig": None, "datetime": None, "ut": 0,
-                    "short": "----", "prefix": '', "on_time": False,
+                    "short": '    ', "prefix": '', "on_time": False,
                     "estimate": False, "status": 4, "schedule": False}
         times = {}
         a_types = ["eta", "ata", "sta"]
@@ -126,6 +129,10 @@ class Module(object):
         times["both"] = times["departure"]
         times["max_sched"] = {"ut": max(times["sta"]["ut"], times["std"]["ut"])}
         return times
+
+    def activities(self, string): return [a+b.strip() for a,b in list(zip(*[iter(string)]*2)) if (a+b).strip()]
+
+    def reduced_activities(self, string): return [a for a in self.activities(string) if a in self.PASSENGER_ACTIVITIES]
 
     def trains(self, event):
         client = self.client
@@ -215,7 +222,8 @@ class Module(object):
                 "delay_reason" : t["delayReason"]["value"] if "delayReason" in t else "",
                 "terminating" : not "std" in t and not "etd" in t and not "atd" in t,
                 "bus" : t["trainid"]=="0B00",
-                "times" : self.process(t)
+                "times" : self.process(t),
+                "activity" : self.reduced_activities(t["activities"]),
                 }
             parsed["destinations"] = [{"name": a["locationName"], "tiploc": a["tiploc"],
                 "crs": a["crs"] if "crs" in a else '', "code": a["crs"] if "crs"
@@ -283,7 +291,7 @@ class Module(object):
                 t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"]
                 ) for t in trains_filtered])
         else:
-            trains_string = ", ".join(["%s%s (%s, %s%s%s%s, %s%s%s%s)" % (
+            trains_string = ", ".join(["%s%s (%s, %s%s%s%s, %s%s%s%s%s)" % (
                 "from " if not filter["type"][0] in "ad" and t["terminating"] else '',
                 t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"],
                 t["uid"],
@@ -294,7 +302,8 @@ class Module(object):
                 t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
                 Utils.color(colours[t["times"][filter["type"]]["status"]]),
                 t["times"][filter["type"]]["shortest"*filter["st"] or "short"],
-                Utils.color(Utils.FONT_RESET)
+                Utils.color(Utils.FONT_RESET),
+                bool(t["activity"])*", " + "+".join(t["activity"]),
                 ) for t in trains_filtered])
         if event.get("external"):
             event["stdout"].write("%s%s\n%s" % (
@@ -381,7 +390,9 @@ class Module(object):
                     "associations": [],
                     "length": station["length"] if "length" in station else None,
                     "times": self.process(station),
-                    "platform": station["platform"] if "platform" in station else None
+                    "platform": station["platform"] if "platform" in station else None,
+                    "activity": self.activities(station["activities"]) if "activities" in station else [],
+                    "activity_p": self.reduced_activities(station["activities"]) if "activities" in station else [],
                     }
 
                 if parsed["cancelled"]:
@@ -419,7 +430,9 @@ class Module(object):
                     "length": None,
                     "times": self.process(station["dolphin_times"]),
                     "platform": station["platform"],
-                    "associations": station["associations"] or []
+                    "associations": station["associations"] or [],
+                    "activity": self.activities(station["activity"]),
+                    "activity_p": self.reduced_activities(station["activity"]),
                     }
             stations.append(parsed)
 
@@ -437,7 +450,7 @@ class Module(object):
             elif station["called"]:
                 station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 0, 0
 
-            station["summary"] = "%s%s (%s%s%s%s%s%s)%s" % (
+            station["summary"] = "%s%s (%s%s%s%s%s%s%s)%s" % (
                 "*" * station["passing"],
                 station["name"],
                 station["crs"] + ", " if station["name"] != station["crs"] else '',
@@ -447,15 +460,16 @@ class Module(object):
                 Utils.color(colours[station["times"][filter["type"]]["status"]]),
                 station["times"][filter["type"]]["short"],
                 Utils.color(Utils.FONT_RESET),
+                ", "*bool(station["activity_p"]) + "+".join(station["activity_p"]),
                 ", ".join([a["summary"] for a in station["associations"]]),
                 )
-            station["summary_external"] = "%1s%-5s %1s%-5s %-3s %-2s %-3s %s%s" % (
-                "~"*station["times"]["a"]["estimate"] + "s"*station["times"]["a"]["schedule"],
+            station["summary_external"] = "%1s%-5s %1s%-5s %-3s %-3s %-3s %s%s" % (
+                "~"*station["times"]["a"]["estimate"] + "s"*(station["times"]["a"]["schedule"]),
                 station["times"]["a"]["short"],
-                "~"*station["times"]["d"]["estimate"] + "s"*station["times"]["d"]["schedule"],
+                "~"*station["times"]["d"]["estimate"] + "s"*(station["times"]["d"]["schedule"]),
                 station["times"]["d"]["short"],
-                station["platform"] or "?",
-                station["length"] or "?",
+                station["platform"] or '',
+                ",".join(station["activity"]) or '',
                 station["crs"] or station["tiploc"],
                 station["name"],
                 "\n" + "\n".join([a["summary"] for a in station["associations"]]) if station["associations"] else "",
