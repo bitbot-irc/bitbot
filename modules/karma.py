@@ -13,10 +13,8 @@ class Module(object):
         bot.events.on("received").on("command").on("karma").hook(
             self.karma, help="Get your or someone else's karma",
             usage="[target]")
-        bot.events.on("boot").on("done").hook(self.boot_done)
 
-    def boot_done(self, event):
-        self.bot.events.on("postboot").on("configure").on(
+        bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="karma-verbose",
             help="Disable/Enable automatically responding to karma changes",
             validate=Utils.bool_or_none)

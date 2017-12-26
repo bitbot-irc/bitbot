@@ -8,14 +8,12 @@ URL_TRAKTSLUG = "https://trakt.tv/%s/%s"
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
-        bot.events.on("boot").on("done").hook(self.boot_done)
         bot.events.on("received").on("command").on("nowwatching",
             "nw").hook(self.now_watching,
             help="Get what you or another user is now watching "
             "on trakt.tv", usage="[username]")
 
-    def boot_done(self, event):
-        self.bot.events.on("postboot").on("configure").on("set"
+        bot.events.on("postboot").on("configure").on("set"
             ).call(setting="trakt", help="Set username on trakt.tv")
 
     def now_watching(self, event):

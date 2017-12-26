@@ -7,16 +7,15 @@ URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
-        bot.events.on("boot").on("done").hook(self.boot_done)
+
+        bot.events.on("postboot").on("configure").on(
+            "set").call(setting="lastfm",
+            help="Set username on last.fm")
+
         bot.events.on("received").on("command").on("np",
             "listening", "nowplaying").hook(self.np,
             help="Get the last listen to track from a user",
             usage="[username]")
-
-    def boot_done(self, event):
-        self.bot.events.on("postboot").on("configure").on(
-            "set").call(setting="lastfm",
-            help="Set username on last.fm")
 
     def np(self, event):
         if event["args_split"]:

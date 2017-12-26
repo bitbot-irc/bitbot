@@ -56,15 +56,14 @@ class Module(object):
             usage="<command>")
         bot.events.on("received").on("command").on("more").hook(self.more,
             help="Get more output from the last command")
-        bot.events.on("boot").on("done").hook(self.boot_done)
+
+        bot.events.on("postboot").on("configure").on(
+            "channelset").call(setting="command-prefix",
+            help="Set the command prefix used in this channel")
+
         bot.events.on("new").on("user", "channel").hook(self.new)
         bot.events.on("send").on("stdout").hook(self.send_stdout)
         bot.events.on("send").on("stderr").hook(self.send_stderr)
-
-    def boot_done(self, event):
-        self.bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="command-prefix",
-            help="Set the command prefix used in this channel")
 
     def new(self, event):
         if "user" in event:

@@ -6,9 +6,9 @@ class Module(object):
         self.settings = {}
         self.channel_settings = {}
         bot.events.on("postboot").on("configure").on("set").hook(
-            self.postboot_set)
+            self.postboot_set, replay=True)
         bot.events.on("postboot").on("configure").on("channelset"
-            ).hook(self.postboot_channelset)
+            ).hook(self.postboot_channelset, replay=True)
         bot.events.on("received").on("command").on("set").hook(
             self.set, help="Set a specified user setting",
             usage="<setting> <value>")

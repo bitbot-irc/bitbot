@@ -44,11 +44,17 @@ class EventHook(object):
         self._hook_notify = None
         self._child_notify = None
         self._call_notify = None
-    def hook(self, function, **kwargs):
+        self._stored_events = []
+    def hook(self, function, replay=False, **kwargs):
         callback = EventCallback(function, self.bot, **kwargs)
         if self._hook_notify:
             self._hook_notify(self, callback)
         self._hooks.append(callback)
+
+        if replay:
+            for event in self._stored_events:
+                callback.call(event)
+        self._stored_events = None
     def _unhook(self, hook):
         self._hooks.remove(hook)
     def on(self, subevent, *extra_subevents):
@@ -59,10 +65,12 @@ class EventHook(object):
             return multiple_event_hook
         return self.get_child(subevent)
     def call(self, max=None, **kwargs):
-        if "data" in kwargs: kwargs.update(kwargs["data"].map())
         event = Event(self.bot, self.name, **kwargs)
         if self._call_notify:
             self._call_notify(self, event)
+
+        if not self._stored_events == None:
+            self._stored_events.append(event)
         called = 0
         returns = []
         for hook in self._hooks:

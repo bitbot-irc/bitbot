@@ -7,16 +7,14 @@ REGEX_SED = re.compile("^s/")
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
-        bot.events.on("boot").on("done").hook(self.boot_done)
         bot.events.on("received").on("message").on("channel").hook(
             self.channel_message)
 
-    def boot_done(self, event):
-        self.bot.events.on("postboot").on("configure").on(
+        bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="sed",
             help="Disable/Enable sed in a channel",
             validate=Utils.bool_or_none)
-        self.bot.events.on("postboot").on("configure").on(
+        bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="sed-sender-only",
             help=
             "Disable/Enable sed only looking at the messages sent by the user",

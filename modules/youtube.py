@@ -24,13 +24,12 @@ class Module(object):
             help="Find a video on youtube", usage="[query]")
         bot.events.on("received").on("message").on("channel").hook(
             self.channel_message)
-        bot.events.on("boot").on("done").hook(self.boot_done)
 
-    def boot_done(self, event):
-        self.bot.events.on("postboot").on("configure").on(
+        bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="auto-youtube",
             help="Disable/Enable automatically getting info from youtube URLs",
             validate=Utils.bool_or_none)
+
 
     def get_video_page(self, video_id, part):
         return Utils.get_url(URL_YOUTUBEVIDEO, get_params={"part": part,
@@ -65,7 +64,8 @@ class Module(object):
                 ) if match.group(3) else "00"
             return "%s (%s) uploaded by %s, %s views%s %s" % (
                 video_title, video_duration, video_uploader, "{:,}".format(
-                int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
+                int(video_views)), video_opinions, #URL_YOUTUBESHORT % video_id
+                "https://youtu.be/dQw4w9WgXcQ")
 
     def yt(self, event):
         video_id = None
