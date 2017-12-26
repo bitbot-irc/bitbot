@@ -1,4 +1,4 @@
-
+import Utils
 
 class Module(object):
     _name = "Channel Op"
@@ -21,6 +21,16 @@ class Module(object):
             ).hook(self.voice, channel_only=True, require_mode="o")
         bot.events.on("received").on("command").on("devoice"
             ).hook(self.devoice, channel_only=True, require_mode="o")
+        bot.events.on("received").on("message").on("channel").hook(self.highlight_spam)
+
+        bot.events.on("postboot").on("configure").on(
+            "channelset").call(setting="highlight-spam-threshold",
+            help="Set the number of nicknames in a message that qualifies as spam",
+            validate=Utils.int_or_none)
+        bot.events.on("postboot").on("configure").on(
+            "channelset").call(setting="highlight-spam-protection",
+            help="Enable/Disable highligh spam protection",
+            validate=Utils.bool_or_none)
 
     def kick(self, event):
         target = event["args_split"][0]
@@ -69,3 +79,13 @@ class Module(object):
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("-v", target)
+
+    def highlight_spam(self, event):
+        nicknames = list(map(lambda user: user.nickname, event["channel"].users)
+            ) + [event["server"].nickname]
+        if len(set(nicknames) & set(event["message_split"])) >= event["channel"].get_setting(
+                "highlight-spam-threshold", 10):
+            if event["channel"].get_setting("highlight-spam-protection", False):
+                if not event["channel"].mode_or_above(event["user"].nickname, "v"):
+                    event["channel"].send_kick(event["user"].nickname,
+                        "highlight spam detected")

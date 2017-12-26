@@ -183,6 +183,10 @@ def bool_or_none(s):
         return True
     elif s in IS_FALSE:
         return False
+def int_or_none(s):
+    stripped_s = s.lstrip("0")
+    if stripped_s.isdigit():
+        return int(stripped_s)
 
 def get_closest_setting(event, setting, default=None):
     server = event["server"]
