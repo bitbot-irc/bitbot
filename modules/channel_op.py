@@ -29,7 +29,11 @@ class Module(object):
             validate=Utils.int_or_none)
         bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="highlight-spam-protection",
-            help="Enable/Disable highligh spam protection",
+            help="Enable/Disable highlight spam protection",
+            validate=Utils.bool_or_none)
+        bot.events.on("postboot").on("configure").on(
+            "channelset").call(setting="highlight-spam-ban",
+            help="Enable/Disable banning highlight spammers instead of just kicking",
             validate=Utils.bool_or_none)
 
     def kick(self, event):
@@ -85,7 +89,11 @@ class Module(object):
             ) + [event["server"].nickname]
         if len(set(nicknames) & set(event["message_split"])) >= event["channel"].get_setting(
                 "highlight-spam-threshold", 10):
-            if event["channel"].get_setting("highlight-spam-protection", False):
-                if not event["channel"].mode_or_above(event["user"].nickname, "v"):
-                    event["channel"].send_kick(event["user"].nickname,
-                        "highlight spam detected")
+            protection_enabled = event["channel"].get_setting("highlight-spam-protection", False)
+            has_mode = event["channel"].mode_or_above(event["user"].nickname, "v")
+            should_ban = event["channel"].get_setting("highlight-spam-ban", False)
+            if protection_enabled and not has_mode:
+                if should_ban:
+                    event["channel"].send_ban("*!%s@%s" % (event["user"].username,
+                        event["user"].hostname))
+                event["channel"].send_kick(event["user"].nickname, "highlight spam detected")

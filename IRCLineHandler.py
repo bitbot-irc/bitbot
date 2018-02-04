@@ -291,7 +291,7 @@ def handle_PRIVMSG(data):
     server = data.server
     nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
     user = server.get_user(nickname)
-    message = data.args[1]
+    message = "" if len(data.args) < 2 else data.args[1]
     message_split = message.split(" ")
     target = data.args[0]
     action = message.startswith("\01ACTION ") and message.endswith("\01")

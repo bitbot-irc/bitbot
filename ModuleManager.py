@@ -44,10 +44,10 @@ class ModuleManager(object):
                     break
         import_name = "bitbot_%s" % name
         module = imp.load_source(import_name, filename)
-        assert hasattr(module, "Module"
-            ), "module '%s' doesn't have a Module class."
-        assert inspect.isclass(module.Module
-            ), "module '%s' has a Module attribute but it is not a class."
+        if not hasattr(module, "Module"):
+            raise ImportError("module '%s' doesn't have a Module class.")
+        if not inspect.isclass(module.Module):
+            raise ImportError("module '%s' has a Module attribute but it is not a class.")
         module_object = module.Module(self.bot)
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
