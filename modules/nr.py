@@ -419,7 +419,7 @@ class Module(object):
                             "far_tiploc": parsed_assoc["origin_tiploc"], "far_crs": parsed_assoc["origin_crs"]})
                     parsed["associations"].append(parsed_assoc)
             else:
-                parsed = {"name": (station["name"] or "none").title(),
+                parsed = {"name": (station["name"] or "none"),
                     "crs": station["crs"] if station["crs"] else station["tiploc"],
                     "tiploc": station["tiploc"],
                     "called": False,
