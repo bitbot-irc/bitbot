@@ -247,7 +247,7 @@ class Module(object):
             trains.append(parsed)
 
         if eagle_url:
-            summary_query = Utils.get_url("%s/summaries/%s?uids=%s" % (eagle_url, datetime.now().date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True, headers={"x-eagle-key": self.bot.config["eagle-api-key"]})
+            summary_query = Utils.get_url("%s/json/summaries/%s?uids=%s" % (eagle_url, now.date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True, headers={"x-eagle-key": self.bot.config["eagle-api-key"]})
             if summary_query:
                 for t in trains:
                     summary = summary_query[t["uid"]]
@@ -341,7 +341,7 @@ class Module(object):
             query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
                 datetime.utcnow().time().strftime("%H:%M:%S+0000"))
             if eagle_url:
-                schedule_query = Utils.get_url("%s/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True, headers={"x-eagle-key": eagle_key})
+                schedule_query = Utils.get_url("%s/json/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True, headers={"x-eagle-key": eagle_key})
                 if schedule_query:
                     schedule = schedule_query["current"]
             if not query and not schedule:
