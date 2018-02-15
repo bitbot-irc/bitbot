@@ -112,7 +112,6 @@ class Server(object):
             self.new_users.add(new_user)
         return self.users[self.nickname_ids[nickname.lower()]]
     def remove_user(self, user):
-        print("removing %s" % user.nickname)
         del self.users[user.id]
         del self.nickname_ids[user.nickname_lower]
         for channel in user.channels:
