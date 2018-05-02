@@ -64,8 +64,7 @@ class Module(object):
                 ) if match.group(3) else "00"
             return "%s (%s) uploaded by %s, %s views%s %s" % (
                 video_title, video_duration, video_uploader, "{:,}".format(
-                int(video_views)), video_opinions, #URL_YOUTUBESHORT % video_id
-                "https://youtu.be/dQw4w9WgXcQ")
+                int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
 
     def yt(self, event):
         video_id = None
