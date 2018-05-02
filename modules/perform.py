@@ -11,6 +11,6 @@ class Module(object):
             command = command.split("%%")
             for j, part in enumerate(command[:]):
                 command[j] = part.replace("%nick%", event["server"
-                    ].nickname)
+                    ].original_nickname)
             command = "%".join(command)
             event["server"].send(command)
