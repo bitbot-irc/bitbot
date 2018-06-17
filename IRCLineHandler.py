@@ -338,4 +338,3 @@ def handle_477(data):
     bot.add_timer("rejoin", 5, channel_name=data.args[1],
         key=data.server.attempted_join[data.args[1].lower()],
         server_id=data.server.id)
-#:newirc.tripsit.me 477 BitBot ##nope :Cannot join channel (+r) - you need to be identified with services
