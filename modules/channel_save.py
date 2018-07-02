@@ -4,6 +4,7 @@ class Module(object):
     def __init__(self, bot):
         bot.events.on("self").on("part").hook(self.on_self_part)
         bot.events.on("self").on("join").hook(self.on_join)
+        bot.events.on("self").on("kick").hook(self.on_kick)
         bot.events.on("received").on("numeric").on("366").hook(
             self.on_identify_trigger)
         bot.events.on("received").on("numeric").on("001").hook(
