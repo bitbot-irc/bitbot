@@ -338,3 +338,19 @@ def handle_477(data):
     bot.add_timer("rejoin", 5, channel_name=data.args[1],
         key=data.server.attempted_join[data.args[1].lower()],
         server_id=data.server.id)
+
+@handler(description="someone's been kicked from a channel")
+def handle_KICK(data):
+    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
+    user = data.server.get_user(nickname)
+    target = data.args[1]
+    channel = data.server.get_channel(data.args[0])
+    reason = data.args[2]
+
+    if not data.server.is_own_nickname(target):
+        target_user = data.server.get_user(target)
+        bot.events.on("received").on("kick").call(channel=channel,
+            reason=reason, target_user=target_user, user=user, **data.map())
+    else:
+        bot.events.on("self").on("kick").call(channel=channel,
+            reason=reason, user=user, **data.map())
