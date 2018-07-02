@@ -82,6 +82,7 @@ def handle_005(data):
         server.send("PROTOCTL NAMESX")
     match = re.search(RE_PREFIXES, isupport_line)
     if match:
+        server.mode_prefixes.clear()
         modes = match.group(1)
         prefixes = match.group(2)
         for i, prefix in enumerate(prefixes):
