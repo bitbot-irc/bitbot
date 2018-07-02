@@ -16,9 +16,15 @@ class Event(object):
         self.eaten = True
 
 class EventCallback(object):
-    def __init__(self, function, bot, **kwargs):
+    PRIORITY_URGENT = 0
+    PRIORITY_HIGH = 1
+    PRIORITY_MEDIUM = 2
+    PRIORITY_LOW = 3
+
+    def __init__(self, function, bot, priority, **kwargs):
         self.function = function
         self.bot = bot
+        self.priority = priority
         self.kwargs = kwargs
     def call(self, event):
         return self.function(event)
@@ -45,11 +51,13 @@ class EventHook(object):
         self._child_notify = None
         self._call_notify = None
         self._stored_events = []
-    def hook(self, function, replay=False, **kwargs):
-        callback = EventCallback(function, self.bot, **kwargs)
+    def hook(self, function, priority=EventCallback.PRIORITY_LOW,
+            replay=False, **kwargs):
+        callback = EventCallback(function, self.bot, priority, **kwargs)
         if self._hook_notify:
             self._hook_notify(self, callback)
         self._hooks.append(callback)
+        self._hooks.sort(key=lambda x: x.priority)
 
         if replay:
             for event in self._stored_events:
