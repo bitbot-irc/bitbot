@@ -26,7 +26,8 @@ class Server(object):
         self.nickname_ids = {}
         self.channels = {}
         self.own_modes = set([])
-        self.mode_prefixes = collections.OrderedDict()
+        self.mode_prefixes = collections.OrderedDict(
+            {"@": "o", "+": "v"})
         self.channel_modes = []
         self.channel_types = []
         self.last_read = None
