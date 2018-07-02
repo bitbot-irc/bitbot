@@ -1,7 +1,8 @@
-import re
+import json, re
 import Utils
 
-URL_TRANSLATE = "https://translate.google.com/"
+URL_TRANSLATE = "http://translate.googleapis.com/translate_a/single"
+URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
 REGEX_LANGUAGES = re.compile("(\w{2})?:(\w{2})? ")
 
 class Module(object):
@@ -30,22 +31,20 @@ class Module(object):
                 target_language = language_match.group(2)
             phrase = phrase.split(" ", 1)[1]
 
-        soup = Utils.get_url(URL_TRANSLATE, post_params={
-            "sl": source_language, "tl": target_language, "js": "n",
-            "prev": "_t", "hl": "en", "ie": "UTF-8", "text": phrase,
-            "file": "", "edit-text": ""}, method="POST", soup=True)
-        if soup:
-            languages_element = soup.find(id="gt-otf-switch")
-            translated_element = soup.find(id="result_box").find("span")
-            if languages_element and translated_element:
-                source_language, target_language = languages_element.attrs[
-                    "href"].split("&sl=", 1)[1].split("&tl=", 1)
-                target_language = target_language.split("&", 1)[0]
-                translated = translated_element.text
-                event["stdout"].write("(%s > %s) %s" % (source_language,
-                    target_language, translated))
-                return
-        event["stderr"].write("Failed to translate, try checking "
-            "source/target languages (https://cloud.google.com/translate/"
-            "v2/using_rest#language-params")
+        data = Utils.get_url(URL_TRANSLATE, get_params={
+            "client": "gtx", "sl": source_language,
+            "tl": target_language, "dt": "t", "q": phrase})
+
+        if data and not data == "[null,null,\"\"]":
+            while ",," in data:
+                data = data.replace(",,", ",null,")
+                data = data.replace("[,", "[null,")
+            data_json = json.loads(data)
+            detected_source = data_json[2]
+            event["stdout"].write("(%s -> %s) %s" % (
+                detected_source, target_language.lower(),
+                data_json[0][0][0]))
+        else:
+            event["stderr"].write("Failed to translate, try checking "
+                "source/target languages (" + URL_LANGUAGES + ")")
 
