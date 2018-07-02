@@ -8,7 +8,7 @@ class Database(object):
         self.database = sqlite3.connect(self.full_location,
             check_same_thread=False, isolation_level=None)
         self.database.execute("PRAGMA foreign_keys = ON")
-        self.cursors = {}
+        self._cursor = None
 
         self.make_servers_table()
         self.make_bot_settings_table()
@@ -17,10 +17,9 @@ class Database(object):
         self.make_user_settings_table()
 
     def cursor(self):
-        id = threading.current_thread().ident
-        if not id in self.cursors:
-            self.cursors[id] = self.database.cursor()
-        return self.cursors[id]
+        if self._cursor == None:
+            self._cursor = self.database.cursor()
+        return self._cursor
 
     def make_servers_table(self):
         try:
