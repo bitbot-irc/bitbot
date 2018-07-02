@@ -50,7 +50,7 @@ class Module(object):
         self._set(self.settings, event, event["user"])
 
     def channel_set(self, event):
-        if event["target"].mode_or_above(event["user"].nickname,
+        if event["target"].mode_or_above(event["user"],
                 "o"):
             self._set(self.channel_settings, event, event["target"])
         else:

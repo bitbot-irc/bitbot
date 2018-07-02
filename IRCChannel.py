@@ -28,20 +28,35 @@ class Channel(object):
         self.users.add(user)
     def remove_user(self, user):
         self.users.remove(user)
+        for mode in self.modes[:]:
+            if mode in self.sever.mode_prefixes and user in self.modes[mode]:
+                self.modes[mode].discard(user)
+                if not len(self.modes[mode]):
+                    del self.modes[mode]
     def has_user(self, user):
         return user in self.users
     def add_mode(self, mode, args=None):
         if not mode in self.modes:
             self.modes[mode] = set([])
         if args:
-            self.modes[mode].add(args.lower())
+            if mode in self.server.mode_prefixes:
+                user = self.server.get_user(args)
+                if user:
+                    self.modes[mode].add(user)
+            else:
+                self.modes[mode].add(args.lower())
         self.bot.events.on("mode").on("channel").call(
             channel=self, mode=mode, args=args, remove=False)
     def remove_mode(self, mode, args=None):
         if not args:
             del self.modes[mode]
         else:
-            self.modes[mode].discard(args.lower())
+            if mode in self.server.mode_prefixes:
+                user = self.server.get_user(args)
+                if user:
+                    self.modes[mode].discard(user)
+            else:
+                self.modes[mode].discard(args.lower())
             if not len(self.modes[mode]):
                 del self.modes[mode]
         self.bot.events.on("mode").on("channel").call(
@@ -68,17 +83,17 @@ class Channel(object):
     def send_ban(self, hostmask):
         self.server.send_mode(self.name, "+b", hostmask)
 
-    def mode_or_above(self, nickname, mode):
+    def mode_or_above(self, user, mode):
         mode_orders = list(self.server.mode_prefixes.values())
         mode_index = mode_orders.index(mode)
         for mode in mode_orders[:mode_index+1]:
-            if nickname.lower() in self.modes.get(mode, []):
+            if user in self.modes.get(mode, []):
                 return True
         return False
 
-    def get_user_status(self, nickname):
+    def get_user_status(self, user):
         modes = ""
         for mode in self.server.mode_prefixes.values():
-            if nickname.lower() in self.modes.get(mode, []):
+            if user in self.modes.get(mode, []):
                 modes += mode
         return modes

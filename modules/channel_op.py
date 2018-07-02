@@ -90,7 +90,7 @@ class Module(object):
         if len(set(nicknames) & set(event["message_split"])) >= event["channel"].get_setting(
                 "highlight-spam-threshold", 10):
             protection_enabled = event["channel"].get_setting("highlight-spam-protection", False)
-            has_mode = event["channel"].mode_or_above(event["user"].nickname, "v")
+            has_mode = event["channel"].mode_or_above(event["user"], "v")
             should_ban = event["channel"].get_setting("highlight-spam-ban", False)
             if protection_enabled and not has_mode:
                 if should_ban:

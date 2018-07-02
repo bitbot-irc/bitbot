@@ -10,6 +10,6 @@ class Module(object):
         if event["is_channel"] and event["hook"].kwargs.get(
                 "require_mode"):
             required_mode = event["hook"].kwargs.get("require_mode")[0]
-            if not event["target"].mode_or_above(event["user"].nickname,
+            if not event["target"].mode_or_above(event["user"],
                     required_mode):
                 return "You do not have permission to do this"
