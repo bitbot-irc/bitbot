@@ -16,5 +16,6 @@
     "tfl-api-id"               : "",
     "tfl-api-key"              : "",
     "eagle-api-url"            : "",
-    "eagle-api-key"            : ""
+    "eagle-api-key"            : "",
+    "omdbapi-api-key"          : ""
 }
