@@ -24,7 +24,6 @@ class Bot(object):
         if not new_server.get_setting("connect", True):
             return
         self.events.on("new").on("server").call(server=new_server)
-        self.servers[new_server.fileno()] = new_server
         if connect and new_server.get_setting("connect", True):
             self.connect(new_server)
         return new_server
@@ -35,15 +34,9 @@ class Bot(object):
             sys.stderr.write("Failed to connect to %s\n" % str(server))
             traceback.print_exc()
             return False
+        self.servers[server.fileno()] = server
         self.poll.register(server.fileno(), select.EPOLLOUT)
         return True
-    def connect_all(self):
-        for server in self.servers.values():
-            if server.get_setting("connect", True):
-                if not self.connect(server):
-                    return False
-        return True
-
     def setup_timers(self, event):
         for setting, value in self.find_settings("timer-%"):
             id = setting.split("timer-", 1)[1]

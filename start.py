@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse, time
+import argparse, sys, time
 import IRCBot, Config, Database
 
 def bool_input(s):
@@ -25,14 +25,20 @@ bot.config_object = config_object
 bot.args = args
 bot.modules.load_modules()
 
-servers = database.get_servers()
-for server in servers:
-    bot.add_server(*server)
-if len(bot.servers):
+server_details = database.get_servers()
+servers = []
+for server_detail in server_details:
+    server = bot.add_server(*server_detail)
+    if not server == None:
+        servers.append(server)
+if len(servers):
     bot.events.on("boot").on("done").call()
-    time.sleep(5)
-    if bot.connect_all():
-        bot.run()
+    for server in servers:
+        if not bot.connect(server):
+            sys.stderr.write("failed to connect to '%s', exiting\r\n" % (
+                str(server)))
+            sys.exit(1)
+    bot.run()
 else:
     try:
         if bool_input("no servers found, add one?"):
