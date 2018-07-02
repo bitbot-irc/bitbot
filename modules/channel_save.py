@@ -31,3 +31,8 @@ class Module(object):
             event["server"].send_join(
                 ",".join(channels_sorted), ",".join(keys_sorted))
 
+    def on_kick(self, event):
+        channels = event["server"].get_setting("autojoin", [])
+        if event["channel"].name in channels:
+            channels.remove(event["channel"].name)
+            event["server"].set_setting("autojoin", channels)
