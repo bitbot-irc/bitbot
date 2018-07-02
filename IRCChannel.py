@@ -28,8 +28,8 @@ class Channel(object):
         self.users.add(user)
     def remove_user(self, user):
         self.users.remove(user)
-        for mode in self.modes[:]:
-            if mode in self.sever.mode_prefixes.values(
+        for mode in list(self.modes.keys()):
+            if mode in self.server.mode_prefixes.values(
                     ) and user in self.modes[mode]:
                 self.modes[mode].discard(user)
                 if not len(self.modes[mode]):
