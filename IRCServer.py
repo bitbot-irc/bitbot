@@ -130,7 +130,7 @@ class Server(object):
             self.channels[new_channel.name] = new_channel
         return self.channels[channel_name.lower()]
     def remove_channel(self, channel):
-        for users in channel.users:
+        for user in channel.users:
             user.part_channel(channel)
         del self.channels[channel.name]
     def parse_line(self, line):
