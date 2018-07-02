@@ -1,10 +1,13 @@
-import random
+import random, uuid
 
 class Module(object):
+    _name = "Random"
     def __init__(self, bot):
         bot.events.on("received").on("command").on("random",
             "rand").hook(self.random, help="Get a random number",
             usage="[start] [end]")
+        bot.events.on("received").on("command").on("guid"
+            ).hook(self.guid, help="Get a random guid")
 
     def random(self, event):
         start, end = "1", "100"
@@ -24,3 +27,6 @@ class Module(object):
         else:
             event["stderr"].write(
                 "Both start and end must be valid integers")
+
+    def guid(self, event):
+        event["stdout"].write(str(uuid.uuid4()))
