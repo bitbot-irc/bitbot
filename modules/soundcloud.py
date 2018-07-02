@@ -5,7 +5,7 @@ import Utils
 
 URL_SOUNDCLOUD_TRACK = "http://api.soundcloud.com/tracks"
 URL_SOUNDCLOUD_RESOLVE = "http://api.soundcloud.com/resolve"
-REGEX_SOUNDCLOUD = "https://soundcloud.com/([^/]+)/([^/]+)"
+REGEX_SOUNDCLOUD = "https?://soundcloud.com/([^/]+)/([^/]+)"
 
 class Module(object):
     _name = "SoundCloud"
