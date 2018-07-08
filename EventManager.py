@@ -51,6 +51,7 @@ class EventHook(object):
         self._child_notify = None
         self._call_notify = None
         self._stored_events = []
+
     def hook(self, function, priority=EventCallback.PRIORITY_LOW,
             replay=False, **kwargs):
         callback = EventCallback(function, self.bot, priority, **kwargs)
@@ -63,15 +64,26 @@ class EventHook(object):
             for event in self._stored_events:
                 callback.call(event)
         self._stored_events = None
+
     def _unhook(self, hook):
         self._hooks.remove(hook)
-    def on(self, subevent, *extra_subevents):
+
+    def on(self, subevent, *extra_subevents, delimiter="."):
+        if delimiter in subevent:
+            event_chain = subevent.split(delimiter)
+            event_obj = self
+            for event_name in event_chain:
+                event_obj = event_obj.get_child(event_name)
+            return event_obj
+
         if extra_subevents:
             multiple_event_hook = MultipleEventHook()
             for extra_subevent in (subevent,)+extra_subevents:
                 multiple_event_hook._add(self.get_child(extra_subevent))
             return multiple_event_hook
+
         return self.get_child(subevent)
+
     def call(self, max=None, **kwargs):
         event = Event(self.bot, self.name, **kwargs)
         if self._call_notify:
@@ -96,6 +108,7 @@ class EventHook(object):
                 #    data=traceback.format_exc())
             called += 1
         return returns
+
     def get_child(self, child_name):
         child_name_lower = child_name.lower()
         if not child_name_lower in self._children:
