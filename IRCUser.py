@@ -33,8 +33,8 @@ class User(object):
         self.bot.database.del_user_setting(self.server.id, self.nickname,
             setting)
 
-    def send_message(self, message):
-        self.server.send_message(self.nickname, message)
+    def send_message(self, message, prefix=None):
+        self.server.send_message(self.nickname, message, prefix=prefix)
     def send_notice(self, message):
         self.server.send_notice(self.nickname, message)
     def send_ctcp_response(self, command, args):

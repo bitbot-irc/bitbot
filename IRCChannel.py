@@ -75,8 +75,8 @@ class Channel(object):
         self.bot.database.del_channel_setting(self.server.id,
             self.name, setting)
 
-    def send_message(self, text):
-        self.server.send_message(self.name, text)
+    def send_message(self, text, prefix=None):
+        self.server.send_message(self.name, text, prefix=prefix)
     def send_mode(self, mode=None, target=None):
         self.server.send_mode(self.name, mode, target)
     def send_kick(self, target, reason=None):

@@ -233,12 +233,16 @@ class Server(object):
             "" if reason == None else " %s" % reason))
     def send_quit(self, reason="Leaving"):
         self.send("QUIT :%s" % reason)
-    def send_message(self, target, message):
-        self.send("PRIVMSG %s :%s" % (target, message))
-        action = message.startswith("\01ACTION ") and message.endswith(
-            "\01")
+    def send_message(self, target, message, prefix=None):
+        full_message = message if not prefix else prefix+message
+
+        self.send("PRIVMSG %s :%s" % (target, full_message))
+        action = full_message.startswith("\01ACTION "
+            ) and full_message.endswith("\01")
+
         if action:
-            message = message.split("\01ACTION ", 1)[1][:-1]
+            message = full_message.split("\01ACTION ", 1)[1][:-1]
+
         if self.has_channel(target):
             self.get_channel(target).log.add_line(None, message, action, True)
         else:

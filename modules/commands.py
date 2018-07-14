@@ -20,14 +20,14 @@ class Out(object):
         return self
     def send(self):
         if self.has_text():
-            text = "[%s] %s" % (self.prefix(), self._text)
+            text = self._text
             text_encoded = text.encode("utf8")
             if len(text_encoded) > OUT_CUTOFF:
                 text = "%s%s" % (text_encoded[:OUT_CUTOFF].decode("utf8"
                     ).rstrip(), STR_MORE)
                 self._text = "%s%s" % (STR_CONTINUED, text_encoded[OUT_CUTOFF:
                     ].decode("utf8").lstrip())
-            self.target.send_message(text)
+            self.target.send_message(text, prefix="[%s] " % self.prefix())
     def set_prefix(self, prefix):
         self.module_name = prefix
     def has_text(self):
@@ -55,7 +55,7 @@ class Module(object):
             help="Show usage help for commands", min_args=1,
             usage="<command>")
         bot.events.on("received").on("command").on("more").hook(self.more,
-            help="Get more output from the last command")
+            help="Get more output from the last command", skip_out=True)
 
         bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="command-prefix",
@@ -131,10 +131,11 @@ class Module(object):
                     1, user=user, server=server, target=target, log=log,
                     args=args, args_split=args_split, stdout=stdout, stderr=stderr,
                     command=command.lower(), is_channel=is_channel)
-                stdout.send()
-                target.last_stdout = stdout
-                stderr.send()
-                target.last_stderr = stderr
+                if not hook.kwargs.get("skip_out", False):
+                    stdout.send()
+                    stderr.send()
+                    target.last_stdout = stdout
+                    target.last_stderr = stderr
             log.skip_next()
 
 
