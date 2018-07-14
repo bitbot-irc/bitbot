@@ -3,7 +3,7 @@ import Utils
 
 URL_TRANSLATE = "http://translate.googleapis.com/translate_a/single"
 URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
-REGEX_LANGUAGES = re.compile("(\w{2})?:(\w{2})? ")
+REGEX_LANGUAGES = re.compile("(\w+)?:(\w+)? ")
 
 class Module(object):
     def __init__(self, bot):
