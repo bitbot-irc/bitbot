@@ -66,7 +66,7 @@ def handle(line, prefix, command, args, is_final, _bot, server):
 def handle_PING(data):
     nonce = data.args[0]
     data.server.send_pong(nonce)
-    bot.events.on("received").on("ping").call(nonce=nonce, **data.map())
+    bot.events.on("received").on("ping").call(nonce=nonce, server=data.server)
 
 @handler(description="the first line sent to a registered client", default_event=True)
 def handle_001(data):
@@ -95,7 +95,7 @@ def handle_005(data):
     if match:
         server.channel_types = list(match.group(1))
     bot.events.on("received").on("numeric").on("005").call(
-        isupport=isupport_line, number="005", **data.map())
+        isupport=isupport_line, number="005", server=data.server)
 
 @handler(description="whois respose (nickname, username, realname, hostname)", default_event=True)
 def handle_311(data):
@@ -155,11 +155,12 @@ def handle_JOIN(data):
         channel.add_user(user)
         user.join_channel(channel)
         bot.events.on("received").on("join").call(channel=channel,
-            user=user, **data.map())
+            user=user, server=data.server)
     else:
         if channel.name in server.attempted_join:
             del server.attempted_join[channel.name]
-        bot.events.on("self").on("join").call(channel=channel, **data.map())
+        bot.events.on("self").on("join").call(channel=channel,
+            server=data.server)
         server.send_who(channel.name)
         channel.send_mode()
 
@@ -172,7 +173,7 @@ def handle_PART(data):
     if not server.is_own_nickname(nickname):
         user = server.get_user(nickname)
         bot.events.on("received").on("part").call(channel=channel,
-            reason=reason, user=user, **data.map())
+            reason=reason, user=user, server=data.server)
         channel.remove_user(user)
         user.part_channel(channel)
         if not len(user.channels):
@@ -180,7 +181,7 @@ def handle_PART(data):
     else:
         server.remove_channel(channel)
         bot.events.on("self").on("part").call(channel=channel,
-            reason=reason, **data.map())
+            reason=reason, server=data.server)
 
 @handler(description="unknown command sent by us, oops!", default_event=True)
 def handle_421(data):
@@ -195,7 +196,7 @@ def handle_QUIT(data):
         user = server.get_user(nickname)
         server.remove_user(user)
         bot.events.on("received").on("quit").call(reason=reason,
-            user=user, **data.map())
+            user=user, server=data.server)
     else:
         server.disconnect()
 
@@ -205,12 +206,12 @@ def handle_CAP(data):
     if len(data.args) > 2:
         capability_list = data.args[2].split()
     bot.events.on("received").on("cap").call(subcommand=data.args[1],
-        capabilities=capability_list, **data.map())
+        capabilities=capability_list, server=data.server)
 
 @handler(description="The server is asking for authentication")
 def handle_AUTHENTICATE(data):
     bot.events.on("received").on("authenticate").call(message=data.args[0],
-        **data.map())
+        server=data.server)
 
 @handler(description="someone has changed their nickname")
 def handle_NICK(data):
@@ -223,7 +224,7 @@ def handle_NICK(data):
         user.set_nickname(new_nickname)
         server.change_user_nickname(old_nickname, new_nickname)
         bot.events.on("received").on("nick").call(new_nickname=new_nickname,
-            old_nickname=old_nickname, user=user, **data.map())
+            old_nickname=old_nickname, user=user, server=data.server)
     else:
         old_nickname = server.nickname
         server.set_own_nickname(new_nickname)
@@ -262,7 +263,7 @@ def handle_MODE(data):
                 elif len(args):
                     args.pop(0)
         bot.events.on("received").on("mode").call(modes=modes,
-            mode_args=args, channel=channel, **data.map())
+            mode_args=args, channel=channel, server=data.server)
     elif server.is_own_nickname(target):
         modes = Utils.remove_colon(data.args[1])
         remove = False
@@ -276,8 +277,7 @@ def handle_MODE(data):
                     server.remove_own_mode(char)
                 else:
                     server.add_own_mode(char)
-        bot.events.on("self").on("mode").call(modes=modes, **data.map())
-#:nick!user@host MODE #chan +v-v nick nick
+        bot.events.on("self").on("mode").call(modes=modes, server=data.server)
 
 @handler(description="I've been invited somewhere")
 def handle_INVITE(data):
@@ -285,7 +285,7 @@ def handle_INVITE(data):
     target_channel = Utils.remove_colon(data.args[1])
     user = data.server.get_user(nickname)
     bot.events.on("received").on("invite").call(
-        user=user, target_channel=target_channel, **data.map())
+        user=user, target_channel=target_channel, server=data.server)
 
 @handler(description="we've received a message")
 def handle_PRIVMSG(data):
@@ -302,12 +302,12 @@ def handle_PRIVMSG(data):
         channel = server.get_channel(data.args[0])
         bot.events.on("received").on("message").on("channel").call(
             user=user, message=message, message_split=message_split,
-            channel=channel, action=action, **data.map())
+            channel=channel, action=action, server=data.server)
         channel.log.add_line(user.nickname, message, action)
     elif server.is_own_nickname(target):
         bot.events.on("received").on("message").on("private").call(
             user=user, message=message, message_split=message_split,
-            action=action, **data.map())
+            action=action, server=data.server)
         user.log.add_line(user.nickname, message, action)
 
 @handler(description="response to a WHO command for user information", default_event=True)
@@ -351,7 +351,8 @@ def handle_KICK(data):
     if not data.server.is_own_nickname(target):
         target_user = data.server.get_user(target)
         bot.events.on("received").on("kick").call(channel=channel,
-            reason=reason, target_user=target_user, user=user, **data.map())
+            reason=reason, target_user=target_user, user=user,
+            server=data.server)
     else:
         bot.events.on("self").on("kick").call(channel=channel,
-            reason=reason, user=user, **data.map())
+            reason=reason, user=user, server=data.server)
