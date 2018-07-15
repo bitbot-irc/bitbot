@@ -1,5 +1,10 @@
 import traceback
 
+PRIORITY_URGENT = 0
+PRIORITY_HIGH = 1
+PRIORITY_MEDIUM = 2
+PRIORITY_LOW = 3
+
 class Event(object):
     def __init__(self, bot, name, **kwargs):
         self.bot = bot
@@ -16,11 +21,6 @@ class Event(object):
         self.eaten = True
 
 class EventCallback(object):
-    PRIORITY_URGENT = 0
-    PRIORITY_HIGH = 1
-    PRIORITY_MEDIUM = 2
-    PRIORITY_LOW = 3
-
     def __init__(self, function, bot, priority, **kwargs):
         self.function = function
         self.bot = bot
@@ -52,8 +52,7 @@ class EventHook(object):
         self._call_notify = None
         self._stored_events = []
 
-    def hook(self, function, priority=EventCallback.PRIORITY_LOW,
-            replay=False, **kwargs):
+    def hook(self, function, priority=PRIORITY_LOW, replay=False, **kwargs):
         callback = EventCallback(function, self.bot, priority, **kwargs)
         if self._hook_notify:
             self._hook_notify(self, callback)
