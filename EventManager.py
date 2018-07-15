@@ -84,6 +84,9 @@ class EventHook(object):
 
         return self.get_child(subevent)
 
+    def call_for_result(self, default=None, max=None, **kwargs):
+        results = self.call(max=max, **kwargs)
+        return default if not len(results) else results[0]
     def call(self, max=None, **kwargs):
         event = Event(self.bot, self.name, **kwargs)
         if self._call_notify:

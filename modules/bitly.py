@@ -25,8 +25,8 @@ class Module(object):
             return data["data"]["url"]
 
     def shorten(self, event):
-        link = self.bot.events.on("get").on("shortlink").call(
-            url=event["args"])[0]
+        link = self.bot.events.on("get").on("shortlink"
+            ).call_for_result(url=event["args"])
         if link:
             event["stdout"].write("Short URL: %s" % link)
         else:

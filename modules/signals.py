@@ -9,10 +9,13 @@ class Module(object):
     def SIGINT(self, signum, frame):
         print()
         self.bot.events.on("signal").on("interrupt").call(signum=signum, frame=frame)
+
         for server in self.bot.servers.values():
-            quote = self.bot.events.on("get.quit-quote").call()[0]
+            quote = self.bot.events.on("get.quit-quote"
+                ).call_for_result(default="Leaving")
             server.send_quit(quote)
             self.bot.register_write(server)
+
         self.bot.running = False
 
     def SIGUSR1(self, signum, frame):
