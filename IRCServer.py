@@ -64,9 +64,9 @@ class Server(object):
 
         if self.password:
             self.send_pass(self.password)
-        # In principle, this belongs in the NS module. In reality, it's more practical to put this
-        # One-off case here for SASL
-        if "Nickserv" in self.bot.modules.modules and self.get_setting("nickserv-password"):
+
+        sasl = self.get_setting("sasl")
+        if sasl:
             self.send_capability_request("sasl")
 
         self.send_user(self.original_username, self.original_realname)
@@ -234,7 +234,6 @@ class Server(object):
                 ] in self.attempted_join:
             self.send_join(event["channel_name"], event["key"])
     def send_join(self, channel_name, key=None):
-        self.attempted_join[channel_name.lower()] = key
         self.send("JOIN %s%s" % (channel_name,
             "" if key == None else " %s" % key))
     def send_part(self, channel_name, reason=None):
