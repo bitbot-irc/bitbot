@@ -16,6 +16,7 @@ class Channel(object):
         self.modes = {}
         self.created_timestamp = None
         self.log = IRCLog.Log(bot)
+
     def set_topic(self, topic):
         self.topic = topic
     def set_topic_setter(self, nickname, username=None, hostname=None):
@@ -24,6 +25,7 @@ class Channel(object):
         self.topic_setter_hostname = hostname
     def set_topic_time(self, unix_timestamp):
         self.topic_time = unix_timestamp
+
     def add_user(self, user):
         self.users.add(user)
     def remove_user(self, user):
@@ -36,6 +38,7 @@ class Channel(object):
                     del self.modes[mode]
     def has_user(self, user):
         return user in self.users
+
     def add_mode(self, mode, args=None):
         if not mode in self.modes:
             self.modes[mode] = set([])
@@ -62,6 +65,7 @@ class Channel(object):
                 del self.modes[mode]
         self.bot.events.on("mode").on("channel").call(
             channel=self, mode=mode, args=args, remove=True)
+
     def set_setting(self, setting, value):
         self.bot.database.set_channel_setting(self.server.id,
             self.name, setting, value)
