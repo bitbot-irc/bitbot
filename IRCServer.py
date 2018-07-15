@@ -25,7 +25,7 @@ class Server(object):
         self.new_users = set([])
         self.nickname_ids = {}
         self.channels = {}
-        self.own_modes = set([])
+        self.own_modes = {}
         self.mode_prefixes = collections.OrderedDict(
             {"@": "o", "+": "v"})
         self.channel_modes = []
@@ -58,6 +58,7 @@ class Server(object):
     def fileno(self):
         fileno = self.socket.fileno()
         return self.cached_fileno if fileno == -1 else fileno
+
     def connect(self):
         self.socket.connect((self.target_hostname, self.port))
 
@@ -81,6 +82,7 @@ class Server(object):
             self.socket.close()
         except:
             pass
+
     def set_setting(self, setting, value):
         self.bot.database.set_server_setting(self.id, setting,
             value)
@@ -92,15 +94,18 @@ class Server(object):
             pattern, default)
     def del_setting(self, setting):
         self.bot.database.del_server_setting(self.id, setting)
+
     def set_own_nickname(self, nickname):
         self.nickname = nickname
         self.nickname_lower = nickname.lower()
     def is_own_nickname(self, nickname):
         return nickname.lower() == self.nickname_lower
-    def add_own_mode(self, mode):
-        self.own_modes.add(mode)
+
+    def add_own_mode(self, mode, arg=None):
+        self.own_modes[mode] = arg
     def remove_own_mode(self, mode):
-        self.own_modes.remove(mode)
+        del self.own_modes[mode]
+
     def has_user(self, nickname):
         return nickname.lower() in self.nickname_ids
     def get_user(self, nickname):
@@ -117,6 +122,7 @@ class Server(object):
         del self.nickname_ids[user.nickname_lower]
         for channel in user.channels:
             channel.remove_user(user)
+
     def change_user_nickname(self, old_nickname, new_nickname):
         self.nickname_ids[new_nickname.lower()] = self.nickname_ids.pop(old_nickname.lower())
     def has_channel(self, channel_name):
@@ -202,6 +208,7 @@ class Server(object):
             self.write_buffer):]
     def waiting_send(self):
         return bool(len(self.write_buffer))
+
     def send_user(self, username, realname):
         self.send("USER %s - - :%s" % (username, realname))
     def send_nick(self, nickname):
@@ -216,10 +223,12 @@ class Server(object):
 
     def send_pass(self, password):
         self.send("PASS %s" % password)
+
     def send_ping(self, nonce="hello"):
         self.send("PING :%s" % nonce)
     def send_pong(self, nonce="hello"):
         self.send("PONG :%s" % nonce)
+
     def try_rejoin(self, event):
         if event["server_id"] == self.id and event["channel_name"
                 ] in self.attempted_join:
@@ -233,6 +242,7 @@ class Server(object):
             "" if reason == None else " %s" % reason))
     def send_quit(self, reason="Leaving"):
         self.send("QUIT :%s" % reason)
+
     def send_message(self, target, message, prefix=None):
         full_message = message if not prefix else prefix+message
 
@@ -249,9 +259,11 @@ class Server(object):
             self.get_user(target).log.add_line(None, message, action, True)
     def send_notice(self, target, message):
         self.send("NOTICE %s :%s" % (target, message))
+
     def send_mode(self, target, mode=None, args=None):
         self.send("MODE %s%s%s" % (target, "" if mode == None else " %s" % mode,
             "" if args == None else " %s" % args))
+
     def send_topic(self, channel_name, topic):
         self.send("TOPIC %s :%s" % (channel_name, topic))
     def send_kick(self, channel_name, target, reason=None):
@@ -264,6 +276,7 @@ class Server(object):
             "LIST%s" % "" if search_for == None else " %s" % search_for)
     def send_invite(self, target, channel_name):
         self.send("INVITE %s %s" % (target, channel_name))
+
     def send_whois(self, target):
         self.send("WHOIS %s" % target)
     def send_whowas(self, target, amount=None, server=None):
