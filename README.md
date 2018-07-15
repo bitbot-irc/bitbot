@@ -8,10 +8,10 @@ Python3 event-driven modular IRC bot!
 * [suds](https://pypi.python.org/pypi/suds-jurko)
 
 ## Configurating
-To get BitBot off the ground, there's some API-keys and the like in bot.json.example. move it to bot.json, fill in the API keys you want (and remove the ones you don't want - this will automatically disable the modules that rely on them.)
+To get BitBot off the ground, there's some API-keys and the like in bot.conf.example. move it to bot.conf, fill in the API keys you want (and remove the ones you don't want - this will automatically disable the modules that rely on them.)
 
 ## Eagle
-BitBot's National Rail module can optionally include output from Network Rail's SCHEDULE via [Eagle](https://github.com/EvelynSubarrow/Eagle). Configuration on BitBot's end is covered by the `eagle-` keys in bot.json.example.
+BitBot's National Rail module can optionally include output from Network Rail's SCHEDULE via [Eagle](https://github.com/EvelynSubarrow/Eagle). Configuration on BitBot's end is covered by the `eagle-` keys in bot.conf.example.
 
 ## Running
 Just run `./start.py`

@@ -63,5 +63,5 @@ target/
 
 # custom
 *.db
-*.json
+*.conf
 modules/nongit-*.py
