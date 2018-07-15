@@ -56,7 +56,7 @@ class Module(object):
         if not self.bot.args.verbose:
             self.print_line(event, "%s left %s%s" % (nickname,
                 event["channel"].name, "" if not event[
-                "reason"] else ": %s" % event["reason"]))
+                "reason"] else " (%s)" % event["reason"]))
     def part(self, event):
         self._on_part(event, event["user"].nickname)
     def self_part(self, event):
@@ -75,8 +75,7 @@ class Module(object):
         if not self.bot.args.verbose:
             self.print_line(event, "%s kicked %s from %s%s" % (
                 event["user"].nickname, nickname, event["channel"].name,
-                " (%s)" % event["reason"] if event[
-                "reason"] else ""))
+                "" if not event["reason"] else " (%s)" % event["reason"]))
     def kick(self, event):
         self._on_kick(event, event["target_user"].nickname)
     def self_kick(self, event):
