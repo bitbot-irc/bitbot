@@ -59,7 +59,6 @@ class Module(object):
         bot.events.on("get.quit-quote").hook(self.quote)
 
     def quote(self, event):
-        quote = random.choice(list(QUOTES))
-        return (" - " if QUOTES[quote] else "").join([quote,
-            QUOTES[quote]])
+        quote = random.choice(list(QUOTES.items()))
+        return (" - " if quote[1] else "").join(quote)
 
