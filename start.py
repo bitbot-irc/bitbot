@@ -9,7 +9,7 @@ def bool_input(s):
 
 arg_parser = argparse.ArgumentParser(
     description="Python3 event-driven asynchronous modular IRC bot")
-arg_parser.add_argument("--config", "-c", default="bot.json",
+arg_parser.add_argument("--config", "-c", default="bot.conf",
     help="Location of the JSON config file")
 arg_parser.add_argument("--database", "-d", default="bot.db",
     help="Location of the sqlite3 database file")
