@@ -253,10 +253,20 @@ class Server(object):
         if action:
             message = full_message.split("\01ACTION ", 1)[1][:-1]
 
+        full_message_split = full_message.split()
         if self.has_channel(target):
-            self.get_channel(target).log.add_line(None, message, action, True)
+            channel = self.get_channel(target)
+            channel.log.add_line(None, message, action, True)
+            self.bot.events.on("self").on("message").on("channel").call(
+                message=full_message, message_split=full_message_split,
+                channel=channel, action=action, server=self)
         else:
-            self.get_user(target).log.add_line(None, message, action, True)
+            user = self.get_user(target)
+            user.log.add_line(None, message, action, True)
+            self.bot.events.on("self").on("message").on("private").call(
+                message=full_message, message_split=full_message_split,
+                user=user, action=action, server=self)
+
     def send_notice(self, target, message):
         self.send("NOTICE %s :%s" % (target, message))
 
