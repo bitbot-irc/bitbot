@@ -6,8 +6,7 @@ class Module(object):
         self.bot = bot
 
         bot.events.on("received").on("message").on("channel").hook(
-            self.channel_message,
-            priority=EventManager.EventCallback.PRIORITY_HIGH)
+            self.channel_message, priority=EventManager.PRIORITY_HIGH)
         bot.events.on("self").on("message").on("channel").hook(
             self.self_channel_message)
 
