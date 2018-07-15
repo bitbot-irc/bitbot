@@ -1,5 +1,4 @@
 import re, threading
-
 import Utils
 
 RE_PREFIXES = re.compile(r"\bPREFIX=\((\w+)\)(\W+)(?:\b|$)")
@@ -336,9 +335,10 @@ def handle_433(data):
 
 @handler(description="we need a registered nickname for this channel", default_event=True)
 def handle_477(data):
-    bot.add_timer("rejoin", 5, channel_name=data.args[1],
-        key=data.server.attempted_join[data.args[1].lower()],
-        server_id=data.server.id)
+    if data.args[1].lower() in data.server.attempted_join:
+        bot.add_timer("rejoin", 5, channel_name=data.args[1],
+            key=data.server.attempted_join[data.args[1].lower()],
+            server_id=data.server.id)
 
 @handler(description="someone's been kicked from a channel")
 def handle_KICK(data):
