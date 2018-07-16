@@ -3,10 +3,16 @@ import base64
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
-        bot.events.on("received").on("cap").hook(self.on_cap)
-        bot.events.on("received").on("authenticate").hook(self.on_authenticate)
-        bot.events.on("received").on("numeric").on(
+        bot.events.on("preprocess.connect").hook(self.preprocess_connect)
+        bot.events.on("received.cap").hook(self.on_cap)
+        bot.events.on("received.authenticate").hook(self.on_authenticate)
+        bot.events.on("received.numeric").on(
             "902", "903", "904", "905", "906", "907", "908").hook(self.on_90x)
+
+    def preprocess_connect(self, event):
+        sasl = event["server"].get_setting("sasl")
+        if sasl:
+            event["server"].send_capability_request("sasl")
 
     def on_cap(self, event):
         if event["subcommand"] == "NAK":

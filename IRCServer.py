@@ -61,13 +61,10 @@ class Server(object):
 
     def connect(self):
         self.socket.connect((self.target_hostname, self.port))
+        self.bot.events.on("preprocess.connect").call(server=self)
 
         if self.password:
             self.send_pass(self.password)
-
-        sasl = self.get_setting("sasl")
-        if sasl:
-            self.send_capability_request("sasl")
 
         self.send_user(self.original_username, self.original_realname)
         self.send_nick(self.original_nickname)
