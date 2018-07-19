@@ -6,4 +6,5 @@ class Module(object):
             self.on_invite)
 
     def on_invite(self, event):
-        event["server"].send_join(event["target_channel"])
+        if event["server"].get_setting("accept-invites", True):
+            event["server"].send_join(event["target_channel"])
