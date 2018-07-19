@@ -87,6 +87,8 @@ class Channel(object):
         self.server.send_kick(self.name, target, reason)
     def send_ban(self, hostmask):
         self.server.send_mode(self.name, "+b", hostmask)
+    def send_unban(self, hostmask):
+        self.server.send_mode(self.name, "-b", hostmask)
 
     def mode_or_above(self, user, mode):
         mode_orders = list(self.server.mode_prefixes.values())

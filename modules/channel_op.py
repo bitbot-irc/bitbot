@@ -7,20 +7,28 @@ class Module(object):
         bot.events.on("received").on("command").on("kick", "k"
             ).hook(self.kick, channel_only=True, require_mode="o",
             min_args=1)
+
         bot.events.on("received").on("command").on("ban"
             ).hook(self.ban, channel_only=True, require_mode="o",
             min_args=1)
+        bot.events.on("received").on("command").on("unban"
+            ).hook(self.unban, channel_only=True, require_mode="o",
+            min_args=1)
+
         bot.events.on("received").on("command").on("kickban", "kb"
             ).hook(self.kickban, channel_only=True, require_mode="o",
             min_args=1)
+
         bot.events.on("received").on("command").on("op"
             ).hook(self.op, channel_only=True, require_mode="o")
         bot.events.on("received").on("command").on("deop"
             ).hook(self.deop, channel_only=True, require_mode="o")
+
         bot.events.on("received").on("command").on("voice"
             ).hook(self.voice, channel_only=True, require_mode="o")
         bot.events.on("received").on("command").on("devoice"
             ).hook(self.devoice, channel_only=True, require_mode="o")
+
         bot.events.on("received").on("message").on("channel").hook(self.highlight_spam)
 
         bot.events.on("postboot").on("configure").on(
@@ -34,6 +42,10 @@ class Module(object):
         bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="highlight-spam-ban",
             help="Enable/Disable banning highlight spammers instead of just kicking",
+            validate=Utils.bool_or_none)
+        bot.events.on("postboot").on("configure").on(
+            "channelset").call(setting="ban-format",
+            help="Set ban format ($n = nick, $u = username, $h = hostname)",
             validate=Utils.bool_or_none)
 
     def kick(self, event):
@@ -52,13 +64,30 @@ class Module(object):
         else:
             event["stderr"].write("That user is not in this channel")
 
+    def _ban_format(self, user, s):
+        return s.replace("$n", user.nickname).replace("$u", user.username
+            ).replace("$h", user.hostname)
+    def _ban(self, channel, ban, user):
+        format = channel.get_setting("ban-format", "*!$u@$h")
+        hostmask_split = format.split("$$")
+        hostmask_split = [self._ban_format(user, s) for s in hostmask_split]
+        hostmask = "".join(hostmask_split)
+        if ban:
+            channel.send_ban(hostmask)
+        else:
+            channel.send_unban(hostmask)
     def ban(self, event):
         target_user = event["server"].get_user(event["args_split"][0])
         if event["target"].has_user(target_user):
-            event["target"].send_ban("*!%s@%s" % (target_user.username,
-                target_user.hostname))
+            self._ban(event["target"], True, target_user)
         else:
             event["target"].send_ban(event["args_split"][0])
+    def unban(self, event):
+        target_user = event["server"].get_user(event["args_split"][0])
+        if event["target"].has_user(target_user):
+            self._ban(event["target"], False, target_user)
+        else:
+            event["target"].send_unban(event["args_split"][0])
 
     def kickban(self, event):
         if event["server"].has_user(event["args_split"][0]):
