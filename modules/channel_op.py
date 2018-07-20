@@ -45,8 +45,7 @@ class Module(object):
             validate=Utils.bool_or_none)
         bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="ban-format",
-            help="Set ban format ($n = nick, $u = username, $h = hostname)",
-            validate=Utils.bool_or_none)
+            help="Set ban format ($n = nick, $u = username, $h = hostname)")
 
     def kick(self, event):
         target = event["args_split"][0]
