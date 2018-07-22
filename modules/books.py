@@ -26,12 +26,19 @@ class Module(object):
                 title = book["title"]
                 sub_title = (", %s" % book.get("subtitle")
                     ) if book.get("subtitle") else ""
-                authors = ", ".join(book["authors"])
-                date = book["publishedDate"]
-                rating = book["averageRating"]
+
+                authors = ", ".join(book.get("authors", []))
+                authors = " - %s" % authors if authors else ""
+
+                date = book.get("publishedDate", "")
+                date = " (%s)" % date if date else ""
+
+                rating = book.get("averageRating", -1)
+                rating = " (%s/5.0)" % rating if not rating == -1 else ""
+
                 id = re.search(REGEX_BOOKID, book["infoLink"]).group(1)
-                info_link = URL_BOOKINFO % id
-                event["stdout"].write("%s - %s (%s)%s %s (%s/5.0)" % (
+                info_link = " %s" % (URL_BOOKINFO % id)
+                event["stdout"].write("%s%s%s%s%s%s" % (
                     title, authors, date, sub_title, info_link, rating))
             else:
                 event["stderr"].write("Unable to find book")
