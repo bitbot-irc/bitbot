@@ -33,15 +33,19 @@ class Server(object):
         self.last_read = None
         self.attempted_join = {}
         self.ping_sent = False
+        self.name = None
+
         if ipv4:
             self.socket = socket.socket(socket.AF_INET,
                 socket.SOCK_STREAM)
         else:
             self.socket = socket.socket(socket.AF_INET6,
                 socket.SOCK_STREAM)
+
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.socket.settimeout(5.0)
+
         if self.tls:
             context = ssl.SSLContext(OUR_TLS_PROTOCOL)
             context.options |= ssl.OP_NO_SSLv2

@@ -70,6 +70,7 @@ def handle_PING(data):
 @handler(description="the first line sent to a registered client", default_event=True)
 def handle_001(data):
     server = data.server
+    server.name = Utils.remove_colon(data.prefix)
     server.set_own_nickname(data.args[0])
     server.send_whois(server.nickname)
 
@@ -308,6 +309,28 @@ def handle_PRIVMSG(data):
             user=user, message=message, message_split=message_split,
             action=action, server=data.server)
         user.log.add_line(user.nickname, message, action)
+
+@handler(description="we've received a notice")
+def handle_NOTICE(data):
+    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
+    message = "" if len(data.args) < 2 else data.args[1]
+    message_split = message.split(" ")
+    target = data.args[0]
+    if nickname == data.server.name or target == "*":
+        bot.events.on("received.server-notice").call(
+            message=message, message_split=message_split,
+            server=data.server)
+    else:
+        user = data.server.get_user(nickname)
+        if target[0] in data.server.channel_types:
+            channel = data.server.get_channel(target)
+            bot.events.on("received.notice.channel").call(
+                message=message, message_split=message_split,
+                user=user, server=data.server, channel=channel)
+        elif data.server.is_own_nickname(target):
+            bot.events.on("received.notice.private").call(
+                message=message, message_split=message_split,
+                user=user, server=data.server)
 
 @handler(description="response to a WHO command for user information", default_event=True)
 def handle_352(data):
