@@ -22,7 +22,6 @@ class Module(object):
         if page:
             if page["totalItems"] > 0:
                 book = page["items"][0]["volumeInfo"]
-                print(book)
                 title = book["title"]
                 sub_title = (", %s" % book.get("subtitle")
                     ) if book.get("subtitle") else ""
