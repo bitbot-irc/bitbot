@@ -10,6 +10,13 @@ class Module(object):
         bot.events.on("self").on("message").on("channel").hook(
             self.self_channel_message)
 
+        bot.events.on("received").on("notice").on("channel").hook(
+            self.channel_notice, priority=EventManager.PRIORITY_HIGH)
+        bot.events.on("received").on("notice").on("private").hook(
+            self.private_notice, priority=EventManager.PRIORITY_HIGH)
+        bot.events.on("received").on("server-notice").hook(
+            self.server_notice, priority=EventManager.PRIORITY_HIGH)
+
         bot.events.on("received").on("join").hook(self.join)
         bot.events.on("self").on("join").hook(self.self_join)
 
@@ -24,23 +31,37 @@ class Module(object):
         bot.events.on("received").on("kick").hook(self.kick)
         bot.events.on("self").on("kick").hook(self.self_kick)
 
-    def print_line(self, event, line):
+    def print_line(self, event, line, channel=None):
         timestamp = datetime.datetime.now().isoformat()
         target = str(event["server"])
-        if "channel" in event:
-            target += event["channel"].name
+        if not channel == None:
+            target += channel
         print("[%s] %s | %s" % (timestamp, target, line))
 
     def _on_message(self, event, nickname):
         if not self.bot.args.verbose:
             if event["action"]:
-                self.print_line(event, "* %s %s" % (nickname, event["message"]))
+                self.print_line(event, "* %s %s" % (
+                    nickname, event["message"]),
+                    channel=event["channel"].name)
             else:
-                self.print_line(event, "<%s> %s" % (nickname, event["message"]))
+                self.print_line(event, "<%s> %s" % (
+                    nickname, event["message"]),
+                    channel=event["channel"].name)
     def channel_message(self, event):
         self._on_message(event, event["user"].nickname)
     def self_channel_message(self, event):
         self._on_message(event, event["server"].nickname)
+
+    def _on_notice(self, event, target):
+        self.print_line(event, "(notice->%s) <%s> %s" % (
+            target, event["user"].nickname, event["message"]))
+    def channel_notice(self, event):
+        self._on_notice(event, event["channel"].name)
+    def private_notice(self, event):
+        self._on_notice(event, event["server"].nickname)
+    def server_notice(self, event):
+        self.print_line(event, "(server notice) %s" % event["message"])
 
     def _on_join(self, event, nickname):
         if not self.bot.args.verbose:
