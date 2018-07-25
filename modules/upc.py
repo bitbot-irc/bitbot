@@ -26,20 +26,28 @@ class Module(object):
                 return
             item = page["items"][0]
 
-            brand = item["brand"]
+            brand = item.get("brand", None)
+            brand = "" if not brand else "%s - " % brand
             title = item["title"]
-            description = item["description"]
+            description = item.get("description", None)
+            description = " " if not description else ": %s " % description
 
-            weight = item["weight"]
-            size = item["dimension"]
+            weight = item.get("weight", None)
+            weight = weight or "unknown"
+            size = item.get("dimension", None)
+            size = size or "unknown"
 
-            currency = item["currency"]
-            lowest_price = item["lowest_recorded_price"]
-            highest_price = item["highest_recorded_price"]
+            currency = item.get("currency", None)
+            lowest_price = item.get("lowest_recorded_price", None)
+            highest_price = item.get("highest_recorded_price", None)
 
-            event["stdout"].write("%s - %s: %s (weight: %s"
-                ", size: %s, price: %s to %s %s)" % (
-                brand, title, description, weight, size,
-                lowest_price, highest_price, currency))
+            pricing = "price: unknown"
+            if lowest_price and highest_price and currency:
+                pricing = "price: %s to %s %s" % (
+                    lowest_price, highest_price, currency)
+
+            event["stdout"].write("%s%s%s(weight: %s"
+                ", size: %s, price: %s)" % (
+                brand, title, description, weight, size, pricing))
         else:
             event["stderr"].write("Failed to load results")
