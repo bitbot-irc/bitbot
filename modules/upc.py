@@ -6,7 +6,8 @@ class Module(object):
     _name = "UPC"
     def __init__(self, bot):
         self.bot = bot
-        bot.events.on("received").on("command").on("upc", "ean").hook(
+        bot.events.on("received").on("command").on(
+            "upc", "ean", "gtin").hook(
             self.upc, min_args=1, usage="<UPC|EAN>",
             help="Look up a product by UPC or EAN")
 
