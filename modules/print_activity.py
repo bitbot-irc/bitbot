@@ -90,7 +90,7 @@ class Module(object):
     def on_quit(self, event):
         if not self.bot.args.verbose:
             self.print_line(event, "%s quit%s" % (event["user"].nickname,
-                "" if not event["reason"] else " (%s" % event["reason"]))
+                "" if not event["reason"] else " (%s)" % event["reason"]))
 
     def _on_kick(self, event, nickname):
         if not self.bot.args.verbose:
