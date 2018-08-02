@@ -42,11 +42,9 @@ class Module(object):
 
     def _identified(self, user):
         user.identified = True
-        user.permissions = user.get_setting("permissions", [])
 
     def _logout(self, user):
         user.identified = False
-        user.permissions = []
 
     def identify(self, event):
         if not event["user"].channels:
@@ -89,10 +87,14 @@ class Module(object):
 
     def preprocess_command(self, event):
         permission = event["hook"].kwargs.get("permission", None)
-        if permission and not permission in event["user"
-                ].permissions and not "*" in event["user"].permissions:
-            return "You do not have permission to do that"
+        if permission:
+            identified = event["user"].identified
+            user_permissions = event["user"].get_setting("permissions", [])
+            has_permission = permission and (
+                permission in user_permissions or "*" in user_permissions)
+            if not identified or not has_permission:
+                return "You do not have permission to do that"
 
     def my_permissions(self, event):
-        permissions = event["user"].permissions
+        permissions = event["user"].get_setting("permissions", [])
         event["stdout"].write("Your permissions: %s" % ", ".join(permissions))
