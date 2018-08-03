@@ -3,7 +3,6 @@
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
-        bot.events.on("new").on("server").hook(self.new_server)
         bot.events.on("received").on("message").on("channel"
             ).hook(self.channel_message)
         bot.events.on("received").on("command").on("words"
@@ -18,29 +17,24 @@ class Module(object):
             help="Show who has used a tracked word the most",
             usage="<word>")
 
-    def new_server(self, event):
-        event["server"].tracked_words = set([])
-        settings = event["server"].find_settings("word-%")
-        for word, _ in settings:
-            word = word.split("word-", 1)[1]
-            event["server"].tracked_words.add(word)
-
     def channel_message(self, event):
         words = list(filter(None, event["message_split"]))
         word_count = len(words)
+
         user_words = event["user"].get_setting("words", {})
         if not event["channel"].name in user_words:
             user_words[event["channel"].name] = 0
         user_words[event["channel"].name] += word_count
         event["user"].set_setting("words", user_words)
+
+        tracked_words = set(event["server"].get_setting(
+            "tracked-words", []))
         for word in words:
-            if word.lower() in event["server"].tracked_words:
+            if word.lower() in tracked_words:
                 setting = "word-%s" % word
-                tracked_word = event["server"].get_setting(setting, {})
-                if not event["user"].name in tracked_word:
-                    tracked_word[event["user"].name] = 0
-                tracked_word[event["user"].name] += 1
-                event["server"].set_setting(setting, tracked_word)
+                word_count = event["user"].get_setting(setting, 0)
+                word_count += 1
+                event["user"].set_setting(setting, word_count)
 
     def words(self, event):
         if event["args_split"]:
@@ -58,17 +52,22 @@ class Module(object):
 
     def track_word(self, event):
         word = event["args_split"][0].lower()
-        if not word in event["server"].tracked_words:
-            event["server"].tracked_words.add(word)
-            event["server"].set_setting("word-%s" % word, {})
+        tracked_words = event["server"].get_setting("tracked-words", [])
+        if not word in tracked_words:
+            tracked_words.append(word)
+            event["server"].set_setting("tracked-words", tracked_words)
             event["stdout"].write("Now tracking '%s'" % word)
         else:
             event["stderr"].wrote("Already tracking '%s'" % word)
 
     def word_users(self, event):
         word = event["args_split"][0].lower()
-        if word in event["server"].tracked_words:
-            word_users = event["server"].get_setting("word-%s" % word)
+        if word in event["server"].get_setting("tracked-words", []):
+            word_users = event["server"].get_all_user_settings(
+                "word-%s" % word, [])
+            items = [(word_user[0], word_user[2]) for word_user in word_users]
+            word_users = dict(items)
+
             top_10 = sorted(word_users.keys())
             top_10 = sorted(top_10, key=word_users.get, reverse=True)[:10]
             top_10 = ", ".join("%s (%d)" % (nickname, word_users[nickname
