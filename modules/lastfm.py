@@ -14,7 +14,7 @@ class Module(object):
 
         bot.events.on("received").on("command").on("np",
             "listening", "nowplaying").hook(self.np,
-            help="Get the last listen to track from a user",
+            help="Get the last listened to track from a user",
             usage="[username]")
 
     def np(self, event):
