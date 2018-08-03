@@ -1,4 +1,4 @@
-#!--ignore
+#--ignore
 import types, json
 
 def get_target(user):
