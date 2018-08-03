@@ -228,8 +228,7 @@ def handle_NICK(data):
     else:
         old_nickname = server.nickname
         server.set_own_nickname(new_nickname)
-        bot.events.on("self").on("nick").call(line=line,
-            line_split=line_split, server=server,
+        bot.events.on("self").on("nick").call(server=server,
             new_nickname=new_nickname, old_nickname=old_nickname)
 
 @handler(description="something's mode has changed")
