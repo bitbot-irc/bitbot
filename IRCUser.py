@@ -29,6 +29,9 @@ class User(object):
     def find_settings(self, pattern, default=[]):
         return self.bot.database.find_user_settings(self.server.id,
             self.nickname, pattern, default)
+    def find_settings_prefix(self, prefix, default=[]):
+        return self.bot.database.find_user_settings_prefix(
+            self.server.id, self.nickname, prefix, default)
     def del_setting(self, setting):
         self.bot.database.del_user_setting(self.server.id, self.nickname,
             setting)

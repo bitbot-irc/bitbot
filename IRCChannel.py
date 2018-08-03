@@ -73,8 +73,11 @@ class Channel(object):
         return self.bot.database.get_channel_setting(
             self.server.id, self.name, setting, default)
     def find_settings(self, pattern, default=[]):
-        return self.bot.database.find_channel_setting(
+        return self.bot.database.find_channel_settings(
             self.server.id, self.name, pattern, default)
+    def find_settings_prefix(self, prefix, default=[]):
+        return self.bot.database.find_channel_settings_prefix(
+            self.server.id, self.name, prefix, default)
     def del_setting(self, setting):
         self.bot.database.del_channel_setting(self.server.id,
             self.name, setting)

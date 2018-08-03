@@ -83,6 +83,8 @@ class Database(object):
                 values[i] = value[0], json.loads(value[1])
             return values
         return default
+    def find_bot_settings_prefix(self, prefix, default=[]):
+        return self.find_bot_settings("%s%" % prefix, default)
     def del_bot_setting(self, setting):
         self.cursor().execute("""DELETE FROM bot_settings WHERE
             setting=?""", [setting.lower()])
@@ -109,6 +111,8 @@ class Database(object):
                 values[i] = value[0], json.loads(value[1])
             return values
         return default
+    def find_server_settings_prefix(self, server_id, prefix, default=[]):
+        return self.find_server_settings(server_id, "%s%" % prefix, default)
     def del_server_setting(self, server_id, setting):
         self.cursor().execute("""DELETE FROM server_settings WHERE
             server_id=? AND setting=?""", [server_id, setting.lower()])
@@ -132,9 +136,13 @@ class Database(object):
         values = self.cursor().fetchall()
         if values:
             for i, value in enumerate(values):
-                values[i] = json.loads(value)
+                values[i] = value[0], json.loads(value[1])
             return values
         return default
+    def find_channel_settings_prefix(self, server_id, channel, prefix,
+            default=[]):
+        return self.find_channel_settings(server_id, channel, "%s%" % prefix,
+            default)
     def del_channel_setting(self, server_id, channel, setting):
         self.cursor().execute("""DELETE FROM channel_settings WHERE
             server_id=? AND channel=? AND setting=?""", [server_id,
@@ -152,16 +160,30 @@ class Database(object):
         if value:
             return json.loads(value[0])
         return default
-    def find_user_settings(self, server_id, nickname, pattern, default=[]):
-        self.cursor().execute("""SELECT setting, value FROM user_settings
-            WHERE server_id=? AND nickname=? setting LIKE '?'""", [server_id,
-            nickname.lower(), pattern.lower()])
+    def get_all_user_settings(self, server_id, setting, default=[]):
+        self.cursor().execute("""SELECT nickname, setting, value FROM
+            user_settings WHERE server_id=? AND setting=?""",
+            [server_id, setting])
         values = self.cursor().fetchall()
         if values:
             for i, value in enumerate(values):
-                values[i] = json.loads(value)
+                values[i] = value[0], value[1], json.loads(value[2])
             return values
         return default
+    def find_user_settings(self, server_id, nickname, pattern, default=[]):
+        self.cursor().execute("""SELECT setting, value FROM user_settings
+            WHERE server_id=? AND nickname=? AND setting LIKE '?'""",
+            [server_id, nickname.lower(), pattern.lower()])
+        values = self.cursor().fetchall()
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def find_user_settings_prefix(self, server_id, nickname, prefix,
+            default=[]):
+        return self.find_user_settings(server_id, nickname, "%s%" % prefix,
+            default)
     def del_user_setting(self, server_id, nickname, setting):
         self.cursor().execute("""DELETE FROM user_settings WHERE
             server_id=? AND nickname=? AND setting=?""", [server_id,

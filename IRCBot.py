@@ -105,6 +105,9 @@ class Bot(object):
         return self.database.get_bot_setting(setting, default)
     def find_settings(self, pattern, default=[]):
         return self.database.find_bot_settings(pattern, default)
+    def find_settings_prefix(self, prefix, default=[]):
+        return self.database.find_bot_settings_prefix(
+            prefix, default)
     def del_setting(self, setting):
         self.database.del_bot_setting(setting)
 
