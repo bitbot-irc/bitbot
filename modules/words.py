@@ -7,7 +7,8 @@ class Module(object):
             ).hook(self.channel_message)
         bot.events.on("received").on("command").on("words"
             ).hook(self.words, channel_only=True,
-            usage="<nickname>")
+            usage="<nickname>", help=
+            "See how many words you or the given nickname have used")
         bot.events.on("received").on("command").on("trackword"
             ).hook(self.track_word, min_args=1,
             help="Start tracking a word", usage="<word>",
