@@ -115,7 +115,6 @@ class Server(object):
     def has_user(self, nickname):
         return nickname.lower() in self.users
     def get_user(self, nickname):
-        print(self.users)
         if not self.has_user(nickname):
             new_user = IRCUser.User(nickname, self, self.bot)
             self.bot.events.on("new").on("user").call(
