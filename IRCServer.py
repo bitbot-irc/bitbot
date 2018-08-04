@@ -23,7 +23,6 @@ class Server(object):
         self.read_buffer = b""
         self.users = {}
         self.new_users = set([])
-        self.nickname_ids = {}
         self.channels = {}
         self.own_modes = {}
         self.mode_prefixes = collections.OrderedDict(
@@ -114,24 +113,23 @@ class Server(object):
         del self.own_modes[mode]
 
     def has_user(self, nickname):
-        return nickname.lower() in self.nickname_ids
+        return nickname.lower() in self.users
     def get_user(self, nickname):
+        print(self.users)
         if not self.has_user(nickname):
             new_user = IRCUser.User(nickname, self, self.bot)
             self.bot.events.on("new").on("user").call(
                 user=new_user, server=self)
-            self.users[new_user.id] = new_user
-            self.nickname_ids[nickname.lower()] = new_user.id
+            self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
-        return self.users[self.nickname_ids[nickname.lower()]]
+        return self.users[nickname.lower()]
     def remove_user(self, user):
-        del self.users[user.id]
-        del self.nickname_ids[user.nickname_lower]
+        del self.users[user.nickname_lower]
         for channel in user.channels:
             channel.remove_user(user)
 
     def change_user_nickname(self, old_nickname, new_nickname):
-        self.nickname_ids[new_nickname.lower()] = self.nickname_ids.pop(old_nickname.lower())
+        self.users[new_nickname.lower()] = self.users.pop(old_nickname.lower())
     def has_channel(self, channel_name):
         return channel_name[0] in self.channel_types and channel_name.lower(
             ) in self.channels
