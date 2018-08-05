@@ -27,6 +27,8 @@ class Out(object):
                     ).rstrip(), STR_MORE)
                 self._text = "%s%s" % (STR_CONTINUED, text_encoded[OUT_CUTOFF:
                     ].decode("utf8").lstrip())
+            else:
+                self._text = ""
             self.target.send_message(text, prefix="[%s] " % self.prefix())
     def set_prefix(self, prefix):
         self.module_name = prefix
