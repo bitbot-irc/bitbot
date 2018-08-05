@@ -1,4 +1,4 @@
-import logging, sys, time
+import logging, logging.handlers, sys, time
 
 class BitBotFormatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
@@ -27,7 +27,8 @@ class Module(object):
         stdout_handler.setFormatter(formatter)
         self.logger.addHandler(stdout_handler)
 
-        file_handler = logging.FileHandler('bot.log')
+        file_handler = logging.handlers.TimedRotatingFileHandler(
+            "bot.log", when="midnight", backupCount=5)
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
