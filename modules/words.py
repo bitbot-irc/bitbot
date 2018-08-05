@@ -71,8 +71,10 @@ class Module(object):
 
             top_10 = sorted(word_users.keys())
             top_10 = sorted(top_10, key=word_users.get, reverse=True)[:10]
-            top_10 = ", ".join("%s (%d)" % (nickname, word_users[nickname
-                ]) for nickname in top_10)
+            top_10 = [event["server"].get_user(nickname
+                ).nickname for nickname in top_10]
+            top_10 = ", ".join("%s (%d)" % (nickname, word_users[
+                nickname.lower()]) for nickname in top_10)
             event["stdout"].write("Top '%s' users: %s" % (word, top_10))
         else:
             event["stderr"].write("That word is not being tracked")
