@@ -26,9 +26,10 @@ class Module(object):
             ",".join(channels_sorted), ",".join(keys_sorted))
 
     def on_join(self, event):
-        channels = set(event["server"].get_setting("autojoin", []))
-        channels.add(event["channel"].name)
-        event["server"].set_setting("autojoin", list(channels))
+        channels = event["server"].get_setting("autojoin", [])
+        if not event["channel"].name in channels:
+            channels.add(event["channel"].name)
+            event["server"].set_setting("autojoin", channels)
 
     def on_kick(self, event):
         channels = event["server"].get_setting("autojoin", [])
