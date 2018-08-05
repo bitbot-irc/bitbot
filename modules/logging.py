@@ -23,6 +23,7 @@ class Module(object):
         bot.events.on("log.info").hook(self.info)
         bot.events.on("log.warn").hook(self.warn)
         bot.events.on("log.error").hook(self.error)
+        bot.events.on("log.critical").hook(self.critical)
 
     def debug(self, event):
         self._log(event, logging.DEBUG)
