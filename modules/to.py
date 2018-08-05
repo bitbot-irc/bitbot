@@ -15,7 +15,8 @@ class Module(object):
         for nickname, message in messages:
             event["channel"].send_message("%s: <%s> %s" % (
                 event["user"].nickname, nickname, message))
-        event["channel"].del_setting(setting)
+        if messages:
+            event["channel"].del_setting(setting)
 
     def to(self, event):
         setting = "to-%s" % event["args_split"][0]
