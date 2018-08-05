@@ -1,13 +1,26 @@
-import logging, sys
+import logging, sys, time
+
+class BitBotFormatter(logging.Formatter):
+    def formatTime(self, record, datefmt=None):
+        ct = self.converter(record.created)
+        if datefmt:
+            if "%f" in datefmt:
+                msec = "%03d" % record.msecs
+                datefmt = datefmt.replace("%f", msec)
+            s = time.strftime(datefmt, ct)
+        else:
+            t = time.strftime("%Y-%m-%d %H:%M:%S", ct)
+            s = "%s.%03d" % (t, record.msecs)
+        return s
 
 class Module(object):
     def __init__(self, bot):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
-        formatter = logging.Formatter(
+        formatter = BitBotFormatter(
             "%(asctime)s - %(levelname)s - %(message)s",
-            "%Y-%m-%dT%H:%M:%S%z")
+            "%Y-%m-%dT%H:%M:%S.%f%z")
 
         stdout_handler = logging.StreamHandler(sys.stdout)
         stdout_handler.setLevel(logging.INFO)
