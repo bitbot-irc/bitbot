@@ -170,10 +170,6 @@ class Server(object):
                 self.remove_user(user)
         self.new_users.clear()
     def read(self):
-        encoding = self.bot.database.get_server_setting(self.id,
-            "encoding", "utf8")
-        fallback_encoding = self.bot.database.get_server_setting(
-            self.id, "fallback-encoding", "latin-1")
         data = b""
         try:
             data = self.read_buffer + self.socket.recv(4096)
@@ -188,10 +184,12 @@ class Server(object):
         decoded_lines = []
         for line in data_lines:
             try:
-                line = line.decode(encoding)
+                line = line.decode(self.get_setting(
+                    "encoding", "utf8"))
             except:
                 try:
-                    line = line.decode(fallback_encoding)
+                    line = line.decode(self.get_setting(
+                        "fallback-encoding", "latin-1"))
                 except:
                     continue
             decoded_lines.append(line)
