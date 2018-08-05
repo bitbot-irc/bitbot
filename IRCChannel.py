@@ -82,6 +82,22 @@ class Channel(object):
         self.bot.database.del_channel_setting(self.server.id,
             self.name, setting)
 
+    def set_user_setting(self, nickname, setting, value):
+        self.bot.database.set_user_channel_setting(self.server.id,
+            self.name, nickname, setting, value)
+    def get_user_setting(self, nickname, setting, default=None):
+        return self.bot.database.get_user_channel_setting(
+            self.server.id, self.name, nickname, setting, default)
+    def find_user_settings(self, nickname, pattern, default=[]):
+        return self.bot.database.find_user_channel_settings(
+            self.server.id, self.name, nickname, pattern, default)
+    def find_user_settings_prefix(self, nickname, prefix, default=[]):
+        return self.bot.database.find_user_channel_settings_prefix(
+            self.server.id, self.name, nickname, prefix, default)
+    def del_user_setting(self, nickname, setting):
+        self.bot.database.del_user_channel_setting(self.server.id,
+            self.name, nickname, setting)
+
     def send_message(self, text, prefix=None):
         self.server.send_message(self.name, text, prefix=prefix)
     def send_mode(self, mode=None, target=None):
