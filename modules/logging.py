@@ -32,6 +32,8 @@ class Module(object):
         self._log(event, logging.WARN)
     def error(self, event):
         self._log(event, logging.ERROR)
+    def critical(self, event):
+        self._log(event, logging.CRITICAL)
     def _log(self, event, level):
         message = event["message"]
         params = event.get("params", [])
