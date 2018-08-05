@@ -25,7 +25,7 @@ bot.config_object = config_object
 bot.args = args
 bot.modules.load_modules()
 
-server_details = database.get_servers()
+server_details = database.servers.get_all()
 servers = []
 for server_detail in server_details:
     server = bot.add_server(*server_detail)

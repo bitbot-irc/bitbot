@@ -100,16 +100,16 @@ class Bot(object):
             event["timer"].redo()
 
     def set_setting(self, setting, value):
-        self.database.set_bot_setting(setting, value)
+        self.database.bot_settings.set(setting, value)
     def get_setting(self, setting, default=None):
-        return self.database.get_bot_setting(setting, default)
+        return self.database.bot_settings.get(setting, default)
     def find_settings(self, pattern, default=[]):
-        return self.database.find_bot_settings(pattern, default)
+        return self.database.bot_settings.find(pattern, default)
     def find_settings_prefix(self, prefix, default=[]):
-        return self.database.find_bot_settings_prefix(
+        return self.database.bot_settings.find_prefix(
             prefix, default)
     def del_setting(self, setting):
-        self.database.del_bot_setting(setting)
+        self.database.bot_setting.delete(setting)
 
     def run(self):
         while self.running:

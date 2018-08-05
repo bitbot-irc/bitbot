@@ -1,6 +1,214 @@
 
 import json, os, sqlite3, threading, time
 
+class Table(object):
+    def __init__(self, database):
+        self.database = database
+
+class Servers(Table):
+    def add(self, hostname, port, password, ipv4, tls, nickname,
+            username=None, realname=None):
+        username = username or nickname
+        realname = realname or nickname
+        self.database.execute(
+            """INSERT INTO servers (hostname, port, password, ipv4,
+            tls, nickname, username, realname) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?)""",
+            [hostname, port, password, ipv4, tls, nickname, username, realname])
+    def get_all(self):
+        return self.database.execute_fetchall(
+            """SELECT server_id, hostname, port, password, ipv4,
+            tls, nickname, username, realname FROM servers""")
+    def get(self, id):
+        return self.database.execute_fetchone(
+            """SELECT server_id, hostname, port, password, ipv4,
+            tls, nickname, username, realname FROM servers WHERE
+            server_id=?""",
+            [id])
+
+class BotSettings(Table):
+    def set(self, setting, value):
+        self.database.execute(
+            "INSERT OR REPLACE INTO bot_settings VALUES (?, ?)",
+            [setting.lower(), json.dumps(value)])
+    def get(self, setting, default=None):
+        value = self.database.execute_fetchone(
+            "SELECT value FROM bot_settings WHERE setting=?",
+            [setting.lower()])
+        if value:
+            return json.loads(value[0])
+        return default
+    def find(self, pattern, default=[]):
+        values = self.database.execute_fetchall(
+            "SELECT setting, value FROM bot_settings WHERE setting LIKE ?",
+            [pattern.lower()])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def find_prefix(self, prefix, default=[]):
+        return self.find_bot_settings("%s%" % prefix, default)
+    def delete(self, setting):
+        self.database.execute(
+            "DELETE FROM bot_settings WHERE setting=?",
+            [setting.lower()])
+
+class ServerSettings(Table):
+    def set(self, server_id, setting, value):
+        self.database.execute(
+            "INSERT OR REPLACE INTO server_settings VALUES (?, ?, ?)",
+            [server_id, setting.lower(), json.dumps(value)])
+    def get(self, server_id, setting, default=None):
+        value = self.database.execute_fetchone(
+            """SELECT value FROM server_settings WHERE
+            server_id=? AND setting=?""",
+            [server_id,setting.lower()])
+        if value:
+            return json.loads(value[0])
+        return default
+    def find(self, server_id, pattern, default=[]):
+        values = self.database.execute_fetchall(
+            """SELECT setting, value FROM server_settings WHERE
+            server_id=? AND setting LIKE ?""",
+            [server_id, pattern.lower()])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def find_prefix(self, server_id, prefix, default=[]):
+        return self.find_server_settings(server_id, "%s%" % prefix, default)
+    def delete(self, server_id, setting):
+        self.database.execute(
+            "DELETE FROM server_settings WHERE server_id=? AND setting=?",
+            [server_id, setting.lower()])
+
+class ChannelSettings(Table):
+    def set(self, server_id, channel, setting, value):
+        self.database.execute(
+            "INSERT OR REPLACE INTO channel_settings VALUES (?, ?, ?, ?)",
+            [server_id, channel.lower(), setting.lower(), json.dumps(value)])
+    def get(self, server_id, channel, setting, default=None):
+        value = self.database.execute_fetchone(
+            """SELECT value FROM channel_settings WHERE
+            server_id=? AND channel=? AND setting=?""",
+            [server_id, channel.lower(), setting.lower()])
+        if value:
+            return json.loads(value[0])
+        return default
+    def find(self, server_id, channel, pattern, default=[]):
+        values = self.database.execute_fetchall(
+            """SELECT setting, value FROM channel_settings WHERE
+            server_id=? AND channel=? setting LIKE '?'""",
+            [server_id, channel.lower(), pattern.lower()])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def find_prefix(self, server_id, channel, prefix,
+            default=[]):
+        return self.find_channel_settings(server_id, channel, "%s%" % prefix,
+            default)
+    def delete(self, server_id, channel, setting):
+        self.database.execute(
+            """DELETE FROM channel_settings WHERE
+            server_id=? AND channel=? AND setting=?""",
+            [server_id, channel.lower(), setting.lower()])
+
+class UserSettings(Table):
+    def set(self, server_id, nickname, setting, value):
+        self.database.execute(
+            "INSERT OR REPLACE INTO user_settings VALUES (?, ?, ?, ?)",
+            [server_id, nickname.lower(), setting.lower(), json.dumps(value)])
+    def get(self, server_id, nickname, setting, default=None):
+        value = self.database.execute_fetchone(
+            """SELECT value FROM user_settings WHERE
+            server_id=? AND nickname=? and setting=?""",
+            [server_id, nickname.lower(), setting.lower()])
+        if value:
+            return json.loads(value[0])
+        return default
+    def find_all_by_setting(self, server_id, setting, default=[]):
+        values = self.database.execute_fetchall(
+            """SELECT nickname, setting, value FROM user_settings WHERE
+            server_id=? AND setting=?""",
+            [server_id, setting])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], value[1], json.loads(value[2])
+            return values
+        return default
+    def find(self, server_id, nickname, pattern, default=[]):
+        values = self.database.execute(
+            """SELECT setting, value FROM user_settings WHERE
+            server_id=? AND nickname=? AND setting LIKE '?'""",
+            [server_id, nickname.lower(), pattern.lower()])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def find_prefix(self, server_id, nickname, prefix,
+            default=[]):
+        return self.find_user_settings(server_id, nickname, "%s%" % prefix,
+            default)
+    def delete(self, server_id, nickname, setting):
+        self.database.execute(
+            """DELETE FROM user_settings WHERE
+            server_id=? AND nickname=? AND setting=?""",
+            [server_id, nickname.lower(), setting.lower()])
+
+class UserChannelSettings(Table):
+    def set(self, server_id, channel, nickname,
+            setting, value):
+        self.database.execute(
+            """INSERT OR REPLACE INTO user_channel_settings VALUES
+            (?, ?, ?, ?, ?)""",
+            [server_id, channel.lower(), nickname.lower(), setting.lower(),
+            json.dumps(value)])
+    def get(self, server_id, channel, nickname,
+            setting, default=None):
+        value = self.database.execute_fetchone(
+            """SELECT value FROM user_channel_settings WHERE
+            server_id=? AND channel=? AND nickname=? and setting=?""",
+            [server_id, channel.lower(), nickname.lower(), setting.lower()])
+        if value:
+            return json.loads(value[0])
+        return default
+    def find(self, server_id, channel, nickname,
+            pattern, default=[]):
+        values = self.database.execute_fetchall(
+            """SELECT setting, value FROM user_channel_settings WHERE
+            server_id=? AND channel=? AND nickname=? AND setting LIKE '?'""",
+            [server_id, channel.lower(), nickname.lower(), pattern.lower()])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def find_prefix(self, server_id, channel, nickname,
+            prefix, default=[]):
+        return self.find_user_settings(server_id, nickname, "%s%" % prefix,
+            default)
+    def find_by_setting(self, server_id, nickname,
+            setting, default=[]):
+        values = self.database.execute_fetchall(
+            """SELECT channel, value FROM user_channel_settings WHERE
+            server_id=? AND nickname=? AND setting=?""",
+            [server_id, nickname.lower(), setting])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def delete(self, server_id, channel, nickname, setting):
+        self.database.execute(
+            """DELETE FROM user_channel_settings WHERE
+            server_id=? AND channel=? AND nickname=? AND setting=?""",
+            [server_id, channel.lower(), nickname.lower(), setting.lower()])
+
 class Database(object):
     def __init__(self, bot, location="bot.db"):
         self.bot = bot
@@ -18,6 +226,13 @@ class Database(object):
         self.make_channel_settings_table()
         self.make_user_settings_table()
         self.make_user_channel_settings_table()
+
+        self.servers = Servers(self)
+        self.bot_settings = BotSettings(self)
+        self.server_settings = ServerSettings(self)
+        self.channel_settings = ChannelSettings(self)
+        self.user_settings = UserSettings(self)
+        self.user_channel_settings = UserChannelSettings(self)
 
     def cursor(self):
         if self._cursor == None:
@@ -101,202 +316,3 @@ class Database(object):
                 PRIMARY KEY (server_id, nickname, channel, setting))""")
         except sqlite3.Error as e:
             pass
-
-    def add_server(self, hostname, port, password, ipv4, tls, nickname,
-            username=None, realname=None):
-        username = username or nickname
-        realname = realname or nickname
-        self.execute(
-            """INSERT INTO servers (hostname, port, password, ipv4,
-            tls, nickname, username, realname) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [hostname, port, password, ipv4, tls, nickname, username, realname])
-    def get_servers(self):
-        return self.execute_fetchall(
-            """SELECT server_id, hostname, port, password, ipv4,
-            tls, nickname, username, realname FROM servers""")
-    def get_server(self, id):
-        return self.execute_fetchone(
-            """SELECT server_id, hostname, port, password, ipv4,
-            tls, nickname, username, realname FROM servers WHERE
-            server_id=?""",
-            [id])
-
-    def set_bot_setting(self, setting, value):
-        self.execute(
-            "INSERT OR REPLACE INTO bot_settings VALUES (?, ?)",
-            [setting.lower(), json.dumps(value)])
-    def get_bot_setting(self, setting, default=None):
-        value = self.execute_fetchone(
-            "SELECT value FROM bot_settings WHERE setting=?",
-            [setting.lower()])
-        if value:
-            return json.loads(value[0])
-        return default
-    def find_bot_settings(self, pattern, default=[]):
-        values = self.execute_fetchall(
-            "SELECT setting, value FROM bot_settings WHERE setting LIKE ?",
-            [pattern.lower()])
-        if values:
-            for i, value in enumerate(values):
-                values[i] = value[0], json.loads(value[1])
-            return values
-        return default
-    def find_bot_settings_prefix(self, prefix, default=[]):
-        return self.find_bot_settings("%s%" % prefix, default)
-    def del_bot_setting(self, setting):
-        self.execute(
-            "DELETE FROM bot_settings WHERE setting=?",
-            [setting.lower()])
-
-    def set_server_setting(self, server_id, setting, value):
-        self.execute(
-            "INSERT OR REPLACE INTO server_settings VALUES (?, ?, ?)",
-            [server_id, setting.lower(), json.dumps(value)])
-    def get_server_setting(self, server_id, setting, default=None):
-        value = self.execute_fetchone(
-            """SELECT value FROM server_settings WHERE
-            server_id=? AND setting=?""",
-            [server_id,setting.lower()])
-        if value:
-            return json.loads(value[0])
-        return default
-    def find_server_settings(self, server_id, pattern, default=[]):
-        values = self.execute_fetchall(
-            """SELECT setting, value FROM server_settings WHERE
-            server_id=? AND setting LIKE ?""",
-            [server_id, pattern.lower()])
-        if values:
-            for i, value in enumerate(values):
-                values[i] = value[0], json.loads(value[1])
-            return values
-        return default
-    def find_server_settings_prefix(self, server_id, prefix, default=[]):
-        return self.find_server_settings(server_id, "%s%" % prefix, default)
-    def del_server_setting(self, server_id, setting):
-        self.execute(
-            "DELETE FROM server_settings WHERE server_id=? AND setting=?",
-            [server_id, setting.lower()])
-
-    def set_channel_setting(self, server_id, channel, setting, value):
-        self.execute(
-            "INSERT OR REPLACE INTO channel_settings VALUES (?, ?, ?, ?)",
-            [server_id, channel.lower(), setting.lower(), json.dumps(value)])
-    def get_channel_setting(self, server_id, channel, setting, default=None):
-        value = self.execute_fetchone(
-            """SELECT value FROM channel_settings WHERE
-            server_id=? AND channel=? AND setting=?""",
-            [server_id, channel.lower(), setting.lower()])
-        if value:
-            return json.loads(value[0])
-        return default
-    def find_channel_settings(self, server_id, channel, pattern, default=[]):
-        values = self.execute_fetchall(
-            """SELECT setting, value FROM channel_settings WHERE
-            server_id=? AND channel=? setting LIKE '?'""",
-            [server_id, channel.lower(), pattern.lower()])
-        if values:
-            for i, value in enumerate(values):
-                values[i] = value[0], json.loads(value[1])
-            return values
-        return default
-    def find_channel_settings_prefix(self, server_id, channel, prefix,
-            default=[]):
-        return self.find_channel_settings(server_id, channel, "%s%" % prefix,
-            default)
-    def del_channel_setting(self, server_id, channel, setting):
-        self.execute(
-            """DELETE FROM channel_settings WHERE
-            server_id=? AND channel=? AND setting=?""",
-            [server_id, channel.lower(), setting.lower()])
-
-    def set_user_setting(self, server_id, nickname, setting, value):
-        self.execute(
-            "INSERT OR REPLACE INTO user_settings VALUES (?, ?, ?, ?)",
-            [server_id, nickname.lower(), setting.lower(), json.dumps(value)])
-    def get_user_setting(self, server_id, nickname, setting, default=None):
-        value = self.execute_fetchone(
-            """SELECT value FROM user_settings WHERE
-            server_id=? AND nickname=? and setting=?""",
-            [server_id, nickname.lower(), setting.lower()])
-        if value:
-            return json.loads(value[0])
-        return default
-    def get_all_user_settings(self, server_id, setting, default=[]):
-        values = self.execute_fetchall(
-            """SELECT nickname, setting, value FROM user_settings WHERE
-            server_id=? AND setting=?""",
-            [server_id, setting])
-        if values:
-            for i, value in enumerate(values):
-                values[i] = value[0], value[1], json.loads(value[2])
-            return values
-        return default
-    def find_user_settings(self, server_id, nickname, pattern, default=[]):
-        values = self.cursor().execute(
-            """SELECT setting, value FROM user_settings WHERE
-            server_id=? AND nickname=? AND setting LIKE '?'""",
-            [server_id, nickname.lower(), pattern.lower()])
-        if values:
-            for i, value in enumerate(values):
-                values[i] = value[0], json.loads(value[1])
-            return values
-        return default
-    def find_user_settings_prefix(self, server_id, nickname, prefix,
-            default=[]):
-        return self.find_user_settings(server_id, nickname, "%s%" % prefix,
-            default)
-    def del_user_setting(self, server_id, nickname, setting):
-        self.execute(
-            """DELETE FROM user_settings WHERE
-            server_id=? AND nickname=? AND setting=?""",
-            [server_id, nickname.lower(), setting.lower()])
-
-    def set_user_channel_setting(self, server_id, channel, nickname,
-            setting, value):
-        self.execute(
-            """INSERT OR REPLACE INTO user_channel_settings VALUES
-            (?, ?, ?, ?, ?)""",
-            [server_id, channel.lower(), nickname.lower(), setting.lower(),
-            json.dumps(value)])
-    def get_user_channel_setting(self, server_id, channel, nickname,
-            setting, default=None):
-        value = self.execute_fetchone(
-            """SELECT value FROM user_channel_settings WHERE
-            server_id=? AND channel=? AND nickname=? and setting=?""",
-            [server_id, channel.lower(), nickname.lower(), setting.lower()])
-        if value:
-            return json.loads(value[0])
-        return default
-    def find_user_channel_settings(self, server_id, channel, nickname,
-            pattern, default=[]):
-        values = self.execute_fetchall(
-            """SELECT setting, value FROM user_channel_settings WHERE
-            server_id=? AND channel=? AND nickname=? AND setting LIKE '?'""",
-            [server_id, channel.lower(), nickname.lower(), pattern.lower()])
-        if values:
-            for i, value in enumerate(values):
-                values[i] = value[0], json.loads(value[1])
-            return values
-        return default
-    def find_user_channel_settings_prefix(self, server_id, channel, nickname,
-            prefix, default=[]):
-        return self.find_user_settings(server_id, nickname, "%s%" % prefix,
-            default)
-    def get_user_channel_settings_per_setting(self, server_id, nickname,
-            setting, default=[]):
-        values = self.execute_fetchall(
-            """SELECT channel, value FROM user_channel_settings WHERE
-            server_id=? AND nickname=? AND setting=?""",
-            [server_id, nickname.lower(), setting])
-        if values:
-            for i, value in enumerate(values):
-                values[i] = value[0], json.loads(value[1])
-            return values
-        return default
-    def del_user_channel_setting(self, server_id, channel, nickname, setting):
-        self.execute(
-            """DELETE FROM user_channel_settings WHERE
-            server_id=? AND channel=? AND nickname=? AND setting=?""",
-            [server_id, channel.lower(), nickname.lower(), setting.lower()])
-

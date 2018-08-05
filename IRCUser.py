@@ -20,22 +20,22 @@ class User(object):
     def part_channel(self, channel):
         self.channels.remove(channel)
     def set_setting(self, setting, value):
-        self.bot.database.set_user_setting(self.server.id, self.nickname,
+        self.bot.database.user_settings.get(self.server.id, self.nickname,
             setting, value)
     def get_setting(self, setting, default=None):
-        return self.bot.database.get_user_setting(self.server.id,
+        return self.bot.database.user_settings.get(self.server.id,
             self.nickname, setting, default)
     def find_settings(self, pattern, default=[]):
-        return self.bot.database.find_user_settings(self.server.id,
+        return self.bot.database.user_settings.find(self.server.id,
             self.nickname, pattern, default)
     def find_settings_prefix(self, prefix, default=[]):
-        return self.bot.database.find_user_settings_prefix(
+        return self.bot.database.user_settings.find_prefix(
             self.server.id, self.nickname, prefix, default)
     def del_setting(self, setting):
-        self.bot.database.del_user_setting(self.server.id, self.nickname,
+        self.bot.database.user_settings.delete(self.server.id, self.nickname,
             setting)
     def get_channel_settings_per_setting(self, setting, default=[]):
-        return self.bot.database.get_user_channel_settings_per_setting(
+        return self.bot.database.user_channel_settings.find_by_setting(
             self.server.id, self.nickname, setting, default)
 
     def send_message(self, message, prefix=None):

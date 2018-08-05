@@ -84,22 +84,22 @@ class Server(object):
             pass
 
     def set_setting(self, setting, value):
-        self.bot.database.set_server_setting(self.id, setting,
+        self.bot.database.server_settings.set(self.id, setting,
             value)
     def get_setting(self, setting, default=None):
-        return self.bot.database.get_server_setting(self.id,
+        return self.bot.database.server_settings.get(self.id,
             setting, default)
     def find_settings(self, pattern, default=[]):
-        return self.bot.database.find_server_settings(self.id,
+        return self.bot.database.server_settings.find(self.id,
             pattern, default)
     def find_settings_prefix(self, prefix, default=[]):
-        return self.bot.database.find_server_settings_prefix(
+        return self.bot.database.server_settings.find_prefix(
             self.id, prefix, default)
     def del_setting(self, setting):
-        self.bot.database.del_server_setting(self.id, setting)
+        self.bot.database.server_settings.delete(self.id, setting)
     def get_all_user_settings(self, setting, default):
-        return self.bot.database.get_all_user_settings(self.id, setting,
-            default)
+        return self.bot.database.user_settings.find_all_by_setting(
+            self.id, setting, default)
 
     def set_own_nickname(self, nickname):
         self.nickname = nickname
