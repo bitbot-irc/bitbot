@@ -36,7 +36,9 @@ class Module(object):
         target = str(event["server"])
         if not channel == None:
             target += channel
-        print("[%s] %s | %s" % (timestamp, target, line))
+        self.bot.events.on("log.info").call(
+            message="%s | %s",
+            params=[target, line])
 
     def _on_message(self, event, nickname):
         if not self.bot.args.verbose:
