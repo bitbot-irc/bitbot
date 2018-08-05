@@ -8,7 +8,7 @@ class Module(object):
         bot.events.on("received").on("command").on("beenpwned").hook(
             self.beenpwned, min_args=1,
             help="Find out if a username, email or similar has appeared "
-            "in any hacked databased", usage="<username/email>")
+            "in any hacked databases", usage="<username/email>")
 
     def beenpwned(self, event):
         page = Utils.get_url(URL_HAVEIBEENPWNEDAPI % event["args"], json=True,
