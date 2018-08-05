@@ -270,7 +270,7 @@ class Database(object):
         return default
     def find_user_channel_settings(self, server_id, channel, nickname,
             pattern, default=[]):
-        values = self.cursor().execute(
+        values = self.execute_fetchall(
             """SELECT setting, value FROM user_channel_settings WHERE
             server_id=? AND channel=? AND nickname=? AND setting LIKE '?'""",
             [server_id, channel.lower(), nickname.lower(), pattern.lower()])
@@ -283,6 +283,17 @@ class Database(object):
             prefix, default=[]):
         return self.find_user_settings(server_id, nickname, "%s%" % prefix,
             default)
+    def get_user_channel_settings_per_setting(self, server_id, nickname,
+            setting, default=[]):
+        values = self.execute_fetchall(
+            """SELECT channel, value FROM user_channel_settings WHERE
+            server_id=? AND nickname=? AND setting=?""",
+            [server_id, nickname.lower(), setting])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
     def del_user_channel_setting(self, server_id, channel, nickname, setting):
         self.execute(
             """DELETE FROM user_channel_settings WHERE

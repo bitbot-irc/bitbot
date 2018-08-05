@@ -22,11 +22,11 @@ class Module(object):
         words = list(filter(None, event["message_split"]))
         word_count = len(words)
 
-        user_words = event["user"].get_setting("words", {})
-        if not event["channel"].name in user_words:
-            user_words[event["channel"].name] = 0
-        user_words[event["channel"].name] += word_count
-        event["user"].set_setting("words", user_words)
+        user_words = event["channel"].get_user_setting(
+            event["user"].nickname, "words", 0)
+        user_words += word_count
+        event["channel"].set_user_setting(event["user"].nickname,
+            "words", user_words)
 
         tracked_words = set(event["server"].get_setting(
             "tracked-words", []))
@@ -43,8 +43,10 @@ class Module(object):
                 ][0])
         else:
             target = event["user"]
-        words = target.get_setting("words", {})
+        words = dict(target.get_channel_settings_per_setting(
+            "words", []))
         this_channel = words.get(event["target"].name, 0)
+
         total = 0
         for channel in words:
             total += words[channel]
