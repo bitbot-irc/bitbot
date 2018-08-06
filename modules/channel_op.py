@@ -113,15 +113,19 @@ class Module(object):
         event["target"].send_mode("-v", target)
 
     def highlight_spam(self, event):
-        nicknames = list(map(lambda user: user.nickname, event["channel"].users)
-            ) + [event["server"].nickname]
-        if len(set(nicknames) & set(event["message_split"])) >= event["channel"].get_setting(
-                "highlight-spam-threshold", 10):
-            protection_enabled = event["channel"].get_setting("highlight-spam-protection", False)
-            has_mode = event["channel"].mode_or_above(event["user"], "v")
-            should_ban = event["channel"].get_setting("highlight-spam-ban", False)
-            if protection_enabled and not has_mode:
-                if should_ban:
-                    event["channel"].send_ban("*!%s@%s" % (event["user"].username,
-                        event["user"].hostname))
-                event["channel"].send_kick(event["user"].nickname, "highlight spam detected")
+        if event["channel"].get_setting("highlight-spam-protection", False):
+            nicknames = list(map(lambda user: user.nickname,
+                event["channel"].users)) + [event["server"].nickname]
+
+            if len(set(nicknames) & set(event["message_split"])
+                    ) >= event["channel"].get_setting(
+                    "highlight-spam-threshold", 10):
+                has_mode = event["channel"].mode_or_above(event["user"], "v")
+                should_ban = event["channel"].get_setting("highlight-spam-ban",
+                    False)
+                if not has_mode:
+                    if should_ban:
+                        event["channel"].send_ban("*!%s@%s" % (
+                            event["user"].username, event["user"].hostname))
+                    event["channel"].send_kick(event["user"].nickname,
+                        "highlight spam detected")
