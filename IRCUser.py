@@ -20,7 +20,7 @@ class User(object):
     def part_channel(self, channel):
         self.channels.remove(channel)
     def set_setting(self, setting, value):
-        self.bot.database.user_settings.get(self.server.id, self.nickname,
+        self.bot.database.user_settings.set(self.server.id, self.nickname,
             setting, value)
     def get_setting(self, setting, default=None):
         return self.bot.database.user_settings.get(self.server.id,

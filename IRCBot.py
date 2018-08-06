@@ -109,7 +109,7 @@ class Bot(object):
         return self.database.bot_settings.find_prefix(
             prefix, default)
     def del_setting(self, setting):
-        self.database.bot_setting.delete(setting)
+        self.database.bot_settings.delete(setting)
 
     def run(self):
         while self.running:
