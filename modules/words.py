@@ -5,6 +5,8 @@ class Module(object):
         self.bot = bot
         bot.events.on("received").on("message").on("channel"
             ).hook(self.channel_message)
+        bot.events.on("self").on("message").on("channel"
+            ).hook(self.self_channel_message)
         bot.events.on("received").on("command").on("words"
             ).hook(self.words, channel_only=True,
             usage="<nickname>", help=
@@ -18,14 +20,14 @@ class Module(object):
             help="Show who has used a tracked word the most",
             usage="<word>")
 
-    def channel_message(self, event):
+    def _channel_message(self, user, event):
         words = list(filter(None, event["message_split"]))
         word_count = len(words)
 
         user_words = event["channel"].get_user_setting(
-            event["user"].nickname, "words", 0)
+            user.nickname, "words", 0)
         user_words += word_count
-        event["channel"].set_user_setting(event["user"].nickname,
+        event["channel"].set_user_setting(user.nickname,
             "words", user_words)
 
         tracked_words = set(event["server"].get_setting(
@@ -33,9 +35,14 @@ class Module(object):
         for word in words:
             if word.lower() in tracked_words:
                 setting = "word-%s" % word
-                word_count = event["user"].get_setting(setting, 0)
+                word_count = user.get_setting(setting, 0)
                 word_count += 1
-                event["user"].set_setting(setting, word_count)
+                user.set_setting(setting, word_count)
+    def channel_message(self, event):
+        self._channel_message(event["user"], event)
+    def self_channel_message(self, event):
+        self._channel_message(event["server"].get_user(
+            event["server"].nickname), event)
 
     def words(self, event):
         if event["args_split"]:
