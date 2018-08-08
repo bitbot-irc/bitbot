@@ -65,3 +65,4 @@ target/
 *.db
 *.conf
 modules/nongit-*.py
+bot.log.*
