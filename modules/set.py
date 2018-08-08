@@ -62,14 +62,14 @@ class Module(object):
     def _get(self, event, setting, qualifier, value):
         if not value == None:
             event["stdout"].write("'%s'%s: %s" % (setting,
-                qualifier, event["channel"].name, value))
+                qualifier, str(value)))
         else:
             event["stdout"].write("'%s' has no value set" % setting)
 
     def channel_get(self, event):
         setting = event["args_split"][0]
-        self._get(event, setting, " for %s" % event["channel"].name,
-            event["channel"].get_setting(setting, None))
+        self._get(event, setting, " for %s" % event["target"].name,
+            event["target"].get_setting(setting, None))
 
     def get(self, event):
         setting = event["args_split"][0]
