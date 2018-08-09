@@ -94,12 +94,14 @@ class Module(object):
 
         if win:
             event["user"].set_setting("coins", user_coins+coin_bet)
-            event["stdout"].write("%s flips %s and wins %d!" % (
-                event["user"].nickname, side_name, coin_bet))
+            event["stdout"].write("%s flips %s and wins %d coin%s!" % (
+                event["user"].nickname, side_name, coin_bet,
+                "" if coin_bet == 1 else "s"))
         else:
             event["user"].set_setting("coins", user_coins-coin_bet)
-            event["stdout"].write("%s flips %s and loses %d!" % (
-                event["user"].nickname, side_name, coin_bet))
+            event["stdout"].write("%s flips %s and loses %d coin%s!" % (
+                event["user"].nickname, side_name, coin_bet,
+                "" if coin_bet == 1 else "s"))
 
     def send(self, event):
         send_amount = event["args_split"][1]
