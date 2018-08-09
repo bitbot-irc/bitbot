@@ -136,12 +136,11 @@ class Module(object):
         for server in self.bot.servers.values():
             all_coins = server.get_all_user_settings(
                 "coins", [])
-            interest_rate = event["server"].get_setting("interest-rate",
+            interest_rate = server.get_setting("interest-rate",
                 DEFAULT_INTEREST_RATE)
-            redeem_amount = event["server"].get_setting("redeem-amount",
+            redeem_amount = server.get_setting("redeem-amount",
                 DEFAULT_REDEEM_AMOUNT)
             for nickname, coins in all_coins:
                 if coins > redeem_amount:
                     coins += coins*interest_rate
-                    event["server"].get_user(nickname).set_setting("coins",
-                        coins)
+                    server.get_user(nickname).set_setting("coins", coins)
