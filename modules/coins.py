@@ -31,9 +31,13 @@ class Module(object):
             next_due=time.time()+until_next_hour)
 
     def coins(self, event):
-        coins = event["user"].get_setting("coins", 0)
+        if event["args_split"]:
+            target = event["server"].get_user(event["args_split"][0])
+        else:
+            target = event["user"]
+        coins = target.get_setting("coins", 0)
         event["stdout"].write("%s has %d coin%s" % (
-            event["user"].nickname, coins,
+            target.nickname, coins,
             "" if coins == 1 else "s"))
 
     def richest(self, event):
