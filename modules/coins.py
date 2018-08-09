@@ -132,7 +132,7 @@ class Module(object):
 
     def interest(self, event):
         for server in self.bot.servers.values():
-            all_coins = event["server"].get_all_user_settings(
+            all_coins = server.get_all_user_settings(
                 "coins", [])
             interest_rate = event["server"].get_setting("interest-rate",
                 DEFAULT_INTEREST_RATE)
