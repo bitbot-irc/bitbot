@@ -55,12 +55,10 @@ class Module(object):
 
         chosen_side = random.choice(list(SIDES.keys()))
         win = side_name == chosen_side
-        print(chosen_side)
-        print(side_name)
 
         if win:
             event["user"].set_setting("coins", user_coins+coin_bet)
-            event["stdout"].write("%s flipped %s and wins %d!" % (
+            event["stdout"].write("%s flips %s and wins %d!" % (
                 event["user"].nickname, side_name, coin_bet))
         else:
             event["user"].set_setting("coins", user_coins-coin_bet)
