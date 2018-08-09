@@ -3,6 +3,7 @@ import Utils
 
 SIDES = {"heads": 0, "tails": 1}
 DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
+DEFAULT_REDEEM_AMOUNT = 100
 
 class Module(object):
     def __init__(self, bot):
@@ -21,20 +22,27 @@ class Module(object):
             "" if coins == 1 else "s"))
 
     def redeem_coins(self, event):
-        last_redeem = event["user"].get_setting("last-redeem", None)
-        redeem_delay = event["server"].get_setting("redeem-delay",
-            DEFAULT_REDEEM_DELAY)
+        user_coins = event["user"].get_setting("coins", 0)
+        if user_coins == 0:
+            last_redeem = event["user"].get_setting("last-redeem", None)
+            redeem_delay = event["server"].get_setting("redeem-delay",
+                DEFAULT_REDEEM_DELAY)
 
-        if last_redeem == None or (time.time()-last_redeem) >= redeem_delay:
-            user_coins = event["user"].get_setting("coins", 0)
-            redeem_amount = event["server"].get_setting("redeem-amount", 100)
-            event["user"].set_setting("coins", user_coins+redeem_amount)
-            event["stdout"].write("Redeemed %d coins" % redeem_amount)
-            event["user"].set_setting("last-redeem", time.time())
+            if last_redeem == None or (time.time()-last_redeem
+                    ) >= redeem_delay:
+                user_coins = event["user"].get_setting("coins", 0)
+                redeem_amount = event["server"].get_setting(
+                    "redeem-amount", DEFAULT_REDEEM_AMOUNT)
+                event["user"].set_setting("coins", user_coins+redeem_amount)
+                event["stdout"].write("Redeemed %d coins" % redeem_amount)
+                event["user"].set_setting("last-redeem", time.time())
+            else:
+                time_left = (last_redeem+redeem_delay)-time.time()
+                event["stdout"].write("Please wait %s before redeeming" %
+                    Utils.to_pretty_time(time_left))
         else:
-            time_left = (last_redeem+redeem_delay)-time.time()
-            event["stdout"].write("Please wait %s before redeeming" %
-                Utils.to_pretty_time(time_left))
+            event["stderr"].write(
+                "You can only redeem coins when you have none")
 
     def flip(self, event):
         side_name = event["args_split"][0].lower()
