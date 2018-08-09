@@ -70,7 +70,7 @@ class Module(object):
                 event["user"].set_setting("last-redeem", time.time())
             else:
                 time_left = (last_redeem+redeem_delay)-time.time()
-                event["stdout"].write("Please wait %s before redeeming" %
+                event["stderr"].write("Please wait %s before redeeming" %
                     Utils.to_pretty_time(math.ceil(time_left)))
         else:
             event["stderr"].write(
@@ -146,5 +146,6 @@ class Module(object):
                 DEFAULT_REDEEM_AMOUNT)
             for nickname, coins in all_coins:
                 if coins > redeem_amount:
-                    coins += coins*interest_rate
+                    coins += int(coins*interest_rate)
                     server.get_user(nickname).set_setting("coins", coins)
+        event["timer"].redo()
