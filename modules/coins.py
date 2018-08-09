@@ -1,4 +1,4 @@
-import random, time
+import math, random, time
 import Utils
 
 SIDES = {"heads": 0, "tails": 1}
@@ -14,6 +14,9 @@ class Module(object):
         bot.events.on("received.command.flip").hook(self.flip,
             help="Bet coins on a coin flip", usage=
             "heads|tails <coin amount>", min_args=2)
+        bot.events.on("received.command.sendcoins").hook(
+            self.send, min_args=2, help="Send coins to a user",
+            usage="<nickname> <amount>")
 
     def coins(self, event):
         coins = event["user"].get_setting("coins", 0)
@@ -39,7 +42,7 @@ class Module(object):
             else:
                 time_left = (last_redeem+redeem_delay)-time.time()
                 event["stdout"].write("Please wait %s before redeeming" %
-                    Utils.to_pretty_time(time_left))
+                    Utils.to_pretty_time(math.ceil(time_left)))
         else:
             event["stderr"].write(
                 "You can only redeem coins when you have none")
@@ -72,3 +75,32 @@ class Module(object):
             event["user"].set_setting("coins", user_coins-coin_bet)
             event["stdout"].write("%s flipped %s and loses %d!" % (
                 event["user"].nickname, side_name, coin_bet))
+
+    def send(self, event):
+        send_amount = event["args_split"][1]
+        if not send_amount.isdigit() or int(send_amount) <= 0:
+            event["stderr"].write(
+                "Please provide a positive number of coins to send")
+            return
+        send_amount = int(send_amount)
+
+        user_coins = event["user"].get_setting("coins")
+        redeem_amount = event["server"].get_setting(
+            "redeem-amount", DEFAULT_REDEEM_AMOUNT)
+        new_user_coins = user_coins - send_amount
+
+        if new_user_coins == 0:
+            event["stderr"].write("You have no coins")
+            return
+        elif new_user_coins < redeem_amount:
+            event["stderr"].write(
+                "You cannot send an amount of money that puts"
+                " you below %d coins" % redeem_amount)
+            return
+        target_user = event["server"].get_user(event["args_split"][0])
+        target_user_coins = target_user.get_setting("coins", 0)
+        event["user"].set_setting("coins", new_user_coins)
+        target_user.set_setting("coins", target_user_coins+send_amount)
+
+        event["stdout"].write("%s sent %d coins to %s" % (
+            event["user"].nickname, send_amount, target_user.nickname))
