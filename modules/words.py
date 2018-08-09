@@ -75,7 +75,7 @@ class Module(object):
         if word in event["server"].get_setting("tracked-words", []):
             word_users = event["server"].get_all_user_settings(
                 "word-%s" % word, [])
-            items = [(word_user[0], word_user[2]) for word_user in word_users]
+            items = [(word_user[0], word_user[1]) for word_user in word_users]
             word_users = dict(items)
 
             top_10 = sorted(word_users.keys())

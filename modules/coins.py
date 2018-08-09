@@ -9,6 +9,8 @@ class Module(object):
     def __init__(self, bot):
         bot.events.on("received.command.coins").hook(self.coins,
             help="Show how many coins you have")
+        bot.events.on("received.command.richest").hook(
+            self.richest, help="Show the top 10 richest users")
         bot.events.on("received.command.redeemcoins").hook(
             self.redeem_coins, help="Redeem free coins")
         bot.events.on("received.command.flip").hook(self.flip,
@@ -23,6 +25,18 @@ class Module(object):
         event["stdout"].write("%s has %d coin%s" % (
             event["user"].nickname, coins,
             "" if coins == 1 else "s"))
+
+    def richest(self, event):
+        all_coins = event["server"].get_all_user_settings("coins", [])
+        items = [(coin[0], coin[1]) for coin in all_coins]
+        all_coins = dict(items)
+
+        top_10 = sorted(all_coins.keys())
+        top_10 = sorted(top_10, key=all_coins.get, reverse=True)[:10]
+        top_10 = ", ".join("%s (%d)" % (event["server"].get_user(
+            nickname).nickname, all_coins[nickname]
+            ) for nickname in top_10)
+        event["stdout"].write("Richest users: %s" % top_10)
 
     def redeem_coins(self, event):
         user_coins = event["user"].get_setting("coins", 0)

@@ -132,12 +132,12 @@ class UserSettings(Table):
         return default
     def find_all_by_setting(self, server_id, setting, default=[]):
         values = self.database.execute_fetchall(
-            """SELECT nickname, setting, value FROM user_settings WHERE
+            """SELECT nickname, value FROM user_settings WHERE
             server_id=? AND setting=?""",
             [server_id, setting])
         if values:
             for i, value in enumerate(values):
-                values[i] = value[0], value[1], json.loads(value[2])
+                values[i] = value[0], json.loads(value[1])
             return values
         return default
     def find(self, server_id, nickname, pattern, default=[]):
