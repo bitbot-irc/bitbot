@@ -1,12 +1,14 @@
-import math, random, time
+import datetime, math, random, time
 import Utils
 
 SIDES = {"heads": 0, "tails": 1}
 DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
 DEFAULT_REDEEM_AMOUNT = 100
+DEFAULT_INTEREST_RATE = 0.01
 
 class Module(object):
     def __init__(self, bot):
+        self.bot = bot
         bot.events.on("received.command.coins").hook(self.coins,
             help="Show how many coins you have")
         bot.events.on("received.command.richest").hook(
@@ -20,6 +22,14 @@ class Module(object):
             self.send, min_args=2, help="Send coins to a user",
             usage="<nickname> <amount>")
 
+        now = datetime.datetime.now()
+        until_next_hour = 60-now.second
+        until_next_hour += ((60-(now.minute+1))*60)
+
+        bot.events.on("timer").on("coin-interest").hook(self.interest)
+        bot.add_timer("coin-interest", 10, persist=False,
+            next_due=time.time()+until_next_hour)
+
     def coins(self, event):
         coins = event["user"].get_setting("coins", 0)
         event["stdout"].write("%s has %d coin%s" % (
@@ -28,6 +38,7 @@ class Module(object):
 
     def richest(self, event):
         all_coins = event["server"].get_all_user_settings("coins", [])
+        all_coins = list(filter(lambda coin: coin[1], all_coins))
         items = [(coin[0], coin[1]) for coin in all_coins]
         all_coins = dict(items)
 
@@ -118,3 +129,17 @@ class Module(object):
 
         event["stdout"].write("%s sent %d coins to %s" % (
             event["user"].nickname, send_amount, target_user.nickname))
+
+    def interest(self, event):
+        for server in self.bot.servers.values():
+            all_coins = event["server"].get_all_user_settings(
+                "coins", [])
+            interest_rate = event["server"].get_setting("interest-rate",
+                DEFAULT_INTEREST_RATE)
+            redeem_amount = event["server"].get_setting("redeem-amount",
+                DEFAULT_REDEEM_AMOUNT)
+            for nickname, coins in all_coins:
+                if coins > redeem_amount:
+                    coins += coins*interest_rate
+                    event["server"].get_user(nickname).set_setting("coins",
+                        coins)
