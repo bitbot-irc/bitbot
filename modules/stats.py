@@ -5,9 +5,9 @@ class Module(object):
         self.boot_time = time.time()
         self.bot = bot
         bot.events.on("received").on("command").on("uptime"
-            ).hook(self.uptime)
+            ).hook(self.uptime, help="Show my uptime")
         bot.events.on("received").on("command").on("stats"
-            ).hook(self.stats)
+            ).hook(self.stats, help="Show my network/channel/user stats")
 
     def uptime(self, event):
         seconds = int(time.time()-self.boot_time)
