@@ -73,7 +73,7 @@ class Module(object):
                 event["user"].nickname, side_name, coin_bet))
         else:
             event["user"].set_setting("coins", user_coins-coin_bet)
-            event["stdout"].write("%s flipped %s and loses %d!" % (
+            event["stdout"].write("%s flips %s and loses %d!" % (
                 event["user"].nickname, side_name, coin_bet))
 
     def send(self, event):
