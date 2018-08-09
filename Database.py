@@ -244,13 +244,13 @@ class Database(object):
         self.bot.events.on("log.debug").call(
             message="executing query: \"%s\" (params: %s)",
             params=[printable_query, params])
-        start = time.time()
+        start = time.monotonic()
 
         cursor = self.cursor()
         cursor.execute(query, params)
         value = fetch_func(cursor)
 
-        end = time.time()
+        end = time.monotonic()
         total_milliseconds = (end - start) * 1000
         self.bot.events.on("log.debug").call(
             message="executed in %fms",
