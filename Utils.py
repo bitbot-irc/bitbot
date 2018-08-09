@@ -175,6 +175,25 @@ def from_pretty_time(pretty_time):
     if seconds > 0:
         return seconds
 
+def to_pretty_time(total_seconds):
+    minutes, seconds = divmod(total_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    weeks, days = divmod(days, 7)
+    out = ""
+
+    if not weeks == 0:
+        out += "%dw" % weeks
+    if not days == 0:
+        out += "%dd" % days
+    if not hours == 0:
+        out += "%dh" % hours
+    if not minutes == 0:
+        out += "%dm" % minutes
+    if not seconds == 0:
+        out += "%ds" % seconds
+    return out
+
 IS_TRUE = ["true", "yes", "on", "y"]
 IS_FALSE = ["false", "no", "off", "n"]
 def bool_or_none(s):
