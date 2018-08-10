@@ -85,8 +85,8 @@ class Module(object):
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1]
 
-        if not REGEX_FLOAT.match(coin_bet) or decimal.Decimal(
-                coin_bet) <= DECIMAL_ZERO:
+        if not REGEX_FLOAT.match(coin_bet) or round(decimal.Decimal(
+                coin_bet), 2) <= DECIMAL_ZERO:
             event["stderr"].write("Please provide a number of coins to bet")
             return
         coin_bet = decimal.Decimal(coin_bet)
@@ -117,8 +117,8 @@ class Module(object):
 
     def send(self, event):
         send_amount = event["args_split"][1]
-        if not REGEX_FLOAT.match(send_amount) or decimal.Decimal(
-                send_amount) <= DECIMAL_ZERO:
+        if not REGEX_FLOAT.match(send_amount) or round(decimal.Decimal(
+                send_amount), 2) <= DECIMAL_ZERO:
             event["stderr"].write(
                 "Please provide a positive number of coins to send")
             return
