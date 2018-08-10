@@ -85,7 +85,8 @@ class Module(object):
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1]
 
-        if not REGEX_FLOAT.match(coin_bet):
+        if not REGEX_FLOAT.match(coin_bet) or decimal.Decimal(
+                coin_bet) <= DECIMAL_ZERO:
             event["stderr"].write("Please provide a number of coins to bet")
             return
         coin_bet = decimal.Decimal(coin_bet)
