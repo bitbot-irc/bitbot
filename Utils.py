@@ -216,3 +216,6 @@ def get_closest_setting(event, setting, default=None):
     else:
         closest = event["user"]
     return closest.get_setting(setting, server.get_setting(setting, default))
+
+def prevent_highlight(nickname):
+    return nickname[0]+"\u200b"+nickname[1:]

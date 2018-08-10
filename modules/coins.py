@@ -51,9 +51,9 @@ class Module(object):
 
         top_10 = sorted(all_coins.keys())
         top_10 = sorted(top_10, key=all_coins.get, reverse=True)[:10]
-        top_10 = ", ".join("%s (%s)" % (event["server"].get_user(
-            nickname).nickname, "{0:.2f}".format(all_coins[nickname])
-            ) for nickname in top_10)
+        top_10 = ", ".join("%s (%s)" % (Utils.prevent_highlight(event[
+            "server"].get_user(nickname).nickname), "{0:.2f}".format(
+            all_coins[nickname])) for nickname in top_10)
         event["stdout"].write("Richest users: %s" % top_10)
 
     def redeem_coins(self, event):
