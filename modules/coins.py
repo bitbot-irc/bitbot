@@ -1,12 +1,13 @@
-import datetime, math, random, time
+import datetime, math, random, re, time
 import Utils
 
 SIDES = {"heads": 0, "tails": 1}
 DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
-DEFAULT_REDEEM_AMOUNT = 100
+DEFAULT_REDEEM_AMOUNT = 100.0
 DEFAULT_INTEREST_RATE = 0.01
 INTEREST_INTERVAL = 60*60 # 1 hour
 
+REGEX_FLOAT = re.compile("\d+(?:\.\d{1,2}|$)")
 
 class Module(object):
     def __init__(self, bot):
@@ -37,9 +38,9 @@ class Module(object):
             target = event["server"].get_user(event["args_split"][0])
         else:
             target = event["user"]
-        coins = target.get_setting("coins", 0)
-        event["stdout"].write("%s has %d coin%s" % (
-            target.nickname, coins,
+        coins = target.get_setting("coins", 0.0)
+        event["stdout"].write("%s has %s coin%s" % (
+            target.nickname, "{0:.2f}".format(coins),
             "" if coins == 1 else "s"))
 
     def richest(self, event):
@@ -50,21 +51,20 @@ class Module(object):
 
         top_10 = sorted(all_coins.keys())
         top_10 = sorted(top_10, key=all_coins.get, reverse=True)[:10]
-        top_10 = ", ".join("%s (%d)" % (event["server"].get_user(
-            nickname).nickname, all_coins[nickname]
+        top_10 = ", ".join("%s (%s)" % (event["server"].get_user(
+            nickname).nickname, "{0:.2f}".format(all_coins[nickname])
             ) for nickname in top_10)
         event["stdout"].write("Richest users: %s" % top_10)
 
     def redeem_coins(self, event):
-        user_coins = event["user"].get_setting("coins", 0)
-        if user_coins == 0:
+        user_coins = event["user"].get_setting("coins", 0.0)
+        if user_coins == 0.0:
             last_redeem = event["user"].get_setting("last-redeem", None)
             redeem_delay = event["server"].get_setting("redeem-delay",
                 DEFAULT_REDEEM_DELAY)
 
             if last_redeem == None or (time.time()-last_redeem
                     ) >= redeem_delay:
-                user_coins = event["user"].get_setting("coins", 0)
                 redeem_amount = event["server"].get_setting(
                     "redeem-amount", DEFAULT_REDEEM_AMOUNT)
                 event["user"].set_setting("coins", user_coins+redeem_amount)
@@ -82,15 +82,16 @@ class Module(object):
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1]
 
-        if not coin_bet.isdigit():
+        if not REGEX_FLOAT.match(coin_bet):
             event["stderr"].write("Please provide a number of coins to bet")
             return
-        coin_bet = int(coin_bet)
+        coin_bet = float(coin_bet)
+        coin_bet_str = "{0:.2f}".format(coin_bet)
         if not side_name in SIDES:
             event["stderr"].write("Please provide 'heads' or 'tails'")
             return
 
-        user_coins = event["user"].get_setting("coins", 0)
+        user_coins = event["user"].get_setting("coins", 0.0)
         if coin_bet > user_coins:
             event["stderr"].write("You don't have enough coins to bet")
             return
@@ -100,43 +101,45 @@ class Module(object):
 
         if win:
             event["user"].set_setting("coins", user_coins+coin_bet)
-            event["stdout"].write("%s flips %s and wins %d coin%s!" % (
-                event["user"].nickname, side_name, coin_bet,
+            event["stdout"].write("%s flips %s and wins %s coin%s!" % (
+                event["user"].nickname, side_name, coin_bet_str,
                 "" if coin_bet == 1 else "s"))
         else:
             event["user"].set_setting("coins", user_coins-coin_bet)
-            event["stdout"].write("%s flips %s and loses %d coin%s!" % (
-                event["user"].nickname, side_name, coin_bet,
+            event["stdout"].write("%s flips %s and loses %s coin%s!" % (
+                event["user"].nickname, side_name, coin_bet_str,
                 "" if coin_bet == 1 else "s"))
 
     def send(self, event):
         send_amount = event["args_split"][1]
-        if not send_amount.isdigit() or int(send_amount) <= 0:
+        if not REGEX_FLOAT.match(send_amount) or float(
+                send_amount) <= 0.0:
             event["stderr"].write(
                 "Please provide a positive number of coins to send")
             return
-        send_amount = int(send_amount)
+        send_amount = float(send_amount)
 
-        user_coins = event["user"].get_setting("coins")
+        user_coins = event["user"].get_setting("coins", 0.0)
         redeem_amount = event["server"].get_setting(
             "redeem-amount", DEFAULT_REDEEM_AMOUNT)
         new_user_coins = user_coins - send_amount
 
-        if new_user_coins == 0:
+        if new_user_coins == 0.0:
             event["stderr"].write("You have no coins")
             return
         elif new_user_coins < redeem_amount:
             event["stderr"].write(
                 "You cannot send an amount of money that puts"
-                " you below %d coins" % redeem_amount)
+                " you below %s coins" % "{0:.2f}".format(redeem_amount))
             return
         target_user = event["server"].get_user(event["args_split"][0])
-        target_user_coins = target_user.get_setting("coins", 0)
+        target_user_coins = target_user.get_setting("coins", 0.0)
         event["user"].set_setting("coins", new_user_coins)
         target_user.set_setting("coins", target_user_coins+send_amount)
 
-        event["stdout"].write("%s sent %d coins to %s" % (
-            event["user"].nickname, send_amount, target_user.nickname))
+        event["stdout"].write("%s sent %s coins to %s" % (
+            event["user"].nickname, "{0:.2f}".format(send_amount),
+            target_user.nickname))
 
     def interest(self, event):
         for server in self.bot.servers.values():
@@ -148,6 +151,6 @@ class Module(object):
                 DEFAULT_REDEEM_AMOUNT)
             for nickname, coins in all_coins:
                 if coins > redeem_amount:
-                    coins += int(coins*interest_rate)
+                    coins += round(coins*interest_rate, 2)
                     server.get_user(nickname).set_setting("coins", coins)
         event["timer"].redo()
