@@ -44,7 +44,8 @@ class Module(object):
 
     def richest(self, event):
         all_coins = event["server"].get_all_user_settings("coins", [])
-        all_coins = list(filter(lambda coin: coin[1], all_coins))
+        all_coins = list(filter(lambda coin: decimal.Decimal(coin[1]),
+            all_coins))
         items = [(coin[0], decimal.Decimal(coin[1])) for coin in all_coins]
         all_coins = dict(items)
 
