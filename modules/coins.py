@@ -83,13 +83,18 @@ class Module(object):
 
     def flip(self, event):
         side_name = event["args_split"][0].lower()
-        coin_bet = event["args_split"][1]
+        coin_bet = event["args_split"][1].lower()
+        if coin_bet == "all":
+            coin_bet = event["user"].get_setting("coins", "0.0")
+            if decimal.Decimal(coin_bet) <= DECIMAL_ZERO:
+                event["stderr"].write("You have no coins to bet")
+                return
 
-        if not REGEX_FLOAT.match(coin_bet) or round(decimal.Decimal(
-                coin_bet), 2) <= DECIMAL_ZERO:
+        match = REGEX_FLOAT.match(coin_bet)
+        if not match or round(decimal.Decimal(coin_bet), 2) <= DECIMAL_ZERO:
             event["stderr"].write("Please provide a number of coins to bet")
             return
-        coin_bet = decimal.Decimal(coin_bet)
+        coin_bet = decimal.Decimal(match.group(0))
         coin_bet_str = "{0:.2f}".format(coin_bet)
         if not side_name in SIDES:
             event["stderr"].write("Please provide 'heads' or 'tails'")
@@ -117,12 +122,13 @@ class Module(object):
 
     def send(self, event):
         send_amount = event["args_split"][1]
-        if not REGEX_FLOAT.match(send_amount) or round(decimal.Decimal(
-                send_amount), 2) <= DECIMAL_ZERO:
+        match = REGEX_FLOAT.match(send_amount)
+        if not match or round(decimal.Decimal(send_amount), 2
+                ) <= DECIMAL_ZERO:
             event["stderr"].write(
                 "Please provide a positive number of coins to send")
             return
-        send_amount = decimal.Decimal(send_amount)
+        send_amount = decimal.Decimal(match.group(0))
 
         user_coins = decimal.Decimal(event["user"].get_setting("coins",
             "0.0"))
