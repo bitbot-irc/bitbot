@@ -19,12 +19,14 @@ class Module(object):
 
     def np(self, event):
         if event["args_split"]:
-            username = event["args_split"][0]
+            lastfm_username = event["args_split"][0]
+            shown_username = lastfm_username
         else:
             username = event["user"].get_setting("lastfm",
                 event["user"].nickname)
+            shown_username = event["user"].nickname
         page = Utils.get_url(URL_SCROBBLER, get_params={
-            "method": "user.getrecenttracks", "user": username,
+            "method": "user.getrecenttracks", "user": lastfm_username,
             "api_key": self.bot.config["lastfm-api-key"],
             "format": "json", "limit": "1"}, json=True)
         if page:
@@ -38,7 +40,7 @@ class Module(object):
                     "method": "track.getInfo", "artist": artist,
                     "track": track_name, "autocorrect": "1",
                     "api_key": self.bot.config["lastfm-api-key"],
-                    "user": username, "format": "json"}, json=True)
+                    "user": lastfm_username, "format": "json"}, json=True)
                 tags = []
                 if "toptags" in info_page.get("track", []):
                     for tag in info_page["track"]["toptags"]["tag"]:
@@ -56,10 +58,10 @@ class Module(object):
 
                 event["stdout"].write(
                     "%s is now playing: %s - %s%s%s" % (
-                    username, artist, track_name, play_count, tags))
+                    shown_username, artist, track_name, play_count, tags))
             else:
                 event["stderr"].write(
                     "The user '%s' has never scrobbled before" % (
-                    username))
+                    shown_username))
         else:
             event["stderr"].write("Failed to load results")
