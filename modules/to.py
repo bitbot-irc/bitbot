@@ -22,9 +22,9 @@ class Module(object):
 
     def to(self, event):
         messages = event["target"].get_user_setting(
-            event["user"].nickname, "to", [])
+            event["args_split"][0], "to", [])
         messages.append([event["user"].nickname,
             " ".join(event["args_split"][1:])])
         event["target"].set_user_setting(
-            event["user"].nickname, "to", messages)
+            event["args_split"][0], "to", messages)
         event["stdout"].write("Message saved")
