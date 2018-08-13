@@ -11,9 +11,11 @@ class Module(object):
         self.bot.events.on("signal").on("interrupt").call(signum=signum, frame=frame)
 
         for server in self.bot.servers.values():
-            quote = self.bot.events.on("get.quit-quote"
-                ).call_for_result(default="Leaving")
-            server.send_quit(quote)
+            reason = "Leaving"
+            if server.get_setting("quit-quote", True):
+                reason = self.bot.events.on("get.quit-quote"
+                    ).call_for_result(default="Leaving")
+            server.send_quit(reason)
             self.bot.register_write(server)
 
         self.bot.running = False
