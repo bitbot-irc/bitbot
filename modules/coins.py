@@ -9,6 +9,18 @@ INTEREST_INTERVAL = 60*60 # 1 hour
 DECIMAL_ZERO = decimal.Decimal("0")
 REGEX_FLOAT = re.compile("\d+(?:\.\d{1,2}|$)")
 
+RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
+BLACK = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
+
+FIRST_DOZEN = list(range(1, 13))
+SECOND_DOZEN = list(range(13, 25))
+THIRD_DOZEN = list(range(25, 37))
+
+FIRST_COLUMN = list(range(1, 37))[0::3]
+SECOND_COLUMN = list(range(1, 37))[1::3]
+THIRD_COLUMN = list(range(1, 37))[2::3]
+
+
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
@@ -24,6 +36,9 @@ class Module(object):
         bot.events.on("received.command.sendcoins").hook(
             self.send, min_args=2, help="Send coins to a user",
             usage="<nickname> <amount>")
+        bot.events.on("received.command.roulette").hook(
+            self.roulette, min_args=2, help="Spin the roulette wheel",
+            usage="<type> <amount>")
 
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
@@ -169,3 +184,76 @@ class Module(object):
                     server.get_user(nickname).set_setting("coins",
                         str(coins))
         event["timer"].redo()
+
+    def roulette(self, event):
+        bet = event["args_split"][0].lower()
+        if bet == "0":
+            event["stderr"].write("You can't bet on 0")
+            return
+        bet_amount = event["args_split"][1].lower()
+        if bet_amount == "all":
+            bet_amount = event["user"].get_setting("coins", "0.0")
+            if decimal.Decimal(bet_amount) <= DECIMAL_ZERO:
+                event["stderr"].write("You have no coins to bet")
+                return
+
+        match = REGEX_FLOAT.match(bet_amount)
+        if not match or round(decimal.Decimal(bet_amount), 2
+                ) <= DECIMAL_ZERO:
+            event["stderr"].write(
+                "Please provide a positive number of coins to bet")
+            return
+        bet_amount = decimal.Decimal(match.group(0))
+
+        user_coins = decimal.Decimal(event["user"].get_setting("coins",
+            "0.0"))
+        if bet_amount > user_coins:
+            event["stderr"].write("You don't have enough coins to bet")
+            return
+
+        # black, red, odds, evens, high (1-18), low (19-36)
+        # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
+        # 1column (1,4..34), 2column (2,5..35), 3column (3,6..36)
+        choice = random.randint(0, 36)
+        odds = 0
+        if choice == 0:
+            event["stdout"].write("Roulette spin lands on 0, "
+                "the house wins, %s loses %s" % (
+                event["user"].nickname, bet_amount))
+            return
+        if bet == "even":
+            odds = 1*((choice % 2) == 0)
+        elif bet == "odd":
+            odds = 1*((choice % 2) == 1)
+        elif bet == "red":
+            odds = 1*(choice in RED)
+        elif bet == "black":
+            odds = 1*(choice in BLACK)
+        elif bet == "1dozen":
+            odds = 2*(choice in FIRST_DOZEN)
+        elif bet == "2dozen":
+            odds = 2*(choice in SECOND_DOZEN)
+        elif bet == "3dozen":
+            odds = 2*(choice in THIRD_DOZEN)
+        elif bet == "1column":
+            odds = 2*(choice in FIRST_COLUMN)
+        elif bet == "2column":
+            odds = 2*(choice in SECOND_COLUMN)
+        elif bet == "3column":
+            odds = 2*(choice in THIRD_COLUMN)
+        elif bet.isdigit():
+            odds = 35*(choice == int(bet))
+        else:
+            event["stderr"].write("Unknown bet")
+            return
+
+        if not odds == 0:
+            winnings = round(bet_amount * decimal.Decimal(odds), 2)
+            event["user"].set_setting("coins", str(user_coins + winnings))
+            event["stdout"].write("Roulette spin lands on %d, "
+                "%s wins %s with odds of %d to 1" % (choice,
+                event["user"].nickname, winnings, odds))
+        else:
+            event["user"].set_setting("coins", str(user_coins-bet_amount))
+            event["stdout"].write("Roulette spin lands on %d, "
+                "%s loses %s" % (choice, event["user"].nickname, bet_amount))
