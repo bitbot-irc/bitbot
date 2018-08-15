@@ -22,7 +22,7 @@ class Module(object):
             lastfm_username = event["args_split"][0]
             shown_username = lastfm_username
         else:
-            username = event["user"].get_setting("lastfm",
+            lastfm_username = event["user"].get_setting("lastfm",
                 event["user"].nickname)
             shown_username = event["user"].nickname
         page = Utils.get_url(URL_SCROBBLER, get_params={
