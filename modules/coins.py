@@ -12,6 +12,9 @@ REGEX_FLOAT = re.compile("\d+(?:\.\d{1,2}|$)")
 RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
 BLACK = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
 
+SMALL = range(1, 19)
+BIG = range(19, 37)
+
 FIRST_DOZEN = list(range(1, 13))
 SECOND_DOZEN = list(range(13, 25))
 THIRD_DOZEN = list(range(25, 37))
@@ -20,6 +23,7 @@ FIRST_COLUMN = list(range(1, 37))[0::3]
 SECOND_COLUMN = list(range(1, 37))[1::3]
 THIRD_COLUMN = list(range(1, 37))[2::3]
 
+REGEX_STREET = re.compile("street([1-9]|1[0-2])")
 
 class Module(object):
     def __init__(self, bot):
@@ -221,6 +225,8 @@ class Module(object):
                 "the house wins, %s loses %s" % (
                 event["user"].nickname, bet_amount))
             return
+        street_match = REGEX_STREET.match(bet)
+
         if bet == "even":
             odds = 1*((choice % 2) == 0)
         elif bet == "odd":
@@ -229,18 +235,25 @@ class Module(object):
             odds = 1*(choice in RED)
         elif bet == "black":
             odds = 1*(choice in BLACK)
-        elif bet == "1dozen":
+        elif bet == "small":
+            odds = 1*(choice in SMALL)
+        elif bet == "big":
+            odds = 1*(choice in BIG)
+        elif bet == "dozen1":
             odds = 2*(choice in FIRST_DOZEN)
-        elif bet == "2dozen":
+        elif bet == "dozen2":
             odds = 2*(choice in SECOND_DOZEN)
-        elif bet == "3dozen":
+        elif bet == "dozen3":
             odds = 2*(choice in THIRD_DOZEN)
-        elif bet == "1column":
+        elif bet == "column1":
             odds = 2*(choice in FIRST_COLUMN)
-        elif bet == "2column":
+        elif bet == "column2":
             odds = 2*(choice in SECOND_COLUMN)
-        elif bet == "3column":
+        elif bet == "column3":
             odds = 2*(choice in THIRD_COLUMN)
+        elif street_match:
+            row = int(street_match.group(1))
+            odds = 11*(((row*3)-2) <= choice <= (row*3))
         elif bet.isdigit():
             odds = 35*(choice == int(bet))
         else:
