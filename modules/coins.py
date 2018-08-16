@@ -190,28 +190,30 @@ class Module(object):
         event["timer"].redo()
 
     def roulette(self, event):
-        bet = event["args_split"][0].lower()
-        if bet == "0":
+        bets = event["args_split"][0].lower().split(",")
+        if "0" in bets:
             event["stderr"].write("You can't bet on 0")
             return
-        bet_amount = event["args_split"][1].lower()
-        if bet_amount == "all":
-            bet_amount = event["user"].get_setting("coins", "0.0")
-            if decimal.Decimal(bet_amount) <= DECIMAL_ZERO:
+        bet_amounts = [amount.lower() for amount in event["args_split"][1:]]
+        if len(bet_amounts) == 1 and bet_amounts[0] == "all":
+            bet_amounts[0] = event["user"].get_setting("coins", "0.0")
+            if decimal.Decimal(bet_amounts[0]) <= DECIMAL_ZERO:
                 event["stderr"].write("You have no coins to bet")
                 return
 
-        match = REGEX_FLOAT.match(bet_amount)
-        if not match or round(decimal.Decimal(bet_amount), 2
-                ) <= DECIMAL_ZERO:
-            event["stderr"].write(
-                "Please provide a positive number of coins to bet")
-            return
-        bet_amount = decimal.Decimal(match.group(0))
+        for i, bet_amount in enumerate(bet_amounts):
+            match = REGEX_FLOAT.match(bet_amount)
+            if not match or round(decimal.Decimal(bet_amount), 2
+                    ) <= DECIMAL_ZERO:
+                event["stderr"].write(
+                    "Please provide a positive number of coins to bet")
+                return
+            bet_amounts[i] = decimal.Decimal(match.group(0))
+        bet_amount_total = sum(bet_amounts)
 
         user_coins = decimal.Decimal(event["user"].get_setting("coins",
             "0.0"))
-        if bet_amount > user_coins:
+        if bet_amount_total > user_coins:
             event["stderr"].write("You don't have enough coins to bet")
             return
 
@@ -219,54 +221,77 @@ class Module(object):
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
         # 1column (1,4..34), 2column (2,5..35), 3column (3,6..36)
         choice = random.randint(0, 36)
-        odds = 0
+        winnings = {}
+        losses = {}
         if choice == 0:
+            loss = sum(bet_amounts)
+            event["user"].set_setting("coins", str(user_coins-loss))
             event["stdout"].write("Roulette spin lands on 0, "
                 "the house wins, %s loses %s" % (
-                event["user"].nickname, bet_amount))
-            return
-        street_match = REGEX_STREET.match(bet)
-
-        if bet == "even":
-            odds = 1*((choice % 2) == 0)
-        elif bet == "odd":
-            odds = 1*((choice % 2) == 1)
-        elif bet == "red":
-            odds = 1*(choice in RED)
-        elif bet == "black":
-            odds = 1*(choice in BLACK)
-        elif bet == "small":
-            odds = 1*(choice in SMALL)
-        elif bet == "big":
-            odds = 1*(choice in BIG)
-        elif bet == "dozen1":
-            odds = 2*(choice in FIRST_DOZEN)
-        elif bet == "dozen2":
-            odds = 2*(choice in SECOND_DOZEN)
-        elif bet == "dozen3":
-            odds = 2*(choice in THIRD_DOZEN)
-        elif bet == "column1":
-            odds = 2*(choice in FIRST_COLUMN)
-        elif bet == "column2":
-            odds = 2*(choice in SECOND_COLUMN)
-        elif bet == "column3":
-            odds = 2*(choice in THIRD_COLUMN)
-        elif street_match:
-            row = int(street_match.group(1))
-            odds = 11*(((row*3)-2) <= choice <= (row*3))
-        elif bet.isdigit():
-            odds = 35*(choice == int(bet))
-        else:
-            event["stderr"].write("Unknown bet")
+                event["user"].nickname, loss))
             return
 
-        if not odds == 0:
-            winnings = round(bet_amount * decimal.Decimal(odds), 2)
-            event["user"].set_setting("coins", str(user_coins + winnings))
+        failed = False
+        for i, bet in enumerate(bets):
+            street_match = REGEX_STREET.match(bet)
+            odds = 0
+            if bet == "even":
+                odds = 1*((choice % 2) == 0)
+            elif bet == "odd":
+                odds = 1*((choice % 2) == 1)
+            elif bet == "red":
+                odds = 1*(choice in RED)
+            elif bet == "black":
+                odds = 1*(choice in BLACK)
+            elif bet == "small":
+                odds = 1*(choice in SMALL)
+            elif bet == "big":
+                odds = 1*(choice in BIG)
+            elif bet == "dozen1":
+                odds = 2*(choice in FIRST_DOZEN)
+            elif bet == "dozen2":
+                odds = 2*(choice in SECOND_DOZEN)
+            elif bet == "dozen3":
+                odds = 2*(choice in THIRD_DOZEN)
+            elif bet == "column1":
+                odds = 2*(choice in FIRST_COLUMN)
+            elif bet == "column2":
+                odds = 2*(choice in SECOND_COLUMN)
+            elif bet == "column3":
+                odds = 2*(choice in THIRD_COLUMN)
+            elif street_match:
+                row = int(street_match.group(1))
+                odds = 11*(((row*3)-2) <= choice <= (row*3))
+            elif bet.isdigit() and (1 <= int(bet) <= 36):
+                odds = 35*(choice == int(bet))
+            else:
+                event["stderr"].write("Unknown bet")
+                failed = True
+                break
+            if odds == 0:
+                losses[bet] = bet_amounts[i]
+            else:
+                winnings[bet] = [odds, bet_amounts[i]*odds]
+        if failed:
+            return
+
+        winnings_str = ["%s for %s (%d to 1)" % (winnings[bet][1], bet,
+            winnings[bet][0]) for bet in winnings.keys()]
+
+        coin_winnings = sum(bet[1] for bet in winnings.values())
+        coin_losses = sum([loss for loss in losses.values()])
+
+        new_user_coins = (user_coins-coin_losses)+coin_winnings
+        event["user"].set_setting("coins", str(new_user_coins))
+        if not losses and winnings:
             event["stdout"].write("Roulette spin lands on %d, "
-                "%s wins %s with odds of %d to 1" % (choice,
-                event["user"].nickname, winnings, odds))
+                "%s wins %s" % (choice, event["user"].nickname,
+                ", ".join(winnings_str)))
+        elif losses and winnings:
+            event["stdout"].write("Roulette spin lands on %d, "
+                "%s wins %s; loses %s" % (choice, event["user"].nickname,
+                ", ".join(winnings_str), str(coin_losses)))
         else:
-            event["user"].set_setting("coins", str(user_coins-bet_amount))
             event["stdout"].write("Roulette spin lands on %d, "
-                "%s loses %s" % (choice, event["user"].nickname, bet_amount))
+                "%s loses %s" % (choice, event["user"].nickname,
+                str(coin_losses)))
