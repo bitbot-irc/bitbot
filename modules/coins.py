@@ -23,7 +23,7 @@ FIRST_COLUMN = list(range(1, 37))[0::3]
 SECOND_COLUMN = list(range(1, 37))[1::3]
 THIRD_COLUMN = list(range(1, 37))[2::3]
 
-REGEX_STREET = re.compile("street([1-9]|1[0-2])")
+REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
 class Module(object):
     def __init__(self, bot):
@@ -195,6 +195,9 @@ class Module(object):
             event["stderr"].write("You can't bet on 0")
             return
         bet_amounts = [amount.lower() for amount in event["args_split"][1:]]
+        if len(bet_amounts) < len(bets):
+            event["stderr"].write("Please provide an amount for each bet")
+            return
         if len(bet_amounts) == 1 and bet_amounts[0] == "all":
             bet_amounts[0] = event["user"].get_setting("coins", "0.0")
             if decimal.Decimal(bet_amounts[0]) <= DECIMAL_ZERO:
@@ -232,6 +235,7 @@ class Module(object):
             return
 
         failed = False
+        colour = "red" if choice in RED else "black"
         for i, bet in enumerate(bets):
             street_match = REGEX_STREET.match(bet)
             odds = 0
@@ -243,9 +247,9 @@ class Module(object):
                 odds = 1*(choice in RED)
             elif bet == "black":
                 odds = 1*(choice in BLACK)
-            elif bet == "small":
+            elif bet == "small" or bet == "low":
                 odds = 1*(choice in SMALL)
-            elif bet == "big":
+            elif bet == "big" or bet == "high":
                 odds = 1*(choice in BIG)
             elif bet == "dozen1":
                 odds = 2*(choice in FIRST_DOZEN)
@@ -280,18 +284,23 @@ class Module(object):
 
         coin_winnings = sum(bet[1] for bet in winnings.values())
         coin_losses = sum([loss for loss in losses.values()])
+        total_winnings_str = " (%s total)" % coin_winnings if len(
+            winnings.keys()) > 1 else ""
 
         new_user_coins = (user_coins-coin_losses)+coin_winnings
         event["user"].set_setting("coins", str(new_user_coins))
+
+        choice = "%d %s" % (choice, colour)
         if not losses and winnings:
-            event["stdout"].write("Roulette spin lands on %d, "
-                "%s wins %s" % (choice, event["user"].nickname,
-                ", ".join(winnings_str)))
+            event["stdout"].write("Roulette spin lands on %s, "
+                "%s wins %s%s" % (choice, event["user"].nickname,
+                ", ".join(winnings_str), str(total_winnings_str)))
         elif losses and winnings:
-            event["stdout"].write("Roulette spin lands on %d, "
-                "%s wins %s; loses %s" % (choice, event["user"].nickname,
-                ", ".join(winnings_str), str(coin_losses)))
+            event["stdout"].write("Roulette spin lands on %s, "
+                "%s wins %s%s; loses %s" % (choice,
+                event["user"].nickname, ", ".join(winnings_str),
+                str(total_winnings_str), str(coin_losses)))
         else:
-            event["stdout"].write("Roulette spin lands on %d, "
+            event["stdout"].write("Roulette spin lands on %s, "
                 "%s loses %s" % (choice, event["user"].nickname,
                 str(coin_losses)))
