@@ -13,6 +13,10 @@ class Module(object):
         bot.events.on("received").on("command").on("karma").hook(
             self.karma, help="Get your or someone else's karma",
             usage="[target]")
+        bot.events.on("received").on("command").on("resetkarma").hook(
+            self.reset_karma, permission="resetkarma",
+            min_args=1, help="Reset a specified karma to 0",
+            usage="<target>")
 
         bot.events.on("postboot").on("configure").on(
             "channelset").call(setting="karma-verbose",
@@ -59,3 +63,14 @@ class Module(object):
             target = event["user"].nickname
         karma = event["server"].get_setting("karma-%s" % target, 0)
         event["stdout"].write("%s has %s karma" % (target, karma))
+
+    def reset_karma(self, event):
+        setting = "karma-%s" % event["args_split"][0]
+        karma = event["server"].get_setting(setting, 0)
+        if karma == 0:
+            event["stderr"].write("%s already has 0 karma" % event[
+                "args_split"][0])
+        else:
+            event["server"].del_setting(setting)
+            event["stdout"].write("Reset karma for %s" % event[
+                "args_split"][0])
