@@ -1,4 +1,3 @@
-
 import json, os, sqlite3, threading, time
 
 class Table(object):
@@ -25,6 +24,34 @@ class Servers(Table):
             tls, nickname, username, realname FROM servers WHERE
             server_id=?""",
             [id])
+
+class Channels(Table):
+    def add(self, server_id, name):
+        self.database.execute("""INSERT OR IGNORE INTO channels
+            (server_id, name) VALUES (?, ?)""",
+            [server_id, name.lower()])
+    def delete(self, channel_id):
+        self.database.execute("DELETE FROM channels WHERE channel_id=?",
+            [channel_id])
+    def get_id(self, server_id, name):
+        value = self.database.execute_fetchone("""SELECT channel_id FROM
+            channels WHERE server_id=? AND name=?""",
+            [server_id, name.lower()])
+        return value if value == None else value[0]
+
+class Users(Table):
+    def add(self, server_id, nickname):
+        self.database.execute("""INSERT OR IGNORE INTO users
+            (server_id, nickname) VALUES (?, ?)""",
+            [server_id, nickname.lower()])
+    def delete(self, user_id):
+        self.database.execute("DELETE FROM users WHERE user_id=?",
+            [user_id])
+    def get_id(self, server_id, nickname):
+        value = self.database.execute_fetchone("""SELECT user_id FROM
+            users WHERE server_id=? and nickname=?""",
+            [server_id, nickname.lower()])
+        return value if value == None else value[0]
 
 class BotSettings(Table):
     def set(self, setting, value):
@@ -85,129 +112,118 @@ class ServerSettings(Table):
             [server_id, setting.lower()])
 
 class ChannelSettings(Table):
-    def set(self, server_id, channel, setting, value):
+    def set(self, channel_id, setting, value):
         self.database.execute(
-            "INSERT OR REPLACE INTO channel_settings VALUES (?, ?, ?, ?)",
-            [server_id, channel.lower(), setting.lower(), json.dumps(value)])
-    def get(self, server_id, channel, setting, default=None):
+            "INSERT OR REPLACE INTO channel_settings VALUES (?, ?, ?)",
+            [channel_id, setting.lower(), json.dumps(value)])
+    def get(self, channel_id, setting, default=None):
         value = self.database.execute_fetchone(
             """SELECT value FROM channel_settings WHERE
-            server_id=? AND channel=? AND setting=?""",
-            [server_id, channel.lower(), setting.lower()])
+            channel_id=? AND setting=?""", [channel_id, setting.lower()])
         if value:
             return json.loads(value[0])
         return default
-    def find(self, server_id, channel, pattern, default=[]):
+    def find(self, channel_id, pattern, default=[]):
         values = self.database.execute_fetchall(
             """SELECT setting, value FROM channel_settings WHERE
-            server_id=? AND channel=? setting LIKE '?'""",
-            [server_id, channel.lower(), pattern.lower()])
+            channel_id=? setting LIKE '?'""", [channel_id, pattern.lower()])
         if values:
             for i, value in enumerate(values):
                 values[i] = value[0], json.loads(value[1])
             return values
         return default
-    def find_prefix(self, server_id, channel, prefix,
-            default=[]):
-        return self.find_channel_settings(server_id, channel, "%s%" % prefix,
+    def find_prefix(self, channel_id, prefix, default=[]):
+        return self.find_channel_settings(channel_id, "%s%" % prefix,
             default)
-    def delete(self, server_id, channel, setting):
+    def delete(self, channel_id, setting):
         self.database.execute(
-            """DELETE FROM channel_settings WHERE
-            server_id=? AND channel=? AND setting=?""",
-            [server_id, channel.lower(), setting.lower()])
+            """DELETE FROM channel_settings WHERE channel_id=?
+            AND setting=?""", [channel_id, setting.lower()])
 
 class UserSettings(Table):
-    def set(self, server_id, nickname, setting, value):
+    def set(self, user_id, setting, value):
         self.database.execute(
-            "INSERT OR REPLACE INTO user_settings VALUES (?, ?, ?, ?)",
-            [server_id, nickname.lower(), setting.lower(), json.dumps(value)])
-    def get(self, server_id, nickname, setting, default=None):
+            "INSERT OR REPLACE INTO user_settings VALUES (?, ?, ?)",
+            [user_id, setting.lower(), json.dumps(value)])
+    def get(self, user_id, setting, default=None):
         value = self.database.execute_fetchone(
             """SELECT value FROM user_settings WHERE
-            server_id=? AND nickname=? and setting=?""",
-            [server_id, nickname.lower(), setting.lower()])
+            user_id=? and setting=?""", [user_id, setting.lower()])
         if value:
             return json.loads(value[0])
         return default
     def find_all_by_setting(self, server_id, setting, default=[]):
         values = self.database.execute_fetchall(
-            """SELECT nickname, value FROM user_settings WHERE
-            server_id=? AND setting=?""",
+            """SELECT users.nickname, user_settings.value FROM
+            user_settings INNER JOIN users ON
+            user_settings.user_id=users.user_id WHERE
+            users.server_id=? AND user_settings.setting=?""",
             [server_id, setting])
         if values:
             for i, value in enumerate(values):
                 values[i] = value[0], json.loads(value[1])
             return values
         return default
-    def find(self, server_id, nickname, pattern, default=[]):
+    def find(self, user_id, pattern, default=[]):
         values = self.database.execute(
             """SELECT setting, value FROM user_settings WHERE
-            server_id=? AND nickname=? AND setting LIKE '?'""",
-            [server_id, nickname.lower(), pattern.lower()])
+            user_id=? AND setting LIKE '?'""", [user_id, pattern.lower()])
         if values:
             for i, value in enumerate(values):
                 values[i] = value[0], json.loads(value[1])
             return values
         return default
-    def find_prefix(self, server_id, nickname, prefix,
-            default=[]):
-        return self.find_user_settings(server_id, nickname, "%s%" % prefix,
-            default)
-    def delete(self, server_id, nickname, setting):
+    def find_prefix(self, user_id, prefix, default=[]):
+        return self.find_user_settings(user_id, "%s%" % prefix, default)
+    def delete(self, user_idsetting):
         self.database.execute(
             """DELETE FROM user_settings WHERE
-            server_id=? AND nickname=? AND setting=?""",
-            [server_id, nickname.lower(), setting.lower()])
+            user_id=? AND setting=?""", [user_id, setting.lower()])
 
 class UserChannelSettings(Table):
-    def set(self, server_id, channel, nickname,
-            setting, value):
+    def set(self, user_id, channel_id, setting, value):
         self.database.execute(
             """INSERT OR REPLACE INTO user_channel_settings VALUES
-            (?, ?, ?, ?, ?)""",
-            [server_id, channel.lower(), nickname.lower(), setting.lower(),
-            json.dumps(value)])
-    def get(self, server_id, channel, nickname,
-            setting, default=None):
+            (?, ?, ?, ?)""",
+            [user_id, channel_id, setting.lower(), json.dumps(value)])
+    def get(self, user_id, channel_id, setting, default=None):
         value = self.database.execute_fetchone(
             """SELECT value FROM user_channel_settings WHERE
-            server_id=? AND channel=? AND nickname=? and setting=?""",
-            [server_id, channel.lower(), nickname.lower(), setting.lower()])
+            user_id=? AND channel_id=? AND setting=?""",
+            [user_id, channel_id, setting.lower()])
         if value:
             return json.loads(value[0])
         return default
-    def find(self, server_id, channel, nickname,
-            pattern, default=[]):
+    def find(self, user_id, channel_id, pattern, default=[]):
         values = self.database.execute_fetchall(
             """SELECT setting, value FROM user_channel_settings WHERE
-            server_id=? AND channel=? AND nickname=? AND setting LIKE '?'""",
-            [server_id, channel.lower(), nickname.lower(), pattern.lower()])
+            user_id=? AND channel_id=? AND setting LIKE '?'""",
+            [user_id, channel_id, pattern.lower()])
         if values:
             for i, value in enumerate(values):
                 values[i] = value[0], json.loads(value[1])
             return values
         return default
-    def find_prefix(self, server_id, channel, nickname,
-            prefix, default=[]):
-        return self.find_user_settings(server_id, nickname, "%s%" % prefix,
+    def find_prefix(self, user_id, channel_id, prefix, default=[]):
+        return self.find_user_settings(user_id, channel_id, "%s%" % prefix,
             default)
-    def find_by_setting(self, server_id, nickname,
-            setting, default=[]):
+    def find_by_setting(self, server_id, user_id, setting, default=[]):
         values = self.database.execute_fetchall(
-            """SELECT channel, value FROM user_channel_settings WHERE
-            server_id=? AND nickname=? AND setting=?""",
-            [server_id, nickname.lower(), setting])
+            """SELECT channels.name, user_channel_settings.value FROM
+            user_channel_settings INNER JOIN channels ON
+            user_channel_settings.channel_id=channels.channel_id
+            WHERE channels.server_id=? AND
+            user_channel_settings.user_id=?""", [server_id, user_id])
         if values:
             for i, value in enumerate(values):
                 values[i] = value[0], json.loads(value[1])
             return values
         return default
-    def delete(self, server_id, channel, nickname, setting):
+    def delete(self, user_id, channel_id, setting):
         self.database.execute(
             """DELETE FROM user_channel_settings WHERE
-            server_id=? AND channel=? AND nickname=? AND setting=?""",
-            [server_id, channel.lower(), nickname.lower(), setting.lower()])
+            user_id=? AND channel_id=? AND setting=?""",
+            [user_id, channel_id, setting.lower()])
 
 class Database(object):
     def __init__(self, bot, location="bot.db"):
@@ -221,6 +237,8 @@ class Database(object):
         self._cursor = None
 
         self.make_servers_table()
+        self.make_channels_table()
+        self.make_users_table()
         self.make_bot_settings_table()
         self.make_server_settings_table()
         self.make_channel_settings_table()
@@ -228,6 +246,8 @@ class Database(object):
         self.make_user_channel_settings_table()
 
         self.servers = Servers(self)
+        self.channels = Channels(self)
+        self.users = Users(self)
         self.bot_settings = BotSettings(self)
         self.server_settings = ServerSettings(self)
         self.channel_settings = ChannelSettings(self)
@@ -274,10 +294,27 @@ class Database(object):
     def make_servers_table(self):
         if not self.has_table("servers"):
             self.execute("""CREATE TABLE servers
-                (server_id INTEGER PRIMARY KEY,
-                hostname TEXT, port INTEGER, password TEXT,
-                ipv4 BOOLEAN, tls BOOLEAN, nickname TEXT,
-                username TEXT, realname TEXT)""")
+                (server_id INTEGER PRIMARY KEY, hostname TEXT,
+                port INTEGER,password TEXT,ipv4 BOOLEAN, tls BOOLEAN,
+                nickname TEXT, username TEXT, realname TEXT)""")
+    def make_channels_table(self):
+        if not self.has_table("channels"):
+            self.execute("""CREATE TABLE channels
+                (channel_id INTEGER PRIMARY KEY, server_id INTEGER,
+                name TEXT, FOREIGN KEY (server_id) REFERENCES
+                servers (server_id) ON DELETE CASCADE,
+                UNIQUE (server_id, name))""")
+            self.execute("""CREATE INDEX channels_index
+                on channels (server_id, name)""")
+    def make_users_table(self):
+        if not self.has_table("users"):
+            self.execute("""CREATE TABLE users
+                (user_id INTEGER PRIMARY KEY, server_id INTEGER,
+                nickname TEXT, FOREIGN KEY (server_id) REFERENCES
+                servers (server_id) ON DELETE CASCADE,
+                UNIQUE (server_id, nickname))""")
+            self.execute("""CREATE INDEX users_index
+                on users (server_id, nickname)""")
     def make_bot_settings_table(self):
         if not self.has_table("bot_settings"):
             self.execute("""CREATE TABLE bot_settings
@@ -296,28 +333,27 @@ class Database(object):
     def make_channel_settings_table(self):
         if not self.has_table("channel_settings"):
             self.execute("""CREATE TABLE channel_settings
-                (server_id INTEGER, channel TEXT, setting TEXT,
-                value TEXT, FOREIGN KEY (server_id) REFERENCES
-                servers(server_id) ON DELETE CASCADE,
-                PRIMARY KEY (server_id, channel, setting))""")
+                (channel_id INTEGER, setting TEXT, value TEXT,
+                FOREIGN KEY (channel_id) REFERENCES channels(channel_id)
+                ON DELETE CASCADE, PRIMARY KEY (channel_id, setting))""")
             self.execute("""CREATE INDEX channel_settings_index
-                ON channel_settings (server_id, channel, setting)""")
+                ON channel_settings (channel_id, setting)""")
     def make_user_settings_table(self):
         if not self.has_table("user_settings"):
             self.execute("""CREATE TABLE user_settings
-                (server_id INTEGER, nickname TEXT, setting TEXT,
-                value TEXT, FOREIGN KEY (server_id) REFERENCES
-                servers(server_id) ON DELETE CASCADE,
-                PRIMARY KEY (server_id, nickname, setting))""")
+                (user_id INTEGER, setting TEXT, value TEXT,
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+                ON DELETE CASCADE, PRIMARY KEY (user_id, setting))""")
             self.execute("""CREATE INDEX user_settings_index ON
-                user_settings (server_id, nickname, setting)""")
+                user_settings (user_id, setting)""")
     def make_user_channel_settings_table(self):
         if not self.has_table("user_channel_settings"):
             self.execute("""CREATE TABLE user_channel_settings
-                (server_id INTEGER, channel TEXT, nickname TEXT,
-                setting TEXT, value TEXT, FOREIGN KEY (server_id)
-                REFERENCES servers(server_id) ON DELETE CASCADE,
-                PRIMARY KEY (server_id, nickname, channel, setting))""")
+                (user_id INTEGER, channel_id INTEGER, setting TEXT,
+                value TEXT, FOREIGN KEY (user_id) REFERENCES
+                users(user_id) ON DELETE CASCADE, FOREIGN KEY
+                (channel_id) REFERENCES channels(channel_id) ON
+                DELETE CASCADE, PRIMARY KEY (user_id, channel_id,
+                setting))""")
             self.execute("""CREATE INDEX user_channel_settings_index
-                ON user_channel_settings (server_id, nickname, channel,
-                setting)""")
+                ON user_channel_settings (user_id, channel_id, setting)""")

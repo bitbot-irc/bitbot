@@ -2,9 +2,9 @@ import uuid
 import IRCLog
 
 class Channel(object):
-    def __init__(self, name, server, bot):
-        self.id = uuid.uuid1().hex
+    def __init__(self, name, id, server, bot):
         self.name = name.lower()
+        self.id = id
         self.server = server
         self.bot = bot
         self.topic = ""
@@ -67,36 +67,34 @@ class Channel(object):
             channel=self, mode=mode, args=args, remove=True)
 
     def set_setting(self, setting, value):
-        self.bot.database.channel_settings.set(self.server.id,
-            self.name, setting, value)
+        self.bot.database.channel_settings.set(self.id, setting, value)
     def get_setting(self, setting, default=None):
-        return self.bot.database.channel_settings.get(
-            self.server.id, self.name, setting, default)
+        return self.bot.database.channel_settings.get(self.id, setting,
+            default)
     def find_settings(self, pattern, default=[]):
-        return self.bot.database.channel_settings.find(
-            self.server.id, self.name, pattern, default)
+        return self.bot.database.channel_settings.find(self.id, pattern,
+            default)
     def find_settings_prefix(self, prefix, default=[]):
-        return self.bot.database.channel_settings.find_prefix(
-            self.server.id, self.name, prefix, default)
+        return self.bot.database.channel_settings.find_prefix(self.id,
+            prefix, default)
     def del_setting(self, setting):
-        self.bot.database.channel_settings.delete(self.server.id,
-            self.name, setting)
+        self.bot.database.channel_settings.delete(self.id, setting)
 
-    def set_user_setting(self, nickname, setting, value):
-        self.bot.database.user_channel_settings.set(self.server.id,
-            self.name, nickname, setting, value)
-    def get_user_setting(self, nickname, setting, default=None):
-        return self.bot.database.user_channel_settings.get(
-            self.server.id, self.name, nickname, setting, default)
-    def find_user_settings(self, nickname, pattern, default=[]):
-        return self.bot.database.user_channel_settings.find(
-            self.server.id, self.name, nickname, pattern, default)
-    def find_user_settings_prefix(self, nickname, prefix, default=[]):
+    def set_user_setting(self, user_id, setting, value):
+        self.bot.database.user_channel_settings.set(user_id, self.id,
+            setting, value)
+    def get_user_setting(self, user_id, setting, default=None):
+        return self.bot.database.user_channel_settings.get(user_id,
+            self.id, setting, default)
+    def find_user_settings(self, user_i, pattern, default=[]):
+        return self.bot.database.user_channel_settings.find(user_id,
+            self.id, pattern, default)
+    def find_user_settings_prefix(self, user_id, prefix, default=[]):
         return self.bot.database.user_channel_settings.find_prefix(
-            self.server.id, self.name, nickname, prefix, default)
-    def del_user_setting(self, nickname, setting):
-        self.bot.database.user_channel_settings.delete(self.server.id,
-            self.name, nickname, setting)
+            user_id, self.id, prefix, default)
+    def del_user_setting(self, user_id, setting):
+        self.bot.database.user_channel_settings.delete(user_id, self.id,
+            setting)
 
     def send_message(self, text, prefix=None):
         self.server.send_message(self.name, text, prefix=prefix)

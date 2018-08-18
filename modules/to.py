@@ -11,20 +11,20 @@ class Module(object):
             channel_only=True, usage="<username> <message>")
 
     def channel_message(self, event):
-        messages = event["channel"].get_user_setting(
-            event["user"].nickname, "to", [])
+        messages = event["channel"].get_user_setting(event["user"].id,
+            "to", [])
         for nickname, message in messages:
             event["channel"].send_message("%s: <%s> %s" % (
                 event["user"].nickname, nickname, message))
         if messages:
-            event["channel"].del_user_setting(
-                event["user"].nickname, "to")
+            event["channel"].del_user_setting(event["user"].id, "to")
 
     def to(self, event):
-        messages = event["target"].get_user_setting(
-            event["args_split"][0], "to", [])
+        target_user = event["server"].get_user(event["args_split"][0])
+        messages = event["target"].get_user_setting(target_user.id,
+            "to", [])
         messages.append([event["user"].nickname,
             " ".join(event["args_split"][1:])])
-        event["target"].set_user_setting(
-            event["args_split"][0], "to", messages)
+        event["target"].set_user_setting(target_user.id,
+            "to", messages)
         event["stdout"].write("Message saved")

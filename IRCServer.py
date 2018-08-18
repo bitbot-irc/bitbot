@@ -116,12 +116,16 @@ class Server(object):
         return nickname.lower() in self.users
     def get_user(self, nickname):
         if not self.has_user(nickname):
-            new_user = IRCUser.User(nickname, self, self.bot)
+            user_id = self.get_user_id(nickname)
+            new_user = IRCUser.User(nickname, user_id, self, self.bot)
             self.bot.events.on("new").on("user").call(
                 user=new_user, server=self)
             self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
         return self.users[nickname.lower()]
+    def get_user_id(self, nickname):
+        self.bot.database.users.add(self.id, nickname)
+        return self.bot.database.users.get_id(self.id, nickname)
     def remove_user(self, user):
         del self.users[user.nickname_lower]
         for channel in user.channels:
@@ -134,12 +138,16 @@ class Server(object):
             ) in self.channels
     def get_channel(self, channel_name):
         if not self.has_channel(channel_name):
-            new_channel = IRCChannel.Channel(channel_name, self,
-                self.bot)
+            channel_id = self.get_channel_id(channel_name)
+            new_channel = IRCChannel.Channel(channel_name, channel_id,
+                self, self.bot)
             self.bot.events.on("new").on("channel").call(
                 channel=new_channel, server=self)
             self.channels[new_channel.name] = new_channel
         return self.channels[channel_name.lower()]
+    def get_channel_id(self, channel_name):
+        self.bot.database.channels.add(self.id, channel_name)
+        return self.bot.database.channels.get_id(self.id, channel_name)
     def remove_channel(self, channel):
         for user in channel.users:
             user.part_channel(channel)

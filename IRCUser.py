@@ -2,8 +2,9 @@ import uuid
 import IRCLog
 
 class User(object):
-    def __init__(self, nickname, server, bot):
+    def __init__(self, nickname, id, server, bot):
         self.set_nickname(nickname)
+        self.id = id
         self.username = None
         self.hostname = None
         self.realname = None
@@ -20,23 +21,21 @@ class User(object):
     def part_channel(self, channel):
         self.channels.remove(channel)
     def set_setting(self, setting, value):
-        self.bot.database.user_settings.set(self.server.id, self.nickname,
-            setting, value)
+        self.bot.database.user_settings.set(self.id, setting, value)
     def get_setting(self, setting, default=None):
-        return self.bot.database.user_settings.get(self.server.id,
-            self.nickname, setting, default)
+        return self.bot.database.user_settings.get(self.id, setting,
+            default)
     def find_settings(self, pattern, default=[]):
-        return self.bot.database.user_settings.find(self.server.id,
-            self.nickname, pattern, default)
+        return self.bot.database.user_settings.find(self.id, pattern,
+            default)
     def find_settings_prefix(self, prefix, default=[]):
-        return self.bot.database.user_settings.find_prefix(
-            self.server.id, self.nickname, prefix, default)
+        return self.bot.database.user_settings.find_prefix(self.id,
+            prefix, default)
     def del_setting(self, setting):
-        self.bot.database.user_settings.delete(self.server.id, self.nickname,
-            setting)
+        self.bot.database.user_settings.delete(self.id, setting)
     def get_channel_settings_per_setting(self, setting, default=[]):
         return self.bot.database.user_channel_settings.find_by_setting(
-            self.server.id, self.nickname, setting, default)
+            self.server.id, self.id, setting, default)
 
     def send_message(self, message, prefix=None):
         self.server.send_message(self.nickname, message, prefix=prefix)
