@@ -87,6 +87,7 @@ class Module(object):
 
     def preprocess_command(self, event):
         permission = event["hook"].kwargs.get("permission", None)
+        authenticated = event["hook"].kwargs.get("authenticated", False)
         if permission:
             identified = event["user"].identified
             user_permissions = event["user"].get_setting("permissions", [])
@@ -94,6 +95,9 @@ class Module(object):
                 permission in user_permissions or "*" in user_permissions)
             if not identified or not has_permission:
                 return "You do not have permission to do that"
+        elif authenticated:
+            if not event["user"].identified:
+                return "You need to be identified to use that command"
 
     def my_permissions(self, event):
         permissions = event["user"].get_setting("permissions", [])
