@@ -1,4 +1,5 @@
 import time
+import Utils
 
 class Module(object):
     def __init__(self, bot):
@@ -11,24 +12,8 @@ class Module(object):
 
     def uptime(self, event):
         seconds = int(time.time()-self.boot_time)
-        minutes = int(seconds/60)
-        if not minutes:
-            event["stdout"].write("Uptime: %s seconds" % seconds)
-            return
-        hours, minutes = int(minutes/60), int(minutes%60)
-        days, hours = int(hours/24), int(hours%24)
-
-        days_str = ""
-        hours_str = "00"
-        minutes_str = "00"
-        if days:
-            days_str = "days "
-        if hours:
-            hours_str = str(hours).zfill(2)
-        if minutes:
-            minutes_str = str(minutes).zfill(2)
-        event["stdout"].write("Uptime: %s%s:%s" % (days_str, hours_str,
-            minutes_str))
+        event["stdout"].write("Uptime: %s" % Utils.to_pretty_time(
+            seconds))
 
     def stats(self, event):
         networks = len(self.bot.servers)
