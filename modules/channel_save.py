@@ -28,7 +28,7 @@ class Module(object):
     def on_join(self, event):
         channels = event["server"].get_setting("autojoin", [])
         if not event["channel"].name in channels:
-            channels.add(event["channel"].name)
+            channels.append(event["channel"].name)
             event["server"].set_setting("autojoin", channels)
 
     def on_kick(self, event):
