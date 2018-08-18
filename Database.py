@@ -279,7 +279,9 @@ class Database(object):
             self.execute("""CREATE TABLE bot_settings
                 (setting TEXT PRIMARY KEY, value TEXT)""")
         except sqlite3.Error as e:
-            pass
+            return
+        self.execute("""CREATE INDEX bot_settings_index ON
+            bot_settings (setting)""")
     def make_server_settings_table(self):
         try:
             self.execute("""CREATE TABLE server_settings
@@ -288,7 +290,9 @@ class Database(object):
                 servers(server_id) ON DELETE CASCADE,
                 PRIMARY KEY (server_id, setting))""")
         except sqlite3.Error as e:
-            pass
+            return
+        self.execute("""CREATE INDEX server_settings_index ON
+            server_settings (server_id, setting)""")
     def make_channel_settings_table(self):
         try:
             self.execute("""CREATE TABLE channel_settings
@@ -297,7 +301,9 @@ class Database(object):
                 servers(server_id) ON DELETE CASCADE,
                 PRIMARY KEY (server_id, channel, setting))""")
         except sqlite3.Error as e:
-            pass
+            return
+        self.execute("""CREATE INDEX channel_settings_index ON
+            channel_settings (server_id, channel, setting)""")
     def make_user_settings_table(self):
         try:
             self.execute("""CREATE TABLE user_settings
@@ -306,7 +312,9 @@ class Database(object):
                 servers(server_id) ON DELETE CASCADE,
                 PRIMARY KEY (server_id, nickname, setting))""")
         except sqlite3.Error as e:
-            pass
+            return
+        self.execute("""CREATE INDEX user_settings_index ON
+            user_settings (server_id, nickname, setting)""")
     def make_user_channel_settings_table(self):
         try:
             self.execute("""CREATE TABLE user_channel_settings
@@ -315,4 +323,7 @@ class Database(object):
                 REFERENCES servers(server_id) ON DELETE CASCADE,
                 PRIMARY KEY (server_id, nickname, channel, setting))""")
         except sqlite3.Error as e:
-            pass
+            return
+        self.execute("""CREATE INDEX user_channel_settings_index
+            ON user_channel_settings (server_id, nickname, channel,
+            setting)""")
