@@ -68,7 +68,7 @@ class Module(object):
             event["server"].set_setting("tracked-words", tracked_words)
             event["stdout"].write("Now tracking '%s'" % word)
         else:
-            event["stderr"].wrote("Already tracking '%s'" % word)
+            event["stderr"].write("Already tracking '%s'" % word)
 
     def word_users(self, event):
         word = event["args_split"][0].lower()
