@@ -132,7 +132,9 @@ class Server(object):
             channel.remove_user(user)
 
     def change_user_nickname(self, old_nickname, new_nickname):
-        self.users[new_nickname.lower()] = self.users.pop(old_nickname.lower())
+        user = self.users.pop(old_nickname.lower())
+        user.id = self.get_user_id(new_nickname)
+        self.users[new_nickname.lower()] = user
     def has_channel(self, channel_name):
         return channel_name[0] in self.channel_types and channel_name.lower(
             ) in self.channels
