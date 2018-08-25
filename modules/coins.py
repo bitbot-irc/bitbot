@@ -140,6 +140,9 @@ class Module(object):
                 "" if coin_bet == 1 else "s"))
 
     def send(self, event):
+        if event["user"].nickname_lower == event["args_split"][0].lower():
+            event["stderr"].write("You can't send coins to yourself")
+            return
         send_amount = event["args_split"][1]
         match = REGEX_FLOAT.match(send_amount)
         if not match or round(decimal.Decimal(send_amount), 2
