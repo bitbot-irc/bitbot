@@ -1,3 +1,4 @@
+import time
 import Utils
 
 class Module(object):
@@ -27,6 +28,10 @@ class Module(object):
         user_words = event["channel"].get_user_setting(user.id,
             "words", 0)
         user_words += word_count
+
+        if user.get_setting("first-words", None) == None:
+            user.set_setting("first-words", time.time())
+
         event["channel"].set_user_setting(user.id,
             "words", user_words)
 
