@@ -14,11 +14,15 @@ class Module(object):
         bot.events.on("received").on("command").on("register"
             ).hook(self.register, private_only=True, min_args=1,
             usage="<password>", help="Register your nickname")
-        bot.events.on("received").on("command").on("logout"
-            ).hook(self.logout, private_only=True,
-            help="Sign out from the bot")
-        bot.events.on("received").on("command").on("mypermissions"
-            ).hook(self.my_permissions, private_only=True)
+        bot.events.on("received.command.logout").hook(self.logout,
+             private_only=True, help="Sign out from the bot")
+
+        bot.events.on("received.command.mypermissions").hook(
+            self.my_permissions, authenticated=True)
+        bot.events.on("received.command.givepermission").hook(
+            self.give_permission, min_args=2, permission="givepermission")
+        bot.events.on("received.command.removepermission").hook(
+            self.remove_permission, min_args=2, permission="removepermission")
 
     def new_user(self, event):
         self._logout(event["user"])
@@ -104,3 +108,44 @@ class Module(object):
     def my_permissions(self, event):
         permissions = event["user"].get_setting("permissions", [])
         event["stdout"].write("Your permissions: %s" % ", ".join(permissions))
+
+    def _get_user_details(self, server, nickname):
+        target = server.get_user(nickname)
+        registered = bool(target.get_setting("authentication", None))
+        permissions = target.get_setting("permissions", [])
+        return [target, registered, permissions]
+
+    def give_permission(self, event):
+        permission = event["args_split"][1].lower()
+        target, registered, permissions = self._get_user_details(
+            event["server"], event["args_split"][0])
+
+        if not registered:
+            event["stderr"].write("%s isn't registered" % target.nickname)
+            return
+
+        if permission in permissions:
+            event["stderr"].write("%s already has permission '%s'" % (
+                target.nickname, permission))
+        else:
+            permissions.append(permission)
+            target.set_setting("permissions", permissions)
+            event["stdout"].write("Gave permission '%s' to %s" % (
+                permission, target.nickname))
+    def remove_permission(self, event):
+        permission = event["args_split"][1].lower()
+        target, registered, permissions = self._get_user_details(
+            event["server"], event["args_split"][0])
+
+        if not registered:
+            event["stderr"].write("%s isn't registered" % target.nickname)
+            return
+
+        if not permission in permissions:
+            event["stderr"].write("%s already has permission '%s'" % (
+                target.nickname, permission))
+        else:
+            permissions.remove(permission)
+            target.set_setting("permissions", permissions)
+            event["stdout"].write("Removed permission '%s' from %s" % (
+                permission, target.nickname))
