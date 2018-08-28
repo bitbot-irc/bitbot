@@ -129,9 +129,10 @@ class Module(object):
                 args = " ".join(args_split)
                 server = event["server"]
                 user = event["user"]
-                self.bot.events.on("received").on("command").on(command).call(
-                    1, user=user, server=server, target=target, buffer=buffer,
-                    args=args, args_split=args_split, stdout=stdout, stderr=stderr,
+                self.bot.events.on("received").on("command").on(command
+                    ).call_limited(1, user=user, server=server,
+                    target=target, buffer=buffer, args=args,
+                    args_split=args_split, stdout=stdout, stderr=stderr,
                     command=command.lower(), is_channel=is_channel)
                 if not hook.kwargs.get("skip_out", False):
                     stdout.send()
