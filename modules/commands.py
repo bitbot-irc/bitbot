@@ -60,7 +60,7 @@ class Module(object):
             help="Get more output from the last command", skip_out=True)
 
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="command-prefix",
+            "channelset").assure_call(setting="command-prefix",
             help="Set the command prefix used in this channel")
 
         bot.events.on("new").on("user", "channel").hook(self.new)

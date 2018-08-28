@@ -26,7 +26,7 @@ class Module(object):
             self.channel_message)
 
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="auto-youtube",
+            "channelset").assure_call(setting="auto-youtube",
             help="Disable/Enable automatically getting info from youtube URLs",
             validate=Utils.bool_or_none)
 

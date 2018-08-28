@@ -5,7 +5,7 @@ class Module(object):
         self.bot = bot
 
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="automode",
+            "channelset").assure_call(setting="automode",
             help="Disable/Enable automode",
             validate=Utils.bool_or_none)
 

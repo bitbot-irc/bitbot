@@ -32,19 +32,19 @@ class Module(object):
         bot.events.on("received").on("message").on("channel").hook(self.highlight_spam)
 
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="highlight-spam-threshold",
-            help="Set the number of nicknames in a message that qualifies as spam",
-            validate=Utils.int_or_none)
+            "channelset").assure_call(setting="highlight-spam-threshold",
+            help="Set the number of nicknames in a message that "
+            "qualifies as spam", validate=Utils.int_or_none)
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="highlight-spam-protection",
+            "channelset").assure_call(setting="highlight-spam-protection",
             help="Enable/Disable highlight spam protection",
             validate=Utils.bool_or_none)
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="highlight-spam-ban",
-            help="Enable/Disable banning highlight spammers instead of just kicking",
-            validate=Utils.bool_or_none)
+            "channelset").assure_call(setting="highlight-spam-ban",
+            help="Enable/Disable banning highlight spammers "
+            "instead of just kicking", validate=Utils.bool_or_none)
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="ban-format",
+            "channelset").assure_call(setting="ban-format",
             help="Set ban format ($n = nick, $u = username, $h = hostname)")
 
     def kick(self, event):

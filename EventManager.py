@@ -53,6 +53,9 @@ class EventHook(object):
         self._call_notify = None
         self._stored_events = []
 
+    def _make_event(self, kwargs):
+        return Event(self.bot, self.name, **kwargs)
+
     def _get_path(self):
         path = [self.name]
         parent = self.parent
@@ -69,8 +72,8 @@ class EventHook(object):
         self._hooks.sort(key=lambda x: x.priority)
 
         if replay:
-            for event in self._stored_events:
-                callback.call(event)
+            for kwargs in self._stored_events:
+                callback.call(self._make_event(kwargs))
         self._stored_events = None
 
     def _unhook(self, hook):
@@ -95,17 +98,20 @@ class EventHook(object):
     def call_for_result(self, default=None, max=None, **kwargs):
         results = self.call(max=max, **kwargs)
         return default if not len(results) else results[0]
+    def assure_call(self, **kwargs):
+        if not self._stored_events == None:
+            self._stored_events.append(kwargs)
+        else:
+            self.call(kwargs)
     def call(self, max=None, **kwargs):
         self.bot.log.debug("calling event: \"%s\" (params: %s)",
             [self._get_path(), kwargs])
         start = time.monotonic()
 
-        event = Event(self.bot, self.name, **kwargs)
+        event = self._make_event(kwargs)
         if self._call_notify:
             self._call_notify(self, event)
 
-        if not self._stored_events == None:
-            self._stored_events.append(event)
         called = 0
         returns = []
         for hook in self._hooks:

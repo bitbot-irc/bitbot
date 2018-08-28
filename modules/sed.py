@@ -11,12 +11,12 @@ class Module(object):
             self.channel_message)
 
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="sed",
+            "channelset").assure_call(setting="sed",
             help="Disable/Enable sed in a channel",
             validate=Utils.bool_or_none)
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="sed-sender-only",
-            help=
+            "channelset").assure_call(setting="sed-sender-only",
+            replayable=True, help=
             "Disable/Enable sed only looking at the messages sent by the user",
             validate=Utils.bool_or_none)
 

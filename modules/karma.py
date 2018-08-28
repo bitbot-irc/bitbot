@@ -19,7 +19,7 @@ class Module(object):
             usage="<target>")
 
         bot.events.on("postboot").on("configure").on(
-            "channelset").call(setting="karma-verbose",
+            "channelset").assure_call(setting="karma-verbose",
             help="Disable/Enable automatically responding to karma changes",
             validate=Utils.bool_or_none)
 
