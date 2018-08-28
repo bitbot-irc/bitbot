@@ -1,4 +1,4 @@
-import traceback
+import time, traceback
 
 PRIORITY_URGENT = 0
 PRIORITY_HIGH = 1
@@ -42,15 +42,24 @@ class MultipleEventHook(object):
             event_hook.call(max, **kwargs)
 
 class EventHook(object):
-    def __init__(self, bot, name=None):
+    def __init__(self, bot, name=None, parent=None):
         self.bot = bot
         self.name = name
+        self.parent = parent
         self._children = {}
         self._hooks = []
         self._hook_notify = None
         self._child_notify = None
         self._call_notify = None
         self._stored_events = []
+
+    def _get_path(self):
+        path = [self.name]
+        parent = self.parent
+        while not parent == None and not parent.name == None:
+            path.append(parent.name)
+            parent = parent.parent
+        return ".".join(path[::-1])
 
     def hook(self, function, priority=PRIORITY_LOW, replay=False, **kwargs):
         callback = EventCallback(function, self.bot, priority, **kwargs)
@@ -87,6 +96,10 @@ class EventHook(object):
         results = self.call(max=max, **kwargs)
         return default if not len(results) else results[0]
     def call(self, max=None, **kwargs):
+        self.bot.log.debug("calling event: \"%s\" (params: %s)",
+            [self._get_path(), kwargs])
+        start = time.monotonic()
+
         event = Event(self.bot, self.name, **kwargs)
         if self._call_notify:
             self._call_notify(self, event)
@@ -109,13 +122,18 @@ class EventHook(object):
                 #    message="Failed to call event callback",
                 #    data=traceback.format_exc())
             called += 1
+
+        end = time.monotonic()
+        total_milliseconds = (end - start) * 1000
+        self.bot.log.debug("event called in %fms", [total_milliseconds])
+
         return returns
 
     def get_child(self, child_name):
         child_name_lower = child_name.lower()
         if not child_name_lower in self._children:
             self._children[child_name_lower] = EventHook(self.bot,
-                child_name)
+                child_name, self)
             if self._child_notify:
                 self._child_notify(self, self._children[
                     child_name_lower])

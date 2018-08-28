@@ -261,9 +261,8 @@ class Database(object):
 
     def _execute_fetch(self, query, fetch_func, params=[]):
         printable_query = " ".join(query.split())
-        self.bot.events.on("log.debug").call(
-            message="executing query: \"%s\" (params: %s)",
-            params=[printable_query, params])
+        self.bot.log.debug("executing query: \"%s\" (params: %s)",
+            [printable_query, params])
         start = time.monotonic()
 
         cursor = self.cursor()
@@ -272,9 +271,8 @@ class Database(object):
 
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
-        self.bot.events.on("log.debug").call(
-            message="executed in %fms",
-            params=[total_milliseconds])
+        self.bot.log.debug("executed in %fms", [total_milliseconds])
+
         return value
     def execute_fetchall(self, query, params=[]):
         return self._execute_fetch(query,

@@ -267,13 +267,13 @@ class Server(object):
         full_message_split = full_message.split()
         if self.has_channel(target):
             channel = self.get_channel(target)
-            channel.log.add_line(None, message, action, True)
+            channel.buffer.add_line(None, message, action, True)
             self.bot.events.on("self").on("message").on("channel").call(
                 message=full_message, message_split=full_message_split,
                 channel=channel, action=action, server=self)
         else:
             user = self.get_user(target)
-            user.log.add_line(None, message, action, True)
+            user.buffer.add_line(None, message, action, True)
             self.bot.events.on("self").on("message").on("private").call(
                 message=full_message, message_split=full_message_split,
                 user=user, action=action, server=self)

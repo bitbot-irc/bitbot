@@ -25,7 +25,7 @@ class Module(object):
             else:
                 query = event["args"]
         else:
-            last_soundcloud = event["log"].find(REGEX_SOUNDCLOUD)
+            last_soundcloud = event["buffer"].find(REGEX_SOUNDCLOUD)
             if last_soundcloud:
                 url = re.match(REGEX_SOUNDCLOUD,
                     last_soundcloud.message).string

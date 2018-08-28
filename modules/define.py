@@ -15,7 +15,7 @@ class Module(object):
         if event["args"]:
             word = event["args"]
         else:
-            word = event["log"].get(from_self=False)
+            word = event["buffer"].get(from_self=False)
         page = Utils.get_url(URL_WORDNIK % event["args"], get_params={
             "useCanonical": "true", "limit": 1,
             "sourceDictionaries": "wiktionary", "api_key": self.bot.config[

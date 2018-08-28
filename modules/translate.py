@@ -14,7 +14,7 @@ class Module(object):
     def translate(self, event):
         phrase = event["args"]
         if not phrase:
-            phrase = event["log"].get()
+            phrase = event["buffer"].get()
             if phrase:
                 phrase = phrase.message
         if not phrase:

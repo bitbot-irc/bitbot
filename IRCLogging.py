@@ -13,7 +13,7 @@ class BitBotFormatter(logging.Formatter):
             s = "%s.%03d" % (t, record.msecs)
         return s
 
-class Module(object):
+class Log(object):
     def __init__(self, bot):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -33,23 +33,15 @@ class Module(object):
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
 
-        bot.events.on("log.debug").hook(self.debug)
-        bot.events.on("log.info").hook(self.info)
-        bot.events.on("log.warn").hook(self.warn)
-        bot.events.on("log.error").hook(self.error)
-        bot.events.on("log.critical").hook(self.critical)
-
-    def debug(self, event):
-        self._log(event, logging.DEBUG)
-    def info(self, event):
-        self._log(event, logging.INFO)
-    def warn(self, event):
-        self._log(event, logging.WARN)
-    def error(self, event):
-        self._log(event, logging.ERROR)
-    def critical(self, event):
-        self._log(event, logging.CRITICAL)
-    def _log(self, event, level):
-        message = event["message"]
-        params = event.get("params", [])
+    def debug(self, message, params):
+        self._log(message, params, logging.DEBUG)
+    def info(self, message, params):
+        self._log(message, params, logging.INFO)
+    def warn(self, message, params):
+        self._log(message, params, logging.WARN)
+    def error(self, message, params):
+        self._log(message, params, logging.ERROR)
+    def critical(self, message, params):
+        self._log(message, params, logging.CRITICAL)
+    def _log(self, message, params, level):
         self.logger.log(level, message, *params)

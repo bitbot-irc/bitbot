@@ -102,7 +102,7 @@ class Module(object):
             if is_channel and hook.kwargs.get("private_only"):
                 return
 
-            log = target.log
+            buffer = target.buffer
 
             module_name = hook.function.__self__._name
             stdout, stderr = StdOut(module_name, target), StdErr(module_name,
@@ -114,7 +114,7 @@ class Module(object):
             for returned in returns:
                 if returned:
                     stderr.write(returned).send()
-                    log.skip_next()
+                    buffer.skip_next()
                     return
             args_split = list(filter(None, event["message_split"][args_index:]))
             min_args = hook.kwargs.get("min_args")
@@ -130,7 +130,7 @@ class Module(object):
                 server = event["server"]
                 user = event["user"]
                 self.bot.events.on("received").on("command").on(command).call(
-                    1, user=user, server=server, target=target, log=log,
+                    1, user=user, server=server, target=target, buffer=buffer,
                     args=args, args_split=args_split, stdout=stdout, stderr=stderr,
                     command=command.lower(), is_channel=is_channel)
                 if not hook.kwargs.get("skip_out", False):
@@ -138,7 +138,7 @@ class Module(object):
                     stderr.send()
                     target.last_stdout = stdout
                     target.last_stderr = stderr
-            log.skip_next()
+            buffer.skip_next()
 
 
     def channel_message(self, event):

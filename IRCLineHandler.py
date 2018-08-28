@@ -302,12 +302,12 @@ def handle_PRIVMSG(data):
         bot.events.on("received").on("message").on("channel").call(
             user=user, message=message, message_split=message_split,
             channel=channel, action=action, server=data.server)
-        channel.log.add_line(user.nickname, message, action)
+        channel.buffer.add_line(user.nickname, message, action)
     elif server.is_own_nickname(target):
         bot.events.on("received").on("message").on("private").call(
             user=user, message=message, message_split=message_split,
             action=action, server=data.server)
-        user.log.add_line(user.nickname, message, action)
+        user.buffer.add_line(user.nickname, message, action)
 
 @handler(description="we've received a notice")
 def handle_NOTICE(data):

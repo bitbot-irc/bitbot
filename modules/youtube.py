@@ -72,7 +72,7 @@ class Module(object):
         if event["args"]:
             search = event["args"]
         else:
-            last_youtube = event["log"].find(REGEX_YOUTUBE)
+            last_youtube = event["buffer"].find(REGEX_YOUTUBE)
             if last_youtube:
                 video_id = re.search(REGEX_YOUTUBE, last_youtube.message).group(1)
         if search or video_id:

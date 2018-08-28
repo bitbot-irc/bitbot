@@ -32,7 +32,7 @@ class Module(object):
         if event["args"]:
             target = event["args"]
         else:
-            target = event["log"].find(REGEX_TWITTERURL)
+            target = event["buffer"].find(REGEX_TWITTERURL)
             if target:
                 target = target.message
         if target:

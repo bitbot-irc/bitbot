@@ -1,5 +1,5 @@
 import os, select, sys, threading, time, traceback
-import EventManager, IRCServer, ModuleManager, Timer
+import EventManager, IRCLogging, IRCServer, ModuleManager, Timer
 
 class Bot(object):
     def __init__(self):
@@ -13,6 +13,7 @@ class Bot(object):
         self.poll = select.epoll()
         self.modules = ModuleManager.ModuleManager(self)
         self.events = EventManager.EventHook(self)
+        self.log = IRCLogging.Log(self)
         self.timers = []
         self.events.on("timer").on("reconnect").hook(self.reconnect)
         self.events.on("boot").on("done").hook(self.setup_timers)

@@ -1,5 +1,5 @@
 import uuid
-import IRCLog
+import IRCBuffer
 
 class User(object):
     def __init__(self, nickname, id, server, bot):
@@ -11,7 +11,11 @@ class User(object):
         self.server = server
         self.bot = bot
         self.channels = set([])
-        self.log = IRCLog.Log(bot)
+        self.buffer = IRCBuffer.Buffer(bot)
+
+    def __repr__(self):
+        return "IRCUser.User(%s|%s)" % (self.server.name, self.name)
+
     def set_nickname(self, nickname):
         self.nickname = nickname
         self.nickname_lower = nickname.lower()

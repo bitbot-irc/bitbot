@@ -1,5 +1,5 @@
 import uuid
-import IRCLog
+import IRCBuffer
 
 class Channel(object):
     def __init__(self, name, id, server, bot):
@@ -15,7 +15,10 @@ class Channel(object):
         self.users = set([])
         self.modes = {}
         self.created_timestamp = None
-        self.log = IRCLog.Log(bot)
+        self.buffer = IRCBuffer.Buffer(bot)
+
+    def __repr__(self):
+        return "IRCChannel.Channel(%s|%s)" % (self.server.name, self.name)
 
     def set_topic(self, topic):
         self.topic = topic

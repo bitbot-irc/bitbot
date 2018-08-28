@@ -13,7 +13,7 @@ class Module(object):
             usage="[search term]")
 
     def google(self, event):
-        phrase = event["args"] or event["log"].get()
+        phrase = event["args"] or event["buffer"].get()
         if phrase:
             page = Utils.get_url(URL_GOOGLESEARCH, get_params={
                 "q": phrase, "key": self.bot.config[
