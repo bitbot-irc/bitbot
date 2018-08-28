@@ -16,9 +16,8 @@ class Module(object):
             validate=Utils.bool_or_none)
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="sed-sender-only",
-            replayable=True, help=
-            "Disable/Enable sed only looking at the messages sent by the user",
-            validate=Utils.bool_or_none)
+            help="Disable/Enable sed only looking at the messages "
+            "sent by the user", validate=Utils.bool_or_none)
 
     def channel_message(self, event):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
