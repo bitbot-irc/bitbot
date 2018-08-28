@@ -141,6 +141,9 @@ def handle_353(data):
             channel.add_user(user)
             for mode in modes:
                 channel.add_mode(mode, nickname)
+@handler(description="on-join user list has finished", default_event=True)
+def handle_366(data):
+    data.server.send_who(data.args[2])
 
 @handler(description="on user joining channel")
 def handle_JOIN(data):
@@ -161,7 +164,6 @@ def handle_JOIN(data):
             del server.attempted_join[channel.name]
         bot.events.on("self").on("join").call(channel=channel,
             server=data.server)
-        server.send_who(channel.name)
         channel.send_mode()
 
 @handler(description="on user parting channel")

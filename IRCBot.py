@@ -65,13 +65,33 @@ class Bot(object):
             if not next or time_left < next:
                 next = time_left
 
-        return next if not next == None and next <= 30 else 30;
+        if next == None:
+            return None
+        if next < 0:
+            return 0
+        return next
     def call_timers(self):
         for timer in self.timers[:]:
             if timer.due():
                 timer.call()
                 if timer.done():
                     self.timer_setting_remove(timer)
+    def next_write(self):
+        next = None
+        for server in self.servers.values():
+            timeout = server.send_timeout()
+            if not next or timeout < next:
+                next = timeout
+        if next == None:
+            return None
+        if next < 0:
+            return 0
+        return next
+
+    def get_poll_timeout(self):
+        next_timer = self.next_timer() or 30
+        next_write = self.next_write() or 30
+        return min(next_timer, next_write)
 
     def register_read(self, server):
         self.poll.modify(server.fileno(), select.EPOLLIN)
@@ -82,7 +102,7 @@ class Bot(object):
             select.EPOLLIN|select.EPOLLOUT)
 
     def since_last_read(self, server):
-        return None if not server.last_read else time.time(
+        return None if not server.last_read else time.monotonic(
             )-server.last_read
 
     def disconnect(self, server):
@@ -115,7 +135,7 @@ class Bot(object):
     def run(self):
         while self.running:
             self.lock.acquire()
-            events = self.poll.poll(self.next_timer())
+            events = self.poll.poll(self.get_poll_timeout())
             self.call_timers()
             for fd, event in events:
                 if fd in self.servers:

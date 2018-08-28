@@ -30,6 +30,7 @@ class Server(object):
         self.channel_modes = []
         self.channel_types = []
         self.last_read = None
+        self.last_send = None
         self.attempted_join = {}
         self.ping_sent = False
         self.name = None
@@ -205,7 +206,7 @@ class Server(object):
             decoded_lines.append(line)
         if not decoded_lines:
             self.disconnect()
-        self.last_read = time.time()
+        self.last_read = time.monotonic()
         self.ping_sent = False
         return decoded_lines
     def send(self, data):
@@ -217,9 +218,16 @@ class Server(object):
             print(encoded.decode("utf8"))
     def _send(self):
         self.write_buffer = self.write_buffer[self.socket.send(
-            self.write_buffer):]
+            self.write_buffer[:512]):]
+        self.last_send = time.monotonic()
     def waiting_send(self):
-        return bool(len(self.write_buffer))
+        return bool(len(self.write_buffer)) and self.send_timeout() == 0
+    def send_timeout(self):
+        if self.last_send == None:
+            return 0
+        timeout = (self.last_send)+0.5
+        timeout = timeout-time.monotonic()
+        return max(timeout, 0)
 
     def send_user(self, username, realname):
         self.send("USER %s - - :%s" % (username, realname))
