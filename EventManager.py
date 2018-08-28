@@ -34,12 +34,21 @@ class MultipleEventHook(object):
         self._event_hooks = set([])
     def _add(self, event_hook):
         self._event_hooks.add(event_hook)
+
     def hook(self, function, **kwargs):
         for event_hook in self._event_hooks:
             event_hook.hook(function, **kwargs)
-    def call(self, max=None, **kwargs):
+
+    def call_limited(self, maximum, **kwargs):
+        returns = []
         for event_hook in self._event_hooks:
-            event_hook.call(max, **kwargs)
+            returns.append(event_hook.call_limited(maximum, **kwargs))
+        return returns
+    def call(self, **kwargs):
+        returns = []
+        for event_hook in self._event_hooks:
+            returns.append(event_hook.call(**kwargs))
+        return returns
 
 class EventHook(object):
     def __init__(self, bot, name=None, parent=None):
@@ -71,9 +80,9 @@ class EventHook(object):
         self._hooks.append(callback)
         self._hooks.sort(key=lambda x: x.priority)
 
-        if replay:
+        if replay and not self._stored_events == None:
             for kwargs in self._stored_events:
-                callback.call(self._make_event(kwargs))
+                self._call(kwargs)
         self._stored_events = None
 
     def _unhook(self, hook):
@@ -102,8 +111,12 @@ class EventHook(object):
         if not self._stored_events == None:
             self._stored_events.append(kwargs)
         else:
-            self.call(**kwargs)
-    def call(self, max=None, **kwargs):
+            self._call(kwargs)
+    def call(self, **kwargs):
+        return self._call(kwargs)
+    def call_limited(self, maximum, **kwargs):
+        return self._call(kwargs, maximum=maximum)
+    def _call(self, kwargs, maximum=None):
         self.bot.log.debug("calling event: \"%s\" (params: %s)",
             [self._get_path(), kwargs])
         start = time.monotonic()
@@ -115,7 +128,7 @@ class EventHook(object):
         called = 0
         returns = []
         for hook in self._hooks:
-            if max and called == max:
+            if maximum and called == maximum:
                 break
             if event.eaten:
                 break
