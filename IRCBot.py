@@ -144,7 +144,7 @@ class Bot(object):
                         lines = server.read()
                         for line in lines:
                             if self.args.verbose:
-                                print(line)
+                                self.log.info("<%s | %s", [str(server), line])
                             server.parse_line(line)
                     elif event & select.EPOLLOUT:
                         server._send()

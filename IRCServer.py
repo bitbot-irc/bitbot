@@ -218,7 +218,7 @@ class Server(object):
             encoded = encoded[:450]
         self.buffered_lines.append(encoded + b"\r\n")
         if self.bot.args.verbose:
-            print(encoded.decode("utf8"))
+            self.bot.log.info(">%s | %s", [str(self), encoded.decode("utf8")])
     def _send(self):
         if self.write_buffer == b"":
             self.write_buffer = b"".join(self.buffered_lines[:
