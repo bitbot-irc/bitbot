@@ -59,7 +59,7 @@ class Module(object):
             for_user = event["user"].nickname if Utils.get_closest_setting(
                 event, "sed-sender-only", False
             ) else None
-            line = event["channel"].log.find(pattern, from_self=False,
+            line = event["channel"].buffer.find(pattern, from_self=False,
                 for_user=for_user, not_pattern=REGEX_SED)
             if line:
                 new_message = re.sub(pattern, replace, line.message, count)
