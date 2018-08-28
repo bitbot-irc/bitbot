@@ -1,6 +1,9 @@
 import base64, os
 import scrypt
 
+REQUIRES_IDENTIFY = ("You need to be identified to use that command "
+ "(/msg %s register | /msg %s identify)")
+
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
@@ -90,8 +93,12 @@ class Module(object):
             event["stderr"].write("You are not logged in")
 
     def preprocess_command(self, event):
+        authentication = event["user"].get_setting("authentication", None)
         permission = event["hook"].kwargs.get("permission", None)
         authenticated = event["hook"].kwargs.get("authenticated", False)
+        protect_registered = event["hook"].kwargs.get("protect_registered",
+            False)
+
         if permission:
             identified = event["user"].identified
             user_permissions = event["user"].get_setting("permissions", [])
@@ -101,9 +108,12 @@ class Module(object):
                 return "You do not have permission to do that"
         elif authenticated:
             if not event["user"].identified:
-                return ("You need to be identified to use that command "
-                    "(/msg %s register | /msg %s identify)" % (
-                    event["server"].nickname, event["server"].nickname))
+                return REQUIRES_IDENTIFY % (event["server"].nickname,
+                    event["server"].nickname)
+        elif protect_registered:
+            if authentication and not event["user"].identified:
+                return REQUIRES_IDENTIFY % (event["server"].nickname,
+                    event["server"].nickname)
 
     def my_permissions(self, event):
         permissions = event["user"].get_setting("permissions", [])

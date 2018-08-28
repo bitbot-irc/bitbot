@@ -41,13 +41,13 @@ class Module(object):
             self.redeem_coins, help="Redeem free coins")
         bot.events.on("received.command.flip").hook(self.flip,
             help="Bet coins on a coin flip", usage=
-            "heads|tails <coin amount>", min_args=2, authenticated=True)
+            "heads|tails <coin amount>", min_args=2, protect_registered=True)
         bot.events.on("received.command.sendcoins").hook(
             self.send, min_args=2, help="Send coins to a user",
             usage="<nickname> <amount>", authenticated=True)
         bot.events.on("received.command.roulette").hook(
             self.roulette, min_args=2, help="Spin the roulette wheel",
-            usage="<type> <amount>", authenticated=True)
+            usage="<type> <amount>", protect_registered=True)
 
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
