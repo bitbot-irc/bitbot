@@ -2,6 +2,7 @@ import collections, socket, ssl, sys, time
 import IRCChannel, IRCLineHandler, IRCUser
 
 OUR_TLS_PROTOCOL = ssl.PROTOCOL_SSLv23
+THROTTLE_LINES = 4
 if hasattr(ssl, "PROTOCOL_TLS"):
     OUR_TLS_PROTOCOL = ssl.PROTOCOL_TLS
 
@@ -20,6 +21,7 @@ class Server(object):
         self.original_username = username or nickname
         self.original_realname = realname or nickname
         self.write_buffer = b""
+        self.buffered_lines = []
         self.read_buffer = b""
         self.users = {}
         self.new_users = set([])
@@ -214,15 +216,19 @@ class Server(object):
         encoded = data.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
             encoded = encoded[:450]
-        self.write_buffer += encoded + b"\r\n"
+        self.buffered_lines.append(encoded + b"\r\n")
         if self.bot.args.verbose:
             print(encoded.decode("utf8"))
     def _send(self):
+        if self.write_buffer == b"":
+            self.write_buffer = b"".join(self.buffered_lines[:
+                THROTTLE_LINES])
+            self.buffered_lines = self.buffered_lines[THROTTLE_LINES:]
         self.write_buffer = self.write_buffer[self.socket.send(
-            self.write_buffer[:512]):]
+            self.write_buffer):]
         self.last_send = time.monotonic()
     def waiting_send(self):
-        return bool(len(self.write_buffer))
+        return bool(len(self.write_buffer)) or bool(len(self.buffered_lines))
     def throttle_done(self):
         return self.send_throttle_timeout() == 0
     def send_throttle_timeout(self):
