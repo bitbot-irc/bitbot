@@ -127,6 +127,8 @@ class EventHook(object):
         total_milliseconds = (end - start) * 1000
         self.bot.log.debug("event called in %fms", [total_milliseconds])
 
+        self.check_purge()
+
         return returns
 
     def get_child(self, child_name):
@@ -138,6 +140,17 @@ class EventHook(object):
                 self._child_notify(self, self._children[
                     child_name_lower])
         return self._children[child_name_lower]
+
+    def remove_child(self, child_name):
+        child_name_lower = child_name.lower()
+        if child_name_lower in self._children:
+            del self._children[child_name_lower]
+    def check_purge(self):
+        if len(self._hooks) == 0 and len(self._children
+                ) == 0 and not self.parent == None:
+            self.parent.remove_child(self.name)
+            self.parent.check_purge()
+
     def get_hooks(self):
         return self._hooks
     def get_children(self):
