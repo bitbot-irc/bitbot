@@ -117,8 +117,9 @@ class EventHook(object):
     def call_limited(self, maximum, **kwargs):
         return self._call(kwargs, maximum=maximum)
     def _call(self, kwargs, maximum=None):
+        event_path = self._get_path()
         self.bot.log.debug("calling event: \"%s\" (params: %s)",
-            [self._get_path(), kwargs])
+            [event_path, kwargs])
         start = time.monotonic()
 
         event = self._make_event(kwargs)
@@ -144,7 +145,8 @@ class EventHook(object):
 
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
-        self.bot.log.debug("event called in %fms", [total_milliseconds])
+        self.bot.log.debug("event \"%s\" called in %fms", [
+            event_path, total_milliseconds])
 
         self.check_purge()
 
