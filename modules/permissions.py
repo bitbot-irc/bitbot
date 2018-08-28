@@ -97,7 +97,9 @@ class Module(object):
                 return "You do not have permission to do that"
         elif authenticated:
             if not event["user"].identified:
-                return "You need to be identified to use that command"
+                return ("You need to be identified to use that command "
+                    "(/msg %s register | /msg %s identify)" % (
+                    event["server"].nickname, event["server"].nickname))
 
     def my_permissions(self, event):
         permissions = event["user"].get_setting("permissions", [])
