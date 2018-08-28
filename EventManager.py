@@ -102,7 +102,7 @@ class EventHook(object):
         if not self._stored_events == None:
             self._stored_events.append(kwargs)
         else:
-            self.call(kwargs)
+            self.call(**kwargs)
     def call(self, max=None, **kwargs):
         self.bot.log.debug("calling event: \"%s\" (params: %s)",
             [self._get_path(), kwargs])
