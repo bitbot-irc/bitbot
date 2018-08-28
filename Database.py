@@ -175,7 +175,7 @@ class UserSettings(Table):
         return default
     def find_prefix(self, user_id, prefix, default=[]):
         return self.find_user_settings(user_id, "%s%" % prefix, default)
-    def delete(self, user_idsetting):
+    def delete(self, user_id, setting):
         self.database.execute(
             """DELETE FROM user_settings WHERE
             user_id=? AND setting=?""", [user_id, setting.lower()])
