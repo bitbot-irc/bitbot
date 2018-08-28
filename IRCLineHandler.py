@@ -61,11 +61,15 @@ def handle(line, prefix, command, args, is_final, _bot, server):
             bot = _bot
             handler_function(data)
 
-@handler(description="reply to a ping")
+@handler(description="received a ping from the server")
 def handle_PING(data):
     nonce = data.args[0]
     data.server.send_pong(nonce)
     bot.events.on("received").on("ping").call(nonce=nonce, server=data.server)
+@handler(description="received a pong from the server")
+def handle_PONG(data):
+    nonce = data.args[1]
+    bot.events.on("recevied").on("pong").call(nonce=nonce, server=data.server)
 
 @handler(description="the first line sent to a registered client", default_event=True)
 def handle_001(data):
@@ -143,7 +147,7 @@ def handle_353(data):
                 channel.add_mode(mode, nickname)
 @handler(description="on-join user list has finished", default_event=True)
 def handle_366(data):
-    data.server.send_who(data.args[2])
+    data.server.send_who(data.args[1])
 
 @handler(description="on user joining channel")
 def handle_JOIN(data):
