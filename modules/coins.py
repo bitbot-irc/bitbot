@@ -35,20 +35,19 @@ class Module(object):
             min_args=1, help=
             "Reset a specified user's coins to %s" % str(DECIMAL_ZERO),
             usage="<target>")
-
         bot.events.on("received.command.richest").hook(
             self.richest, help="Show the top 10 richest users")
         bot.events.on("received.command.redeemcoins").hook(
             self.redeem_coins, help="Redeem free coins")
         bot.events.on("received.command.flip").hook(self.flip,
             help="Bet coins on a coin flip", usage=
-            "heads|tails <coin amount>", min_args=2)
+            "heads|tails <coin amount>", min_args=2, authenticated=True)
         bot.events.on("received.command.sendcoins").hook(
             self.send, min_args=2, help="Send coins to a user",
-            usage="<nickname> <amount>")
+            usage="<nickname> <amount>", authenticated=True)
         bot.events.on("received.command.roulette").hook(
             self.roulette, min_args=2, help="Spin the roulette wheel",
-            usage="<type> <amount>")
+            usage="<type> <amount>", authenticated=True)
 
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
