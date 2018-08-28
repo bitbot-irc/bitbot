@@ -76,11 +76,11 @@ class Bot(object):
                 timer.call()
                 if timer.done():
                     self.timer_setting_remove(timer)
-    def next_write(self):
+    def next_send(self):
         next = None
         for server in self.servers.values():
-            timeout = server.send_timeout()
-            if not next or timeout < next:
+            timeout = server.send_throttle_timeout()
+            if server.waiting_send() and (not next or timeout < next):
                 next = timeout
         if next == None:
             return None
@@ -90,7 +90,7 @@ class Bot(object):
 
     def get_poll_timeout(self):
         next_timer = self.next_timer() or 30
-        next_write = self.next_write() or 30
+        next_write = self.next_send() or 30
         return min(next_timer, next_write)
 
     def register_read(self, server):
@@ -171,6 +171,6 @@ class Bot(object):
 
                     print("disconnected from %s, reconnecting in %d seconds" % (
                         str(server), reconnect_delay))
-                elif server.waiting_send():
+                elif server.waiting_send() and server.throttle_done():
                     self.register_both(server)
             self.lock.release()

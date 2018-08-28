@@ -222,8 +222,10 @@ class Server(object):
             self.write_buffer[:512]):]
         self.last_send = time.monotonic()
     def waiting_send(self):
-        return bool(len(self.write_buffer)) and self.send_timeout() == 0
-    def send_timeout(self):
+        return bool(len(self.write_buffer))
+    def throttle_done(self):
+        return self.send_throttle_timeout() == 0
+    def send_throttle_timeout(self):
         if self.last_send == None:
             return 0
         timeout = (self.last_send)+0.5
