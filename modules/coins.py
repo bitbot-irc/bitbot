@@ -30,6 +30,12 @@ class Module(object):
         self.bot = bot
         bot.events.on("received.command.coins").hook(self.coins,
             help="Show how many coins you have")
+        bot.events.on("received").on("command").on("resetcoins").hook(
+            self.reset_coins, permission="resetcoins",
+            min_args=1, help=
+            "Reset a specified user's coins to %s" % str(DECIMAL_ZERO),
+            usage="<target>")
+
         bot.events.on("received.command.richest").hook(
             self.richest, help="Show the top 10 richest users")
         bot.events.on("received.command.redeemcoins").hook(
@@ -60,6 +66,17 @@ class Module(object):
         coins = decimal.Decimal(target.get_setting("coins", "0.0"))
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             "{0:.2f}".format(coins), "" if coins == 1 else "s"))
+
+    def reset_coins(self, event):
+        target = event["server"].get_user(event["args_split"][0])
+        coins = decimal.Decimal(target.get_setting("coins", "0.0"))
+        if coins == DECIMAL_ZERO:
+            event["stderr"].write("%s already has %s coins" % (
+                target.nickname, str(DECIMAL_ZERO)))
+        else:
+            target.del_setting("coins")
+            event["stdout"].write("Reset coins for %s" % target.nickname)
+
 
     def richest(self, event):
         all_coins = event["server"].get_all_user_settings("coins", [])
