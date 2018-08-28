@@ -54,9 +54,10 @@ class Server(object):
             self.socket = context.wrap_socket(self.socket)
         self.cached_fileno = self.socket.fileno()
         self.bot.events.on("timer").on("rejoin").hook(self.try_rejoin)
+
     def __repr__(self):
-        return "%s:%s%s" % (self.target_hostname, "+" if self.tls else "",
-            self.port)
+        return "IRCServer.Server(%s:%s%s)" % (self.target_hostname,
+            "+" if self.tls else "", self.port)
     def __str__(self):
         return repr(self)
     def fileno(self):
