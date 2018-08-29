@@ -175,23 +175,34 @@ def from_pretty_time(pretty_time):
     if seconds > 0:
         return seconds
 
-def to_pretty_time(total_seconds):
+UNIT_SECOND = 5
+UNIT_MINUTE = 4
+UNIT_HOUR = 3
+UNIT_DAY = 2
+UNIT_WEEK = 1
+def to_pretty_time(total_seconds, minimum_unit=UNIT_SECOND, max_units=6):
     minutes, seconds = divmod(total_seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
     weeks, days = divmod(days, 7)
     out = ""
 
-    if not weeks == 0:
+    units = 0
+    if weeks and minimum_unit >= UNIT_WEEK and units < max_units:
         out += "%dw" % weeks
-    if not days == 0:
+        units += 1
+    if days and minimum_unit >= UNIT_DAY and units < max_units:
         out += "%dd" % days
-    if not hours == 0:
+        units += 1
+    if hours and minimum_unit >= UNIT_HOUR and units < max_units:
         out += "%dh" % hours
-    if not minutes == 0:
+        units += 1
+    if minutes and minimum_unit >= UNIT_MINUTE and units < max_units:
         out += "%dm" % minutes
-    if not seconds == 0:
+        units += 1
+    if seconds and minimum_unit >= UNIT_SECOND and units < max_units:
         out += "%ds" % seconds
+        units += 1
     return out
 
 IS_TRUE = ["true", "yes", "on", "y"]
