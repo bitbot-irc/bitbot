@@ -156,6 +156,9 @@ class Module(object):
                 target.nickname, permission))
         else:
             permissions.remove(permission)
-            target.set_setting("permissions", permissions)
+            if not permissions:
+                target.del_setting("permissions")
+            else:
+                target.set_setting("permissions", permissions)
             event["stdout"].write("Removed permission '%s' from %s" % (
                 permission, target.nickname))
