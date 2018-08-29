@@ -156,7 +156,7 @@ class EventHook(object):
         child_name_lower = child_name.lower()
         if not child_name_lower in self._children:
             self._children[child_name_lower] = EventHook(self.bot,
-                child_name, self)
+                child_name_lower, self)
             if self._child_notify:
                 self._child_notify(self, self._children[
                     child_name_lower])
