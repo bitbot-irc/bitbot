@@ -230,11 +230,9 @@ class LineHandler(object):
 
     # the server is telling us about its capabilities!
     def cap(self, event):
-        capability_list = []
-        if len(event["args"]) > 2:
-            capability_list = event["args"][2].split()
+        capabilities = (event["arbitrary"] or "").split(" ")
         self.bot.events.on("received").on("cap").call(
-            subcommand=event["args"][1], capabilities=capability_list,
+            subcommand=event["args"][1], capabilities=capabilities,
             server=event["server"])
 
     # the server is asking for authentication
