@@ -76,7 +76,7 @@ class LineHandler(object):
         #server, prefix, command, args, arbitrary
         self.bot.events.on("raw").on(command).call(server=server,
             prefix=prefix, args=args, arbitrary=arbitrary)
-        if default_event:
+        if default_event or not hooks:
             if command.isdigit():
                 self.bot.events.on("received").on("numeric").on(command
                     ).call(line=line, line_split=line.split(" "),
