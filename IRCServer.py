@@ -3,6 +3,7 @@ import IRCChannel, IRCLineHandler, IRCUser
 
 OUR_TLS_PROTOCOL = ssl.PROTOCOL_SSLv23
 THROTTLE_LINES = 4
+THROTTLE_SECONDS = 1
 if hasattr(ssl, "PROTOCOL_TLS"):
     OUR_TLS_PROTOCOL = ssl.PROTOCOL_TLS
 
@@ -20,22 +21,28 @@ class Server(object):
         self.original_nickname = nickname
         self.original_username = username or nickname
         self.original_realname = realname or nickname
+        self.name = None
+
         self.write_buffer = b""
         self.buffered_lines = []
         self.read_buffer = b""
+        self.recent_sends = []
+
         self.users = {}
         self.new_users = set([])
         self.channels = {}
+
         self.own_modes = {}
         self.mode_prefixes = collections.OrderedDict(
             {"@": "o", "+": "v"})
         self.channel_modes = []
         self.channel_types = []
+
         self.last_read = None
         self.last_send = None
+
         self.attempted_join = {}
         self.ping_sent = False
-        self.name = None
 
         if ipv4:
             self.socket = socket.socket(socket.AF_INET,
@@ -220,23 +227,36 @@ class Server(object):
         if self.bot.args.verbose:
             self.bot.log.info(">%s | %s", [str(self), encoded.decode("utf8")])
     def _send(self):
-        if self.write_buffer == b"":
-            self.write_buffer = b"".join(self.buffered_lines[:
-                THROTTLE_LINES])
-            self.buffered_lines = self.buffered_lines[THROTTLE_LINES:]
+        if not len(self.write_buffer):
+            self.write_buffer = self.buffered_lines.pop(0)
         self.write_buffer = self.write_buffer[self.socket.send(
             self.write_buffer):]
-        self.last_send = time.monotonic()
+
+        now = time.monotonic()
+        self.recent_sends.append(now)
+        self.last_send = now
     def waiting_send(self):
         return bool(len(self.write_buffer)) or bool(len(self.buffered_lines))
     def throttle_done(self):
         return self.send_throttle_timeout() == 0
     def send_throttle_timeout(self):
-        if self.last_send == None:
+        if len(self.write_buffer):
             return 0
-        timeout = (self.last_send)+0.5
-        timeout = timeout-time.monotonic()
-        return max(timeout, 0)
+
+        now = time.monotonic()
+        popped = 0
+        for i, recent_send in enumerate(self.recent_sends[:]):
+            time_since = now-recent_send
+            if time_since >= THROTTLE_SECONDS:
+                self.recent_sends.pop(i-popped)
+                popped += 1
+
+        if len(self.recent_sends) < THROTTLE_LINES:
+            return 0
+
+        time_left = self.recent_sends[0]+THROTTLE_SECONDS
+        time_left = time_left-now
+        return time_left
 
     def send_user(self, username, realname):
         self.send("USER %s - - :%s" % (username, realname))
