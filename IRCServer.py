@@ -1,9 +1,12 @@
 import collections, socket, ssl, sys, time
 import IRCChannel, IRCUser
 
-OUR_TLS_PROTOCOL = ssl.PROTOCOL_SSLv23
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
+READ_TIMEOUT_SECONDS = 120
+PING_INTERVAL_SECONDS = 30
+
+OUR_TLS_PROTOCOL = ssl.PROTOCOL_SSLv23
 if hasattr(ssl, "PROTOCOL_TLS"):
     OUR_TLS_PROTOCOL = ssl.PROTOCOL_TLS
 
@@ -38,7 +41,7 @@ class Server(object):
         self.channel_modes = []
         self.channel_types = []
 
-        self.last_read = None
+        self.last_read = time.monotonic()
         self.last_send = None
 
         self.attempted_join = {}
@@ -204,6 +207,19 @@ class Server(object):
         self.last_read = time.monotonic()
         self.ping_sent = False
         return decoded_lines
+
+    def until_next_ping(self):
+        return max(0, (self.last_read+PING_INTERVAL_SECONDS
+            )-time.monotonic())
+    def ping_due(self):
+        return self.until_next_ping() == 0
+
+    def until_read_timeout(self):
+        return max(0, (self.last_read+READ_TIMEOUT_SECONDS
+            )-time.monotonic())
+    def read_timed_out(self):
+        return self.until_read_timeout == 0
+
     def send(self, data):
         encoded = data.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
