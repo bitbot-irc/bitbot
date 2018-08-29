@@ -6,381 +6,413 @@ RE_CHANMODES = re.compile(
     r"\bCHANMODES=(\w*),(\w*),(\w*),(\w*)(?:\b|$)")
 RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 
-handlers = {}
-descriptions = {}
-default_events = {}
-current_description = None
-current_default_event = False
-handle_lock = threading.Lock()
-bot = None
+class LineHandler(object):
+    def __init__(self, bot):
+        self.bot = bot
+        bot.events.on("raw").on("PING").hook(self.ping)
 
-class LineData:
-    def __init__(self, line, line_split, prefix, command, args, is_final, server):
-        self.line, self.prefix = line, prefix
-        self.command, self.args = command, args
-        self.is_final = is_final,
-        self.server, self.line_split = server, line_split
+        bot.events.on("raw").on("001").hook(self.handle_001,
+            default_event=True)
+        bot.events.on("raw").on("005").hook(self.handle_005)
+        bot.events.on("raw").on("311").hook(self.handle_311,
+            default_event=True)
+        bot.events.on("raw").on("332").hook(self.handle_332,
+            default_event=True)
+        bot.events.on("raw").on("333").hook(self.handle_333,
+            default_event=True)
+        bot.events.on("raw").on("353").hook(self.handle_353,
+            default_event=True)
+        bot.events.on("raw").on("366").hook(self.handle_366,
+            default_event=True)
+        bot.events.on("raw").on("421").hook(self.handle_421,
+            default_event=True)
+        bot.events.on("raw").on("352").hook(self.handle_352,
+            default_event=True)
+        bot.events.on("raw").on("324").hook(self.handle_324,
+            default_event=True)
+        bot.events.on("raw").on("329").hook(self.handle_329,
+            default_event=True)
+        bot.events.on("raw").on("433").hook(self.handle_433,
+            default_event=True)
+        bot.events.on("raw").on("477").hook(self.handle_477,
+            default_event=True)
 
-    def map(self):
-        return {
-            "line": self.line, "line_split": self.line_split,
-            "prefix": self.prefix, "command": self.command,
-            "args":  self.args, "is_final": self.is_final,
-            "server": self.server,
-            }
+        bot.events.on("raw").on("JOIN").hook(self.join)
+        bot.events.on("raw").on("PART").hook(self.quit)
+        bot.events.on("raw").on("QUIT").hook(self.quit)
+        bot.events.on("raw").on("NICK").hook(self.nick)
+        bot.events.on("raw").on("MODE").hook(self.mode)
+        bot.events.on("raw").on("KICK").hook(self.kick)
+        bot.events.on("raw").on("INVITE").hook(self.invite)
+        bot.events.on("raw").on("PRIVMSG").hook(self.privmsg)
+        bot.events.on("raw").on("NOTICE").hook(self.notice)
 
-def handler(f=None, description=None, default_event=False):
-    global current_description, current_default_event
-    if not f:
-        current_description = description
-        current_default_event = default_event
-        return handler
-    name = f.__name__.split("handle_")[1].upper()
-    handlers[name] = f
+        bot.events.on("raw").on("CAP").hook(self.cap)
+        bot.events.on("raw").on("authenticate").hook(self.authenticate)
 
-    descriptions[name] = current_description
-    default_events[name] = current_default_event
-    current_description, current_default_event = None, False
-
-def handle(line, prefix, command, args, is_final, _bot, server):
-    global bot
-    line_split = line.split(" ")
-    data = LineData(line, line_split, prefix, command, args, is_final, server)
-    handler_function = None
-
-    if command in handlers:
-        handler_function = handlers[command]
-    if default_events.get(command, False) or not command in handlers:
-        if command.isdigit():
-            _bot.events.on("received").on("numeric").on(
-                command).call(number=command, **data.map())
+    def handle(self, server, line):
+        original_line = line
+        prefix = None
+        command = None
+        if line[0] == ":":
+            prefix, command, line = line[1:].split(" ", 2)
         else:
-            _bot.events.on("received").on(command).call(**data.map())
-    if handler_function:
-        with handle_lock:
-            bot = _bot
-            handler_function(data)
+            command, line = line.split(" ", 1)
 
-@handler(description="received a ping from the server")
-def handle_PING(data):
-    nonce = data.args[0]
-    data.server.send_pong(nonce)
-    bot.events.on("received").on("ping").call(nonce=nonce, server=data.server)
-@handler(description="received a pong from the server")
-def handle_PONG(data):
-    nonce = data.args[1]
-    bot.events.on("recevied").on("pong").call(nonce=nonce, server=data.server)
+        arbitrary = None
+        if ":" in line:
+            line, arbitrary = line.split(":", 1)
+            if line.endswith(" "):
+                line = line[:-1]
+        args = line.split(" ")
 
-@handler(description="the first line sent to a registered client", default_event=True)
-def handle_001(data):
-    server = data.server
-    server.name = Utils.remove_colon(data.prefix)
-    server.set_own_nickname(data.args[0])
-    server.send_whois(server.nickname)
+        hooks = self.bot.events.on("raw").on(command).get_hooks()
+        default_event = False
+        for hook in hooks:
+            if hook.kwargs.get("default_event", False):
+                default_event = True
+                break
 
-@handler(description="the extra supported things line")
-def handle_005(data):
-    server = data.server
-    isupport_line = " ".join(data.args[1:])
-    if "NAMESX" in data.line:
-        server.send("PROTOCTL NAMESX")
-    match = re.search(RE_PREFIXES, isupport_line)
-    if match:
-        server.mode_prefixes.clear()
-        modes = match.group(1)
-        prefixes = match.group(2)
-        for i, prefix in enumerate(prefixes):
-            if i < len(modes):
-                server.mode_prefixes[prefix] = modes[i]
-    match = re.search(RE_CHANMODES, isupport_line)
-    if match:
-        server.channel_modes = list(match.group(4))
-    match = re.search(RE_CHANTYPES, isupport_line)
-    if match:
-        server.channel_types = list(match.group(1))
-    bot.events.on("received").on("numeric").on("005").call(
-        isupport=isupport_line, number="005", server=data.server)
+        #server, prefix, command, args, arbitrary
+        self.bot.events.on("raw").on(command).call(server=server,
+            prefix=prefix, args=args, arbitrary=arbitrary)
+        if default_event:
+            if command.isdigit():
+                self.bot.events.on("received").on("numeric").on(command
+                    ).call(line=line, line_split=line.split(" "),
+                    number=command, server=server)
+            else:
+                self.bot.events.on("received").on(command).call(
+                    line=line, line_split=line.split(" "), command=command,
+                    server=server)
 
-@handler(description="whois respose (nickname, username, realname, hostname)", default_event=True)
-def handle_311(data):
-    server = data.server
-    nickname = data.args[1]
-    if server.is_own_nickname(nickname):
-        target = server
-    else:
-        target = server.get_user(nickname)
-    target.username = data.args[2]
-    target.hostname = data.args[3]
-    target.realname = data.args[-1]
+    def ping(self, event):
+        nonce = event["arbitrary"]
+        event["server"].send_pong(nonce)
 
-@handler(description="on-join channel topic line", default_event=True)
-def handle_332(data):
-    channel = data.server.get_channel(data.args[1])
-    topic = data.args[2]
-    channel.set_topic(topic)
+    def handle_001(self, event):
+        event["server"].name = Utils.remove_colon(event["prefix"])
+        event["server"].set_own_nickname(event["args"][0])
+        event["server"].send_whois(event["server"].nickname)
 
-@handler(description="on-join channel topic set by/at", default_event=True)
-def handle_333(data):
-    channel = data.server.get_channel(data.args[1])
-    topic_setter_hostmask = data.args[2]
-    nickname, username, hostname = Utils.seperate_hostmask(
-        topic_setter_hostmask)
-    topic_time = int(data.args[3]) if data.args[3].isdigit() else None
-    channel.set_topic_setter(nickname, username, hostname)
-    channel.set_topic_time(topic_time)
+    def handle_005(self, event):
+        isupport_line = " ".join(event["args"][1:])
+        if "NAMESX" in isupport_line:
+            event["server"].send("PROTOCTL NAMESX")
+        match = re.search(RE_PREFIXES, isupport_line)
+        if match:
+            event["server"].mode_prefixes.clear()
+            modes = match.group(1)
+            prefixes = match.group(2)
+            for i, prefix in enumerate(prefixes):
+                if i < len(modes):
+                    event["server"].mode_prefixes[prefix] = modes[i]
+        match = re.search(RE_CHANMODES, isupport_line)
+        if match:
+            event["server"].channel_modes = list(match.group(4))
+        match = re.search(RE_CHANTYPES, isupport_line)
+        if match:
+            event["server"].channel_types = list(match.group(1))
+        self.bot.events.on("received").on("numeric").on("005").call(
+            isupport=isupport_line, server=event["server"])
 
-@handler(description="on-join user list with status symbols", default_event=True)
-def handle_353(data):
-    server = data.server
-    channel = server.get_channel(data.args[2])
-    nicknames = data.args[3].split()
-    for nickname in nicknames:
-        if nickname.strip():
-            modes = set([])
-            while nickname[0] in server.mode_prefixes:
-                modes.add(server.mode_prefixes[nickname[0]])
-                nickname = nickname[1:]
-            user = server.get_user(nickname)
-            user.join_channel(channel)
+    # whois respose (nickname, username, realname, hostname)
+    def handle_311(self, event):
+        nickname = event["args"][1]
+        if event["server"].is_own_nickname(nickname):
+            target = event["server"]
+        else:
+            target = event["server"].get_user(nickname)
+        target.username = event["args"][2]
+        target.hostname = event["args"][3]
+        target.realname = event["arbitrary"]
+
+    # on-join channel topic line
+    def handle_332(self, event):
+        event["server"].get_channel(event["args"][1]).set_topic(
+            event["arbitrary"])
+
+    # on-join channel topic set by/at
+    def handle_333(self, event):
+        channel = event["server"].get_channel(event["args"][1])
+
+        topic_setter_hostmask = event["args"][2]
+        nickname, username, hostname = Utils.seperate_hostmask(
+            topic_setter_hostmask)
+        topic_time = int(event["args"][3]) if event["args"][3].isdigit(
+            ) else None
+
+        channel.set_topic_setter(nickname, username, hostname)
+        channel.set_topic_time(topic_time)
+
+    # on-join user list with status symbols
+    def handle_353(self, event):
+        channel = event["server"].get_channel(event["args"][2])
+        nicknames = event["arbitrary"].split()
+        for nickname in nicknames:
+            if nickname.strip():
+                modes = set([])
+
+                while nickname[0] in event["server"].mode_prefixes:
+                    modes.add(event["server"].mode_prefixes[nickname[0]])
+                    nickname = nickname[1:]
+
+                user = event["server"].get_user(nickname)
+                user.join_channel(channel)
+                channel.add_user(user)
+                for mode in modes:
+                    channel.add_mode(mode, nickname)
+
+    # on-join user list has finished
+    def handle_366(self, event):
+        event["server"].send_who(event["args"][1])
+
+    # on user joining channel
+    def join(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        channel = event["server"].get_channel(
+            event["arbitrary"] or event["args"][0])
+
+        if not event["server"].is_own_nickname(nickname):
+            user = event["server"].get_user(nickname)
+            if not event["server"].has_user(nickname):
+                user.username = username
+                user.hostname = hostname
             channel.add_user(user)
-            for mode in modes:
-                channel.add_mode(mode, nickname)
-@handler(description="on-join user list has finished", default_event=True)
-def handle_366(data):
-    data.server.send_who(data.args[1])
+            user.join_channel(channel)
+            self.bot.events.on("received").on("join").call(channel=channel,
+                user=user, server=event["server"])
+        else:
+            if channel.name in event["server"].attempted_join:
+                del event["server"].attempted_join[channel.name]
+            self.bot.events.on("self").on("join").call(channel=channel,
+                server=event["server"])
+            channel.send_mode()
 
-@handler(description="on user joining channel")
-def handle_JOIN(data):
-    server = data.server
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    channel = server.get_channel(Utils.remove_colon(data.args[0]))
-    if not server.is_own_nickname(nickname):
-        user = server.get_user(nickname)
-        if not server.has_user(nickname):
-            user.username = username
-            user.hostname = hostname
-        channel.add_user(user)
-        user.join_channel(channel)
-        bot.events.on("received").on("join").call(channel=channel,
-            user=user, server=data.server)
-    else:
-        if channel.name in server.attempted_join:
-            del server.attempted_join[channel.name]
-        bot.events.on("self").on("join").call(channel=channel,
-            server=data.server)
-        channel.send_mode()
+    # on user parting channel
+    def part(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        channel = event["server"].get_channel(event["args"][0])
+        reason = event["arbitrary"] or ""
 
-@handler(description="on user parting channel")
-def handle_PART(data):
-    server = data.server
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    channel = server.get_channel(data.args[0])
-    reason = data.args[1] if len(data.args)>1 else ""
-    if not server.is_own_nickname(nickname):
-        user = server.get_user(nickname)
-        bot.events.on("received").on("part").call(channel=channel,
-            reason=reason, user=user, server=data.server)
-        channel.remove_user(user)
-        user.part_channel(channel)
-        if not len(user.channels):
-            server.remove_user(user)
-    else:
-        server.remove_channel(channel)
-        bot.events.on("self").on("part").call(channel=channel,
-            reason=reason, server=data.server)
+        if not event["server"].is_own_nickname(nickname):
+            user = event["server"].get_user(nickname)
+            self.bot.events.on("received").on("part").call(channel=channel,
+                reason=reason, user=user, server=event["server"])
+            channel.remove_user(user)
+            user.part_channel(channel)
+            if not len(user.channels):
+                event["server"].remove_user(user)
+        else:
+            event["server"].remove_channel(channel)
+            self.bot.events.on("self").on("part").call(channel=channel,
+                reason=reason, server=event["server"])
 
-@handler(description="unknown command sent by us, oops!", default_event=True)
-def handle_421(data):
-    print("warning: unknown command '%s'." % data.args[1])
+    # unknown command sent by us, oops!
+    def handle_421(self, event):
+        print("warning: unknown command '%s'." % event["args"][1])
 
-@handler(description="a user has disconnected!")
-def handle_QUIT(data):
-    server = data.server
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    reason = data.args[0] if len(data.args) else None
-    if not server.is_own_nickname(nickname):
-        user = server.get_user(nickname)
-        server.remove_user(user)
-        bot.events.on("received").on("quit").call(reason=reason,
-            user=user, server=data.server)
-    else:
-        server.disconnect()
+    # a user has disconnected!
+    def quit(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        reason = event["arbitrary"] or ""
 
-@handler(description="The server is telling us about its capabilities!")
-def handle_CAP(data):
-    capability_list = []
-    if len(data.args) > 2:
-        capability_list = data.args[2].split()
-    bot.events.on("received").on("cap").call(subcommand=data.args[1],
-        capabilities=capability_list, server=data.server)
+        if not event["server"].is_own_nickname(nickname):
+            user = event["server"].get_user(nickname)
+            event["server"].remove_user(user)
+            self.bot.events.on("received").on("quit").call(reason=reason,
+                user=user, server=event["server"])
+        else:
+            event["server"].disconnect()
 
-@handler(description="The server is asking for authentication")
-def handle_AUTHENTICATE(data):
-    bot.events.on("received").on("authenticate").call(message=data.args[0],
-        server=data.server)
+    # the server is telling us about its capabilities!
+    def cap(self, event):
+        capability_list = []
+        if len(event["args"]) > 2:
+            capability_list = event["args"][2].split()
+        self.bot.events.on("received").on("cap").call(
+            subcommand=event["args"][1], capabilities=capability_list,
+            server=event["server"])
 
-@handler(description="someone has changed their nickname")
-def handle_NICK(data):
-    server = data.server
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    new_nickname = data.args[0]
-    if not server.is_own_nickname(nickname):
-        user = server.get_user(nickname)
-        old_nickname = user.nickname
-        user.set_nickname(new_nickname)
-        server.change_user_nickname(old_nickname, new_nickname)
-        bot.events.on("received").on("nick").call(new_nickname=new_nickname,
-            old_nickname=old_nickname, user=user, server=data.server)
-    else:
-        old_nickname = server.nickname
-        server.set_own_nickname(new_nickname)
-        bot.events.on("self").on("nick").call(server=server,
-            new_nickname=new_nickname, old_nickname=old_nickname)
+    # the server is asking for authentication
+    def authenticate(self, event):
+        self.bot.events.on("received").on("authenticate").call(
+            message=event["args"][0], server=event["server"])
 
-@handler(description="something's mode has changed")
-def handle_MODE(data):
-    server = data.server
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    target = data.args[0]
-    is_channel = target[0] in server.channel_types
-    if is_channel:
-        channel = server.get_channel(target)
-        remove = False
-        args  = data.args[2:]
-        modes = data.args[1]
-        for i, char in enumerate(modes):
-            if char == "+":
-                remove = False
-            elif char == "-":
-                remove = True
-            else:
-                if char in server.channel_modes:
-                    if remove:
-                        channel.remove_mode(char)
-                    else:
-                        channel.add_mode(char)
-                elif char in server.mode_prefixes.values() and len(args):
-                    nickname = args.pop(0)
-                    if remove:
-                        channel.remove_mode(char, nickname)
-                    else:
-                        channel.add_mode(char, nickname)
-                elif len(args):
-                    args.pop(0)
-        bot.events.on("received").on("mode").call(modes=modes,
-            mode_args=args, channel=channel, server=data.server)
-    elif server.is_own_nickname(target):
-        modes = Utils.remove_colon(data.args[1])
-        remove = False
-        for i, char in enumerate(modes):
-            if char == "+":
-                remove = False
-            elif char == "-":
-                remove = True
-            else:
-                if remove:
-                    server.remove_own_mode(char)
+    # someone has changed their nickname
+    def nick(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        new_nickname = event["arbitrary"]
+        if not event["server"].is_own_nickname(nickname):
+            user = event["server"].get_user(nickname)
+            old_nickname = user.nickname
+            user.set_nickname(new_nickname)
+            event["server"].change_user_nickname(old_nickname, new_nickname)
+            self.bot.events.on("received").on("nick").call(
+                new_nickname=new_nickname, old_nickname=old_nickname,
+                user=user, server=event["server"])
+        else:
+            old_nickname = event["server"].nickname
+            event["server"].set_own_nickname(new_nickname)
+            self.bot.events.on("self").on("nick").call(
+                server=event["server"], new_nickname=new_nickname,
+                old_nickname=old_nickname)
+
+    # something's mode has changed
+    def mode(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        target = event["args"][0]
+        is_channel = target[0] in event["server"].channel_types
+        if is_channel:
+            channel = event["server"].get_channel(target)
+            remove = False
+            args  = event["args"][2:]
+            modes = event["args"][1]
+            for i, char in enumerate(modes):
+                if char == "+":
+                    remove = False
+                elif char == "-":
+                    remove = True
                 else:
-                    server.add_own_mode(char)
-        bot.events.on("self").on("mode").call(modes=modes, server=data.server)
+                    if char in event["server"].channel_modes:
+                        if remove:
+                            channel.remove_mode(char)
+                        else:
+                            channel.add_mode(char)
+                    elif char in event["server"].mode_prefixes.values(
+                            ) and len(args):
+                        nickname = args.pop(0)
+                        if remove:
+                            channel.remove_mode(char, nickname)
+                        else:
+                            channel.add_mode(char, nickname)
+                    elif len(args):
+                        args.pop(0)
+            self.bot.events.on("received").on("mode").call(modes=modes,
+                mode_args=args, channel=channel, server=event["server"])
+        elif event["server"].is_own_nickname(target):
+            modes = event["arbitrary"]
+            remove = False
+            for i, char in enumerate(modes):
+                if char == "+":
+                    remove = False
+                elif char == "-":
+                    remove = True
+                else:
+                    if remove:
+                        event["server"].remove_own_mode(char)
+                    else:
+                        event["server"].add_own_mode(char)
+            self.bot.events.on("self").on("mode").call(modes=modes,
+                server=event["server"])
 
-@handler(description="I've been invited somewhere")
-def handle_INVITE(data):
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    target_channel = Utils.remove_colon(data.args[1])
-    user = data.server.get_user(nickname)
-    bot.events.on("received").on("invite").call(
-        user=user, target_channel=target_channel, server=data.server)
+    # I've been invited somewhere
+    def invite(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        target_channel = event["arbitrary"]
+        user = event["server"].get_user(nickname)
+        self.bot.events.on("received").on("invite").call(
+            user=user, target_channel=target_channel,
+            server=event["server"])
 
-@handler(description="we've received a message")
-def handle_PRIVMSG(data):
-    server = data.server
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    user = server.get_user(nickname)
-    message = "" if len(data.args) < 2 else data.args[1]
-    message_split = message.split(" ")
-    target = data.args[0]
-    action = message.startswith("\01ACTION ") and message.endswith("\01")
-    if action:
-        message = message.replace("\01ACTION ", "", 1)[:-1]
-    if target[0] in server.channel_types:
-        channel = server.get_channel(data.args[0])
-        bot.events.on("received").on("message").on("channel").call(
-            user=user, message=message, message_split=message_split,
-            channel=channel, action=action, server=data.server)
-        channel.buffer.add_line(user.nickname, message, action)
-    elif server.is_own_nickname(target):
-        bot.events.on("received").on("message").on("private").call(
-            user=user, message=message, message_split=message_split,
-            action=action, server=data.server)
-        user.buffer.add_line(user.nickname, message, action)
+    # we've received a message
+    def privmsg(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        user = event["server"].get_user(nickname)
+        message = event["arbitrary"] or ""
+        message_split = message.split(" ")
+        target = event["args"][0]
+        action = message.startswith("\01ACTION ") and message.endswith("\01")
+        if action:
+            message = message.replace("\01ACTION ", "", 1)[:-1]
+        if target[0] in event["server"].channel_types:
+            channel = event["server"].get_channel(event["args"][0])
+            self.bot.events.on("received").on("message").on("channel").call(
+                user=user, message=message, message_split=message_split,
+                channel=channel, action=action, server=event["server"])
+            channel.buffer.add_line(user.nickname, message, action)
+        elif event["server"].is_own_nickname(target):
+            self.bot.events.on("received").on("message").on("private").call(
+                user=user, message=message, message_split=message_split,
+                action=action, server=event["server"])
+            user.buffer.add_line(user.nickname, message, action)
 
-@handler(description="we've received a notice")
-def handle_NOTICE(data):
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    message = "" if len(data.args) < 2 else data.args[1]
-    message_split = message.split(" ")
-    target = data.args[0]
-    if nickname == data.server.name or target == "*":
-        bot.events.on("received.server-notice").call(
-            message=message, message_split=message_split,
-            server=data.server)
-    else:
-        user = data.server.get_user(nickname)
-        if target[0] in data.server.channel_types:
-            channel = data.server.get_channel(target)
-            bot.events.on("received.notice.channel").call(
+    # we've received a notice
+    def notice(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        message = event["arbitrary"] or ""
+        message_split = message.split(" ")
+        target = event["args"][0]
+        if nickname == event["server"].name or target == "*":
+            self.bot.events.on("received.server-notice").call(
                 message=message, message_split=message_split,
-                user=user, server=data.server, channel=channel)
-        elif data.server.is_own_nickname(target):
-            bot.events.on("received.notice.private").call(
-                message=message, message_split=message_split,
-                user=user, server=data.server)
+                server=event["server"])
+        else:
+            user = event["server"].get_user(nickname)
+            if target[0] in event["server"].channel_types:
+                channel = event["server"].get_channel(target)
+                self.bot.events.on("received.notice.channel").call(
+                    message=message, message_split=message_split,
+                    user=user, server=event["server"], channel=channel)
+            elif event["server"].is_own_nickname(target):
+                self.bot.events.on("received.notice.private").call(
+                    message=message, message_split=message_split,
+                    user=user, server=event["server"])
 
-@handler(description="response to a WHO command for user information", default_event=True)
-def handle_352(data):
-    user = data.server.get_user(data.args[5])
-    user.username = data.args[2]
-    user.hostname = data.args[3]
+    # response to a WHO command for user information
+    def handle_352(self, event):
+        user = event["server"].get_user(event["args"][5])
+        user.username = event["args"][2]
+        user.hostname = event["args"][3]
 
-@handler(description="response to an empty mode command", default_event=True)
-def handle_324(data):
-    channel = data.server.get_channel(data.args[1])
-    modes = data.args[2]
-    if modes[0] == "+" and modes[1:]:
-        for mode in modes[1:]:
-            if mode in data.server.channel_modes:
-                channel.add_mode(mode)
+    # response to an empty mode command
+    def handle_324(self, event):
+        channel = event["server"].get_channel(event["args"][1])
+        modes = event["args"][2]
+        if modes[0] == "+" and modes[1:]:
+            for mode in modes[1:]:
+                if mode in event["server"].channel_modes:
+                    channel.add_mode(mode)
 
-@handler(description="channel creation unix timestamp", default_event=True)
-def handle_329(data):
-    channel = data.server.get_channel(data.args[1])
-    channel.creation_timestamp = int(data.args[2])
+    # channel creation unix timestamp
+    def handle_329(self, event):
+        channel = event["server"].get_channel(event["args"][1])
+        channel.creation_timestamp = int(event["args"][2])
 
-@handler(description="nickname already in use", default_event=True)
-def handle_433(data):
-    pass
+    # nickname already in use
+    def handle_433(self, event):
+        pass
 
-@handler(description="we need a registered nickname for this channel", default_event=True)
-def handle_477(data):
-    if data.args[1].lower() in data.server.attempted_join:
-        bot.add_timer("rejoin", 5, channel_name=data.args[1],
-            key=data.server.attempted_join[data.args[1].lower()],
-            server_id=data.server.id)
+    # we need a registered nickname for this channel
+    def handle_477(self, event):
+        if event["args"][1].lower() in event["server"].attempted_join:
+            self.bot.add_timer("rejoin", 5,
+                channel_name=event["args"][1],
+                key=event["server"].attempted_join[event["args"][1].lower()],
+                server_id=event["server"].id)
 
-@handler(description="someone's been kicked from a channel")
-def handle_KICK(data):
-    nickname, username, hostname = Utils.seperate_hostmask(data.prefix)
-    user = data.server.get_user(nickname)
-    target = data.args[1]
-    channel = data.server.get_channel(data.args[0])
-    reason = data.args[2]
+    # someone's been kicked from a channel
+    def kick(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        user = event["server"].get_user(nickname)
+        target = event["args"][1]
+        channel = event["server"].get_channel(event["args"][0])
+        reason = event["arbitrary"] or ""
 
-    if not data.server.is_own_nickname(target):
-        target_user = data.server.get_user(target)
-        bot.events.on("received").on("kick").call(channel=channel,
-            reason=reason, target_user=target_user, user=user,
-            server=data.server)
-    else:
-        bot.events.on("self").on("kick").call(channel=channel,
-            reason=reason, user=user, server=data.server)
+        if not event["server"].is_own_nickname(target):
+            target_user = event["server"].get_user(target)
+            self.bot.events.on("received").on("kick").call(channel=channel,
+                reason=reason, target_user=target_user, user=user,
+                server=event["server"])
+        else:
+            self.bot.events.on("self").on("kick").call(channel=channel,
+                reason=reason, user=user, server=event["server"])
