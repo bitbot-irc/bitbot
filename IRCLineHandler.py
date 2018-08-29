@@ -17,8 +17,7 @@ class LineHandler(object):
         bot.events.on("raw").on("311").hook(self.handle_311,
             default_event=True)
         bot.events.on("raw").on("332").hook(self.handle_332)
-        bot.events.on("raw").on("333").hook(self.handle_333,
-            default_event=True)
+        bot.events.on("raw").on("333").hook(self.handle_333)
         bot.events.on("raw").on("353").hook(self.handle_353,
             default_event=True)
         bot.events.on("raw").on("366").hook(self.handle_366,
@@ -137,7 +136,7 @@ class LineHandler(object):
         channel.set_topic(event["arbitrary"])
         self.bot.events.on("received").on("numeric").on("332"
             ).call(channel=channel, server=event["server"],
-            topic=event["arbitrary"], setter=event["args"][0])
+            topic=event["arbitrary"])
 
     # channel topic changed
     def topic(self, event):
@@ -162,6 +161,9 @@ class LineHandler(object):
 
         channel.set_topic_setter(nickname, username, hostname)
         channel.set_topic_time(topic_time)
+        self.bot.events.on("received").on("numeric").on("333"
+            ).call(channel=channel, setter=nickname, set_at=topic_time,
+            server=event["server"])
 
     # on-join user list with status symbols
     def handle_353(self, event):

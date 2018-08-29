@@ -32,7 +32,7 @@ class Module(object):
         bot.events.on("self").on("kick").hook(self.self_kick)
 
         bot.events.on("received").on("topic").hook(self.on_topic)
-        bot.events.on("received").on("numeric").on("332").hook(self.on_332)
+        bot.events.on("received").on("numeric").on("333").hook(self.on_333)
 
     def print_line(self, event, line, channel=None):
         timestamp = datetime.datetime.now().isoformat()
@@ -105,10 +105,12 @@ class Module(object):
     def self_kick(self, event):
         self._on_kick(event, event["server"].nickname)
 
-    def _on_topic(self, setter, event):
-        self.print_line(event, "topic set by %s: %s" % (setter,
-            event["topic"]), channel=event["channel"].name)
+    def _on_topic(self, event, setter, action, topic, channel):
+        self.print_line(event, "topic %s by %s: %s" % (action, setter,
+            topic), channel=channel.name)
     def on_topic(self, event):
-        self._on_topic(event["user"].nickname, event)
-    def on_332(self, event):
-        self._on_topic(event["setter"], event)
+        self._on_topic(event, event["user"].nickname, "changed",
+            event["topic"], event["channel"])
+    def on_333(self, event):
+        self._on_topic(event, event["setter"], "set",
+            event["channel"].topic, event["channel"])
