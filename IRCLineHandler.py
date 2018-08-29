@@ -86,15 +86,18 @@ class LineHandler(object):
                     line=line, line_split=line.split(" "), command=command,
                     server=server)
 
+    # ping from the server
     def ping(self, event):
         nonce = event["arbitrary"]
         event["server"].send_pong(nonce)
 
+    # first numeric line the server sends
     def handle_001(self, event):
         event["server"].name = Utils.remove_colon(event["prefix"])
         event["server"].set_own_nickname(event["args"][0])
         event["server"].send_whois(event["server"].nickname)
 
+    # server telling us what it supports
     def handle_005(self, event):
         isupport_line = " ".join(event["args"][1:])
         if "NAMESX" in isupport_line:
