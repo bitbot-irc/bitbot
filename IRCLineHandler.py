@@ -16,8 +16,7 @@ class LineHandler(object):
         bot.events.on("raw").on("005").hook(self.handle_005)
         bot.events.on("raw").on("311").hook(self.handle_311,
             default_event=True)
-        bot.events.on("raw").on("332").hook(self.handle_332,
-            default_event=True)
+        bot.events.on("raw").on("332").hook(self.handle_332)
         bot.events.on("raw").on("333").hook(self.handle_333,
             default_event=True)
         bot.events.on("raw").on("353").hook(self.handle_353,
@@ -44,6 +43,7 @@ class LineHandler(object):
         bot.events.on("raw").on("MODE").hook(self.mode)
         bot.events.on("raw").on("KICK").hook(self.kick)
         bot.events.on("raw").on("INVITE").hook(self.invite)
+        bot.events.on("raw").on("TOPIC").hook(self.topic)
         bot.events.on("raw").on("PRIVMSG").hook(self.privmsg)
         bot.events.on("raw").on("NOTICE").hook(self.notice)
 
@@ -132,8 +132,23 @@ class LineHandler(object):
 
     # on-join channel topic line
     def handle_332(self, event):
-        event["server"].get_channel(event["args"][1]).set_topic(
-            event["arbitrary"])
+        channel = event["server"].get_channel(event["args"][1])
+
+        channel.set_topic(event["arbitrary"])
+        self.bot.events.on("received").on("numeric").on("332"
+            ).call(channel=channel, server=event["server"],
+            topic=event["arbitrary"], setter=event["args"][0])
+
+    # channel topic changed
+    def topic(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        user = event["server"].get_user(nickname)
+        channel = event["server"].get_channel(event["args"][0])
+
+        channel.set_topic(event["arbitrary"])
+        self.bot.events.on("received").on("topic").call(channel=channel,
+            server=event["server"], topic=event["arbitrary"], user=user)
 
     # on-join channel topic set by/at
     def handle_333(self, event):
