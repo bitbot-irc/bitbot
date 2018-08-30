@@ -24,7 +24,11 @@ config = Config.Config(bot, args.config)
 bot.database = database
 bot.config = config.load_config()
 bot.args = args
-bot.modules.load_modules()
+
+whitelist = bot.config.get("module_whitelist", None)
+if not whitelist == None:
+    whitelist = whitelist.split(",")
+bot.modules.load_modules(whitelist=whitelist)
 
 server_details = database.servers.get_all()
 servers = []
