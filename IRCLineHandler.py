@@ -79,12 +79,12 @@ class LineHandler(object):
         if default_event or not hooks:
             if command.isdigit():
                 self.bot.events.on("received").on("numeric").on(command
-                    ).call(line=line, line_split=line.split(" "),
-                    number=command, server=server)
+                    ).call(line=original_line, server=server,
+                    line_split=original_line.split(" "), number=command)
             else:
                 self.bot.events.on("received").on(command).call(
-                    line=line, line_split=line.split(" "), command=command,
-                    server=server)
+                    line=original_line, line_split=original_line.split(" "),
+                    command=command, server=server)
 
     # ping from the server
     def ping(self, event):
