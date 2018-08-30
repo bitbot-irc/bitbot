@@ -9,7 +9,7 @@ class Module(object):
         self.bot = bot
 
         bot.events.on("postboot").on("configure").on(
-            "set").call(setting="lastfm",
+            "set").assure_call(setting="lastfm",
             help="Set username on last.fm")
 
         bot.events.on("received").on("command").on("np",

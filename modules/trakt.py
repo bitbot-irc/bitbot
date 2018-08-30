@@ -14,7 +14,7 @@ class Module(object):
             "on trakt.tv", usage="[username]")
 
         bot.events.on("postboot").on("configure").on("set"
-            ).call(setting="trakt", help="Set username on trakt.tv")
+            ).assure_call(setting="trakt", help="Set username on trakt.tv")
 
     def now_watching(self, event):
         if event["args"]:
