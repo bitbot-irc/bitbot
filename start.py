@@ -55,7 +55,7 @@ else:
             nickname = input("nickname: ")
             username = input("username: ")
             realname = input("realname: ")
-            database.add_server(hostname, port, password, ipv4,
+            database.servers.add(hostname, port, password, ipv4,
                 tls, nickname, username, realname)
     except KeyboardInterrupt:
         print()
