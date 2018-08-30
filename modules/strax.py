@@ -9,7 +9,7 @@ class Module(object):
     def strax(self, event):
         suggestion_greeting = ["Might I suggest", "I'd suggest", "We should attack now with", "We must attack now with"]
         method_of_attack_a = ["full-frontal", "pincer", "surprise", "brutally excessive", "multi-pronged", "glorious",
-                              "violent", "devestating" "superior"]
+                              "violent", "devestating", "superior"]
         method_of_attack_an = ["acid-heavy", "immediate", "overwhelming", "unstoppable"]
         type_of_attack = ["assault", "attack", "bombardment", "offensive", "barrage", "charge", "strike", "operation",
                           "manoeuvre", "blitzkrieg"]
