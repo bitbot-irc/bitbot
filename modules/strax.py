@@ -7,7 +7,8 @@ class Module(object):
             self.strax, help="Glory to the sontaran empire, through IRC!")
 
     def strax(self, event):
-        suggestion_greeting = ["Might I suggest", "I'd suggest", "We should attack now with", "We must attack now with"]
+        suggestion_greeting = ["Might I suggest", "I'd suggest"]
+        command_greeting = ["We should attack now with", "We must attack now with"]
         method_of_attack_a = ["full-frontal", "pincer", "surprise", "brutally excessive", "multi-pronged", "glorious",
                               "violent", "devestating", "superior"]
         method_of_attack_an = ["acid-heavy", "immediate", "overwhelming", "unstoppable"]
@@ -27,7 +28,11 @@ class Module(object):
                                                                                         2]) == 1 else " a " + random.choice(
             method_of_attack_a)
 
-        suggestion = random.choice(
-            suggestion_greeting) + method_of_attack + " " + random.choice(type_of_attack) + " with " + random.choice(attack_adjective) + " " + random.choice(attack_object) + " and " + random.choice(attack_object_two) + "?"
+
+        greeting_choice = random.choice([1,2])
+        greeting = random.choice(suggestion_greeting) if greeting_choice == 1 else random.choice(command_greeting)
+        exclamation = "?" if greeting_choice == 1 else "!"
+
+        suggestion = greeting + method_of_attack + " " + random.choice(type_of_attack) + " with " + random.choice(attack_adjective) + " " + random.choice(attack_object) + " and " + random.choice(attack_object_two) + exclamation
 
         event["stdout"].write(suggestion)
