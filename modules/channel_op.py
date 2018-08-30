@@ -6,30 +6,39 @@ class Module(object):
         self.bot = bot
         bot.events.on("received").on("command").on("kick", "k"
             ).hook(self.kick, channel_only=True, require_mode="o",
-            min_args=1)
+            min_args=1, help="Kick a user from the channel",
+            usage="<nickname> [reason]")
 
         bot.events.on("received").on("command").on("ban"
             ).hook(self.ban, channel_only=True, require_mode="o",
-            min_args=1)
+            min_args=1, help="Ban a user/hostmask from the channel",
+            usage="<nickname/hostmask>")
         bot.events.on("received").on("command").on("unban"
             ).hook(self.unban, channel_only=True, require_mode="o",
-            min_args=1)
+            min_args=1, help="Unban a user/hostmask from the channel",
+            usage="<nickname/hostmask>")
 
         bot.events.on("received").on("command").on("kickban", "kb"
             ).hook(self.kickban, channel_only=True, require_mode="o",
-            min_args=1)
+            min_args=1, help="Kickban a user from the channel",
+            usage="<nickanme> [reason]")
 
         bot.events.on("received").on("command").on("op"
-            ).hook(self.op, channel_only=True, require_mode="o")
+            ).hook(self.op, channel_only=True, require_mode="o",
+            help="Give +o to a user", usage="[nickname]")
         bot.events.on("received").on("command").on("deop"
-            ).hook(self.deop, channel_only=True, require_mode="o")
+            ).hook(self.deop, channel_only=True, require_mode="o"
+            help="Take +o from a user", usage="[nickname]")
 
         bot.events.on("received").on("command").on("voice"
-            ).hook(self.voice, channel_only=True, require_mode="o")
+            ).hook(self.voice, channel_only=True, require_mode="o",
+            help="Give +v to a user", usage="[nickname]")
         bot.events.on("received").on("command").on("devoice"
-            ).hook(self.devoice, channel_only=True, require_mode="o")
+            ).hook(self.devoice, channel_only=True, require_mode="o",
+            help="Take +v from a user", usage="[nickname]")
 
-        bot.events.on("received").on("message").on("channel").hook(self.highlight_spam)
+        bot.events.on("received").on("message").on("channel").hook(
+            self.highlight_spam)
 
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="highlight-spam-threshold",
