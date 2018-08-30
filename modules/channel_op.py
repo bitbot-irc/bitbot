@@ -27,7 +27,7 @@ class Module(object):
             ).hook(self.op, channel_only=True, require_mode="o",
             help="Give +o to a user", usage="[nickname]")
         bot.events.on("received").on("command").on("deop"
-            ).hook(self.deop, channel_only=True, require_mode="o"
+            ).hook(self.deop, channel_only=True, require_mode="o",
             help="Take +o from a user", usage="[nickname]")
 
         bot.events.on("received").on("command").on("voice"
