@@ -126,9 +126,9 @@ class Module(object):
             nicknames = list(map(lambda user: user.nickname,
                 event["channel"].users)) + [event["server"].nickname]
 
-            if len(set(nicknames) & set(event["message_split"])
-                    ) >= event["channel"].get_setting(
-                    "highlight-spam-threshold", 10):
+            highlights = set(nicknames) & set(event["message_split"])
+            if len(highlights) > 1 and len(highlights) >= event["channel"
+                    ].get_setting("highlight-spam-threshold", 10):
                 has_mode = event["channel"].mode_or_above(event["user"], "v")
                 should_ban = event["channel"].get_setting("highlight-spam-ban",
                     False)
