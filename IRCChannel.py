@@ -42,32 +42,33 @@ class Channel(object):
     def has_user(self, user):
         return user in self.users
 
-    def add_mode(self, mode, args=None):
+    def add_mode(self, mode, arg=None):
         if not mode in self.modes:
             self.modes[mode] = set([])
-        if args:
+        if arg:
             if mode in self.server.mode_prefixes.values():
-                user = self.server.get_user(args)
+                user = self.server.get_user(arg)
                 if user:
                     self.modes[mode].add(user)
             else:
-                self.modes[mode].add(args.lower())
-        self.bot.events.on("mode").on("channel").call(
-            channel=self, mode=mode, args=args, remove=False)
-    def remove_mode(self, mode, args=None):
-        if not args:
+                self.modes[mode].add(arg.lower())
+    def remove_mode(self, mode, arg=None):
+        if not arg:
             del self.modes[mode]
         else:
             if mode in self.server.mode_prefixes.values():
-                user = self.server.get_user(args)
+                user = self.server.get_user(arg)
                 if user:
                     self.modes[mode].discard(user)
             else:
-                self.modes[mode].discard(args.lower())
+                self.modes[mode].discard(arg.lower())
             if not len(self.modes[mode]):
                 del self.modes[mode]
-        self.bot.events.on("mode").on("channel").call(
-            channel=self, mode=mode, args=args, remove=True)
+    def change_mode(self, remove, mode, arg=None):
+        if remove:
+            self.remove_mode(mode, arg)
+        else:
+            self.add_mode(mode, arg)
 
     def set_setting(self, setting, value):
         self.bot.database.channel_settings.set(self.id, setting, value)

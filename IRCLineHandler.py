@@ -5,6 +5,7 @@ RE_PREFIXES = re.compile(r"\bPREFIX=\((\w+)\)(\W+)(?:\b|$)")
 RE_CHANMODES = re.compile(
     r"\bCHANMODES=(\w*),(\w*),(\w*),(\w*)(?:\b|$)")
 RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
+RE_MODES = re.compile(r"[-+]\w+")
 
 class LineHandler(object):
     def __init__(self, bot):
@@ -290,42 +291,26 @@ class LineHandler(object):
             channel = event["server"].get_channel(target)
             remove = False
             args  = event["args"][2:]
-            modes = event["args"][1]
-            for i, char in enumerate(modes):
-                if char == "+":
-                    remove = False
-                elif char == "-":
-                    remove = True
-                else:
-                    if char in event["server"].channel_modes:
-                        if remove:
-                            channel.remove_mode(char)
-                        else:
-                            channel.add_mode(char)
-                    elif char in event["server"].mode_prefixes.values(
+            modes = RE_MODES.findall(event["args"][1])
+
+            for chunk in modes:
+                remove = chunk[0] == "-"
+                for mode in chunk[1:]:
+                    if mode in event["server"].channel_modes:
+                        channel.change_mode(remove, mode)
+                    elif mode in event["server"].mode_prefixes.values(
                             ) and len(args):
-                        nickname = args.pop(0)
-                        if remove:
-                            channel.remove_mode(char, nickname)
-                        else:
-                            channel.add_mode(char, nickname)
-                    elif len(args):
+                        channel.change_mode(remove, mode, args.pop(0))
+                    else:
                         args.pop(0)
             self.bot.events.on("received").on("mode").call(modes=modes,
                 mode_args=args, channel=channel, server=event["server"])
         elif event["server"].is_own_nickname(target):
-            modes = event["arbitrary"]
-            remove = False
-            for i, char in enumerate(modes):
-                if char == "+":
-                    remove = False
-                elif char == "-":
-                    remove = True
-                else:
-                    if remove:
-                        event["server"].remove_own_mode(char)
-                    else:
-                        event["server"].add_own_mode(char)
+            modes = RE_MODES.findall(event["arbitrary"] or args[1])
+            for chunk in modes:
+                remove = chunk[0] == "-"
+                for mode in chunk[1:]
+                    event["server"].change_own_mode(remove, mode)
             self.bot.events.on("self").on("mode").call(modes=modes,
                 server=event["server"])
 

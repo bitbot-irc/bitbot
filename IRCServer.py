@@ -125,6 +125,11 @@ class Server(object):
         self.own_modes[mode] = arg
     def remove_own_mode(self, mode):
         del self.own_modes[mode]
+    def change_own_mode(self, remove, mode, arg=None):
+        if remove:
+            self.remove_own_mode(mode, arg)
+        else:
+            self.add_own_mode(mode, arg)
 
     def has_user(self, nickname):
         return nickname.lower() in self.users
