@@ -91,11 +91,15 @@ class Bot(object):
         timeouts = []
         for server in self.servers.values():
             timeouts.append(server.until_next_ping())
+        if not timeouts:
+            return None
         return min(timeouts)
     def next_read_timeout(self):
         timeouts = []
         for server in self.servers.values():
             timeouts.append(server.until_read_timeout())
+        if not timeouts:
+            return None
         return min(timeouts)
 
     def get_poll_timeout(self):
