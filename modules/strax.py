@@ -23,11 +23,11 @@ class Module(object):
                              "xenomorphs", "lots and lots of C4", "tactical nukes", "MacGyver", "bio-weapons",
                              "rocket launchers", "an elephant", "a memory worm for afterwards", "this pencil"]
 
-        method_of_attack = " an " + random.choice(method_of_attack_an) if random.choice(1,
-                                                                                        2) == 1 else " a " + random.choice(
+        method_of_attack = " an " + random.choice(method_of_attack_an) if random.choice([1,
+                                                                                        2]) == 1 else " a " + random.choice(
             method_of_attack_a)
 
         suggestion = random.choice(
-            suggestion_greeting) + method_of_attack + " " + type_of_attack + " with " + attack_adjective + " " + attack_object + " and " + attack_object_two + "?"
+            suggestion_greeting) + method_of_attack + " " + random.choice(type_of_attack) + " with " + random.choice(attack_adjective) + " " + random.choice(attack_object) + " and " + random.choice(attack_object_two) + "?"
 
         event["stdout"].write(suggestion)
