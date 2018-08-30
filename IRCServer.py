@@ -127,7 +127,7 @@ class Server(object):
         del self.own_modes[mode]
     def change_own_mode(self, remove, mode, arg=None):
         if remove:
-            self.remove_own_mode(mode, arg)
+            self.remove_own_mode(mode)
         else:
             self.add_own_mode(mode, arg)
 
