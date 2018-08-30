@@ -137,10 +137,8 @@ class EventHook(object):
                 returns.append(hook.call(event))
             except Exception as e:
                 traceback.print_exc()
-                # TODO don't make this an event call. can lead to error cycles!
-                #self.bot.events.on("log").on("error").call(
-                #    message="Failed to call event callback",
-                #    data=traceback.format_exc())
+                self.bot.log.error("failed to call event \"%s", [
+                    event_path], exc_info=True)
             called += 1
 
         end = time.monotonic()
