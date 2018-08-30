@@ -309,7 +309,7 @@ class LineHandler(object):
             modes = RE_MODES.findall(event["arbitrary"] or args[1])
             for chunk in modes:
                 remove = chunk[0] == "-"
-                for mode in chunk[1:]
+                for mode in chunk[1:]:
                     event["server"].change_own_mode(remove, mode)
             self.bot.events.on("self").on("mode").call(modes=modes,
                 server=event["server"])
