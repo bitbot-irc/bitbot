@@ -7,7 +7,7 @@ class Module(object):
             self.strax, help="Suggests a glorious method of battle for the glory of the Sontaran Empire, through IRC!")
 
     def strax(self, event):
-        suggestion_greeting = ["Might I suggest", "Can I suggest", "Should we"]
+        suggestion_greeting = ["Might I suggest", "Can I suggest", "Should we attack immediately with"]
         command_greeting = ["We should attack now with", "We must attack now with", "I suggest attacking with",
                             "We should coordinate an attack with"]
         method_of_attack_a = ["full-frontal", "pincer", "surprise", "brutally excessive", "multi-pronged", "glorious",
