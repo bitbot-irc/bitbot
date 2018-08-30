@@ -14,4 +14,4 @@ class Config(object):
             with open(self.full_location) as config_file:
                 parser = configparser.ConfigParser()
                 parser.read_string(config_file.read())
-                self.bot.config = dict(parser["bot"].items())
+                return dict(parser["bot"].items())

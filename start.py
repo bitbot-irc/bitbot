@@ -19,9 +19,10 @@ args = arg_parser.parse_args()
 
 bot = IRCBot.Bot()
 database = Database.Database(bot, args.database)
-config_object = Config.Config(bot, args.config)
+config = Config.Config(bot, args.config)
+
 bot.database = database
-bot.config_object = config_object
+bot.config = config.load_config()
 bot.args = args
 bot.modules.load_modules()
 
