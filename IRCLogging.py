@@ -33,15 +33,15 @@ class Log(object):
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
 
-    def debug(self, message, params):
-        self._log(message, params, logging.DEBUG)
-    def info(self, message, params):
-        self._log(message, params, logging.INFO)
-    def warn(self, message, params):
-        self._log(message, params, logging.WARN)
-    def error(self, message, params):
-        self._log(message, params, logging.ERROR)
-    def critical(self, message, params):
-        self._log(message, params, logging.CRITICAL)
-    def _log(self, message, params, level):
-        self.logger.log(level, message, *params)
+    def debug(self, message, params, **kwargs):
+        self._log(message, params, logging.DEBUG, kwargs)
+    def info(self, message, params, **kwargs):
+        self._log(message, params, logging.INFO, kwargs)
+    def warn(self, message, params, **kwargs):
+        self._log(message, params, logging.WARN, kwargs)
+    def error(self, message, params, **kwargs):
+        self._log(message, params, logging.ERROR, kwargs)
+    def critical(self, message, params, **kwargs):
+        self._log(message, params, logging.CRITICAL, kwargs)
+    def _log(self, message, params, level, kwargs):
+        self.logger.log(level, message, *params, **kwargs)
