@@ -39,7 +39,7 @@ class User(object):
         self.bot.database.user_settings.delete(self.id, setting)
     def get_channel_settings_per_setting(self, setting, default=[]):
         return self.bot.database.user_channel_settings.find_by_setting(
-            self.server.id, self.id, setting, default)
+            self.id, setting, default)
 
     def send_message(self, message, prefix=None):
         self.server.send_message(self.nickname, message, prefix=prefix)

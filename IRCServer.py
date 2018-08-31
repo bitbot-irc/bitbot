@@ -112,8 +112,11 @@ class Server(object):
             self.id, prefix, default)
     def del_setting(self, setting):
         self.bot.database.server_settings.delete(self.id, setting)
-    def get_all_user_settings(self, setting, default):
+    def get_all_user_settings(self, setting, default=[]):
         return self.bot.database.user_settings.find_all_by_setting(
+            self.id, setting, default)
+    def find_all_user_channel_settings(self, setting, default=[]):
+        return self.bot.database.user_channel_settings.find_all_by_setting(
             self.id, setting, default)
 
     def set_own_nickname(self, nickname):
