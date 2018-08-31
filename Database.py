@@ -225,7 +225,7 @@ class UserChannelSettings(Table):
             user_channel_settings.value FROM
             user_channel_settings INNER JOIN channels ON
             user_channel_settings.channel_id=channels.channel_id
-            INNER JOIN users on user_channel_setting.user_id=users.user_id
+            INNER JOIN users on user_channel_settings.user_id=users.user_id
             WHERE user_channel_settings.setting=? AND
             users.server_id=?""", [setting, server_id])
         if values:
