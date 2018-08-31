@@ -37,7 +37,7 @@ class LineHandler(object):
             default_event=True)
 
         bot.events.on("raw").on("JOIN").hook(self.join)
-        bot.events.on("raw").on("PART").hook(self.quit)
+        bot.events.on("raw").on("PART").hook(self.part)
         bot.events.on("raw").on("QUIT").hook(self.quit)
         bot.events.on("raw").on("NICK").hook(self.nick)
         bot.events.on("raw").on("MODE").hook(self.mode)
