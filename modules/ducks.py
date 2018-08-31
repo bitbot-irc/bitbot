@@ -128,7 +128,7 @@ class Module(object):
 
         sentence = sentence[0:-2]
 
-        event["target"].send_message(sentence)
+        event["stdout"].write(sentence)
 
     def duck_bef(self, event):
         user = event["user"]
