@@ -16,6 +16,9 @@ class Module(object):
                                                    help="Befriend a duck!")
         bot.events.on("received.command.bang").hook(self.duck_bang,
                                                     help="Shoot a duck! Meanie.")
+        bot.events.on("received.command.decoy").hook(self.set_decoy,
+                                                     help="Be a sneaky fellow and make a decoy duck.")
+
         # bot.events.on("received.command.friends").hook(self.duck_friends,
         #                                             help="See who the friendliest people to ducks are!")
         # bot.events.on("received.command.killers").hook(self.duck_killers,
@@ -27,6 +30,7 @@ class Module(object):
         next_duck_time = random.randint(30, 40)
 
         self.duck_times = {}
+        self.decoys = {}
 
         tricky = next_duck_time - now.second
         tricky += ((next_duck_time - (now.minute + 1)) * 2)
@@ -84,6 +88,10 @@ class Module(object):
         self.bot.log.debug("Attempting to set %s to %s", [str(max), str(self.duck_times[max])]);
 
         return random.randint(self.duck_times[min], self.duck_times[max])
+
+    def decoy_time(self):
+        return random.randint(300, 700)
+
 
     def duck_bef(self, event):
         target = event["user"].nickname
@@ -175,11 +183,29 @@ class Module(object):
                     next_duck_time = self.duck_time(channel.name)
                     self.bot.add_timer("duck-appear", next_duck_time, persist=False)
 
-    # def coins(self, event):
-    #    if event["args_split"]:
-    #        target = event["server"].get_user(event["args_split"][0])
-    #    else:
-    #        target = event["user"]
-    #    coins = decimal.Decimal(target.get_setting("coins", "0.0"))
-    #    event["stdout"].write("%s has %s coin%s" % (target.nickname,
-    #        "{0:.2f}".format(coins), "" if coins == 1 else "s"))
+    def duck_decoy(self, event):
+        ducks = [
+            "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
+            "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
+            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
+            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
+            "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
+            "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
+            "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
+        ]
+
+        event["target"].send_message(random.choice(ducks))
+
+    def set_decoy(self, event):
+        next_decoy_time = self.decoy_time()
+        self.bot.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
+        self.bot.add_timer("duck-decoy", next_decoy_time, persist=False)
+
+# def coins(self, event):
+#    if event["args_split"]:
+#        target = event["server"].get_user(event["args_split"][0])
+#    else:
+#        target = event["user"]
+#    coins = decimal.Decimal(target.get_setting("coins", "0.0"))
+#    event["stdout"].write("%s has %s coin%s" % (target.nickname,
+#        "{0:.2f}".format(coins), "" if coins == 1 else "s"))
