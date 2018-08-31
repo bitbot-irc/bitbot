@@ -99,6 +99,9 @@ class Channel(object):
     def del_user_setting(self, user_id, setting):
         self.bot.database.user_channel_settings.delete(user_id, self.id,
             setting)
+    def find_all_by_setting(self, setting, default=[]):
+        return self.bot.database.user_channel_settings.find_all_by_setting(
+            self.id, setting, default)
 
     def send_message(self, text, prefix=None):
         self.server.send_message(self.name, text, prefix=prefix)
