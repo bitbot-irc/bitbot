@@ -2,37 +2,37 @@ import datetime
 import EventManager
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
 
-        bot.events.on("received").on("message").on("channel").hook(
+        events.on("received").on("message").on("channel").hook(
             self.channel_message, priority=EventManager.PRIORITY_HIGH)
-        bot.events.on("self").on("message").on("channel").hook(
+        events.on("self").on("message").on("channel").hook(
             self.self_channel_message)
 
-        bot.events.on("received").on("notice").on("channel").hook(
+        events.on("received").on("notice").on("channel").hook(
             self.channel_notice, priority=EventManager.PRIORITY_HIGH)
-        bot.events.on("received").on("notice").on("private").hook(
+        events.on("received").on("notice").on("private").hook(
             self.private_notice, priority=EventManager.PRIORITY_HIGH)
-        bot.events.on("received").on("server-notice").hook(
+        events.on("received").on("server-notice").hook(
             self.server_notice, priority=EventManager.PRIORITY_HIGH)
 
-        bot.events.on("received").on("join").hook(self.join)
-        bot.events.on("self").on("join").hook(self.self_join)
+        events.on("received").on("join").hook(self.join)
+        events.on("self").on("join").hook(self.self_join)
 
-        bot.events.on("received").on("part").hook(self.part)
-        bot.events.on("self").on("part").hook(self.self_part)
+        events.on("received").on("part").hook(self.part)
+        events.on("self").on("part").hook(self.self_part)
 
-        bot.events.on("received").on("nick").hook(self.on_nick)
-        bot.events.on("self").on("nick").hook(self.on_nick)
+        events.on("received").on("nick").hook(self.on_nick)
+        events.on("self").on("nick").hook(self.on_nick)
 
-        bot.events.on("received").on("quit").hook(self.on_quit)
+        events.on("received").on("quit").hook(self.on_quit)
 
-        bot.events.on("received").on("kick").hook(self.kick)
-        bot.events.on("self").on("kick").hook(self.self_kick)
+        events.on("received").on("kick").hook(self.kick)
+        events.on("self").on("kick").hook(self.self_kick)
 
-        bot.events.on("received").on("topic").hook(self.on_topic)
-        bot.events.on("received").on("numeric").on("333").hook(self.on_333)
+        events.on("received").on("topic").hook(self.on_topic)
+        events.on("received").on("numeric").on("333").hook(self.on_333)
 
     def print_line(self, event, line, channel=None):
         timestamp = datetime.datetime.now().isoformat()

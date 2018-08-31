@@ -2,8 +2,8 @@ import random
 
 
 class Module(object):
-    def __init__(self, bot):
-        bot.events.on("received.command.strax").hook(
+    def __init__(self, bot, events):
+        events.on("received.command.strax").hook(
             self.strax, help="Suggests a glorious method of battle for the glory of the Sontaran Empire, through IRC!")
 
     def strax(self, event):

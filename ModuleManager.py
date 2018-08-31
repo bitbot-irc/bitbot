@@ -1,8 +1,9 @@
-import gc, glob, imp, inspect, os, sys
+import gc, glob, imp, inspect, os, sys, uuid
 
 class ModuleManager(object):
-    def __init__(self, bot, directory="modules"):
+    def __init__(self, bot, events, directory="modules"):
         self.bot = bot
+        self.events = events
         self.directory = directory
         self.modules = {}
         self.waiting_requirement = {}
@@ -39,17 +40,22 @@ class ModuleManager(object):
                             return None
                 else:
                     break
-        import_name = "bitbot_%s" % name
-        module = imp.load_source(import_name, filename)
+        module = imp.load_source(name, filename)
+
         if not hasattr(module, "Module"):
             raise ImportError("module '%s' doesn't have a Module class.")
         if not inspect.isclass(module.Module):
             raise ImportError("module '%s' has a Module attribute but it is not a class.")
-        module_object = module.Module(self.bot)
+
+        event_context = uuid.uuid4()
+        module_object = module.Module(self.bot, self.events.new_context(
+            event_context))
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
+        module_object._event_context = event_context
         module_object._is_unloaded = False
-        module_object._import_name = import_name
+        module_object._import_name = name
+
         assert not module_object._name in self.modules, (
             "module name '%s' attempted to be used twice.")
         return module_object
@@ -62,7 +68,7 @@ class ModuleManager(object):
             sys.stderr.write("module '%s' not loaded: Could not resolve import.\n" % filename)
             return
         if module:
-            self.modules[module._name] = module
+            self.modules[module._import_name] = module
             if name in self.waiting_requirement:
                 for filename in self.waiting_requirement:
                     self.load_module(filename)
@@ -74,23 +80,3 @@ class ModuleManager(object):
         for filename in self.list_modules():
             if whitelist == None or filename in whitelist:
                 self.load_module(filename)
-
-    def unload_module(self, module):
-        # this is such a bad idea
-        module._is_unloaded = True
-        self.unhook_check(self.bot.events)
-        if hasattr(module, "_cleanup"):
-            module._cleanup()
-        del sys.modules[module._import_name]
-        del self.modules[module._name]
-        del module
-        gc.collect()
-
-    def unhook_check(self, event):
-        for hook in event.get_hooks():
-            if hasattr(hook.function, "__self__") and hasattr(
-                    hook.function.__self__, "_is_unloaded"
-                    ) and hook.function.__self__._is_unloaded:
-                event._unhook(hook)
-        for child in event.get_children():
-            self.unhook_check(event.get_child(child))

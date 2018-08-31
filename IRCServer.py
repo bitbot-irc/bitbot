@@ -11,10 +11,11 @@ if hasattr(ssl, "PROTOCOL_TLS"):
     OUR_TLS_PROTOCOL = ssl.PROTOCOL_TLS
 
 class Server(object):
-    def __init__(self, id, hostname, port, password, ipv4, tls,
-            nickname, username, realname, bot):
+    def __init__(self, bot, events, id, hostname, port, password, ipv4,
+            tls, nickname, username, realname):
         self.connected = False
         self.bot = bot
+        self.events = events
         self.id = id
         self.target_hostname = hostname
         self.port = port
@@ -65,7 +66,7 @@ class Server(object):
             context.options |= ssl.OP_NO_TLSv1
             self.socket = context.wrap_socket(self.socket)
         self.cached_fileno = self.socket.fileno()
-        self.bot.events.on("timer").on("rejoin").hook(self.try_rejoin)
+        self.events.on("timer").on("rejoin").hook(self.try_rejoin)
 
     def __repr__(self):
         return "IRCServer.Server(%s)" % self.__str__()
@@ -78,7 +79,7 @@ class Server(object):
 
     def connect(self):
         self.socket.connect((self.target_hostname, self.port))
-        self.bot.events.on("preprocess.connect").call(server=self)
+        self.events.on("preprocess.connect").call(server=self)
 
         if self.password:
             self.send_pass(self.password)
@@ -137,7 +138,7 @@ class Server(object):
         if not self.has_user(nickname):
             user_id = self.get_user_id(nickname)
             new_user = IRCUser.User(nickname, user_id, self, self.bot)
-            self.bot.events.on("new").on("user").call(
+            self.events.on("new").on("user").call(
                 user=new_user, server=self)
             self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
@@ -162,7 +163,7 @@ class Server(object):
             channel_id = self.get_channel_id(channel_name)
             new_channel = IRCChannel.Channel(channel_name, channel_id,
                 self, self.bot)
-            self.bot.events.on("new").on("channel").call(
+            self.events.on("new").on("channel").call(
                 channel=new_channel, server=self)
             self.channels[new_channel.name] = new_channel
         return self.channels[channel_name.lower()]
@@ -311,13 +312,13 @@ class Server(object):
         if self.has_channel(target):
             channel = self.get_channel(target)
             channel.buffer.add_line(None, message, action, True)
-            self.bot.events.on("self").on("message").on("channel").call(
+            self.events.on("self").on("message").on("channel").call(
                 message=full_message, message_split=full_message_split,
                 channel=channel, action=action, server=self)
         else:
             user = self.get_user(target)
             user.buffer.add_line(None, message, action, True)
-            self.bot.events.on("self").on("message").on("private").call(
+            self.events.on("self").on("message").on("private").call(
                 message=full_message, message_split=full_message_split,
                 user=user, action=action, server=self)
 

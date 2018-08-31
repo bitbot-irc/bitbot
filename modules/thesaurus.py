@@ -5,9 +5,9 @@ import Utils
 URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("synonym",
+        events.on("received").on("command").on("synonym",
             "antonym").hook(self.thesaurus, min_args=1,
             help="Get synonyms/antonyms for a provided phrase",
             usage="<word> [type]")

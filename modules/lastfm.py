@@ -5,14 +5,14 @@ import Utils
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
 
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "set").assure_call(setting="lastfm",
             help="Set username on last.fm")
 
-        bot.events.on("received").on("command").on("np",
+        events.on("received").on("command").on("np",
             "listening", "nowplaying").hook(self.np,
             help="Get the last listened to track from a user",
             usage="[username]")

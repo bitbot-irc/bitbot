@@ -5,20 +5,21 @@ REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("new").on("user").hook(self.new_user)
-        bot.events.on("received").on("message").on("channel").hook(
+        self.events = events
+        events.on("new").on("user").hook(self.new_user)
+        events.on("received").on("message").on("channel").hook(
             self.channel_message)
-        bot.events.on("received").on("command").on("karma").hook(
+        events.on("received").on("command").on("karma").hook(
             self.karma, help="Get your or someone else's karma",
             usage="[target]")
-        bot.events.on("received").on("command").on("resetkarma").hook(
+        events.on("received").on("command").on("resetkarma").hook(
             self.reset_karma, permission="resetkarma",
             min_args=1, help="Reset a specified karma to 0",
             usage="<target>")
 
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="karma-verbose",
             help="Disable/Enable automatically responding to karma changes",
             validate=Utils.bool_or_none)
@@ -46,13 +47,13 @@ class Module(object):
                     else:
                         event["server"].del_setting(setting)
                     if verbose:
-                        self.bot.events.on("send").on("stdout").call(
+                        self.events.on("send").on("stdout").call(
                             module_name="Karma", target=event["channel"],
                             message="%s now has %d karma" % (target, karma))
                     event["user"].last_karma = time.time()
                 elif verbose:
                     if target:
-                        self.bot.events.on("send").on("stderr").call(module_name="Karma",
+                        self.events.on("send").on("stderr").call(module_name="Karma",
                             target=event["channel"], message="You cannot change your own karma")
             elif verbose:
                 event["stderr"].write("Try again in a couple of seconds")

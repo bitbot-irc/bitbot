@@ -1,12 +1,12 @@
 import base64
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("preprocess.connect").hook(self.preprocess_connect)
-        bot.events.on("received.cap").hook(self.on_cap)
-        bot.events.on("received.authenticate").hook(self.on_authenticate)
-        bot.events.on("received.numeric").on(
+        events.on("preprocess.connect").hook(self.preprocess_connect)
+        events.on("received.cap").hook(self.on_cap)
+        events.on("received.authenticate").hook(self.on_authenticate)
+        events.on("received.numeric").on(
             "902", "903", "904", "905", "906", "907", "908").hook(self.on_90x)
 
     def preprocess_connect(self, event):

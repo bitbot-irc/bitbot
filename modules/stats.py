@@ -2,12 +2,12 @@ import time
 import Utils
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.boot_time = time.time()
         self.bot = bot
-        bot.events.on("received").on("command").on("uptime"
+        events.on("received").on("command").on("uptime"
             ).hook(self.uptime, help="Show my uptime")
-        bot.events.on("received").on("command").on("stats"
+        events.on("received").on("command").on("stats"
             ).hook(self.stats, help="Show my network/channel/user stats")
 
     def uptime(self, event):

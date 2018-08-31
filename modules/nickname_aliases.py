@@ -22,13 +22,13 @@ def del_setting(user, setting):
 
 class Module(object):
     _name = "Aliases"
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("new").on("user").hook(self.new_user)
-        bot.events.on("received").on("nick").hook(self.nickname_change)
-        bot.events.on("received").on("command").on("alias").hook(
+        events.on("new").on("user").hook(self.new_user)
+        events.on("received").on("nick").hook(self.nickname_change)
+        events.on("received").on("command").on("alias").hook(
             self.alias)
-        #bot.events.on("received").on("command").on("mainalias").hook(
+        #events.on("received").on("command").on("mainalias").hook(
         #    self.main_alias)
 
     def new_user(self, event):

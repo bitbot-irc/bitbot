@@ -8,9 +8,9 @@ URL_IMDBTITLE = "http://imdb.com/title/%s"
 
 class Module(object):
     _name = "IMDb"
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("imdb").hook(
+        events.on("received").on("command").on("imdb").hook(
             self.imdb, min_args=1,
             help="Search for a given title on IMDb",
             usage="<movie/tv title>")

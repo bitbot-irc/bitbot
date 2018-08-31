@@ -1,9 +1,9 @@
 import hashlib
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("hash"
+        events.on("received").on("command").on("hash"
             ).hook(self.hash, min_args=2, help="Hash a string",
             usage="<algo> <string>")
 

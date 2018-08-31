@@ -8,12 +8,12 @@ REGEX_CHARHEX = re.compile("\\\\:(\S{4})")
 
 class Module(object):
     _name = "Wolfram|Alpha"
-    def __init__(self, bot):
-        bot.events.on("received").on("command").on("wolframalpha", "wa"
+    def __init__(self, bot, events):
+        self.bot = bot
+        events.on("received").on("command").on("wolframalpha", "wa"
             ).hook(self.wa, min_args=1, help=
             "Evauate a given string on Wolfram|Alpha",
             usage="<query>")
-        self.bot = bot
 
     def wa(self, event):
         soup = Utils.get_url(URL_WA, get_params={"input": event["args"],

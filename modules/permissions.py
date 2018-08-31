@@ -5,26 +5,26 @@ REQUIRES_IDENTIFY = ("You need to be identified to use that command "
  "(/msg %s register | /msg %s identify)")
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("new").on("user").hook(self.new_user)
-        bot.events.on("preprocess").on("command").hook(
+        events.on("new").on("user").hook(self.new_user)
+        events.on("preprocess").on("command").hook(
             self.preprocess_command)
-        bot.events.on("received").on("part").hook(self.on_part)
-        bot.events.on("received").on("command").on("identify"
+        events.on("received").on("part").hook(self.on_part)
+        events.on("received").on("command").on("identify"
             ).hook(self.identify, private_only=True, min_args=1,
             usage="<password>", help="Identify yourself")
-        bot.events.on("received").on("command").on("register"
+        events.on("received").on("command").on("register"
             ).hook(self.register, private_only=True, min_args=1,
             usage="<password>", help="Register your nickname")
-        bot.events.on("received.command.logout").hook(self.logout,
+        events.on("received.command.logout").hook(self.logout,
              private_only=True, help="Sign out from the bot")
 
-        bot.events.on("received.command.mypermissions").hook(
+        events.on("received.command.mypermissions").hook(
             self.my_permissions, authenticated=True)
-        bot.events.on("received.command.givepermission").hook(
+        events.on("received.command.givepermission").hook(
             self.give_permission, min_args=2, permission="givepermission")
-        bot.events.on("received.command.removepermission").hook(
+        events.on("received.command.removepermission").hook(
             self.remove_permission, min_args=2, permission="removepermission")
 
     def new_user(self, event):

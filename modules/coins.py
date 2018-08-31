@@ -26,26 +26,26 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received.command.coins").hook(self.coins,
+        events.on("received.command.coins").hook(self.coins,
             help="Show how many coins you have")
-        bot.events.on("received").on("command").on("resetcoins").hook(
+        events.on("received").on("command").on("resetcoins").hook(
             self.reset_coins, permission="resetcoins",
             min_args=1, help=
             "Reset a specified user's coins to %s" % str(DECIMAL_ZERO),
             usage="<target>")
-        bot.events.on("received.command.richest").hook(
+        events.on("received.command.richest").hook(
             self.richest, help="Show the top 10 richest users")
-        bot.events.on("received.command.redeemcoins").hook(
+        events.on("received.command.redeemcoins").hook(
             self.redeem_coins, help="Redeem free coins")
-        bot.events.on("received.command.flip").hook(self.flip,
+        events.on("received.command.flip").hook(self.flip,
             help="Bet coins on a coin flip", usage=
             "heads|tails <coin amount>", min_args=2, protect_registered=True)
-        bot.events.on("received.command.sendcoins").hook(
+        events.on("received.command.sendcoins").hook(
             self.send, min_args=2, help="Send coins to a user",
             usage="<nickname> <amount>", authenticated=True)
-        bot.events.on("received.command.roulette").hook(
+        events.on("received.command.roulette").hook(
             self.roulette, min_args=2, help="Spin the roulette wheel",
             usage="<type> <amount>", protect_registered=True)
 
@@ -53,7 +53,7 @@ class Module(object):
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        bot.events.on("timer").on("coin-interest").hook(self.interest)
+        events.on("timer").on("coin-interest").hook(self.interest)
         bot.add_timer("coin-interest", INTEREST_INTERVAL, persist=False,
             next_due=time.time()+until_next_hour)
 

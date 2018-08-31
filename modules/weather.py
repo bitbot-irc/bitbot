@@ -5,9 +5,9 @@ import Utils
 URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("weather").hook(
+        events.on("received").on("command").on("weather").hook(
             self.weather, min_args=1,
             help="Get current weather data for a provided location",
             usage="<location>")

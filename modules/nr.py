@@ -20,29 +20,29 @@ class Module(object):
     PASSENGER_ACTIVITIES = ["U", "P", "R"]
     COLOURS = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY, Utils.COLOR_ORANGE]
 
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
         self._client = None
-        bot.events.on("received").on("command").on("nrtrains"
+        events.on("received").on("command").on("nrtrains"
             ).hook(self.trains, min_args=1,
             help="Get train/bus services for a station (Powered by NRE)",
             usage="<crs_id>")
-        bot.events.on("received").on("command").on("nrservice"
+        events.on("received").on("command").on("nrservice"
             ).hook(self.service, min_args=1,
             help="Get train service information for a UID, headcode or RID (Powered by NRE)",
             usage="<service_id>")
-        bot.events.on("received").on("command").on("nrhead"
+        events.on("received").on("command").on("nrhead"
             ).hook(self.head, min_args=1,
             help="Get information for a given headcode/UID/RID (Powered by NRE)",
             usage="<headcode>")
-        bot.events.on("received").on("command").on("nrcode"
+        events.on("received").on("command").on("nrcode"
             ).hook(self.service_code, min_args=1,
             help="Get the text for a given delay/cancellation code (Powered by NRE)",
             usage="<code>")
-        bot.events.on("telegram").on("command").on("nrtrains").hook(self.trains)
-        bot.events.on("telegram").on("command").on("nrcode").hook(self.service_code)
-        bot.events.on("telegram").on("command").on("nrhead").hook(self.head)
-        bot.events.on("telegram").on("command").on("nrservice").hook(self.service)
+        events.on("telegram").on("command").on("nrtrains").hook(self.trains)
+        events.on("telegram").on("command").on("nrcode").hook(self.service_code)
+        events.on("telegram").on("command").on("nrhead").hook(self.head)
+        events.on("telegram").on("command").on("nrservice").hook(self.service)
 
     @property
     def client(self):

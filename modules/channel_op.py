@@ -2,57 +2,57 @@ import Utils
 
 class Module(object):
     _name = "Channel Op"
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("kick", "k"
+        events.on("received").on("command").on("kick", "k"
             ).hook(self.kick, channel_only=True, require_mode="o",
             min_args=1, help="Kick a user from the channel",
             usage="<nickname> [reason]")
 
-        bot.events.on("received").on("command").on("ban"
+        events.on("received").on("command").on("ban"
             ).hook(self.ban, channel_only=True, require_mode="o",
             min_args=1, help="Ban a user/hostmask from the channel",
             usage="<nickname/hostmask>")
-        bot.events.on("received").on("command").on("unban"
+        events.on("received").on("command").on("unban"
             ).hook(self.unban, channel_only=True, require_mode="o",
             min_args=1, help="Unban a user/hostmask from the channel",
             usage="<nickname/hostmask>")
 
-        bot.events.on("received").on("command").on("kickban", "kb"
+        events.on("received").on("command").on("kickban", "kb"
             ).hook(self.kickban, channel_only=True, require_mode="o",
             min_args=1, help="Kickban a user from the channel",
             usage="<nickanme> [reason]")
 
-        bot.events.on("received").on("command").on("op"
+        events.on("received").on("command").on("op"
             ).hook(self.op, channel_only=True, require_mode="o",
             help="Give +o to a user", usage="[nickname]")
-        bot.events.on("received").on("command").on("deop"
+        events.on("received").on("command").on("deop"
             ).hook(self.deop, channel_only=True, require_mode="o",
             help="Take +o from a user", usage="[nickname]")
 
-        bot.events.on("received").on("command").on("voice"
+        events.on("received").on("command").on("voice"
             ).hook(self.voice, channel_only=True, require_mode="o",
             help="Give +v to a user", usage="[nickname]")
-        bot.events.on("received").on("command").on("devoice"
+        events.on("received").on("command").on("devoice"
             ).hook(self.devoice, channel_only=True, require_mode="o",
             help="Take +v from a user", usage="[nickname]")
 
-        bot.events.on("received").on("message").on("channel").hook(
+        events.on("received").on("message").on("channel").hook(
             self.highlight_spam)
 
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="highlight-spam-threshold",
             help="Set the number of nicknames in a message that "
             "qualifies as spam", validate=Utils.int_or_none)
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="highlight-spam-protection",
             help="Enable/Disable highlight spam protection",
             validate=Utils.bool_or_none)
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="highlight-spam-ban",
             help="Enable/Disable banning highlight spammers "
             "instead of just kicking", validate=Utils.bool_or_none)
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="ban-format",
             help="Set ban format ($n = nick, $u = username, $h = hostname)")
 

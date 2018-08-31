@@ -2,9 +2,9 @@ import Utils
 
 class Module(object):
     _name = "BTC"
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("btc").hook(
+        events.on("received").on("command").on("btc").hook(
             self.btc, help="Get the exchange rate of bitcoins",
             usage="[currency]")
 

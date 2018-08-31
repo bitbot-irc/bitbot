@@ -1,11 +1,11 @@
 import EventManager
 
 class Module(object):
-    def __init__(self, bot):
-        bot.events.on("received").on("message").on("channel"
+    def __init__(self, bot, events):
+        events.on("received").on("message").on("channel"
             ).hook(self.channel_message,
             priority=EventManager.PRIORITY_MEDIUM)
-        bot.events.on("received").on("command").on("to").hook(
+        events.on("received").on("command").on("to").hook(
             self.to, min_args=2, help=("Relay a message to a "
             "user the next time they talk in a channel"),
             channel_only=True, usage="<username> <message>")

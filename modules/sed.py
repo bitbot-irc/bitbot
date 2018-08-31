@@ -5,16 +5,17 @@ REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^s/")
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("message").on("channel").hook(
+        self.events = events
+        events.on("received").on("message").on("channel").hook(
             self.channel_message)
 
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="sed",
             help="Disable/Enable sed in a channel",
             validate=Utils.bool_or_none)
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="sed-sender-only",
             help="Disable/Enable sed only looking at the messages "
             "sent by the user", validate=Utils.bool_or_none)
@@ -49,7 +50,7 @@ class Module(object):
                 pattern = re.compile(sed_split[1], regex_flags)
             except:
                 traceback.print_exc()
-                self.bot.events.on("send").on("stderr").call(target=event[
+                self.events.on("send").on("stderr").call(target=event[
                     "channel"], module_name="Sed", server=event["server"],
                     message="Invalid regex in pattern")
                 return
@@ -66,6 +67,6 @@ class Module(object):
                     prefix = "* %s" % line.sender
                 else:
                     prefix = "<%s>" % line.sender
-                self.bot.events.on("send").on("stdout").call(target=event[
+                self.events.on("send").on("stdout").call(target=event[
                     "channel"], module_name="Sed", server=event["server"],
                     message="%s %s" % (prefix, new_message))
