@@ -196,7 +196,7 @@ class Module(object):
         event["channel"].send_message(random.choice(ducks))
 
     def set_decoy(self, event):
-        channel = event
+        channel = event["target"]
 
         next_decoy_time = self.decoy_time()
         self.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
