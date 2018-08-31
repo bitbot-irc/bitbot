@@ -140,7 +140,6 @@ class Module(object):
                                                      str) else active_duck
 
         if active_duck == 0:
-            event["stderr"].set_prefix("Kick")
             if event["server"].has_user(target):
                 if not event["server"].is_own_nickname(target):
                     event["target"].send_kick(target,
