@@ -110,13 +110,10 @@ class EventHook(object):
 
         if context == None:
             self._hooks.append(callback)
-            hooks = self._hooks
         else:
             if not context in self._context_hooks:
                 self._context_hooks[context] = []
             self._context_hooks[context].append(callback)
-            hooks = self._context_hooks[context]
-        hooks.sort(key=lambda x: x.priority)
 
         if replay and not self._stored_events == None:
             for kwargs in self._stored_events:
@@ -223,5 +220,5 @@ class EventHook(object):
             child.purge_context(context)
 
     def get_hooks(self):
-        return self._hooks + list(itertools.chain.from_iterable(
-            self._context_hooks.values()))
+        return sorted(self._hooks + list(itertools.chain.from_iterable(
+            self._context_hooks.values())), key=lambda e: e.priority)
