@@ -30,7 +30,7 @@ class Module(object):
         #                                              help="Shows a list of the most popular duck superstars.")
 
         now = datetime.datetime.now()
-        next_duck_time = random.randint(30, 40)
+        next_duck_time = random.randint(120, 1200)
 
         self.duck_times = {}
         self.decoys = {}
@@ -96,7 +96,7 @@ class Module(object):
         return random.randint(self.duck_times[min], self.duck_times[max])
 
     def decoy_time(self):
-        return random.randint(10, 20)
+        return random.randint(60, 180)
 
     def duck_enemies(self, event):
         the_enemy = event["server"].find_all_user_channel_settings(
