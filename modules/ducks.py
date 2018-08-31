@@ -1,3 +1,4 @@
+from operator import itemgetter
 import datetime
 import random
 
@@ -101,7 +102,33 @@ class Module(object):
         friends = event["server"].find_all_user_channel_settings(
             "ducks-befriended")
 
-        print(friends)
+        friendliest = {}
+        friend_nicks = []
+        friend_ducks = []
+
+        for i in friends:
+            if i[1] in friendliest.keys():
+                friendliest[i[1]] += i[2]
+            else:
+                friendliest[i[1]] = i[2]
+
+        for user, friends in sorted(friendliest.items(), key = itemgetter(1),
+                                    reverse = True):
+            friend_nicks.append(user)
+            friend_ducks.append(friends)
+
+        sentence = "Friendliest Users -- "
+
+        length = len(friend_nicks) if len(friend_nicks) < 11 else 11
+
+        for i in range(0, length):
+            sentence += friend_nicks[i] + " (" + str(friend_ducks[i]) + ")"
+            if i < 10:
+                sentence += ", "
+
+        sentence = sentence[0:-2]
+
+        event["target"].send_message(sentence)
 
     def duck_bef(self, event):
         user = event["user"]
@@ -165,7 +192,7 @@ class Module(object):
             event["stdout"].write(
                 target + ", you've shot " + str(
                     shot_ducks + 1) + " duck" + grammar + " in " + event[
-                    "target"].name);
+                    "target"].name)
 
             next_duck_time = self.duck_time(event)
             self.bot.add_timer("duck-appear", next_duck_time, persist=False)
