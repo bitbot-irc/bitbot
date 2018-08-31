@@ -74,8 +74,6 @@ class Module(object):
                 if ducks_enabled == 1:
                     channel.set_setting("active-duck", 0)
 
-        print(self.duck_times)
-
     def duck_time(self, channel):
         if isinstance(channel, str):
             channel_name = channel
