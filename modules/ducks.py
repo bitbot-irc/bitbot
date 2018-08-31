@@ -12,6 +12,7 @@ class Module(object):
         self.bot = bot
         self.events = events
         self.active_duck = 0
+        self.decoy_hooked = 0
 
         events.on("received.command.bef").hook(self.duck_bef,
                                                    help="Befriend a duck!")
@@ -199,7 +200,11 @@ class Module(object):
         channel = event["target"]
 
         next_decoy_time = self.decoy_time()
-        self.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
+
+        if self.decoy_hooked == 0:
+            self.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
+            self.decoy_hooked = 1
+
         self.bot.add_timer("duck-decoy", next_decoy_time, None, None, False,
                            channel=channel)
 
