@@ -219,18 +219,6 @@ class UserChannelSettings(Table):
                 values[i] = value[0], json.loads(value[1])
             return values
         return default
-    def find_all_by_setting(self, channel_id, setting, default=[]):
-        values = self.database.execute_fetchall(
-            """SELECT users.name, user_channel_settings.value FROM
-            user_channel_settings INNER JOIN users ON
-            user_channel_settings.user_id=users.user_id
-            WHERE user_channel_setting.setting=?
-            AND user_channel_settings.channel_id=?""", [setting, channel_id])
-        if values:
-            for i, value in enumerate(values):
-                values[i] = value[0], json.loads(value[1])
-            return values
-        return default
     def delete(self, user_id, channel_id, setting):
         self.database.execute(
             """DELETE FROM user_channel_settings WHERE
