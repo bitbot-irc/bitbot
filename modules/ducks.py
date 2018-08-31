@@ -21,8 +21,8 @@ class Module(object):
         events.on("received.command.decoy").hook(self.set_decoy,
                                                      help="Be a sneaky fellow and make a decoy duck.")
 
-        # events.on("received.command.friends").hook(self.duck_friends,
-        #                                             help="See who the friendliest people to ducks are!")
+        events.on("received.command.friends").hook(self.duck_friends,
+                                                     help="See who the friendliest people to ducks are!")
         # events.on("received.command.killers").hook(self.duck_killers,
         #                                             help="See who shoots the most amount of ducks.")
         # events.on("received.command.ducks").hook(self.duck_list,
@@ -92,9 +92,14 @@ class Module(object):
     def decoy_time(self):
         return random.randint(10, 20)
 
+    def duck_friends(self, event):
+        pass
 
     def duck_bef(self, event):
-        target = event["user"].nickname
+        user = event["user"]
+        target = user.nickname
+        id = user.id
+
         active_duck = event["target"].get_setting("active-duck", 0)
         active_duck = int(active_duck) if isinstance(active_duck, str) else active_duck
 
@@ -108,9 +113,11 @@ class Module(object):
             else:
                 event["stderr"].write("That user is not in this channel")
         else:
-            setting = "bef-ducks-%s-%s" % (target, event["target"].name)
-            befriended_ducks = event["server"].get_setting(setting, 0)
-            event["server"].set_setting(setting, befriended_ducks + 1)
+            befriended_ducks = event["target"].get_user_setting(id,
+                                                                 "ducks-befriended", 0)
+            event["target"].set_user_setting(id,
+                                              "ducks-befriended",
+                                              befriended_ducks + 1)
             event["target"].set_setting("active-duck", 0)
 
             grammar = "" if befriended_ducks == 0 else "s"
@@ -123,7 +130,9 @@ class Module(object):
             self.bot.add_timer("duck-appear", next_duck_time, persist=False)
 
     def duck_bang(self, event):
-        target = event["user"].nickname
+        user = event["user"]
+        target = user.nickname
+        id = user.id
         if event["target"].get_setting("active-duck", 0) == 0:
             event["stderr"].set_prefix("Kick")
             if event["server"].has_user(target):
@@ -134,9 +143,8 @@ class Module(object):
             else:
                 event["stderr"].write("That user is not in this channel")
         else:
-            setting = "shot-ducks-%s-%s" % (target, event["target"].name)
-            shot_ducks = event["server"].get_setting(setting, 0)
-            event["server"].set_setting(setting, shot_ducks + 1)
+            shot_ducks = event["target"].get_user_setting(id, "ducks-shot", 0)
+            event["target"].set_user_setting(id, "ducks-shot", shot_ducks + 1)
             event["target"].set_setting("active-duck", 0)
 
             grammar = "" if shot_ducks == 0 else "s"
