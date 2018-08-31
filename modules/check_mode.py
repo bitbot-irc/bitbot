@@ -1,10 +1,9 @@
 
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("preprocess").on("command").hook(
-            self.preprocess_command)
+        events.on("preprocess").on("command").hook(self.preprocess_command)
 
     def preprocess_command(self, event):
         if event["is_channel"] and event["hook"].kwargs.get(

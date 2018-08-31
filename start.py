@@ -37,7 +37,7 @@ for server_detail in server_details:
     if not server == None:
         servers.append(server)
 if len(servers):
-    bot.events.on("boot").on("done").call()
+    bot._events.on("boot").on("done").call()
     for server in servers:
         if not bot.connect(server):
             sys.stderr.write("failed to connect to '%s', exiting\r\n" % (

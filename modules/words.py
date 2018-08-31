@@ -2,21 +2,21 @@ import time
 import Utils
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("message").on("channel"
+        events.on("received").on("message").on("channel"
             ).hook(self.channel_message)
-        bot.events.on("self").on("message").on("channel"
+        events.on("self").on("message").on("channel"
             ).hook(self.self_channel_message)
-        bot.events.on("received").on("command").on("words"
+        events.on("received").on("command").on("words"
             ).hook(self.words, channel_only=True,
             usage="<nickname>", help=
             "See how many words you or the given nickname have used")
-        bot.events.on("received").on("command").on("trackword"
+        events.on("received").on("command").on("trackword"
             ).hook(self.track_word, min_args=1,
             help="Start tracking a word", usage="<word>",
             permission="track-word")
-        bot.events.on("received").on("command").on("wordusers"
+        events.on("received").on("command").on("wordusers"
             ).hook(self.word_users, min_args=1,
             help="Show who has used a tracked word the most",
             usage="<word>")

@@ -1,11 +1,10 @@
 
 
 class Module(object):
-    def __init__(self, bot):
-        bot.events.on("received.numeric.001").hook(
-            self.on_connect)
-        bot.events.on("self.join").hook(self.on_join)
-        bot.events.on("self.kick").hook(self.on_kick)
+    def __init__(self, bot, events):
+        events.on("received.numeric.001").hook(self.on_connect)
+        events.on("self.join").hook(self.on_join)
+        events.on("self.kick").hook(self.on_kick)
 
     def on_connect(self, event):
         channels =  event["server"].get_setting("autojoin", [])

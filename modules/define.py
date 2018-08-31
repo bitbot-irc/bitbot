@@ -5,9 +5,9 @@ import Utils
 URL_WORDNIK = "http://api.wordnik.com:80/v4/word.json/%s/definitions"
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("define").hook(
+        events.on("received").on("command").on("define").hook(
             self.define, help="Define a provided term",
             usage="<phrase>")
 

@@ -17,15 +17,16 @@ ARROW_UP = "▲"
 ARROW_DOWN = "▼"
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("yt", "youtube"
+        self.events = events
+        events.on("received").on("command").on("yt", "youtube"
             ).hook(self.yt,
             help="Find a video on youtube", usage="[query]")
-        bot.events.on("received").on("message").on("channel").hook(
+        events.on("received").on("message").on("channel").hook(
             self.channel_message)
 
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="auto-youtube",
             help="Disable/Enable automatically getting info from youtube URLs",
             validate=Utils.bool_or_none)
@@ -102,6 +103,6 @@ class Module(object):
             youtube_id = match.group(1)
             video_details = self.video_details(youtube_id)
             if video_details:
-                self.bot.events.on("send").on("stdout").call(target=event[
+                self.events.on("send").on("stdout").call(target=event[
                     "channel"], message=video_details, module_name="Youtube",
                     server=event["server"])

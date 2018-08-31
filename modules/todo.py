@@ -1,15 +1,15 @@
 
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("todo").hook(
+        events.on("received").on("command").on("todo").hook(
             self.todo, help="Find out what's in your todo list",
             usage="[item number]")
-        bot.events.on("received").on("command").on("todoadd").hook(
+        events.on("received").on("command").on("todoadd").hook(
             self.todo_add, min_args=1, help="Add something to your todo list",
             usage="<description>")
-        bot.events.on("received").on("command").on("tododel").hook(
+        events.on("received").on("command").on("tododel").hook(
             self.todo_del, min_args=1, help="Remove something from your "
             "todo list", usage="<item number>")
 

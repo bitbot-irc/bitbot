@@ -1,10 +1,10 @@
 import datetime
 
 class Module(object):
-    def __init__(self, bot):
-        bot.events.on("received").on("message").on("private").hook(
-            self.private_message)
+    def __init__(self, bot, events):
         self.bot = bot
+        events.on("received").on("message").on("private").hook(
+            self.private_message)
 
     def private_message(self, event):
         if event["message"][0] == "\x01" and event["message"][-1] == "\x01":

@@ -1,9 +1,11 @@
 import time, uuid
 
 class Timer(object):
-    def __init__(self, bot, event_name, delay, next_due=None, **kwargs):
-        self.id = uuid.uuid4().hex
+    def __init__(self, id, bot, events, event_name, delay,
+            next_due=None, **kwargs):
+        self.id = id
         self.bot = bot
+        self.events = events
         self.event_name = event_name
         self.delay = delay
         if next_due:
@@ -26,7 +28,7 @@ class Timer(object):
     def call(self):
         self._done = True
         self.call_count +=1
-        self.bot.events.on("timer").on(self.event_name).call(
+        self.events.on("timer").on(self.event_name).call(
             timer=self, **self.kwargs)
 
     def redo(self):

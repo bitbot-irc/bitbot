@@ -2,10 +2,10 @@ import base64
 import EventManager
 
 class Module(object):
-    def __init__(self, bot):
-        bot.events.on("received").on("numeric").on("001"
+    def __init__(self, bot, events):
+        events.on("received").on("numeric").on("001"
             ).hook(self.on_connect, priority=EventManager.PRIORITY_URGENT)
-        bot.events.on("received").on("command").on("setnickserv"
+        events.on("received").on("command").on("setnickserv"
             ).hook(self.set_nickserv, min_args=1, permission="setnickserv",
             help="Set bot's nickserv password", usage="<password>",
             private_only=True)

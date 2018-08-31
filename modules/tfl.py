@@ -20,30 +20,30 @@ PLATFORM_TYPES = ["Northbound", "Southbound", "Eastbound", "Westbound", "Inner R
 
 class Module(object):
     _name = "TFL"
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
         self.result_map = {}
-        bot.events.on("received").on("command").on("tflbus"
+        events.on("received").on("command").on("tflbus"
             ).hook(self.bus, min_args=1,
             help="Get bus due times for a TfL bus stop",
             usage="<stop_id>")
-        bot.events.on("received").on("command").on("tflline"
+        events.on("received").on("command").on("tflline"
             ).hook(self.line,
             help="Get line status for TfL underground lines",
             usage="<line_name>")
-        bot.events.on("received").on("command").on("tflsearch"
+        events.on("received").on("command").on("tflsearch"
             ).hook(self.search, min_args=1,
             help="Get a list of TfL stop IDs for a given name",
             usage="<name>")
-        bot.events.on("received").on("command").on("tflvehicle"
+        events.on("received").on("command").on("tflvehicle"
             ).hook(self.vehicle, min_args=1,
             help="Get information for a given vehicle",
             usage="<ID>")
-        bot.events.on("received").on("command").on("tflstop"
+        events.on("received").on("command").on("tflstop"
             ).hook(self.stop, min_args=1,
             help="Get information for a given stop",
             usage="<stop_id>")
-        bot.events.on("received").on("command").on("tflservice"
+        events.on("received").on("command").on("tflservice"
             ).hook(self.service, min_args=1,
             help="Get service information and arrival estimates",
             usage="<service index>")

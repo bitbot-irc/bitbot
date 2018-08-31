@@ -7,23 +7,24 @@ DUCK_LAST_SEEN = datetime.datetime.now()
 
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.log = IRCLogging.Log
         self.bot = bot
+        self.events = events
         self.active_duck = 0
 
-        bot.events.on("received.command.bef").hook(self.duck_bef,
+        events.on("received.command.bef").hook(self.duck_bef,
                                                    help="Befriend a duck!")
-        bot.events.on("received.command.bang").hook(self.duck_bang,
+        events.on("received.command.bang").hook(self.duck_bang,
                                                     help="Shoot a duck! Meanie.")
-        bot.events.on("received.command.decoy").hook(self.set_decoy,
+        events.on("received.command.decoy").hook(self.set_decoy,
                                                      help="Be a sneaky fellow and make a decoy duck.")
 
-        # bot.events.on("received.command.friends").hook(self.duck_friends,
+        # events.on("received.command.friends").hook(self.duck_friends,
         #                                             help="See who the friendliest people to ducks are!")
-        # bot.events.on("received.command.killers").hook(self.duck_killers,
+        # events.on("received.command.killers").hook(self.duck_killers,
         #                                             help="See who shoots the most amount of ducks.")
-        # bot.events.on("received.command.ducks").hook(self.duck_list,
+        # events.on("received.command.ducks").hook(self.duck_list,
         #                                              help="Shows a list of the most popular duck superstars.")
 
         now = datetime.datetime.now()
@@ -35,22 +36,22 @@ class Module(object):
         tricky = next_duck_time - now.second
         tricky += ((next_duck_time - (now.minute + 1)) * 2)
 
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="ducks-enabled",
                                       help="Toggles ducks! (1 or 0)")
 
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="min-duck-time",
                                       help="Minimum seconds before a duck is summoned")
 
-        bot.events.on("postboot").on("configure").on(
+        events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="max-duck-time",
                                       help="Max seconds before a duck is summoned")
 
-        bot.events.on("timer").on("duck-appear").hook(self.show_duck)
+        events.on("timer").on("duck-appear").hook(self.show_duck)
         bot.add_timer("duck-appear", next_duck_time, persist=False)
 
-        bot.events.on("received.numeric.366").hook(self.bootstrap)
+        events.on("received.numeric.366").hook(self.bootstrap)
 
     def bootstrap(self, event):
         for server in self.bot.servers.values():
@@ -198,7 +199,7 @@ class Module(object):
 
     def set_decoy(self, event):
         next_decoy_time = self.decoy_time()
-        self.bot.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
+        self.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
         self.bot.add_timer("duck-decoy", next_decoy_time, persist=False)
 
 # def coins(self, event):

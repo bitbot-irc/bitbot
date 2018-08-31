@@ -1,9 +1,12 @@
-import time, traceback
+import itertools, time, traceback
 
 PRIORITY_URGENT = 0
 PRIORITY_HIGH = 1
 PRIORITY_MEDIUM = 2
 PRIORITY_LOW = 3
+
+DEFAULT_PRIORITY = PRIORITY_LOW
+DEFAULT_DELIMITER = "."
 
 class Event(object):
     def __init__(self, bot, name, **kwargs):
@@ -21,7 +24,7 @@ class Event(object):
         self.eaten = True
 
 class EventCallback(object):
-    def __init__(self, function, bot, priority, **kwargs):
+    def __init__(self, function, bot, priority, kwargs):
         self.function = function
         self.bot = bot
         self.priority = priority
@@ -50,6 +53,28 @@ class MultipleEventHook(object):
             returns.append(event_hook.call(**kwargs))
         return returns
 
+class EventHookContext(object):
+    def __init__(self, parent, context):
+        self._parent = parent
+        self.context = context
+    def hook(self, function, priority=DEFAULT_PRIORITY, **kwargs):
+        self._parent._context_hook(self.context, function, priority, kwargs)
+    def on(self, subevent, *extra_subevents, delimiter=DEFAULT_DELIMITER):
+        return self._parent._context_on(self.context, subevent,
+            extra_subevents, delimiter)
+    def call_for_result(self, default=None, **kwargs):
+        return self._parent.call_for_result(default, **kwargs)
+    def assure_call(self, **kwargs):
+        self._parent.assure_call(**kwargs)
+    def call(self, **kwargs):
+        return self._parent.call(**kwargs)
+    def call_limited(self, maximum, **kwargs):
+        return self._parent.call_limited(maximum, **kwargs)
+    def get_hooks(self):
+        return self._parent.get_hooks()
+    def get_children(self):
+        return self._parent.get_children()
+
 class EventHook(object):
     def __init__(self, bot, name=None, parent=None):
         self.bot = bot
@@ -57,10 +82,9 @@ class EventHook(object):
         self.parent = parent
         self._children = {}
         self._hooks = []
-        self._hook_notify = None
-        self._child_notify = None
-        self._call_notify = None
         self._stored_events = []
+        self._context_hooks = {}
+        self._current_context = None
 
     def _make_event(self, kwargs):
         return Event(self.bot, self.name, **kwargs)
@@ -71,14 +95,28 @@ class EventHook(object):
         while not parent == None and not parent.name == None:
             path.append(parent.name)
             parent = parent.parent
-        return ".".join(path[::-1])
+        return DEFAULT_DELIMITER.join(path[::-1])
 
-    def hook(self, function, priority=PRIORITY_LOW, replay=False, **kwargs):
-        callback = EventCallback(function, self.bot, priority, **kwargs)
-        if self._hook_notify:
-            self._hook_notify(self, callback)
-        self._hooks.append(callback)
-        self._hooks.sort(key=lambda x: x.priority)
+    def new_context(self, context):
+        return EventHookContext(self, context)
+
+    def hook(self, function, priority=DEFAULT_PRIORITY, replay=False,
+            **kwargs):
+        self._hook(function, None, priority, replay, kwargs)
+    def _context_hook(self, context, function, priority, kwargs):
+        self._hook(function, context, priority, False, kwargs)
+    def _hook(self, function, context, priority, replay, kwargs):
+        callback = EventCallback(function, self.bot, priority, kwargs)
+
+        if context == None:
+            self._hooks.append(callback)
+            hooks = self._hooks
+        else:
+            if not context in self._context_hooks:
+                self._context_hooks[context] = []
+            self._context_hooks[context].append(callback)
+            hooks = self._context_hooks[context]
+        hooks.sort(key=lambda x: x.priority)
 
         if replay and not self._stored_events == None:
             for kwargs in self._stored_events:
@@ -88,24 +126,37 @@ class EventHook(object):
     def _unhook(self, hook):
         self._hooks.remove(hook)
 
-    def on(self, subevent, *extra_subevents, delimiter="."):
+    def on(self, subevent, *extra_subevents, delimiter=DEFAULT_DELIMITER):
+        return self._on(subevent, extra_subevents, None, delimiter)
+    def _context_on(self, context, subevent, extra_subevents,
+            delimiter=DEFAULT_DELIMITER):
+        return self._on(subevent, extra_subevents, context, delimiter)
+    def _on(self, subevent, extra_subevents, context, delimiter):
         if delimiter in subevent:
             event_chain = subevent.split(delimiter)
             event_obj = self
             for event_name in event_chain:
                 event_obj = event_obj.get_child(event_name)
+            if not context == None:
+                event_obj = event_obj.new_context(context)
             return event_obj
 
         if extra_subevents:
             multiple_event_hook = MultipleEventHook()
             for extra_subevent in (subevent,)+extra_subevents:
-                multiple_event_hook._add(self.get_child(extra_subevent))
+                child = self.get_child(extra_subevent)
+                if not context == None:
+                    child = child.new_context(context)
+                multiple_event_hook._add(child)
             return multiple_event_hook
 
-        return self.get_child(subevent)
+        child = self.get_child(subevent)
+        if not context == None:
+            child = child.new_context(context)
+        return child
 
-    def call_for_result(self, default=None, max=None, **kwargs):
-        results = self.call(max=max, **kwargs)
+    def call_for_result(self, default=None, **kwargs):
+        results = self.call_limited(0, **kwargs)
         return default if not len(results) else results[0]
     def assure_call(self, **kwargs):
         if not self._stored_events == None:
@@ -123,15 +174,10 @@ class EventHook(object):
         start = time.monotonic()
 
         event = self._make_event(kwargs)
-        if self._call_notify:
-            self._call_notify(self, event)
-
         called = 0
         returns = []
-        for hook in self._hooks:
-            if maximum and called == maximum:
-                break
-            if event.eaten:
+        for hook in self.get_hooks():
+            if (maximum and called == maximum) or event.eaten:
                 break
             try:
                 returns.append(hook.call(event))
@@ -155,28 +201,30 @@ class EventHook(object):
         if not child_name_lower in self._children:
             self._children[child_name_lower] = EventHook(self.bot,
                 child_name_lower, self)
-            if self._child_notify:
-                self._child_notify(self, self._children[
-                    child_name_lower])
         return self._children[child_name_lower]
-
     def remove_child(self, child_name):
         child_name_lower = child_name.lower()
         if child_name_lower in self._children:
             del self._children[child_name_lower]
+    def get_children(self):
+        return self._children.keys()
+
     def check_purge(self):
         if len(self._hooks) == 0 and len(self._children
                 ) == 0 and not self.parent == None:
             self.parent.remove_child(self.name)
             self.parent.check_purge()
 
+    def remove_context(self, context):
+        del self._context_hooks[context]
+    def has_context(self, context):
+        return context in self._context_hooks
+    def purge_context(self, context):
+        if self.has_context(context):
+            self.remove_context(context)
+        for child in self.get_children():
+            child.purge_context(context)
+
     def get_hooks(self):
-        return self._hooks
-    def get_children(self):
-        return self._children.keys()
-    def set_hook_notify(self, handler):
-        self._hook_notify = handler
-    def set_child_notify(self, handler):
-        self._child_notify = handler
-    def set_call_notify(self, handler):
-        self._call_notify = handler
+        return self._hooks + list(itertools.chain.from_iterable(
+            self._context_hooks.values()))

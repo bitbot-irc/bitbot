@@ -8,11 +8,12 @@ from threading import Thread
 class Module(Thread):
     _name = "telegram"
 
-    def __init__(self, dolphin):
-        key = dolphin.config.get("telegram-api-key")
+    def __init__(self, bot, events):
+        key = bot.config.get("telegram-api-key")
         if not key: return
 
-        self.dolphin = dolphin
+        self.bot = bot
+        self.events = events
 
         self.updater = Updater(key)
         self.dispatcher = self.updater.dispatcher
@@ -23,7 +24,7 @@ class Module(Thread):
         self.dispatcher.add_handler(command_handler)
 
         self.updater.start_polling()
-        dolphin.events.on("signal").on("interrupt").hook(self.sigint)
+        events.on("signal").on("interrupt").hook(self.sigint)
 
     def start(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="`Dolphin, but Telegram`", parse_mode="Markdown")
@@ -45,7 +46,7 @@ class Module(Thread):
             "stderr": IOWrapper(bot, message.chat_id, message.message_id),
             "external": True,
             }
-        self.dolphin.events.on("telegram").on("command").on(command).call(**data)
+        self.events.on("telegram").on("command").on(command).call(**data)
 
     def sigint(self, event):
         self.updater.stop()

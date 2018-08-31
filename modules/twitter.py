@@ -11,9 +11,9 @@ REGEX_TWITTERURL = re.compile(
     "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("twitter", "tw"
+        events.on("received").on("command").on("twitter", "tw"
             ).hook(self.twitter, help="Find a tweet",
             usage="[@username/URL/ID]")
 

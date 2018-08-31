@@ -1,4 +1,4 @@
-import os, select, sys, threading, time, traceback
+import os, select, sys, threading, time, traceback, uuid
 
 import EventManager, IRCLineHandler, IRCLogging, IRCServer
 import ModuleManager, Timer
@@ -13,21 +13,21 @@ class Bot(object):
         self.servers = {}
         self.running = True
         self.poll = select.epoll()
-        self.modules = ModuleManager.ModuleManager(self)
-        self.events = EventManager.EventHook(self)
+        self._events = EventManager.EventHook(self)
+        self.modules = ModuleManager.ModuleManager(self, self._events)
         self.log = IRCLogging.Log(self)
-        self.line_handler = IRCLineHandler.LineHandler(self)
+        self.line_handler = IRCLineHandler.LineHandler(self, self._events)
         self.timers = []
-        self.events.on("timer").on("reconnect").hook(self.reconnect)
-        self.events.on("boot").on("done").hook(self.setup_timers)
+        self._events.on("timer").on("reconnect").hook(self.reconnect)
+        self._events.on("boot").on("done").hook(self.setup_timers)
 
     def add_server(self, id, hostname, port, password, ipv4, tls,
             nickname, username, realname, connect=False):
-        new_server = IRCServer.Server(id, hostname, port, password,
-             ipv4, tls, nickname, username, realname, self)
+        new_server = IRCServer.Server(self, self._events, id, hostname,
+            port, password, ipv4, tls, nickname, username, realname)
         if not new_server.get_setting("connect", True):
             return
-        self.events.on("new").on("server").call(server=new_server)
+        self._events.on("new").on("server").call(server=new_server)
         if connect and new_server.get_setting("connect", True):
             self.connect(new_server)
         return new_server
@@ -55,7 +55,9 @@ class Bot(object):
         self.del_setting("timer-%s" % timer.id)
     def add_timer(self, event_name, delay, next_due=None, id=None, persist=True,
             **kwargs):
-        timer = Timer.Timer(self, event_name, delay, next_due, **kwargs)
+        id = id or uuid.uuid4().hex
+        timer = Timer.Timer(id, self, self._events, event_name, delay,
+            next_due, **kwargs)
         if id:
             timer.id = id
         elif persist:

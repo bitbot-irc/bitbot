@@ -1,21 +1,21 @@
 import random, time
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("quoteadd",
+        events.on("received").on("command").on("quoteadd",
             "qadd").hook(self.quote_add, min_args=1,
             help="Added a quote to a category",
             usage="<category> = <quote>")
-        bot.events.on("received").on("command").on("quoteget",
+        events.on("received").on("command").on("quoteget",
             "qget").hook(self.quote_get, min_args=1,
             help="Find a quote within a category",
             usage="<category> = <search>")
-        bot.events.on("received").on("command").on("quotedel",
+        events.on("received").on("command").on("quotedel",
             "qdel").hook(self.quote_del, min_args=1,
             help="Delete a quote from a category",
             usage="<category> = <quote>")
-        bot.events.on("received").on("command").on("quote",
+        events.on("received").on("command").on("quote",
             "q").hook(self.quote, min_args=1,
             help="Get a random quote from a category",
             usage="<category>")

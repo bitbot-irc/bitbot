@@ -2,11 +2,11 @@ import random, uuid
 
 class Module(object):
     _name = "Random"
-    def __init__(self, bot):
-        bot.events.on("received").on("command").on("random",
+    def __init__(self, bot, events):
+        events.on("received").on("command").on("random",
             "rand").hook(self.random, help="Get a random number",
             usage="[start] [end]")
-        bot.events.on("received").on("command").on("guid"
+        events.on("received").on("command").on("guid"
             ).hook(self.guid, help="Get a random guid")
 
     def random(self, event):

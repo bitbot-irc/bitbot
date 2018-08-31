@@ -6,9 +6,9 @@ import Utils
 URL_GOOGLESEARCH = "https://www.googleapis.com/customsearch/v1"
 
 class Module(object):
-    def __init__(self, bot):
+    def __init__(self, bot, events):
         self.bot = bot
-        bot.events.on("received").on("command").on("google",
+        events.on("received").on("command").on("google",
             "g").hook(self.google, help="Google feeling lucky",
             usage="[search term]")
 
