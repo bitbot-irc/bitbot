@@ -117,7 +117,7 @@ class Module(object):
 
             event["stdout"].write(
                 target + ", you've befriended " + str(befriended_ducks + 1) + " duck" + grammar + " in " + event[
-                    "target"].name);
+                    "target"].name)
 
             next_duck_time = self.duck_time(event)
             self.bot.add_timer("duck-appear", next_duck_time, persist=False)
