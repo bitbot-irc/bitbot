@@ -1,13 +1,17 @@
 import random, uuid
 
+
 class Module(object):
     _name = "Random"
+
     def __init__(self, bot):
         bot.events.on("received").on("command").on("random",
-            "rand").hook(self.random, help="Get a random number",
-            usage="[start] [end]")
+                                                   "rand").hook(self.random,
+                                                                help="Get a random number",
+                                                                usage="[start] [end]")
         bot.events.on("received").on("command").on("guid"
-            ).hook(self.guid, help="Get a random guid")
+                                                   ).hook(self.guid,
+                                                          help="Get a random guid")
 
     def random(self, event):
         start, end = "1", "100"
@@ -20,7 +24,7 @@ class Module(object):
             if end > start:
                 number = random.randint(start, end)
                 event["stdout"].write("(%d-%d) %d" % (start, end,
-                    number))
+                                                      number))
             else:
                 event["stderr"].write(
                     "End must be greater than start")

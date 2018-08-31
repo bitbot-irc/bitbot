@@ -1,24 +1,29 @@
 import random, time
 
+
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("quoteadd",
-            "qadd").hook(self.quote_add, min_args=1,
-            help="Added a quote to a category",
-            usage="<category> = <quote>")
+                                                   "qadd").hook(self.quote_add,
+                                                                min_args=1,
+                                                                help="Added a quote to a category",
+                                                                usage="<category> = <quote>")
         bot.events.on("received").on("command").on("quoteget",
-            "qget").hook(self.quote_get, min_args=1,
-            help="Find a quote within a category",
-            usage="<category> = <search>")
+                                                   "qget").hook(self.quote_get,
+                                                                min_args=1,
+                                                                help="Find a quote within a category",
+                                                                usage="<category> = <search>")
         bot.events.on("received").on("command").on("quotedel",
-            "qdel").hook(self.quote_del, min_args=1,
-            help="Delete a quote from a category",
-            usage="<category> = <quote>")
+                                                   "qdel").hook(self.quote_del,
+                                                                min_args=1,
+                                                                help="Delete a quote from a category",
+                                                                usage="<category> = <quote>")
         bot.events.on("received").on("command").on("quote",
-            "q").hook(self.quote, min_args=1,
-            help="Get a random quote from a category",
-            usage="<category>")
+                                                   "q").hook(self.quote,
+                                                             min_args=1,
+                                                             help="Get a random quote from a category",
+                                                             usage="<category>")
 
     def category_and_quote(self, s):
         if "=" in s:
@@ -47,12 +52,14 @@ class Module(object):
                     found.append(quote)
             if found:
                 event["stdout"].write("%d quote%s found: %s" % (len(found),
-                    "s" if len(found) > 1 else "", found[0]))
+                                                                "s" if len(
+                                                                    found) > 1 else "",
+                                                                found[0]))
             else:
                 event["stderr"].write("No quotes found")
         else:
             event["stderr"].write("Please provide a category and a "
-                "part of a quote to find")
+                                  "part of a quote to find")
 
     def quote_del(self, event):
         category, remove_quote = self.category_and_quote(event["args"])
@@ -72,13 +79,13 @@ class Module(object):
                 event["stderr"].write("Quote not found")
         else:
             event["stderr"].write("Please provide a category and a quote "
-                "to remove")
+                                  "to remove")
 
     def quote(self, event):
         category = event["args"].strip().lower()
         quotes = event["server"].get_setting("quotes-%s" % category, [])
         if quotes:
-            index = random.randint(0, len(quotes)-1)
+            index = random.randint(0, len(quotes) - 1)
             nickname, time_added, quote = quotes[index]
             event["stdout"].write("%s: %s" % (category, quote))
         else:

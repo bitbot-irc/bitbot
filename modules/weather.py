@@ -1,8 +1,9 @@
-#--require-config openweathermap-api-key
+# --require-config openweathermap-api-key
 
 import Utils
 
 URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
+
 
 class Module(object):
     def __init__(self, bot):
@@ -17,22 +18,23 @@ class Module(object):
         page = Utils.get_url(URL_WEATHER, get_params={
             "q": event["args"], "units": "metric",
             "APPID": api_key},
-            json=True)
+                             json=True)
         if page:
             if "weather" in page:
                 location = "%s, %s" % (page["name"], page["sys"][
                     "country"])
                 celsius = "%dC" % page["main"]["temp"]
-                fahrenheit = "%dF" % ((page["main"]["temp"]*(9/5))+32)
+                fahrenheit = "%dF" % ((page["main"]["temp"] * (9 / 5)) + 32)
                 description = page["weather"][0]["description"].title()
                 humidity = "%s%%" % page["main"]["humidity"]
                 wind_speed = "%sKM/h" % page["wind"]["speed"]
 
                 event["stdout"].write(
                     "(%s) %s/%s | %s | Humidity: %s | Wind: %s" % (
-                    location, celsius, fahrenheit, description, humidity,
-                    wind_speed))
+                        location, celsius, fahrenheit, description, humidity,
+                        wind_speed))
             else:
-                event["stderr"].write("No weather information for this location")
+                event["stderr"].write(
+                    "No weather information for this location")
         else:
             event["stderr"].write("Failed to load results")

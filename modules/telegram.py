@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from threading import Thread
 
+
 class Module(Thread):
     _name = "telegram"
 
@@ -26,7 +27,8 @@ class Module(Thread):
         dolphin.events.on("signal").on("interrupt").hook(self.sigint)
 
     def start(self, bot, update):
-        bot.send_message(chat_id=update.message.chat_id, text="`Dolphin, but Telegram`", parse_mode="Markdown")
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="`Dolphin, but Telegram`", parse_mode="Markdown")
 
     def handle(self, bot, update):
         message, text = update.message, update.message.text
@@ -44,19 +46,24 @@ class Module(Thread):
             "stdout": IOWrapper(bot, message.chat_id, message.message_id),
             "stderr": IOWrapper(bot, message.chat_id, message.message_id),
             "external": True,
-            }
-        self.dolphin.events.on("telegram").on("command").on(command).call(**data)
+        }
+        self.dolphin.events.on("telegram").on("command").on(command).call(
+            **data)
 
     def sigint(self, event):
         self.updater.stop()
+
 
 class IOWrapper:
     def __init__(self, bot, chat_id, message_id):
         self.bot = bot
         self.chat_id = chat_id
         self.message_id = message_id
+
     def write(self, text):
-        if len(text)>4096-10:
+        if len(text) > 4096 - 10:
             text = text[:4086] + "…"
-        self.bot.send_message(chat_id=self.chat_id, text="```\n" + text + "\n```",
-            reply_to_message_id=self.message_id, parse_mode="Markdown")
+        self.bot.send_message(chat_id=self.chat_id,
+                              text="```\n" + text + "\n```",
+                              reply_to_message_id=self.message_id,
+                              parse_mode="Markdown")

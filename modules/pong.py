@@ -1,5 +1,3 @@
-
-
 class Module(object):
     def __init__(self, bot):
         bot.events.on("received.command.ping").hook(

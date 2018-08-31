@@ -1,60 +1,88 @@
 import Utils
 
+
 class Module(object):
     _name = "Channel Op"
+
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("kick", "k"
-            ).hook(self.kick, channel_only=True, require_mode="o",
-            min_args=1, help="Kick a user from the channel",
-            usage="<nickname> [reason]")
+                                                   ).hook(self.kick,
+                                                          channel_only=True,
+                                                          require_mode="o",
+                                                          min_args=1,
+                                                          help="Kick a user from the channel",
+                                                          usage="<nickname> [reason]")
 
         bot.events.on("received").on("command").on("ban"
-            ).hook(self.ban, channel_only=True, require_mode="o",
-            min_args=1, help="Ban a user/hostmask from the channel",
-            usage="<nickname/hostmask>")
+                                                   ).hook(self.ban,
+                                                          channel_only=True,
+                                                          require_mode="o",
+                                                          min_args=1,
+                                                          help="Ban a user/hostmask from the channel",
+                                                          usage="<nickname/hostmask>")
         bot.events.on("received").on("command").on("unban"
-            ).hook(self.unban, channel_only=True, require_mode="o",
-            min_args=1, help="Unban a user/hostmask from the channel",
-            usage="<nickname/hostmask>")
+                                                   ).hook(self.unban,
+                                                          channel_only=True,
+                                                          require_mode="o",
+                                                          min_args=1,
+                                                          help="Unban a user/hostmask from the channel",
+                                                          usage="<nickname/hostmask>")
 
         bot.events.on("received").on("command").on("kickban", "kb"
-            ).hook(self.kickban, channel_only=True, require_mode="o",
-            min_args=1, help="Kickban a user from the channel",
-            usage="<nickanme> [reason]")
+                                                   ).hook(self.kickban,
+                                                          channel_only=True,
+                                                          require_mode="o",
+                                                          min_args=1,
+                                                          help="Kickban a user from the channel",
+                                                          usage="<nickanme> [reason]")
 
         bot.events.on("received").on("command").on("op"
-            ).hook(self.op, channel_only=True, require_mode="o",
-            help="Give +o to a user", usage="[nickname]")
+                                                   ).hook(self.op,
+                                                          channel_only=True,
+                                                          require_mode="o",
+                                                          help="Give +o to a user",
+                                                          usage="[nickname]")
         bot.events.on("received").on("command").on("deop"
-            ).hook(self.deop, channel_only=True, require_mode="o",
-            help="Take +o from a user", usage="[nickname]")
+                                                   ).hook(self.deop,
+                                                          channel_only=True,
+                                                          require_mode="o",
+                                                          help="Take +o from a user",
+                                                          usage="[nickname]")
 
         bot.events.on("received").on("command").on("voice"
-            ).hook(self.voice, channel_only=True, require_mode="o",
-            help="Give +v to a user", usage="[nickname]")
+                                                   ).hook(self.voice,
+                                                          channel_only=True,
+                                                          require_mode="o",
+                                                          help="Give +v to a user",
+                                                          usage="[nickname]")
         bot.events.on("received").on("command").on("devoice"
-            ).hook(self.devoice, channel_only=True, require_mode="o",
-            help="Take +v from a user", usage="[nickname]")
+                                                   ).hook(self.devoice,
+                                                          channel_only=True,
+                                                          require_mode="o",
+                                                          help="Take +v from a user",
+                                                          usage="[nickname]")
 
         bot.events.on("received").on("message").on("channel").hook(
             self.highlight_spam)
 
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="highlight-spam-threshold",
-            help="Set the number of nicknames in a message that "
-            "qualifies as spam", validate=Utils.int_or_none)
+                                      help="Set the number of nicknames in a message that "
+                                           "qualifies as spam",
+                                      validate=Utils.int_or_none)
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="highlight-spam-protection",
-            help="Enable/Disable highlight spam protection",
-            validate=Utils.bool_or_none)
+                                      help="Enable/Disable highlight spam protection",
+                                      validate=Utils.bool_or_none)
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="highlight-spam-ban",
-            help="Enable/Disable banning highlight spammers "
-            "instead of just kicking", validate=Utils.bool_or_none)
+                                      help="Enable/Disable banning highlight spammers "
+                                           "instead of just kicking",
+                                      validate=Utils.bool_or_none)
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="ban-format",
-            help="Set ban format ($n = nick, $u = username, $h = hostname)")
+                                      help="Set ban format ($n = nick, $u = username, $h = hostname)")
 
     def kick(self, event):
         target = event["args_split"][0]
@@ -74,7 +102,9 @@ class Module(object):
 
     def _ban_format(self, user, s):
         return s.replace("$n", user.nickname).replace("$u", user.username
-            ).replace("$h", user.hostname)
+                                                      ).replace("$h",
+                                                                user.hostname)
+
     def _ban(self, channel, ban, user):
         format = channel.get_setting("ban-format", "*!$u@$h")
         hostmask_split = format.split("$$")
@@ -84,12 +114,14 @@ class Module(object):
             channel.send_ban(hostmask)
         else:
             channel.send_unban(hostmask)
+
     def ban(self, event):
         target_user = event["server"].get_user(event["args_split"][0])
         if event["target"].has_user(target_user):
             self._ban(event["target"], True, target_user)
         else:
             event["target"].send_ban(event["args_split"][0])
+
     def unban(self, event):
         target_user = event["server"].get_user(event["args_split"][0])
         if event["target"].has_user(target_user):
@@ -108,14 +140,17 @@ class Module(object):
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("+o", target)
+
     def deop(self, event):
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("-o", target)
+
     def voice(self, event):
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("+v", target)
+
     def devoice(self, event):
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
@@ -124,17 +159,18 @@ class Module(object):
     def highlight_spam(self, event):
         if event["channel"].get_setting("highlight-spam-protection", False):
             nicknames = list(map(lambda user: user.nickname,
-                event["channel"].users)) + [event["server"].nickname]
+                                 event["channel"].users)) + [
+                            event["server"].nickname]
 
             highlights = set(nicknames) & set(event["message_split"])
             if len(highlights) > 1 and len(highlights) >= event["channel"
-                    ].get_setting("highlight-spam-threshold", 10):
+            ].get_setting("highlight-spam-threshold", 10):
                 has_mode = event["channel"].mode_or_above(event["user"], "v")
                 should_ban = event["channel"].get_setting("highlight-spam-ban",
-                    False)
+                                                          False)
                 if not has_mode:
                     if should_ban:
                         event["channel"].send_ban("*!%s@%s" % (
                             event["user"].username, event["user"].hostname))
                     event["channel"].send_kick(event["user"].nickname,
-                        "highlight spam detected")
+                                               "highlight spam detected")

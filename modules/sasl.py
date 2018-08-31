@@ -1,5 +1,6 @@
 import base64
 
+
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
@@ -36,4 +37,3 @@ class Module(object):
 
     def on_90x(self, event):
         event["server"].send_capability_end()
-

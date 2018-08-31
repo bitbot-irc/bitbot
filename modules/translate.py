@@ -5,11 +5,12 @@ URL_TRANSLATE = "http://translate.googleapis.com/translate_a/single"
 URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
 REGEX_LANGUAGES = re.compile("(\w+)?:(\w+)? ")
 
+
 class Module(object):
     def __init__(self, bot):
         bot.events.on("received").on("command").on("translate", "tr").hook(
             self.translate, help="Translate the provided phrase or the "
-            "last line seen.", usage="[phrase]")
+                                 "last line seen.", usage="[phrase]")
 
     def translate(self, event):
         phrase = event["args"]
@@ -46,5 +47,4 @@ class Module(object):
                 data_json[0][0][0]))
         else:
             event["stderr"].write("Failed to translate, try checking "
-                "source/target languages (" + URL_LANGUAGES + ")")
-
+                                  "source/target languages (" + URL_LANGUAGES + ")")

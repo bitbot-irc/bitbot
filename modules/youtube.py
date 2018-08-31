@@ -1,4 +1,4 @@
-#--require-config google-api-key
+# --require-config google-api-key
 
 import re
 import Utils
@@ -16,25 +16,30 @@ URL_YOUTUBESHORT = "https://youtu.be/%s"
 ARROW_UP = "▲"
 ARROW_DOWN = "▼"
 
+
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("yt", "youtube"
-            ).hook(self.yt,
-            help="Find a video on youtube", usage="[query]")
+                                                   ).hook(self.yt,
+                                                          help="Find a video on youtube",
+                                                          usage="[query]")
         bot.events.on("received").on("message").on("channel").hook(
             self.channel_message)
 
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="auto-youtube",
-            help="Disable/Enable automatically getting info from youtube URLs",
-            validate=Utils.bool_or_none)
-
+                                      help="Disable/Enable automatically getting info from youtube URLs",
+                                      validate=Utils.bool_or_none)
 
     def get_video_page(self, video_id, part):
         return Utils.get_url(URL_YOUTUBEVIDEO, get_params={"part": part,
-            "id": video_id, "key": self.bot.config["google-api-key"]},
-            json=True)
+                                                           "id": video_id,
+                                                           "key":
+                                                               self.bot.config[
+                                                                   "google-api-key"]},
+                             json=True)
+
     def video_details(self, video_id):
         snippet = self.get_video_page(video_id, "snippet")
         if snippet["items"]:
@@ -52,19 +57,23 @@ class Module(object):
             video_opinions = ""
             if video_likes and video_dislikes:
                 video_opinions = " (%s%s%s%s)" % (video_likes, ARROW_UP,
-                    ARROW_DOWN, video_dislikes)
+                                                  ARROW_DOWN, video_dislikes)
 
             match = re.match(REGEX_ISO8601, video_duration)
             video_duration = ""
             video_duration += "%s:" % match.group(1)[:-1].zfill(2
-                ) if match.group(1) else ""
+                                                                ) if match.group(
+                1) else ""
             video_duration += "%s:" % match.group(2)[:-1].zfill(2
-                ) if match.group(2) else "00:"
+                                                                ) if match.group(
+                2) else "00:"
             video_duration += "%s" % match.group(3)[:-1].zfill(2
-                ) if match.group(3) else "00"
+                                                               ) if match.group(
+                3) else "00"
             return "%s (%s) uploaded by %s, %s views%s %s" % (
                 video_title, video_duration, video_uploader, "{:,}".format(
-                int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
+                    int(video_views)), video_opinions,
+                URL_YOUTUBESHORT % video_id)
 
     def yt(self, event):
         video_id = None
@@ -74,14 +83,18 @@ class Module(object):
         else:
             last_youtube = event["buffer"].find(REGEX_YOUTUBE)
             if last_youtube:
-                video_id = re.search(REGEX_YOUTUBE, last_youtube.message).group(1)
+                video_id = re.search(REGEX_YOUTUBE, last_youtube.message).group(
+                    1)
         if search or video_id:
             if not video_id:
                 search_page = Utils.get_url(URL_YOUTUBESEARCH,
-                    get_params={"q": search, "part": "snippet",
-                    "maxResults": "1", "type": "video",
-                    "key": self.bot.config["google-api-key"]},
-                    json=True)
+                                            get_params={"q": search,
+                                                        "part": "snippet",
+                                                        "maxResults": "1",
+                                                        "type": "video",
+                                                        "key": self.bot.config[
+                                                            "google-api-key"]},
+                                            json=True)
                 if search_page:
                     if search_page["pageInfo"]["totalResults"] > 0:
                         video_id = search_page["items"][0]["id"]["videoId"]
@@ -94,7 +107,7 @@ class Module(object):
             else:
                 event["stderr"].write("No search phrase provided")
         else:
-           event["stderr"].write("No search phrase provided")
+            event["stderr"].write("No search phrase provided")
 
     def channel_message(self, event):
         match = re.search(REGEX_YOUTUBE, event["message"])
@@ -104,4 +117,5 @@ class Module(object):
             if video_details:
                 self.bot.events.on("send").on("stdout").call(target=event[
                     "channel"], message=video_details, module_name="Youtube",
-                    server=event["server"])
+                                                             server=event[
+                                                                 "server"])

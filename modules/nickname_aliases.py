@@ -1,34 +1,45 @@
-#--ignore
+# --ignore
 import types, json
+
 
 def get_target(user):
     return user.alias or user.nickname
+
+
 def set_setting(user, setting, value):
     target = get_target(user)
     user.bot.database.set_user_setting(user.server.id, target,
-        setting, value)
+                                       setting, value)
+
+
 def get_setting(user, setting, default=None):
     target = get_target(user)
     return user.bot.database.get_user_setting(user.server.id,
-        target, setting, default)
+                                              target, setting, default)
+
+
 def find_settings(user, pattern, default=[]):
     target = get_target(user)
     return user.bot.databse.find_user_settings(user.server.id,
-        target, pattern, default)
+                                               target, pattern, default)
+
+
 def del_setting(user, setting):
     target = get_target(user)
     user.bot.database.del_user_setting(user.server.id, target,
-        setting)
+                                       setting)
+
 
 class Module(object):
     _name = "Aliases"
+
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("new").on("user").hook(self.new_user)
         bot.events.on("received").on("nick").hook(self.nickname_change)
         bot.events.on("received").on("command").on("alias").hook(
             self.alias)
-        #bot.events.on("received").on("command").on("mainalias").hook(
+        # bot.events.on("received").on("command").on("mainalias").hook(
         #    self.main_alias)
 
     def new_user(self, event):
@@ -59,11 +70,12 @@ class Module(object):
         return self.bot.database.cursor().execute("""SELECT nickname
             FROM user_settings WHERE setting='alias' AND value=?
             AND server_id=?""", [json.dumps(target.lower()),
-            server.id]).fetchall()
+                                 server.id]).fetchall()
+
     def _change_nick(self, old_nickname, new_nickname):
         self.bot.database.cursor().execute("""UPDATE user_settings
             SET nickname=? WHERE nickname=?""", [new_nickname.lower(),
-            old_nickname.lower()])
+                                                 old_nickname.lower()])
 
     def alias(self, event):
         if event["args"]:
@@ -76,7 +88,9 @@ class Module(object):
         aliases = self._get_aliases(target, event["server"])
         if any(aliases):
             event["stdout"].write("Aliases for %s: %s" % (target,
-                ", ".join([a[0] for a in aliases])))
+                                                          ", ".join(
+                                                              [a[0] for a in
+                                                               aliases])))
         else:
             event["stderr"].write("%s has no aliases" % target)
 
@@ -91,6 +105,6 @@ class Module(object):
                         "alias", alias)
             self._change_nick()
             event["stdout"].write("This nickname has been set as the "
-                "main alias for it's group of aliases")
+                                  "main alias for it's group of aliases")
         else:
             event["stderr"].write("This nickname is already a main alias")

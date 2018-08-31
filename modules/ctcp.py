@@ -1,5 +1,6 @@
 import datetime
 
+
 class Module(object):
     def __init__(self, bot):
         bot.events.on("received").on("message").on("private").hook(
@@ -18,10 +19,10 @@ class Module(object):
                 ctcp_response = None
                 if ctcp_command == "VERSION":
                     ctcp_response = self.bot.config.get("ctcp-version",
-                        "BitBot (https://github.com/jesopo/bitbot)")
+                                                        "BitBot (https://github.com/jesopo/bitbot)")
                 elif ctcp_command == "SOURCE":
                     ctcp_response = self.bot.config.get("ctcp-source",
-                        "https://github.com/jesopo/bitbot")
+                                                        "https://github.com/jesopo/bitbot")
                 elif ctcp_command == "PING":
                     ctcp_response = " ".join(ctcp_args_split)
                 elif ctcp_command == "TIME":
@@ -29,4 +30,4 @@ class Module(object):
 
                 if ctcp_response:
                     event["user"].send_ctcp_response(ctcp_command,
-                        ctcp_response)
+                                                     ctcp_response)

@@ -1,8 +1,9 @@
-#--require-config wordnik-api-key
+# --require-config wordnik-api-key
 
 import Utils
 
 URL_WORDNIK = "http://api.wordnik.com:80/v4/word.json/%s/definitions"
+
 
 class Module(object):
     def __init__(self, bot):
@@ -23,7 +24,7 @@ class Module(object):
         if page:
             if len(page):
                 event["stdout"].write("%s: %s" % (page[0]["word"],
-                    page[0]["text"]))
+                                                  page[0]["text"]))
             else:
                 event["stderr"].write("No definitions found")
         else:

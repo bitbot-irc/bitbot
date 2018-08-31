@@ -2,7 +2,8 @@ import base64, os
 import scrypt
 
 REQUIRES_IDENTIFY = ("You need to be identified to use that command "
- "(/msg %s register | /msg %s identify)")
+                     "(/msg %s register | /msg %s identify)")
+
 
 class Module(object):
     def __init__(self, bot):
@@ -12,13 +13,20 @@ class Module(object):
             self.preprocess_command)
         bot.events.on("received").on("part").hook(self.on_part)
         bot.events.on("received").on("command").on("identify"
-            ).hook(self.identify, private_only=True, min_args=1,
-            usage="<password>", help="Identify yourself")
+                                                   ).hook(self.identify,
+                                                          private_only=True,
+                                                          min_args=1,
+                                                          usage="<password>",
+                                                          help="Identify yourself")
         bot.events.on("received").on("command").on("register"
-            ).hook(self.register, private_only=True, min_args=1,
-            usage="<password>", help="Register your nickname")
+                                                   ).hook(self.register,
+                                                          private_only=True,
+                                                          min_args=1,
+                                                          usage="<password>",
+                                                          help="Register your nickname")
         bot.events.on("received.command.logout").hook(self.logout,
-             private_only=True, help="Sign out from the bot")
+                                                      private_only=True,
+                                                      help="Sign out from the bot")
 
         bot.events.on("received.command.mypermissions").hook(
             self.my_permissions, authenticated=True)
@@ -33,7 +41,7 @@ class Module(object):
     def on_part(self, event):
         if len(event["user"].channels) == 1 and event["user"].identified:
             event["user"].send_notice("You no longer share any channels "
-                "with me so you have been signed out")
+                                      "with me so you have been signed out")
 
     def _get_hash(self, user):
         hash, salt = user.get_setting("authentication", (None, None))
@@ -56,7 +64,7 @@ class Module(object):
     def identify(self, event):
         if not event["user"].channels:
             event["stderr"].write("You must share at least one channel "
-                "with me before you can identify")
+                                  "with me before you can identify")
             return
         if not event["user"].identified:
             password = event["args_split"][0]
@@ -66,7 +74,7 @@ class Module(object):
                 if attempt == hash:
                     self._identified(event["user"])
                     event["stdout"].write("Correct password, you have "
-                        "been identified.")
+                                          "been identified.")
                 else:
                     event["stderr"].write("Incorrect password")
             else:
@@ -97,23 +105,23 @@ class Module(object):
         permission = event["hook"].kwargs.get("permission", None)
         authenticated = event["hook"].kwargs.get("authenticated", False)
         protect_registered = event["hook"].kwargs.get("protect_registered",
-            False)
+                                                      False)
 
         if permission:
             identified = event["user"].identified
             user_permissions = event["user"].get_setting("permissions", [])
             has_permission = permission and (
-                permission in user_permissions or "*" in user_permissions)
+                    permission in user_permissions or "*" in user_permissions)
             if not identified or not has_permission:
                 return "You do not have permission to do that"
         elif authenticated:
             if not event["user"].identified:
                 return REQUIRES_IDENTIFY % (event["server"].nickname,
-                    event["server"].nickname)
+                                            event["server"].nickname)
         elif protect_registered:
             if authentication and not event["user"].identified:
                 return REQUIRES_IDENTIFY % (event["server"].nickname,
-                    event["server"].nickname)
+                                            event["server"].nickname)
 
     def my_permissions(self, event):
         permissions = event["user"].get_setting("permissions", [])
@@ -142,6 +150,7 @@ class Module(object):
             target.set_setting("permissions", permissions)
             event["stdout"].write("Gave permission '%s' to %s" % (
                 permission, target.nickname))
+
     def remove_permission(self, event):
         permission = event["args_split"][1].lower()
         target, registered, permissions = self._get_user_details(
