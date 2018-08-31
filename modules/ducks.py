@@ -128,7 +128,7 @@ class Module(object):
 
         sentence = sentence[0:-2]
 
-        event["target"].send_message(sentence)
+        event["stdout"].write(sentence)
 
     def duck_bef(self, event):
         user = event["user"]
@@ -140,7 +140,6 @@ class Module(object):
                                                      str) else active_duck
 
         if active_duck == 0:
-            event["stderr"].set_prefix("Kick")
             if event["server"].has_user(target):
                 if not event["server"].is_own_nickname(target):
                     event["target"].send_kick(target,
