@@ -123,9 +123,6 @@ class EventHook(object):
                 self._call(kwargs)
         self._stored_events = None
 
-    def _unhook(self, hook):
-        self._hooks.remove(hook)
-
     def on(self, subevent, *extra_subevents, delimiter=DEFAULT_DELIMITER):
         return self._on(subevent, extra_subevents, None, delimiter)
     def _context_on(self, context, subevent, extra_subevents,
@@ -210,7 +207,7 @@ class EventHook(object):
         return self._children.keys()
 
     def check_purge(self):
-        if len(self._hooks) == 0 and len(self._children
+        if len(self.get_hooks()) == 0 and len(self._children
                 ) == 0 and not self.parent == None:
             self.parent.remove_child(self.name)
             self.parent.check_purge()
