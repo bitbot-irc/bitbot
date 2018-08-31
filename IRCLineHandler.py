@@ -309,7 +309,8 @@ class LineHandler(object):
     def invite(self, event):
         nickname, username, hostname = Utils.seperate_hostmask(
             event["prefix"])
-        target_channel = event["arbitrary"]
+
+        target_channel = event["arbitrary"] or event["args"][1]
         user = event["server"].get_user(nickname)
         self.events.on("received").on("invite").call(
             user=user, target_channel=target_channel,
