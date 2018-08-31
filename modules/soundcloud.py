@@ -1,4 +1,4 @@
-# --require-config soundcloud-api-key
+#--require-config soundcloud-api-key
 
 import json, re, time
 import Utils
@@ -7,15 +7,12 @@ URL_SOUNDCLOUD_TRACK = "http://api.soundcloud.com/tracks"
 URL_SOUNDCLOUD_RESOLVE = "http://api.soundcloud.com/resolve"
 REGEX_SOUNDCLOUD = "https?://soundcloud.com/([^/]+)/([^/]+)"
 
-
 class Module(object):
     _name = "SoundCloud"
-
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("soundcloud", "sc"
-                                                   ).hook(self.soundcloud,
-                                                          help="Search SoundCloud")
+            ).hook(self.soundcloud, help="Search SoundCloud")
 
     def soundcloud(self, event):
         query = None
@@ -31,14 +28,14 @@ class Module(object):
             last_soundcloud = event["buffer"].find(REGEX_SOUNDCLOUD)
             if last_soundcloud:
                 url = re.match(REGEX_SOUNDCLOUD,
-                               last_soundcloud.message).string
+                    last_soundcloud.message).string
 
         if not query and not url:
             event["stderr"].write("no search phrase provided")
             return
         has_query = not query == None
         get_params = {"limit": 1,
-                      "client_id": self.bot.config["soundcloud-api-key"]}
+            "client_id": self.bot.config["soundcloud-api-key"]}
 
         if query:
             get_params["q"] = query
@@ -54,12 +51,11 @@ class Module(object):
             title = page["title"]
             user = page["user"]["username"]
             duration = time.strftime("%H:%M:%S", time.gmtime(page[
-                                                                 "duration"] / 1000))
+                "duration"]/1000))
             if duration.startswith("00:"):
                 duration = duration[3:]
             link = page["permalink_url"]
             event["stdout"].write("%s [%s] (posted by %s) %s" % (title,
-                                                                 duration, user,
-                                                                 link))
+                duration, user, link))
         else:
             event["stderr"].write("Failed to load results")

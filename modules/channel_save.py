@@ -1,3 +1,5 @@
+
+
 class Module(object):
     def __init__(self, bot):
         bot.events.on("received.numeric.001").hook(
@@ -6,15 +8,14 @@ class Module(object):
         bot.events.on("self.kick").hook(self.on_kick)
 
     def on_connect(self, event):
-        channels = event["server"].get_setting("autojoin", [])
+        channels =  event["server"].get_setting("autojoin", [])
         chan_keys = event["server"].get_setting("channel_keys", {})
         channels_sorted = sorted(channels,
-                                 key=lambda x: 0 if x in chan_keys else 1)
+            key=lambda x: 0 if x in chan_keys else 1)
 
         keys_sorted = list(map(lambda x: x[1],
-                               sorted(chan_keys.items(),
-                                      key=lambda x: channels_sorted.index(
-                                          x[0]))))
+            sorted(chan_keys.items(),
+            key=lambda x: channels_sorted.index(x[0]))))
 
         for i in range(len(channels_sorted)):
             channel = channels_sorted[i]

@@ -2,13 +2,11 @@ import Utils
 
 URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 
-
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("wiki", "wi"
-                                                   ).hook(self.wikipedia,
-                                                          min_args=1)
+            ).hook(self.wikipedia, min_args=1)
 
     def wikipedia(self, event):
         page = Utils.get_url(URL_WIKIPEDIA, get_params={
@@ -27,3 +25,4 @@ class Module(object):
                 event["stderr"].write("No results found")
         else:
             event["stderr"].write("Failed to load results")
+

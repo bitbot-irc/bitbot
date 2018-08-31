@@ -2,10 +2,10 @@ import datetime, decimal, math, random, re, time
 import Utils
 
 SIDES = {"heads": 0, "tails": 1}
-DEFAULT_REDEEM_DELAY = 600  # 600 seconds, 10 minutes
+DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
 DEFAULT_REDEEM_AMOUNT = "100.0"
 DEFAULT_INTEREST_RATE = "0.01"
-INTEREST_INTERVAL = 60 * 60  # 1 hour
+INTEREST_INTERVAL = 60*60 # 1 hour
 DECIMAL_ZERO = decimal.Decimal("0")
 REGEX_FLOAT = re.compile("\d+(?:\.\d{1,2}|$)")
 
@@ -25,12 +25,11 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
-
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received.command.coins").hook(self.coins,
-                                                     help="Show how many coins you have")
+            help="Show how many coins you have")
         bot.events.on("received").on("command").on("resetcoins").hook(
             self.reset_coins, permission="resetcoins",
             min_args=1, help=
@@ -41,11 +40,8 @@ class Module(object):
         bot.events.on("received.command.redeemcoins").hook(
             self.redeem_coins, help="Redeem free coins")
         bot.events.on("received.command.flip").hook(self.flip,
-                                                    help="Bet coins on a coin flip",
-                                                    usage=
-                                                    "heads|tails <coin amount>",
-                                                    min_args=2,
-                                                    protect_registered=True)
+            help="Bet coins on a coin flip", usage=
+            "heads|tails <coin amount>", min_args=2, protect_registered=True)
         bot.events.on("received.command.sendcoins").hook(
             self.send, min_args=2, help="Send coins to a user",
             usage="<nickname> <amount>", authenticated=True)
@@ -54,12 +50,12 @@ class Module(object):
             usage="<type> <amount>", protect_registered=True)
 
         now = datetime.datetime.now()
-        until_next_hour = 60 - now.second
-        until_next_hour += ((60 - (now.minute + 1)) * 60)
+        until_next_hour = 60-now.second
+        until_next_hour += ((60-(now.minute+1))*60)
 
         bot.events.on("timer").on("coin-interest").hook(self.interest)
         bot.add_timer("coin-interest", INTEREST_INTERVAL, persist=False,
-                      next_due=time.time() + until_next_hour)
+            next_due=time.time()+until_next_hour)
 
     def coins(self, event):
         if event["args_split"]:
@@ -68,8 +64,7 @@ class Module(object):
             target = event["user"]
         coins = decimal.Decimal(target.get_setting("coins", "0.0"))
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
-                                                    "{0:.2f}".format(coins),
-                                                    "" if coins == 1 else "s"))
+            "{0:.2f}".format(coins), "" if coins == 1 else "s"))
 
     def reset_coins(self, event):
         target = event["server"].get_user(event["args_split"][0])
@@ -81,18 +76,18 @@ class Module(object):
             target.del_setting("coins")
             event["stdout"].write("Reset coins for %s" % target.nickname)
 
+
     def richest(self, event):
         all_coins = event["server"].get_all_user_settings("coins", [])
         all_coins = list(filter(lambda coin: decimal.Decimal(coin[1]),
-                                all_coins))
+            all_coins))
         items = [(coin[0], decimal.Decimal(coin[1])) for coin in all_coins]
         all_coins = dict(items)
 
         top_10 = sorted(all_coins.keys())
         top_10 = sorted(top_10, key=all_coins.get, reverse=True)[:10]
         top_10 = ", ".join("%s (%s)" % (Utils.prevent_highlight(event[
-                                                                    "server"].get_user(
-            nickname).nickname), "{0:.2f}".format(
+            "server"].get_user(nickname).nickname), "{0:.2f}".format(
             all_coins[nickname])) for nickname in top_10)
         event["stdout"].write("Richest users: %s" % top_10)
 
@@ -102,23 +97,21 @@ class Module(object):
         if user_coins == DECIMAL_ZERO:
             last_redeem = event["user"].get_setting("last-redeem", None)
             redeem_delay = event["server"].get_setting("redeem-delay",
-                                                       DEFAULT_REDEEM_DELAY)
+                DEFAULT_REDEEM_DELAY)
 
-            if last_redeem == None or (time.time() - last_redeem
-            ) >= redeem_delay:
+            if last_redeem == None or (time.time()-last_redeem
+                    ) >= redeem_delay:
                 redeem_amount = decimal.Decimal(event["server"
-                                                ].get_setting("redeem-amount",
-                                                              DEFAULT_REDEEM_AMOUNT))
+                    ].get_setting("redeem-amount", DEFAULT_REDEEM_AMOUNT))
                 event["user"].set_setting("coins", str(
-                    user_coins + redeem_amount))
+                    user_coins+redeem_amount))
                 event["stdout"].write("Redeemed %s coins" % "{0:.2f}".format(
                     redeem_amount))
                 event["user"].set_setting("last-redeem", time.time())
             else:
-                time_left = (last_redeem + redeem_delay) - time.time()
+                time_left = (last_redeem+redeem_delay)-time.time()
                 event["stderr"].write("Please wait %s before redeeming" %
-                                      Utils.to_pretty_time(
-                                          math.ceil(time_left)))
+                    Utils.to_pretty_time(math.ceil(time_left)))
         else:
             event["stderr"].write(
                 "You can only redeem coins when you have none")
@@ -152,12 +145,12 @@ class Module(object):
         win = side_name == chosen_side
 
         if win:
-            event["user"].set_setting("coins", str(user_coins + coin_bet))
+            event["user"].set_setting("coins", str(user_coins+coin_bet))
             event["stdout"].write("%s flips %s and wins %s coin%s!" % (
                 event["user"].nickname, side_name, coin_bet_str,
                 "" if coin_bet == 1 else "s"))
         else:
-            event["user"].set_setting("coins", str(user_coins - coin_bet))
+            event["user"].set_setting("coins", str(user_coins-coin_bet))
             event["stdout"].write("%s flips %s and loses %s coin%s!" % (
                 event["user"].nickname, side_name, coin_bet_str,
                 "" if coin_bet == 1 else "s"))
@@ -169,17 +162,17 @@ class Module(object):
         send_amount = event["args_split"][1]
         match = REGEX_FLOAT.match(send_amount)
         if not match or round(decimal.Decimal(send_amount), 2
-                              ) <= DECIMAL_ZERO:
+                ) <= DECIMAL_ZERO:
             event["stderr"].write(
                 "Please provide a positive number of coins to send")
             return
         send_amount = decimal.Decimal(match.group(0))
 
         user_coins = decimal.Decimal(event["user"].get_setting("coins",
-                                                               "0.0"))
+            "0.0"))
         redeem_amount = decimal.Decimal(event["server"].get_setting(
             "redeem-amount", DEFAULT_REDEEM_AMOUNT))
-        new_user_coins = user_coins - send_amount
+        new_user_coins = user_coins-send_amount
 
         if new_user_coins == DECIMAL_ZERO:
             event["stderr"].write("You have no coins")
@@ -193,12 +186,12 @@ class Module(object):
         target_user_coins = target_user.get_setting("coins", None)
         if target_user_coins == None:
             event["stderr"].write("You can only send coins to users that "
-                                  "have had coins before")
+                "have had coins before")
             return
         target_user_coins = decimal.Decimal(target_user_coins)
 
         event["user"].set_setting("coins", str(new_user_coins))
-        target_user.set_setting("coins", str(target_user_coins + send_amount))
+        target_user.set_setting("coins", str(target_user_coins+send_amount))
 
         event["stdout"].write("%s sent %s coins to %s" % (
             event["user"].nickname, "{0:.2f}".format(send_amount),
@@ -215,9 +208,9 @@ class Module(object):
             for nickname, coins in all_coins:
                 coins = decimal.Decimal(coins)
                 if coins > redeem_amount:
-                    coins += round(coins * interest_rate, 2)
+                    coins += round(coins*interest_rate, 2)
                     server.get_user(nickname).set_setting("coins",
-                                                          str(coins))
+                        str(coins))
         event["timer"].redo()
 
     def roulette(self, event):
@@ -238,7 +231,7 @@ class Module(object):
         for i, bet_amount in enumerate(bet_amounts):
             match = REGEX_FLOAT.match(bet_amount)
             if not match or round(decimal.Decimal(bet_amount), 2
-                                  ) <= DECIMAL_ZERO:
+                    ) <= DECIMAL_ZERO:
                 event["stderr"].write(
                     "Please provide a positive number of coins to bet")
                 return
@@ -246,7 +239,7 @@ class Module(object):
         bet_amount_total = sum(bet_amounts)
 
         user_coins = decimal.Decimal(event["user"].get_setting("coins",
-                                                               "0.0"))
+            "0.0"))
         if bet_amount_total > user_coins:
             event["stderr"].write("You don't have enough coins to bet")
             return
@@ -259,10 +252,10 @@ class Module(object):
         losses = {}
         if choice == 0:
             loss = sum(bet_amounts)
-            event["user"].set_setting("coins", str(user_coins - loss))
+            event["user"].set_setting("coins", str(user_coins-loss))
             event["stdout"].write("Roulette spin lands on 0, "
-                                  "the house wins, %s loses %s" % (
-                                      event["user"].nickname, loss))
+                "the house wins, %s loses %s" % (
+                event["user"].nickname, loss))
             return
 
         failed = False
@@ -271,34 +264,34 @@ class Module(object):
             street_match = REGEX_STREET.match(bet)
             odds = 0
             if bet == "even":
-                odds = 1 * ((choice % 2) == 0)
+                odds = 1*((choice % 2) == 0)
             elif bet == "odd":
-                odds = 1 * ((choice % 2) == 1)
+                odds = 1*((choice % 2) == 1)
             elif bet == "red":
-                odds = 1 * (choice in RED)
+                odds = 1*(choice in RED)
             elif bet == "black":
-                odds = 1 * (choice in BLACK)
+                odds = 1*(choice in BLACK)
             elif bet == "small" or bet == "low":
-                odds = 1 * (choice in SMALL)
+                odds = 1*(choice in SMALL)
             elif bet == "big" or bet == "high":
-                odds = 1 * (choice in BIG)
+                odds = 1*(choice in BIG)
             elif bet == "dozen1":
-                odds = 2 * (choice in FIRST_DOZEN)
+                odds = 2*(choice in FIRST_DOZEN)
             elif bet == "dozen2":
-                odds = 2 * (choice in SECOND_DOZEN)
+                odds = 2*(choice in SECOND_DOZEN)
             elif bet == "dozen3":
-                odds = 2 * (choice in THIRD_DOZEN)
+                odds = 2*(choice in THIRD_DOZEN)
             elif bet == "column1":
-                odds = 2 * (choice in FIRST_COLUMN)
+                odds = 2*(choice in FIRST_COLUMN)
             elif bet == "column2":
-                odds = 2 * (choice in SECOND_COLUMN)
+                odds = 2*(choice in SECOND_COLUMN)
             elif bet == "column3":
-                odds = 2 * (choice in THIRD_COLUMN)
+                odds = 2*(choice in THIRD_COLUMN)
             elif street_match:
                 row = int(street_match.group(1))
-                odds = 11 * (((row * 3) - 2) <= choice <= (row * 3))
+                odds = 11*(((row*3)-2) <= choice <= (row*3))
             elif bet.isdigit() and (1 <= int(bet) <= 36):
-                odds = 35 * (choice == int(bet))
+                odds = 35*(choice == int(bet))
             else:
                 event["stderr"].write("Unknown bet")
                 failed = True
@@ -306,41 +299,32 @@ class Module(object):
             if odds == 0:
                 losses[bet] = bet_amounts[i]
             else:
-                winnings[bet] = [odds, bet_amounts[i] * odds]
+                winnings[bet] = [odds, bet_amounts[i]*odds]
         if failed:
             return
 
         winnings_str = ["%s for %s (%d to 1)" % (winnings[bet][1], bet,
-                                                 winnings[bet][0]) for bet in
-                        winnings.keys()]
+            winnings[bet][0]) for bet in winnings.keys()]
 
         coin_winnings = sum(bet[1] for bet in winnings.values())
         coin_losses = sum([loss for loss in losses.values()])
         total_winnings_str = " (%s total)" % coin_winnings if len(
             winnings.keys()) > 1 else ""
 
-        new_user_coins = (user_coins - coin_losses) + coin_winnings
+        new_user_coins = (user_coins-coin_losses)+coin_winnings
         event["user"].set_setting("coins", str(new_user_coins))
 
         choice = "%d %s" % (choice, colour)
         if not losses and winnings:
             event["stdout"].write("Roulette spin lands on %s, "
-                                  "%s wins %s%s" % (
-                                  choice, event["user"].nickname,
-                                  ", ".join(winnings_str),
-                                  str(total_winnings_str)))
+                "%s wins %s%s" % (choice, event["user"].nickname,
+                ", ".join(winnings_str), str(total_winnings_str)))
         elif losses and winnings:
             event["stdout"].write("Roulette spin lands on %s, "
-                                  "%s wins %s%s; loses %s" % (choice,
-                                                              event[
-                                                                  "user"].nickname,
-                                                              ", ".join(
-                                                                  winnings_str),
-                                                              str(
-                                                                  total_winnings_str),
-                                                              str(coin_losses)))
+                "%s wins %s%s; loses %s" % (choice,
+                event["user"].nickname, ", ".join(winnings_str),
+                str(total_winnings_str), str(coin_losses)))
         else:
             event["stdout"].write("Roulette spin lands on %s, "
-                                  "%s loses %s" % (
-                                  choice, event["user"].nickname,
-                                  str(coin_losses)))
+                "%s loses %s" % (choice, event["user"].nickname,
+                str(coin_losses)))

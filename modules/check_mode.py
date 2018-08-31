@@ -1,3 +1,5 @@
+
+
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
@@ -9,5 +11,5 @@ class Module(object):
                 "require_mode"):
             required_mode = event["hook"].kwargs.get("require_mode")[0]
             if not event["target"].mode_or_above(event["user"],
-                                                 required_mode):
+                    required_mode):
                 return "You do not have permission to do this"

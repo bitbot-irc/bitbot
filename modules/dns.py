@@ -1,9 +1,7 @@
 import socket
 
-
 class Module(object):
     _name = "DNS"
-
     def __init__(self, bot):
         bot.events.on("received").on("command").on("dns").hook(
             self.dns, min_args=1,
@@ -14,7 +12,7 @@ class Module(object):
         hostname = event["args_split"][0]
         try:
             address_info = socket.getaddrinfo(hostname, 1, 0,
-                                              socket.SOCK_DGRAM)
+                socket.SOCK_DGRAM)
         except socket.gaierror:
             event["stderr"].write("Failed to find hostname")
             return

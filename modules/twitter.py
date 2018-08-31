@@ -1,7 +1,7 @@
-# --require-config twitter-api-key
-# --require-config twitter-api-secret
-# --require-config twitter-access-token
-# --require-config twitter-access-secret
+#--require-config twitter-api-key
+#--require-config twitter-api-secret
+#--require-config twitter-access-token
+#--require-config twitter-access-secret
 
 import datetime, re, time, traceback
 import twitter
@@ -10,18 +10,16 @@ import Utils
 REGEX_TWITTERURL = re.compile(
     "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)
 
-
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("twitter", "tw"
-                                                   ).hook(self.twitter,
-                                                          help="Find a tweet",
-                                                          usage="[@username/URL/ID]")
+            ).hook(self.twitter, help="Find a tweet",
+            usage="[@username/URL/ID]")
 
     def make_timestamp(self, s):
-        seconds_since = time.time() - datetime.datetime.strptime(s,
-                                                                 "%a %b %d %H:%M:%S %z %Y").timestamp()
+        seconds_since = time.time()-datetime.datetime.strptime(s,
+            "%a %b %d %H:%M:%S %z %Y").timestamp()
         since, unit = Utils.time_unit(seconds_since)
         return "%s %s ago" % (since, unit)
 
@@ -61,22 +59,18 @@ class Module(object):
                 username = "@%s" % tweet["user"]["screen_name"]
                 if "retweeted_status" in tweet:
                     original_username = "@%s" % tweet["retweeted_status"
-                    ]["user"]["screen_name"]
+                        ]["user"]["screen_name"]
                     original_text = tweet["retweeted_status"]["text"]
                     retweet_timestamp = self.make_timestamp(tweet[
-                                                                "created_at"])
+                        "created_at"])
                     original_timestamp = self.make_timestamp(tweet[
-                                                                 "retweeted_status"][
-                                                                 "created_at"])
+                        "retweeted_status"]["created_at"])
                     event["stdout"].write("(%s (%s) retweeted %s (%s)) %s" % (
                         username, retweet_timestamp,
                         original_username, original_timestamp, original_text))
                 else:
                     event["stdout"].write("(%s, %s) %s" % (username,
-                                                           self.make_timestamp(
-                                                               tweet[
-                                                                   "created_at"]),
-                                                           tweet["text"]))
+                        self.make_timestamp(tweet["created_at"]), tweet["text"]))
             else:
                 event["stderr"].write("Invalid tweet identifiers provided")
         else:

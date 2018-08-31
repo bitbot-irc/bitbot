@@ -4,7 +4,6 @@ import Utils
 REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
 
-
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
@@ -21,8 +20,8 @@ class Module(object):
 
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="karma-verbose",
-                                      help="Disable/Enable automatically responding to karma changes",
-                                      validate=Utils.bool_or_none)
+            help="Disable/Enable automatically responding to karma changes",
+            validate=Utils.bool_or_none)
 
     def new_user(self, event):
         event["user"].last_karma = None
@@ -31,8 +30,8 @@ class Module(object):
         match = re.match(REGEX_KARMA, event["message"].strip())
         if match and not event["action"]:
             verbose = event["channel"].get_setting("karma-verbose", False)
-            if not event["user"].last_karma or (time.time() - event["user"
-            ].last_karma) >= KARMA_DELAY_SECONDS:
+            if not event["user"].last_karma or (time.time()-event["user"
+                    ].last_karma) >= KARMA_DELAY_SECONDS:
                 target = match.group(1).lower().strip()
                 if not target == event["user"].name and target:
                     positive = match.group(2)[0] == "+"
@@ -53,13 +52,10 @@ class Module(object):
                     event["user"].last_karma = time.time()
                 elif verbose:
                     if target:
-                        self.bot.events.on("send").on("stderr").call(
-                            module_name="Karma",
-                            target=event["channel"],
-                            message="You cannot change your own karma")
+                        self.bot.events.on("send").on("stderr").call(module_name="Karma",
+                            target=event["channel"], message="You cannot change your own karma")
             elif verbose:
                 event["stderr"].write("Try again in a couple of seconds")
-
     def karma(self, event):
         if event["args"]:
             target = event["args"]

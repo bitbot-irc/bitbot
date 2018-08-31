@@ -5,10 +5,8 @@ URL_GOOGLEBOOKS = "https://www.googleapis.com/books/v1/volumes"
 URL_BOOKINFO = "https://books.google.co.uk/books?id=%s"
 REGEX_BOOKID = re.compile("id=([\w\-]+)")
 
-
 class Module(object):
     _name = "ISBN"
-
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("isbn").hook(
@@ -26,7 +24,7 @@ class Module(object):
                 book = page["items"][0]["volumeInfo"]
                 title = book["title"]
                 sub_title = (", %s" % book.get("subtitle")
-                             ) if book.get("subtitle") else ""
+                    ) if book.get("subtitle") else ""
 
                 authors = ", ".join(book.get("authors", []))
                 authors = " - %s" % authors if authors else ""

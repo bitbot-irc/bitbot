@@ -1,4 +1,4 @@
-# --require-config bitly-api-key
+#--require-config bitly-api-key
 
 import re
 import Utils
@@ -6,16 +6,13 @@ import Utils
 URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
 REGEX_URL = re.compile("https?://", re.I)
 
-
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("get").on("shortlink").hook(self.shortlink)
         bot.events.on("received").on("command").on("shorten"
-                                                   ).hook(self.shorten,
-                                                          min_args=1,
-                                                          help="Shorten a URL.",
-                                                          usage="<url>")
+            ).hook(self.shorten, min_args=1, help="Shorten a URL.",
+            usage="<url>")
 
     def shortlink(self, event):
         url = event["url"]
@@ -29,7 +26,7 @@ class Module(object):
 
     def shorten(self, event):
         link = self.bot.events.on("get").on("shortlink"
-                                            ).call_for_result(url=event["args"])
+            ).call_for_result(url=event["args"])
         if link:
             event["stdout"].write("Short URL: %s" % link)
         else:

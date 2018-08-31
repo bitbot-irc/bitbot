@@ -4,7 +4,6 @@ import Utils
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^s/")
 
-
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
@@ -13,13 +12,12 @@ class Module(object):
 
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="sed",
-                                      help="Disable/Enable sed in a channel",
-                                      validate=Utils.bool_or_none)
+            help="Disable/Enable sed in a channel",
+            validate=Utils.bool_or_none)
         bot.events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="sed-sender-only",
-                                      help="Disable/Enable sed only looking at the messages "
-                                           "sent by the user",
-                                      validate=Utils.bool_or_none)
+            help="Disable/Enable sed only looking at the messages "
+            "sent by the user", validate=Utils.bool_or_none)
 
     def channel_message(self, event):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
@@ -53,7 +51,7 @@ class Module(object):
                 traceback.print_exc()
                 self.bot.events.on("send").on("stderr").call(target=event[
                     "channel"], module_name="Sed", server=event["server"],
-                                                             message="Invalid regex in pattern")
+                    message="Invalid regex in pattern")
                 return
             replace = sed_split[2].replace("\\/", "/")
 
@@ -61,8 +59,7 @@ class Module(object):
                 event, "sed-sender-only", False
             ) else None
             line = event["channel"].buffer.find(pattern, from_self=False,
-                                                for_user=for_user,
-                                                not_pattern=REGEX_SED)
+                for_user=for_user, not_pattern=REGEX_SED)
             if line:
                 new_message = re.sub(pattern, replace, line.message, count)
                 if line.action:
@@ -71,6 +68,4 @@ class Module(object):
                     prefix = "<%s>" % line.sender
                 self.bot.events.on("send").on("stdout").call(target=event[
                     "channel"], module_name="Sed", server=event["server"],
-                                                             message="%s %s" % (
-                                                             prefix,
-                                                             new_message))
+                    message="%s %s" % (prefix, new_message))

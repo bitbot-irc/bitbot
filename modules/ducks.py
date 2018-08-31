@@ -56,8 +56,7 @@ class Module(object):
         for server in self.bot.servers.values():
             for channel in server.channels.values():
                 ducks_enabled = channel.get_setting("ducks-enabled", 0)
-                ducks_enabled = int(ducks_enabled) if isinstance(ducks_enabled,
-                                                                 str) else ducks_enabled
+                ducks_enabled = int(ducks_enabled) if isinstance(ducks_enabled, str) else ducks_enabled
 
                 min_time = "min-duck-time-%s" % channel.name
                 max_time = "max-duck-time-%s" % channel.name
@@ -65,10 +64,8 @@ class Module(object):
                 min_duck_time = channel.get_setting("min-duck-time", 240)
                 max_duck_time = channel.get_setting("max-duck-time", 1200)
 
-                min_duck_time = int(min_duck_time) if isinstance(min_duck_time,
-                                                                 str) else min_duck_time
-                max_duck_time = int(max_duck_time) if isinstance(max_duck_time,
-                                                                 str) else max_duck_time
+                min_duck_time = int(min_duck_time) if isinstance(min_duck_time, str) else min_duck_time
+                max_duck_time = int(max_duck_time) if isinstance(max_duck_time, str) else max_duck_time
 
                 self.duck_times[min_time] = min_duck_time
                 self.duck_times[max_time] = max_duck_time
@@ -87,28 +84,25 @@ class Module(object):
         min = "min-duck-time-%s" % (channel_name)
         max = "max-duck-time-%s" % (channel_name)
 
-        self.bot.log.debug("Attempting to set %s to %s",
-                           [str(min), str(self.duck_times[min])]);
-        self.bot.log.debug("Attempting to set %s to %s",
-                           [str(max), str(self.duck_times[max])]);
+        self.bot.log.debug("Attempting to set %s to %s", [str(min), str(self.duck_times[min])]);
+        self.bot.log.debug("Attempting to set %s to %s", [str(max), str(self.duck_times[max])]);
 
         return random.randint(self.duck_times[min], self.duck_times[max])
 
     def decoy_time(self):
-        return random.randint(10, 20)
+        return random.randint(300, 700)
+
 
     def duck_bef(self, event):
         target = event["user"].nickname
         active_duck = event["target"].get_setting("active-duck", 0)
-        active_duck = int(active_duck) if isinstance(active_duck,
-                                                     str) else active_duck
+        active_duck = int(active_duck) if isinstance(active_duck, str) else active_duck
 
         if active_duck == 0:
             event["stderr"].set_prefix("Kick")
             if event["server"].has_user(target):
                 if not event["server"].is_own_nickname(target):
-                    event["target"].send_kick(target,
-                                              "You tried befriending a non-existent duck. Creepy!")
+                    event["target"].send_kick(target, "You tried befriending a non-existent duck. Creepy!")
                 else:
                     event["stderr"].write("Nope.")
             else:
@@ -122,9 +116,8 @@ class Module(object):
             grammar = "" if befriended_ducks == 0 else "s"
 
             event["stdout"].write(
-                target + ", you've befriended " + str(
-                    befriended_ducks + 1) + " duck" + grammar + " in " + event[
-                    "target"].name)
+                target + ", you've befriended " + str(befriended_ducks + 1) + " duck" + grammar + " in " + event[
+                    "target"].name);
 
             next_duck_time = self.duck_time(event)
             self.bot.add_timer("duck-appear", next_duck_time, persist=False)
@@ -135,8 +128,7 @@ class Module(object):
             event["stderr"].set_prefix("Kick")
             if event["server"].has_user(target):
                 if not event["server"].is_own_nickname(target):
-                    event["target"].send_kick(target,
-                                              "You tried shooting a non-existent duck. Creepy!")
+                    event["target"].send_kick(target, "You tried shooting a non-existent duck. Creepy!")
                 else:
                     event["stderr"].write("Nope.")
             else:
@@ -150,9 +142,7 @@ class Module(object):
             grammar = "" if shot_ducks == 0 else "s"
 
             event["stdout"].write(
-                target + ", you've shot " + str(
-                    shot_ducks + 1) + " duck" + grammar + " in " + event[
-                    "target"].name);
+                target + ", you've shot " + str(shot_ducks + 1) + " duck" + grammar + " in " + event["target"].name);
 
             next_duck_time = self.duck_time(event)
             self.bot.add_timer("duck-appear", next_duck_time, persist=False)
@@ -161,16 +151,13 @@ class Module(object):
         for server in self.bot.servers.values():
             for channel in server.channels.values():
                 ducks_enabled = channel.get_setting("ducks-enabled", 0)
-                ducks_enabled = int(ducks_enabled) if isinstance(ducks_enabled,
-                                                                 str) else ducks_enabled
+                ducks_enabled = int(ducks_enabled) if isinstance(ducks_enabled, str) else ducks_enabled
                 if ducks_enabled == 0:
                     continue
 
-                self.bot.log.info("Ducks enabled for %s: %s",
-                                  [str(channel.name), str(ducks_enabled)])
+                self.bot.log.info("Ducks enabled for %s: %s", [str(channel.name), str(ducks_enabled)])
                 active_duck = channel.get_setting("active-duck", 0)
-                active_duck = int(active_duck) if isinstance(active_duck,
-                                                             str) else active_duck
+                active_duck = int(active_duck) if isinstance(active_duck, str) else active_duck
 
                 if ducks_enabled == 1 and active_duck == 0:
                     ducks = [
@@ -194,8 +181,7 @@ class Module(object):
                     channel.set_setting("active-duck", 0)
 
                     next_duck_time = self.duck_time(channel.name)
-                    self.bot.add_timer("duck-appear", next_duck_time,
-                                       persist=False)
+                    self.bot.add_timer("duck-appear", next_duck_time, persist=False)
 
     def duck_decoy(self, event):
         ducks = [
@@ -208,15 +194,12 @@ class Module(object):
             "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
         ]
 
-        event["channel"].send_message(random.choice(ducks))
+        event["target"].send_message(random.choice(ducks))
 
     def set_decoy(self, event):
-
-        channel = event["target"]
         next_decoy_time = self.decoy_time()
         self.bot.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
-        self.bot.add_timer("duck-decoy", next_decoy_time, None, None, False,
-                           channel=channel)
+        self.bot.add_timer("duck-decoy", next_decoy_time, persist=False)
 
 # def coins(self, event):
 #    if event["args_split"]:

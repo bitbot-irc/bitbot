@@ -1,20 +1,17 @@
 import time
 import Utils
 
-
 class Module(object):
     def __init__(self, bot):
         self.boot_time = time.time()
         self.bot = bot
         bot.events.on("received").on("command").on("uptime"
-                                                   ).hook(self.uptime,
-                                                          help="Show my uptime")
+            ).hook(self.uptime, help="Show my uptime")
         bot.events.on("received").on("command").on("stats"
-                                                   ).hook(self.stats,
-                                                          help="Show my network/channel/user stats")
+            ).hook(self.stats, help="Show my network/channel/user stats")
 
     def uptime(self, event):
-        seconds = int(time.time() - self.boot_time)
+        seconds = int(time.time()-self.boot_time)
         event["stdout"].write("Uptime: %s" % Utils.to_pretty_time(
             seconds))
 
@@ -25,6 +22,7 @@ class Module(object):
         for server in self.bot.servers.values():
             channels += len(server.channels)
             users += len(server.users)
+
 
         response = "I currently have %d network" % networks
         if networks > 1:

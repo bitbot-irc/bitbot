@@ -1,4 +1,4 @@
-# --require-config omdbapi-api-key
+#--require-config omdbapi-api-key
 
 import json
 import Utils
@@ -6,10 +6,8 @@ import Utils
 URL_OMDB = "http://www.omdbapi.com/"
 URL_IMDBTITLE = "http://imdb.com/title/%s"
 
-
 class Module(object):
     _name = "IMDb"
-
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("imdb").hook(
@@ -21,7 +19,7 @@ class Module(object):
         page = Utils.get_url(URL_OMDB, get_params={
             "t": event["args"],
             "apikey": self.bot.config["omdbapi-api-key"]},
-                             json=True)
+            json=True)
         if page:
             if "Title" in page:
                 event["stdout"].write("%s, %s (%s) %s (%s/10.0) %s" % (

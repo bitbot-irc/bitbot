@@ -2,10 +2,8 @@ import Utils
 
 UPCITEMDB_URL = "https://api.upcitemdb.com/prod/trial/lookup"
 
-
 class Module(object):
     _name = "UPC"
-
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on(
@@ -20,8 +18,8 @@ class Module(object):
             return
 
         page = Utils.get_url(UPCITEMDB_URL,
-                             get_params={"upc": event["args_split"][0]},
-                             json=True)
+            get_params={"upc": event["args_split"][0]},
+            json=True)
         if page:
             if not len(page["items"]):
                 event["stderr"].write("UPC/EAN not found")
@@ -49,8 +47,7 @@ class Module(object):
                     lowest_price, highest_price, currency)
 
             event["stdout"].write("%s%s%s(weight: %s"
-                                  ", size: %s, price: %s)" % (
-                                      brand, title, description, weight, size,
-                                      pricing))
+                ", size: %s, price: %s)" % (
+                brand, title, description, weight, size, pricing))
         else:
             event["stderr"].write("Failed to load results")

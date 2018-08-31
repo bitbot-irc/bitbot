@@ -1,45 +1,39 @@
 import time
 import Utils
 
-
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("message").on("channel"
-                                                   ).hook(self.channel_message)
+            ).hook(self.channel_message)
         bot.events.on("self").on("message").on("channel"
-                                               ).hook(self.self_channel_message)
+            ).hook(self.self_channel_message)
         bot.events.on("received").on("command").on("words"
-                                                   ).hook(self.words,
-                                                          channel_only=True,
-                                                          usage="<nickname>",
-                                                          help=
-                                                          "See how many words you or the given nickname have used")
+            ).hook(self.words, channel_only=True,
+            usage="<nickname>", help=
+            "See how many words you or the given nickname have used")
         bot.events.on("received").on("command").on("trackword"
-                                                   ).hook(self.track_word,
-                                                          min_args=1,
-                                                          help="Start tracking a word",
-                                                          usage="<word>",
-                                                          permission="track-word")
+            ).hook(self.track_word, min_args=1,
+            help="Start tracking a word", usage="<word>",
+            permission="track-word")
         bot.events.on("received").on("command").on("wordusers"
-                                                   ).hook(self.word_users,
-                                                          min_args=1,
-                                                          help="Show who has used a tracked word the most",
-                                                          usage="<word>")
+            ).hook(self.word_users, min_args=1,
+            help="Show who has used a tracked word the most",
+            usage="<word>")
 
     def _channel_message(self, user, event):
         words = list(filter(None, event["message_split"]))
         word_count = len(words)
 
         user_words = event["channel"].get_user_setting(user.id,
-                                                       "words", 0)
+            "words", 0)
         user_words += word_count
 
         if user.get_setting("first-words", None) == None:
             user.set_setting("first-words", time.time())
 
         event["channel"].set_user_setting(user.id,
-                                          "words", user_words)
+            "words", user_words)
 
         tracked_words = set(event["server"].get_setting(
             "tracked-words", []))
@@ -49,10 +43,8 @@ class Module(object):
                 word_count = user.get_setting(setting, 0)
                 word_count += 1
                 user.set_setting(setting, word_count)
-
     def channel_message(self, event):
         self._channel_message(event["user"], event)
-
     def self_channel_message(self, event):
         self._channel_message(event["server"].get_user(
             event["server"].nickname), event)
@@ -60,7 +52,7 @@ class Module(object):
     def words(self, event):
         if event["args_split"]:
             target = event["server"].get_user(event["args_split"
-                                              ][0])
+                ][0])
         else:
             target = event["user"]
         words = dict(target.get_channel_settings_per_setting(
@@ -94,9 +86,8 @@ class Module(object):
             top_10 = sorted(word_users.keys())
             top_10 = sorted(top_10, key=word_users.get, reverse=True)[:10]
             top_10 = ", ".join("%s (%d)" % (Utils.prevent_highlight(event[
-                                                                        "server"].get_user(
-                nickname).nickname), word_users[nickname]
-                                            ) for nickname in top_10)
+                "server"].get_user(nickname).nickname), word_users[nickname]
+                ) for nickname in top_10)
             event["stdout"].write("Top '%s' users: %s" % (word, top_10))
         else:
             event["stderr"].write("That word is not being tracked")

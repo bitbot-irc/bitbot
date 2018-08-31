@@ -1,24 +1,19 @@
+
+
 class Module(object):
     def __init__(self, bot):
         self.bot = bot
         bot.events.on("received").on("command").on("changenickname"
-                                                   ).hook(self.change_nickname,
-                                                          permission="changenickname",
-                                                          min_args=1,
-                                                          help="Change my nickname",
-                                                          usage="<nickname>")
+            ).hook(self.change_nickname, permission="changenickname",
+            min_args=1, help="Change my nickname", usage="<nickname>")
         bot.events.on("received").on("command").on("raw"
-                                                   ).hook(self.raw,
-                                                          permission="raw",
-                                                          min_args=1,
-                                                          help="Send a raw IRC line through the bot",
-                                                          usage="<raw line>")
+            ).hook(self.raw, permission="raw", min_args=1,
+            help="Send a raw IRC line through the bot",
+            usage="<raw line>")
         bot.events.on("received").on("command").on("part"
-                                                   ).hook(self.part,
-                                                          permission="part",
-                                                          min_args=1,
-                                                          help="Part from a channel",
-                                                          usage="<#channel>")
+            ).hook(self.part, permission="part", min_args=1,
+            help="Part from a channel",
+            usage="<#channel>")
 
     def change_nickname(self, event):
         nickname = event["args_split"][0]
