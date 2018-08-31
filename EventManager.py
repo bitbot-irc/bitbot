@@ -57,8 +57,10 @@ class EventHookContext(object):
     def __init__(self, parent, context):
         self._parent = parent
         self.context = context
-    def hook(self, function, priority=DEFAULT_PRIORITY, **kwargs):
-        self._parent._context_hook(self.context, function, priority, kwargs)
+    def hook(self, function, priority=DEFAULT_PRIORITY, replay=False,
+            **kwargs):
+        self._parent._context_hook(self.context, function, priority, replay,
+            kwargs)
     def on(self, subevent, *extra_subevents, delimiter=DEFAULT_DELIMITER):
         return self._parent._context_on(self.context, subevent,
             extra_subevents, delimiter)
@@ -103,8 +105,8 @@ class EventHook(object):
     def hook(self, function, priority=DEFAULT_PRIORITY, replay=False,
             **kwargs):
         self._hook(function, None, priority, replay, kwargs)
-    def _context_hook(self, context, function, priority, kwargs):
-        self._hook(function, context, priority, False, kwargs)
+    def _context_hook(self, context, function, priority, replay, kwargs):
+        self._hook(function, context, priority, replay, kwargs)
     def _hook(self, function, context, priority, replay, kwargs):
         callback = EventCallback(function, self.bot, priority, kwargs)
 
