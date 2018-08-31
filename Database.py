@@ -207,13 +207,25 @@ class UserChannelSettings(Table):
     def find_prefix(self, user_id, channel_id, prefix, default=[]):
         return self.find_user_settings(user_id, channel_id, "%s%" % prefix,
             default)
-    def find_by_setting(self, server_id, user_id, setting, default=[]):
+    def find_by_setting(self, user_id, setting, default=[]):
         values = self.database.execute_fetchall(
             """SELECT channels.name, user_channel_settings.value FROM
             user_channel_settings INNER JOIN channels ON
             user_channel_settings.channel_id=channels.channel_id
-            WHERE channels.server_id=? AND
-            user_channel_settings.user_id=?""", [server_id, user_id])
+            WHERE user_channel_settings.setting=?
+            AND user_channel_settings.user_id=?""", [setting, user_id])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], json.loads(value[1])
+            return values
+        return default
+    def find_all_by_setting(self, channel_id, setting, default=[]):
+        values = self.database.execute_fetchall(
+            """SELECT users.name, user_channel_settings.value FROM
+            user_channel_settings INNER JOIN users ON
+            user_channel_settings.user_id=users.user_id
+            WHERE user_channel_setting.setting=?
+            AND user_channel_settings.channel_id=?""", [setting, channel_id])
         if values:
             for i, value in enumerate(values):
                 values[i] = value[0], json.loads(value[1])
