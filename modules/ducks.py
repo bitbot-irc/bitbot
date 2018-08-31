@@ -52,11 +52,16 @@ class Module(object):
         for server in self.bot.servers.values():
             for channel in server.channels.values():
                 ducks_enabled = channel.get_setting("ducks-enabled", 0)
+                ducks_enabled = int(ducks_enabled) if isinstance(ducks_enabled, str) else ducks_enabled
+
                 min_time = "min-duck-time-%s" % channel.name
                 max_time = "max-duck-time-%s" % channel.name
 
                 min_duck_time = channel.get_setting("min-duck-time", 240)
                 max_duck_time = channel.get_setting("max-duck-time", 1200)
+
+                min_duck_time = int(min_duck_time) if isinstance(min_duck_time, str) else min_duck_time
+                max_duck_time = int(max_duck_time) if isinstance(max_duck_time, str) else max_duck_time
 
                 self.duck_times[min_time] = min_duck_time
                 self.duck_times[max_time] = max_duck_time
@@ -82,7 +87,10 @@ class Module(object):
 
     def duck_bef(self, event):
         target = event["user"].nickname
-        if event["target"].get_setting("active-duck", 0) == 0:
+        active_duck = event["target"].get_setting("active-duck", 0)
+        active_duck = int(active_duck) if isinstance(active_duck, str) else active_duck
+
+        if active_duck == 0:
             event["stderr"].set_prefix("Kick")
             if event["server"].has_user(target):
                 if not event["server"].is_own_nickname(target):
@@ -135,11 +143,13 @@ class Module(object):
         for server in self.bot.servers.values():
             for channel in server.channels.values():
                 ducks_enabled = channel.get_setting("ducks-enabled", 0)
+                ducks_enabled = int(ducks_enabled) if isinstance(ducks_enabled, str) else ducks_enabled
                 if ducks_enabled == 0:
                     continue
 
                 self.bot.log.info("Ducks enabled for %s: %s", [str(channel.name), str(ducks_enabled)])
                 active_duck = channel.get_setting("active-duck", 0)
+                active_duck = int(active_duck) if isinstance(active_duck, str) else active_duck
 
                 if ducks_enabled == 1 and active_duck == 0:
                     ducks = [

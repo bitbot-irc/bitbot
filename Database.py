@@ -112,24 +112,10 @@ class ServerSettings(Table):
             [server_id, setting.lower()])
 
 class ChannelSettings(Table):
-    def jsonKeys2int(self, x):
-        if isinstance(x, dict):
-            hold = {}
-            for k, v in x.items():
-                key = int(k) if k.isdigit() else k
-                val = int(v) if v.isdigit() else v
-
-                hold[key] = val
-            return hold
-        else:
-            return x
-
     def set(self, channel_id, setting, value):
-        converted_json = self.jsonKeys2int(value)
-
         self.database.execute(
             "INSERT OR REPLACE INTO channel_settings VALUES (?, ?, ?)",
-            [channel_id, setting.lower(), converted_json])
+            [channel_id, setting.lower(), json.dumps(value)])
     def get(self, channel_id, setting, default=None):
         value = self.database.execute_fetchone(
             """SELECT value FROM channel_settings WHERE
