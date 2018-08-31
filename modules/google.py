@@ -19,7 +19,7 @@ class Module(object):
                 "q": phrase, "key": self.bot.config[
                 "google-api-key"], "cx": self.bot.config[
                 "google-search-id"], "prettyPrint": "true",
-                "num": 1, "gl": "us"}, json=True)
+                "num": 1, "gl": "gb"}, json=True)
             if page:
                 if "items" in page and len(page["items"]):
                     event["stdout"].write(page["items"][0][
