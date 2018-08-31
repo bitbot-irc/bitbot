@@ -89,7 +89,7 @@ class Module(object):
         return random.randint(self.duck_times[min], self.duck_times[max])
 
     def decoy_time(self):
-        return random.randint(300, 700)
+        return random.randint(10, 20)
 
 
     def duck_bef(self, event):
@@ -193,12 +193,15 @@ class Module(object):
             "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
         ]
 
-        event["target"].send_message(random.choice(ducks))
+        event["channel"].send_message(random.choice(ducks))
 
     def set_decoy(self, event):
+        channel = event
+
         next_decoy_time = self.decoy_time()
         self.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
-        self.bot.add_timer("duck-decoy", next_decoy_time, persist=False)
+        self.bot.add_timer("duck-decoy", next_decoy_time, None, None, False,
+                           channel=channel)
 
 # def coins(self, event):
 #    if event["args_split"]:
