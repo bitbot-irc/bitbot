@@ -24,8 +24,8 @@ class Module(object):
 
         events.on("received.command.friends").hook(self.duck_friends,
                                                    help="See who the friendliest people to ducks are!")
-        # events.on("received.command.killers").hook(self.duck_killers,
-        #                                             help="See who shoots the most amount of ducks.")
+        events.on("received.command.killers").hook(self.duck_enemies,
+                                                     help="See who shoots the most amount of ducks.")
         # events.on("received.command.ducks").hook(self.duck_list,
         #                                              help="Shows a list of the most popular duck superstars.")
 
@@ -97,6 +97,38 @@ class Module(object):
 
     def decoy_time(self):
         return random.randint(10, 20)
+
+    def duck_enemies(self, event):
+        the_enemy = event["server"].find_all_user_channel_settings(
+            "ducks-shot")
+
+        notorious = {}
+        enemy_nicks = []
+        enemy_ducks = []
+
+        for i in the_enemy:
+            if i[1] in notorious.keys():
+                notorious[i[1]] += i[2]
+            else:
+                notorious[i[1]] = i[2]
+
+        for user, enemies in sorted(notorious.items(), key=itemgetter(1),
+                                    reverse=True):
+            enemy_nicks.append(user)
+            enemy_ducks.append(enemies)
+
+        sentence = "Most Notorious Users -- "
+
+        length = len(enemy_nicks) if len(enemy_nicks) < 11 else 11
+
+        for i in range(0, length):
+            sentence += enemy_nicks[i] + " (" + str(enemy_ducks[i]) + ")"
+            if i < 10:
+                sentence += ", "
+
+        sentence = sentence[0:-2]
+
+        event["stdout"].write(sentence)
 
     def duck_friends(self, event):
         friends = event["server"].find_all_user_channel_settings(
