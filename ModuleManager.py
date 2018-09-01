@@ -91,4 +91,10 @@ class ModuleManager(object):
         self.events.purge_context(event_context)
 
         del sys.modules[name]
+        references = sys.getrefcount(module)
         del module
+        references -= 1 # 'del module' removes one reference
+        references -= 1 # one of the refs is from getrefcount
+
+        self.bot.log.info("Module '%s' unloaded (%d reference%s)",
+            [name, references, "" if references == 1 else "s"])
