@@ -123,6 +123,12 @@ def color(foreground, background=None):
     return "%s%s%s" % (FONT_COLOR, foreground,
         "" if not background else ",%s" % background)
 
+def bold(s):
+    return "%s%s%s" % (FONT_BOLD, s, FONT_BOLD)
+
+def underline(s):
+    return "%s%s%s" % (FONT_UNDERLINE, s, FONT_UNDERLINE)
+
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60
 TIME_HOUR = TIME_MINUTE*60
