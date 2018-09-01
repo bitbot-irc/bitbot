@@ -179,7 +179,7 @@ class EventHook(object):
                 returns.append(hook.call(event))
             except Exception as e:
                 traceback.print_exc()
-                self.bot.log.error("failed to call event \"%s", [
+                self.bot.log.error("failed to call event \"%s\"", [
                     event_path], exc_info=True)
             called += 1
 
@@ -202,11 +202,9 @@ class EventHook(object):
         child_name_lower = child_name.lower()
         if child_name_lower in self._children:
             del self._children[child_name_lower]
-    def get_children(self):
-        return self._children.keys()
 
     def check_purge(self):
-        if len(self.get_hooks()) == 0 and len(self._children
+        if len(self.get_hooks()) == 0 and len(self.get_children()
                 ) == 0 and not self.parent == None:
             self.parent.remove_child(self.name)
             self.parent.check_purge()
@@ -218,9 +216,16 @@ class EventHook(object):
     def purge_context(self, context):
         if self.has_context(context):
             self.remove_context(context)
-        for child in self.get_children():
+        for child_name in self.get_children()[:]:
+            child = self.get_child(child_name)
             child.purge_context(context)
+            if child.is_empty():
+                self.remove_child(child_name)
 
     def get_hooks(self):
         return sorted(self._hooks + list(itertools.chain.from_iterable(
             self._context_hooks.values())), key=lambda e: e.priority)
+    def get_children(self):
+        return list(self._children.keys())
+    def is_empty(self):
+        return len(self.get_hooks() + self.get_children()) == 0
