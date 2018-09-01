@@ -38,15 +38,20 @@ class Module(object):
 
         events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="ducks-enabled",
-                                      help="Toggles ducks! (1 or 0)")
+                                      help="Toggles ducks!",
+                                      validate=Utils.bool_or_none)
 
         events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="min-duck-time",
-                                      help="Minimum seconds before a duck is summoned")
+                                      help="Minimum seconds before a duck is "
+                                           "summoned",
+                                      validate=Utils.int_or_none)
 
         events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="max-duck-time",
-                                      help="Max seconds before a duck is summoned")
+                                      help="Max seconds before a duck is "
+                                           "summoned",
+                                      validate=Utils.int_or_none)
 
         events.on("received.numeric.366").hook(self.bootstrap)
 
@@ -64,9 +69,7 @@ class Module(object):
     def bootstrap(self, event):
         for server in self.bot.servers.values():
             for channel in server.channels.values():
-                ducks_enabled = channel.get_setting("ducks-enabled", 0)
-                ducks_enabled = int(ducks_enabled) if isinstance(ducks_enabled,
-                                                                 str) else ducks_enabled
+                ducks_enabled = channel.get_setting("ducks-enabled", False)
 
                 min_time = "min-duck-time-%s" % channel.name
                 max_time = "max-duck-time-%s" % channel.name
@@ -82,8 +85,8 @@ class Module(object):
                 self.duck_times[min_time] = min_duck_time
                 self.duck_times[max_time] = max_duck_time
 
-                if ducks_enabled == 1:
-                    channel.set_setting("active-duck", 0)
+                if ducks_enabled == True:
+                    channel.set_setting("active-duck", False)
 
     def duck_time(self, channel):
         if isinstance(channel, str):
@@ -173,11 +176,9 @@ class Module(object):
         target = user.nickname
         id = user.id
 
-        active_duck = event["target"].get_setting("active-duck", 0)
-        active_duck = int(active_duck) if isinstance(active_duck,
-                                                     str) else active_duck
+        active_duck = event["target"].get_setting("active-duck", False)
 
-        if active_duck == 0:
+        if active_duck == False:
             if event["server"].has_user(target):
                 if not event["server"].is_own_nickname(target):
                     event["target"].send_kick(target,
@@ -193,7 +194,7 @@ class Module(object):
             event["target"].set_user_setting(id,
                                              "ducks-befriended",
                                              befriended_ducks + 1)
-            event["target"].set_setting("active-duck", 0)
+            event["target"].set_setting("active-duck", False)
 
             grammar = "" if befriended_ducks == 0 else "s"
 
@@ -209,7 +210,7 @@ class Module(object):
         user = event["user"]
         target = user.nickname
         id = user.id
-        if event["target"].get_setting("active-duck", 0) == 0:
+        if not event["target"].get_setting("active-duck", False):
             event["stderr"].set_prefix("Kick")
             if event["server"].has_user(target):
                 if not event["server"].is_own_nickname(target):
@@ -222,7 +223,7 @@ class Module(object):
         else:
             shot_ducks = event["target"].get_user_setting(id, "ducks-shot", 0)
             event["target"].set_user_setting(id, "ducks-shot", shot_ducks + 1)
-            event["target"].set_setting("active-duck", 0)
+            event["target"].set_setting("active-duck", False)
 
             grammar = "" if shot_ducks == 0 else "s"
 
@@ -240,28 +241,23 @@ class Module(object):
     def show_duck(self, event):
         for server in self.bot.servers.values():
             for channel in server.channels.values():
-                ducks_enabled = channel.get_setting("ducks-enabled", 0)
-                ducks_enabled = int(ducks_enabled) if isinstance(ducks_enabled,
-                                                                 str) else ducks_enabled
-                if ducks_enabled == 0:
+                ducks_enabled = channel.get_setting("ducks-enabled", False)
+
+                if ducks_enabled == False:
                     continue
 
-                self.bot.log.info("Ducks enabled for %s: %s",
-                                  [str(channel.name), str(ducks_enabled)])
-                active_duck = channel.get_setting("active-duck", 0)
-                active_duck = int(active_duck) if isinstance(active_duck,
-                                                             str) else active_duck
+                active_duck = channel.get_setting("active-duck", False)
 
-                if ducks_enabled == 1 and active_duck == 0:
+                if ducks_enabled == True and active_duck == False:
                     channel.send_message(random.choice(DUCK_LIST))
 
-                    channel.set_setting("active-duck", 1)
+                    channel.set_setting("active-duck", True)
 
-                elif ducks_enabled == 1 and active_duck == 1:
+                elif ducks_enabled == True and active_duck == True:
                     pass
 
                 else:
-                    channel.set_setting("active-duck", 0)
+                    channel.set_setting("active-duck", False)
 
     def duck_decoy(self, event):
         event["stdout"].write(random.choice(DUCK_LIST))
