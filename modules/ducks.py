@@ -28,8 +28,9 @@ class Module(object):
                                                    help="See who the friendliest people to ducks are!")
         events.on("received.command.killers").hook(self.duck_enemies,
                                                      help="See who shoots the most amount of ducks.")
-        # events.on("received.command.ducks").hook(self.duck_list,
-        #                                              help="Shows a list of the most popular duck superstars.")
+        events.on("received.command.duckstats").hook(self.duck_stats,
+                                                      help="Shows your duck "
+                                                           "stats!")
 
 
         events.on("postboot").on("configure").on(
@@ -219,3 +220,46 @@ class Module(object):
         next_decoy_time = self.get_random_duck_time()
         self.bot.add_timer("duck-decoy", next_decoy_time, persist=False,
             server=event["server"], channel=event["target"])
+
+
+    def duck_stats(self, event):
+        user = event["user"]
+        channel = event["target"].name
+        nick = user.nickname
+        id = user.id
+
+        poached = user.get_channel_settings_per_setting("ducks-shot", 0
+                                                        )
+        friends = user.get_channel_settings_per_setting(
+                                                        "ducks-befriended", 0
+                                                        )
+
+        channel_friends = 0
+        channel_poached = 0
+
+        total_friends = 0
+        total_poached = 0
+
+        for room, number in friends:
+            if room == channel:
+                channel_friends = number
+                total_friends += number
+            else:
+                total_friends += number
+
+        for room, number in poached:
+            if room == channel:
+                channel_poached = number
+                total_poached += number
+            else:
+                total_poached += number
+
+        event["stdout"].write(
+            nick + ": " + str(total_poached) + " ducks killed (" + str(
+                channel_poached) + " in " + channel + "), and " + str(
+                total_friends) + " ducks befriended (" + str(channel_friends)
+            + " in " + channel + ")")
+
+
+        
+
