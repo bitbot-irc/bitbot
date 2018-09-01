@@ -264,7 +264,7 @@ class Module(object):
                         "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
                     ]
 
-                    event["stdout"].write(random.choice(ducks))
+                    channel.send_message(random.choice(ducks))
 
                     channel.set_setting("active-duck", 1)
 
