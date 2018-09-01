@@ -1,6 +1,8 @@
 from operator import itemgetter
+from threading import Timer
 import datetime
 import random
+import time
 
 import IRCLogging
 
@@ -14,6 +16,7 @@ class Module(object):
         self.events = events
         self.active_duck = 0
         self.decoy_hooked = 0
+        self.duck_timer = None
 
         events.on("received.command.bef").hook(self.duck_bef,
                                                help="Befriend a duck!")
@@ -30,8 +33,9 @@ class Module(object):
         #                                              help="Shows a list of the most popular duck superstars.")
 
         now = datetime.datetime.now()
-        next_duck_time = random.randint(120, 1200)
+        next_duck_time = self.get_random_duck_time()
 
+        self.duck_timer = None
         self.duck_times = {}
         self.decoys = {}
 
@@ -50,10 +54,15 @@ class Module(object):
             "channelset").assure_call(setting="max-duck-time",
                                       help="Max seconds before a duck is summoned")
 
-        events.on("timer").on("duck-appear").hook(self.show_duck)
-        bot.add_timer("duck-appear", next_duck_time, persist=False)
-
         events.on("received.numeric.366").hook(self.bootstrap)
+
+        events.on("raw").on("376").hook(self.duck_loop_entry)
+
+    def duck_loop_entry(self, event):
+        wait = self.get_random_duck_time()
+        self.timer = Timer(wait, self.show_duck, [event])
+        print(" Sending out animal in %s seconds" % wait)
+        self.timer.start()
 
     def bootstrap(self, event):
         for server in self.bot.servers.values():
@@ -65,8 +74,8 @@ class Module(object):
                 min_time = "min-duck-time-%s" % channel.name
                 max_time = "max-duck-time-%s" % channel.name
 
-                min_duck_time = channel.get_setting("min-duck-time", 240)
-                max_duck_time = channel.get_setting("max-duck-time", 1200)
+                min_duck_time = channel.get_setting("min-duck-time", 20)
+                max_duck_time = channel.get_setting("max-duck-time", 30)
 
                 min_duck_time = int(min_duck_time) if isinstance(min_duck_time,
                                                                  str) else min_duck_time
@@ -196,8 +205,7 @@ class Module(object):
                     befriended_ducks + 1) + " duck" + grammar + " in " + event[
                     "target"].name)
 
-            next_duck_time = self.duck_time(event)
-            self.bot.add_timer("duck-appear", next_duck_time, persist=False)
+            self.duck_loop_entry(event)
 
     def duck_bang(self, event):
         user = event["user"]
@@ -225,8 +233,10 @@ class Module(object):
                     shot_ducks + 1) + " duck" + grammar + " in " + event[
                     "target"].name)
 
-            next_duck_time = self.duck_time(event)
-            self.bot.add_timer("duck-appear", next_duck_time, persist=False)
+            self.duck_loop_entry(event)
+
+    def get_random_duck_time(self):
+        return random.randint(120, 1200)
 
     def show_duck(self, event):
         for server in self.bot.servers.values():
@@ -254,7 +264,7 @@ class Module(object):
                         "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
                     ]
 
-                    channel.send_message(random.choice(ducks))
+                    event["stdout"].write(random.choice(ducks))
 
                     channel.set_setting("active-duck", 1)
 
@@ -263,10 +273,6 @@ class Module(object):
 
                 else:
                     channel.set_setting("active-duck", 0)
-
-                    next_duck_time = self.duck_time(channel.name)
-                    self.bot.add_timer("duck-appear", next_duck_time,
-                                       persist=False)
 
     def duck_decoy(self, event):
         ducks = [
@@ -279,7 +285,7 @@ class Module(object):
             "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
         ]
 
-        event["channel"].send_message(random.choice(ducks))
+        event["stdout"].write(random.choice(ducks))
 
     def set_decoy(self, event):
         channel = event["target"]
