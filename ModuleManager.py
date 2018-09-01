@@ -10,13 +10,15 @@ class ModuleManager(object):
     def list_modules(self):
         return sorted(glob.glob(os.path.join(self.directory, "*.py")))
 
-    def module_name(self, filename):
-        return os.path.basename(filename).rsplit(".py", 1)[0].lower()
+    def _module_name(self, path):
+        return os.path.basename(path).rsplit(".py", 1)[0].lower()
+    def _module_path(self, name):
+        return os.path.join(self.directory, "%s.py" % name)
 
-    def _load_module(self, filename):
-        name = self.module_name(filename)
+    def _load_module(self, name):
+        path = self._module_path(name)
 
-        with open(filename) as module_file:
+        with open(path) as module_file:
             while True:
                 line = module_file.readline().strip()
                 line_split = line.split(" ")
@@ -36,11 +38,11 @@ class ModuleManager(object):
                         if not "bitbot_%s" % line_split[1].lower() in sys.modules:
                             if not line_split[1].lower() in self.waiting_requirement:
                                 self.waiting_requirement[line_split[1].lower()] = set([])
-                            self.waiting_requirement[line_split[1].lower()].add(filename)
+                                self.waiting_requirement[line_split[1].lower()].add(path)
                             return None
                 else:
                     break
-        module = imp.load_source(name, filename)
+        module = imp.load_source(name, path)
 
         if not hasattr(module, "Module"):
             raise ImportError("module '%s' doesn't have a Module class.")
@@ -60,23 +62,34 @@ class ModuleManager(object):
             "module name '%s' attempted to be used twice.")
         return module_object
 
-    def load_module(self, filename):
-        name = self.module_name(filename)
+    def load_module(self, name):
         try:
-            module = self._load_module(filename)
+            module = self._load_module(name)
         except ImportError as e:
-            sys.stderr.write("module '%s' not loaded: Could not resolve import.\n" % filename)
+            self.bot.log.error("failed to load module \"%s\": %s",
+                [name, e.msg])
             return
         if module:
             self.modules[module._import_name] = module
             if name in self.waiting_requirement:
-                for filename in self.waiting_requirement:
-                    self.load_module(filename)
-            sys.stderr.write("module '%s' loaded.\n" % filename)
+                for requirement_name in self.waiting_requirement:
+                    self.load_module(requirement_name)
+            self.bot.log.info("Module '%s' loaded", [name])
         else:
-            sys.stderr.write("module '%s' not loaded.\n" % filename)
+            self.bot.log.error("Module '%s' not loaded", [name])
 
     def load_modules(self, whitelist=None):
-        for filename in self.list_modules():
-            if whitelist == None or filename in whitelist:
-                self.load_module(filename)
+        for path in self.list_modules():
+            name = self._module_name(path)
+            if whitelist == None or name in whitelist:
+                self.load_module(name)
+
+    def unload_module(self, name):
+        module = self.modules[name]
+        del self.modules[name]
+
+        event_context = module._event_context
+        self.events.purge_context(event_context)
+
+        del sys.modules[name]
+        del module
