@@ -1,4 +1,4 @@
-import gc, glob, imp, inspect, os, sys, uuid
+import glob, imp, inspect, os, sys, uuid
 
 class ModuleManager(object):
     def __init__(self, bot, events, directory="modules"):
