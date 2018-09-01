@@ -228,10 +228,10 @@ class Module(object):
         nick = user.nickname
         id = user.id
 
-        poached = user.get_channel_settings_per_setting("ducks-shot", 0
+        poached = user.get_channel_settings_per_setting("ducks-shot", []
                                                         )
         friends = user.get_channel_settings_per_setting(
-                                                        "ducks-befriended", 0
+                                                        "ducks-befriended", []
                                                         )
 
         channel_friends = 0
