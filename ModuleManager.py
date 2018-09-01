@@ -49,13 +49,12 @@ class ModuleManager(object):
         if not inspect.isclass(module.Module):
             raise ImportError("module '%s' has a Module attribute but it is not a class.")
 
-        event_context = uuid.uuid4()
+        event_context = str(uuid.uuid4())
         module_object = module.Module(self.bot, self.events.new_context(
             event_context))
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
         module_object._event_context = event_context
-        module_object._is_unloaded = False
         module_object._import_name = name
 
         assert not module_object._name in self.modules, (

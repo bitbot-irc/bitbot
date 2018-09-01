@@ -86,14 +86,13 @@ class EventHook(object):
         self._hooks = []
         self._stored_events = []
         self._context_hooks = {}
-        self._current_context = None
 
     def _make_event(self, kwargs):
         return Event(self.bot, self.name, **kwargs)
 
     def _get_path(self):
-        path = [self.name]
-        parent = self.parent
+        path = []
+        parent = self
         while not parent == None and not parent.name == None:
             path.append(parent.name)
             parent = parent.parent
@@ -134,7 +133,7 @@ class EventHook(object):
             for event_name in event_chain:
                 event_obj = event_obj.get_child(event_name)
             if not context == None:
-                event_obj = event_obj.new_context(context)
+                return event_obj.new_context(context)
             return event_obj
 
         if extra_subevents:
@@ -170,10 +169,9 @@ class EventHook(object):
         start = time.monotonic()
 
         event = self._make_event(kwargs)
-        called = 0
         returns = []
-        for hook in self.get_hooks():
-            if (maximum and called == maximum) or event.eaten:
+        for hook in self.get_hooks()[:maximum]:
+            if event.eaten:
                 break
             try:
                 returns.append(hook.call(event))
@@ -181,10 +179,8 @@ class EventHook(object):
                 traceback.print_exc()
                 self.bot.log.error("failed to call event \"%s\"", [
                     event_path], exc_info=True)
-            called += 1
 
-        end = time.monotonic()
-        total_milliseconds = (end - start) * 1000
+        total_milliseconds = (time.monotonic() - start) * 1000
         self.bot.log.debug("event \"%s\" called in %fms", [
             event_path, total_milliseconds])
 
@@ -204,8 +200,7 @@ class EventHook(object):
             del self._children[child_name_lower]
 
     def check_purge(self):
-        if len(self.get_hooks()) == 0 and len(self.get_children()
-                ) == 0 and not self.parent == None:
+        if self.is_empty() and not self.parent == None:
             self.parent.remove_child(self.name)
             self.parent.check_purge()
 
@@ -216,15 +211,14 @@ class EventHook(object):
     def purge_context(self, context):
         if self.has_context(context):
             self.remove_context(context)
+
         for child_name in self.get_children()[:]:
             child = self.get_child(child_name)
             child.purge_context(context)
-            if child.is_empty():
-                self.remove_child(child_name)
 
     def get_hooks(self):
-        return sorted(self._hooks + list(itertools.chain.from_iterable(
-            self._context_hooks.values())), key=lambda e: e.priority)
+        return sorted(self._hooks + sum(self._context_hooks.values(), []),
+            key=lambda e: e.priority)
     def get_children(self):
         return list(self._children.keys())
     def is_empty(self):
