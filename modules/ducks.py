@@ -61,7 +61,8 @@ class Module(object):
     def duck_loop_entry(self, event):
         wait = self.get_random_duck_time()
         self.timer = Timer(wait, self.show_duck, [event])
-        print(" Sending out animal in %s seconds" % wait)
+        self.bot.log.info("Sending out a wave of ducks in %s seconds",
+                          [wait])
         self.timer.start()
 
     def bootstrap(self, event):
@@ -98,9 +99,9 @@ class Module(object):
         max = "max-duck-time-%s" % (channel_name)
 
         self.bot.log.debug("Attempting to set %s to %s",
-                           [str(min), str(self.duck_times[min])]);
+                           [str(min), str(self.duck_times[min])])
         self.bot.log.debug("Attempting to set %s to %s",
-                           [str(max), str(self.duck_times[max])]);
+                           [str(max), str(self.duck_times[max])])
 
         return random.randint(self.duck_times[min], self.duck_times[max])
 
