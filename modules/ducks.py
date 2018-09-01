@@ -2,21 +2,24 @@ from operator import itemgetter
 from threading import Timer
 import datetime
 import random
-import time
-
-import IRCLogging
-
-DUCK_LAST_SEEN = datetime.datetime.now()
 
 
 class Module(object):
     def __init__(self, bot, events):
-        self.log = IRCLogging.Log
         self.bot = bot
         self.events = events
-        self.active_duck = 0
         self.decoy_hooked = 0
         self.duck_timer = None
+
+        self.duck_list = [
+            "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
+            "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
+            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
+            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
+            "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
+            "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
+            "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
+        ]
 
         events.on("received.command.bef").hook(self.duck_bef,
                                                help="Befriend a duck!")
@@ -32,15 +35,7 @@ class Module(object):
         # events.on("received.command.ducks").hook(self.duck_list,
         #                                              help="Shows a list of the most popular duck superstars.")
 
-        now = datetime.datetime.now()
-        next_duck_time = self.get_random_duck_time()
-
-        self.duck_timer = None
         self.duck_times = {}
-        self.decoys = {}
-
-        tricky = next_duck_time - now.second
-        tricky += ((next_duck_time - (now.minute + 1)) * 2)
 
         events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="ducks-enabled",
@@ -255,17 +250,7 @@ class Module(object):
                                                              str) else active_duck
 
                 if ducks_enabled == 1 and active_duck == 0:
-                    ducks = [
-                        "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
-                        "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
-                        "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
-                        "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
-                        "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
-                        "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
-                        "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
-                    ]
-
-                    channel.send_message(random.choice(ducks))
+                    channel.send_message(random.choice(self.duck_list))
 
                     channel.set_setting("active-duck", 1)
 
@@ -276,17 +261,7 @@ class Module(object):
                     channel.set_setting("active-duck", 0)
 
     def duck_decoy(self, event):
-        ducks = [
-            "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
-            "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
-            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
-            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
-            "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
-            "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
-            "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
-        ]
-
-        event["stdout"].write(random.choice(ducks))
+        event["stdout"].write(random.choice(self.duck_list))
 
     def set_decoy(self, event):
         channel = event["target"]
