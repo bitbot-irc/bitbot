@@ -1,19 +1,24 @@
 from operator import itemgetter
-import datetime
+from threading import Timer
+import Utils
 import random
 
-import IRCLogging
-
-DUCK_LAST_SEEN = datetime.datetime.now()
-
+DUCK_LIST = [
+    "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
+    "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
+    "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
+    "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
+    "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
+    "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
+    "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
+]
 
 class Module(object):
     def __init__(self, bot, events):
-        self.log = IRCLogging.Log
         self.bot = bot
         self.events = events
-        self.active_duck = 0
         self.decoy_hooked = 0
+        self.duck_timer = None
 
         events.on("received.command.bef").hook(self.duck_bef,
                                                help="Befriend a duck!")
@@ -24,19 +29,12 @@ class Module(object):
 
         events.on("received.command.friends").hook(self.duck_friends,
                                                    help="See who the friendliest people to ducks are!")
-        # events.on("received.command.killers").hook(self.duck_killers,
-        #                                             help="See who shoots the most amount of ducks.")
+        events.on("received.command.killers").hook(self.duck_enemies,
+                                                     help="See who shoots the most amount of ducks.")
         # events.on("received.command.ducks").hook(self.duck_list,
         #                                              help="Shows a list of the most popular duck superstars.")
 
-        now = datetime.datetime.now()
-        next_duck_time = random.randint(30, 40)
-
         self.duck_times = {}
-        self.decoys = {}
-
-        tricky = next_duck_time - now.second
-        tricky += ((next_duck_time - (now.minute + 1)) * 2)
 
         events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="ducks-enabled",
@@ -50,10 +48,16 @@ class Module(object):
             "channelset").assure_call(setting="max-duck-time",
                                       help="Max seconds before a duck is summoned")
 
-        events.on("timer").on("duck-appear").hook(self.show_duck)
-        bot.add_timer("duck-appear", next_duck_time, persist=False)
-
         events.on("received.numeric.366").hook(self.bootstrap)
+
+        events.on("raw").on("376").hook(self.duck_loop_entry)
+
+    def duck_loop_entry(self, event):
+        wait = self.get_random_duck_time()
+        self.timer = Timer(wait, self.show_duck, [event])
+        self.bot.log.info("Sending out a wave of ducks in %s seconds",
+                          [wait])
+        self.timer.start()
 
     def bootstrap(self, event):
         for server in self.bot.servers.values():
@@ -65,8 +69,8 @@ class Module(object):
                 min_time = "min-duck-time-%s" % channel.name
                 max_time = "max-duck-time-%s" % channel.name
 
-                min_duck_time = channel.get_setting("min-duck-time", 240)
-                max_duck_time = channel.get_setting("max-duck-time", 1200)
+                min_duck_time = channel.get_setting("min-duck-time", 20)
+                max_duck_time = channel.get_setting("max-duck-time", 30)
 
                 min_duck_time = int(min_duck_time) if isinstance(min_duck_time,
                                                                  str) else min_duck_time
@@ -89,14 +93,46 @@ class Module(object):
         max = "max-duck-time-%s" % (channel_name)
 
         self.bot.log.debug("Attempting to set %s to %s",
-                           [str(min), str(self.duck_times[min])]);
+                           [str(min), str(self.duck_times[min])])
         self.bot.log.debug("Attempting to set %s to %s",
-                           [str(max), str(self.duck_times[max])]);
+                           [str(max), str(self.duck_times[max])])
 
         return random.randint(self.duck_times[min], self.duck_times[max])
 
     def decoy_time(self):
-        return random.randint(10, 20)
+        return random.randint(60, 180)
+
+    def duck_enemies(self, event):
+        the_enemy = event["server"].find_all_user_channel_settings(
+            "ducks-shot")
+
+        notorious = {}
+        enemy_nicks = []
+        enemy_ducks = []
+
+        for i in the_enemy:
+            if i[1] in notorious.keys():
+                notorious[i[1]] += i[2]
+            else:
+                notorious[i[1]] = i[2]
+
+        for user, enemies in sorted(notorious.items(), key=itemgetter(1),
+                                    reverse=True):
+            enemy_nicks.append(user)
+            enemy_ducks.append(enemies)
+
+        sentence = "Most Notorious Users -- "
+
+        length = len(enemy_nicks) if len(enemy_nicks) < 11 else 11
+
+        for i in range(0, length):
+            sentence += enemy_nicks[i] + " (" + str(enemy_ducks[i]) + ")"
+            if i < 10:
+                sentence += ", "
+
+        sentence = sentence[0:-2]
+
+        event["stdout"].write(sentence)
 
     def duck_friends(self, event):
         friends = event["server"].find_all_user_channel_settings(
@@ -160,12 +196,12 @@ class Module(object):
             grammar = "" if befriended_ducks == 0 else "s"
 
             event["stdout"].write(
-                target + ", you've befriended " + str(
-                    befriended_ducks + 1) + " duck" + grammar + " in " + event[
-                    "target"].name)
+                target + ", you've befriended " + Utils.bold(str(
+                    befriended_ducks + 1)) + " duck" + grammar + " in " +
+                Utils.bold(event[
+                    "target"].name))
 
-            next_duck_time = self.duck_time(event)
-            self.bot.add_timer("duck-appear", next_duck_time, persist=False)
+            self.duck_loop_entry(event)
 
     def duck_bang(self, event):
         user = event["user"]
@@ -189,12 +225,15 @@ class Module(object):
             grammar = "" if shot_ducks == 0 else "s"
 
             event["stdout"].write(
-                target + ", you've shot " + str(
-                    shot_ducks + 1) + " duck" + grammar + " in " + event[
-                    "target"].name)
+                target + ", you've shot "
+                + Utils.bold(str(shot_ducks + 1)) + " duck"
+                + grammar + " in "
+                + Utils.bold(event["target"].name))
 
-            next_duck_time = self.duck_time(event)
-            self.bot.add_timer("duck-appear", next_duck_time, persist=False)
+            self.duck_loop_entry(event)
+
+    def get_random_duck_time(self):
+        return random.randint(120, 1200)
 
     def show_duck(self, event):
         for server in self.bot.servers.values():
@@ -212,17 +251,7 @@ class Module(object):
                                                              str) else active_duck
 
                 if ducks_enabled == 1 and active_duck == 0:
-                    ducks = [
-                        "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
-                        "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
-                        "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
-                        "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
-                        "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
-                        "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
-                        "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
-                    ]
-
-                    channel.send_message(random.choice(ducks))
+                    channel.send_message(random.choice(DUCK_LIST))
 
                     channel.set_setting("active-duck", 1)
 
@@ -232,22 +261,8 @@ class Module(object):
                 else:
                     channel.set_setting("active-duck", 0)
 
-                    next_duck_time = self.duck_time(channel.name)
-                    self.bot.add_timer("duck-appear", next_duck_time,
-                                       persist=False)
-
     def duck_decoy(self, event):
-        ducks = [
-            "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
-            "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
-            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
-            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
-            "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
-            "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
-            "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
-        ]
-
-        event["channel"].send_message(random.choice(ducks))
+        event["stdout"].write(random.choice(DUCK_LIST))
 
     def set_decoy(self, event):
         channel = event["target"]
