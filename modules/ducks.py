@@ -3,6 +3,15 @@ from threading import Timer
 import Utils
 import random
 
+DUCK_LIST = [
+    "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
+    "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
+    "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
+    "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
+    "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
+    "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
+    "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
+]
 
 class Module(object):
     def __init__(self, bot, events):
@@ -10,16 +19,6 @@ class Module(object):
         self.events = events
         self.decoy_hooked = 0
         self.duck_timer = None
-
-        self.duck_list = [
-            "・゜゜・。。・゜ ​ ゜\_O​< q​uack!",
-            "・゜゜・。。・゜ ​ ゜\_o< QUACK!",
-            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack!",
-            "・゜゜・。 ​ 。・゜゜\​_ó< qu​ack quack!",
-            "・゜゜ 。 ​ 。・゜  \​_ó< bawk!",
-            "・゜゜ 。 ​ 。・゜゜\​_ó< squawk!",
-            "・ ゜・。 ​ 。・゜゜ \​_ó< beep beep!"
-        ]
 
         events.on("received.command.bef").hook(self.duck_bef,
                                                help="Befriend a duck!")
@@ -252,7 +251,7 @@ class Module(object):
                                                              str) else active_duck
 
                 if ducks_enabled == 1 and active_duck == 0:
-                    channel.send_message(random.choice(self.duck_list))
+                    channel.send_message(random.choice(DUCK_LIST))
 
                     channel.set_setting("active-duck", 1)
 
@@ -263,7 +262,7 @@ class Module(object):
                     channel.set_setting("active-duck", 0)
 
     def duck_decoy(self, event):
-        event["stdout"].write(random.choice(self.duck_list))
+        event["stdout"].write(random.choice(DUCK_LIST))
 
     def set_decoy(self, event):
         channel = event["target"]

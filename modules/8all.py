@@ -1,5 +1,20 @@
 import random
 
+CHOICES = [
+    "Definitely",
+    "Yes",
+    "Probably",
+    "Maybe",
+    "Probably not",
+    "No",
+    "Definitely not",
+    "I don't know",
+    "Ask again later",
+    "The answer is unclear",
+    "Absolutely",
+    "Dubious at best",
+    "I'm on a break, ask again later"
+]
 
 class Module(object):
     def __init__(self, bot, events):
@@ -11,20 +26,4 @@ class Module(object):
         )
 
     def decide(selfs, event):
-        choices = [
-            "Definitely",
-            "Yes",
-            "Probably",
-            "Maybe",
-            "Probably not",
-            "No",
-            "Definitely not",
-            "I don't know",
-            "Ask again later",
-            "The answer is unclear",
-            "Absolutely",
-            "Dubious at best",
-            "I'm on a break, ask again later"
-        ]
-
-        event["stdout"].write(random.choice(choices))
+        event["stdout"].write(random.choice(CHOICES))
