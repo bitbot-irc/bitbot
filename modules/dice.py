@@ -1,5 +1,5 @@
 import random
-
+import Utils
 
 class Module(object):
     def __init__(self, bot, events):
@@ -38,6 +38,6 @@ class Module(object):
         total = sum(results)
         results = ', '.join(map(str, results))
 
-        event["stdout"].write("Rolled " + str_roll + " for a total "
-                              + "of " + str(total)
-                              + ": [" + results + "]")
+        event["stdout"].write("Rolled " + Utils.bold(str_roll) + " for a total "
+                              + "of " + Utils.bold(str(total))
+                              + ": " + results)

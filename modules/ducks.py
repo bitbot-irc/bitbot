@@ -1,6 +1,6 @@
 from operator import itemgetter
 from threading import Timer
-import datetime
+import Utils
 import random
 
 
@@ -197,9 +197,10 @@ class Module(object):
             grammar = "" if befriended_ducks == 0 else "s"
 
             event["stdout"].write(
-                target + ", you've befriended " + str(
-                    befriended_ducks + 1) + " duck" + grammar + " in " + event[
-                    "target"].name)
+                target + ", you've befriended " + Utils.bold(str(
+                    befriended_ducks + 1)) + " duck" + grammar + " in " +
+                Utils.bold(event[
+                    "target"].name))
 
             self.duck_loop_entry(event)
 
@@ -225,9 +226,10 @@ class Module(object):
             grammar = "" if shot_ducks == 0 else "s"
 
             event["stdout"].write(
-                target + ", you've shot " + str(
-                    shot_ducks + 1) + " duck" + grammar + " in " + event[
-                    "target"].name)
+                target + ", you've shot "
+                + Utils.bold(str(shot_ducks + 1)) + " duck"
+                + grammar + " in "
+                + Utils.bold(event["target"].name))
 
             self.duck_loop_entry(event)
 
