@@ -47,7 +47,7 @@ class Module(object):
         wait = self.get_random_duck_time()
         self.bot.log.info("Sending out a wave of ducks in %s seconds",
                           [wait])
-        self.bot.add_timer("show-duck", wait)
+        self.bot.add_timer("show-duck", wait, persist=False)
 
     def bootstrap(self, event):
         for server in self.bot.servers.values():
@@ -210,12 +210,11 @@ class Module(object):
                     channel.set_setting("active-duck", False)
 
     def duck_decoy(self, event):
-        event["stdout"].write(random.choice(DUCK_LIST))
+        self.events.on("send").on("stdout").call(target=event["channel"],
+            module_name="Ducks", server=event["server"],
+            message=random.choice(DUCK_LIST))
 
     def set_decoy(self, event):
-        channel = event["target"]
-
         next_decoy_time = self.get_random_duck_time()
-
-        self.bot.add_timer("duck-decoy", next_decoy_time, None, None, False,
-                           channel=channel)
+        self.bot.add_timer("duck-decoy", next_decoy_time, persist=False,
+            server=event["server"], channel=event["target"])
