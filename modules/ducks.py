@@ -28,7 +28,7 @@ class Module(object):
                                                    help="See who the friendliest people to ducks are!")
         events.on("received.command.killers").hook(self.duck_enemies,
                                                      help="See who shoots the most amount of ducks.")
-        events.on("received.command.ducks").hook(self.duck_stats,
+        events.on("received.command.duckstats").hook(self.duck_stats,
                                                       help="Shows your duck "
                                                            "stats!")
 
