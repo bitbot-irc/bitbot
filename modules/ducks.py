@@ -16,9 +16,6 @@ DUCK_LIST = [
 class Module(object):
     def __init__(self, bot, events):
         self.bot = bot
-        self.events = events
-        self.decoy_hooked = 0
-        self.duck_timer = None
 
         events.on("received.command.bef").hook(self.duck_bef,
                                                help="Befriend a duck!")
@@ -26,7 +23,6 @@ class Module(object):
                                                 help="Shoot a duck! Meanie.")
         events.on("received.command.decoy").hook(self.set_decoy,
                                                  help="Be a sneaky fellow and make a decoy duck.")
-
         events.on("received.command.friends").hook(self.duck_friends,
                                                    help="See who the friendliest people to ducks are!")
         events.on("received.command.killers").hook(self.duck_enemies,
@@ -34,24 +30,11 @@ class Module(object):
         # events.on("received.command.ducks").hook(self.duck_list,
         #                                              help="Shows a list of the most popular duck superstars.")
 
-        self.duck_times = {}
 
         events.on("postboot").on("configure").on(
             "channelset").assure_call(setting="ducks-enabled",
                                       help="Toggles ducks!",
                                       validate=Utils.bool_or_none)
-
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="min-duck-time",
-                                      help="Minimum seconds before a duck is "
-                                           "summoned",
-                                      validate=Utils.int_or_none)
-
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="max-duck-time",
-                                      help="Max seconds before a duck is "
-                                           "summoned",
-                                      validate=Utils.int_or_none)
 
         events.on("received.numeric.366").hook(self.bootstrap)
 
@@ -71,41 +54,8 @@ class Module(object):
             for channel in server.channels.values():
                 ducks_enabled = channel.get_setting("ducks-enabled", False)
 
-                min_time = "min-duck-time-%s" % channel.name
-                max_time = "max-duck-time-%s" % channel.name
-
-                min_duck_time = channel.get_setting("min-duck-time", 20)
-                max_duck_time = channel.get_setting("max-duck-time", 30)
-
-                min_duck_time = int(min_duck_time) if isinstance(min_duck_time,
-                                                                 str) else min_duck_time
-                max_duck_time = int(max_duck_time) if isinstance(max_duck_time,
-                                                                 str) else max_duck_time
-
-                self.duck_times[min_time] = min_duck_time
-                self.duck_times[max_time] = max_duck_time
-
                 if ducks_enabled == True:
                     channel.set_setting("active-duck", False)
-
-    def duck_time(self, channel):
-        if isinstance(channel, str):
-            channel_name = channel
-        else:
-            channel_name = channel["target"].name
-
-        min = "min-duck-time-%s" % (channel_name)
-        max = "max-duck-time-%s" % (channel_name)
-
-        self.bot.log.debug("Attempting to set %s to %s",
-                           [str(min), str(self.duck_times[min])])
-        self.bot.log.debug("Attempting to set %s to %s",
-                           [str(max), str(self.duck_times[max])])
-
-        return random.randint(self.duck_times[min], self.duck_times[max])
-
-    def decoy_time(self):
-        return random.randint(60, 180)
 
     def duck_enemies(self, event):
         the_enemy = event["server"].find_all_user_channel_settings(
@@ -265,7 +215,7 @@ class Module(object):
     def set_decoy(self, event):
         channel = event["target"]
 
-        next_decoy_time = self.decoy_time()
+        next_decoy_time = self.get_random_duck_time()
 
         self.bot.add_timer("duck-decoy", next_decoy_time, None, None, False,
                            channel=channel)
