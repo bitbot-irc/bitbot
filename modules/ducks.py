@@ -16,6 +16,7 @@ DUCK_LIST = [
 class Module(object):
     def __init__(self, bot, events):
         self.bot = bot
+        self.events = events
 
         events.on("received.command.bef").hook(self.duck_bef,
                                                help="Befriend a duck!")
