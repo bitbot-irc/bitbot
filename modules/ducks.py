@@ -220,6 +220,7 @@ class Module(object):
         self.bot.add_timer("duck-decoy", next_decoy_time, persist=False,
             server=event["server"], channel=event["target"])
 
+
     def duck_stats(self, event):
         user = event["user"]
         channel = event["target"].name
@@ -257,4 +258,7 @@ class Module(object):
                 channel_poached) + " in " + channel + "), and " + str(
                 total_friends) + " ducks befriended (" + str(channel_friends)
             + " in " + channel + ")")
+
+
+        
 
