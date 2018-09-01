@@ -52,12 +52,14 @@ class Module(object):
 
         events.on("raw").on("376").hook(self.duck_loop_entry)
 
+        events.on("timer").on("duck-decoy").hook(self.duck_decoy)
+        events.on("timer").on("show-duck").hook(self.show_duck)
+
     def duck_loop_entry(self, event):
         wait = self.get_random_duck_time()
-        self.timer = Timer(wait, self.show_duck, [event])
         self.bot.log.info("Sending out a wave of ducks in %s seconds",
                           [wait])
-        self.timer.start()
+        self.bot.add_timer("show-duck", wait)
 
     def bootstrap(self, event):
         for server in self.bot.servers.values():
@@ -269,18 +271,5 @@ class Module(object):
 
         next_decoy_time = self.decoy_time()
 
-        if self.decoy_hooked == 0:
-            self.events.on("timer").on("duck-decoy").hook(self.duck_decoy)
-            self.decoy_hooked = 1
-
         self.bot.add_timer("duck-decoy", next_decoy_time, None, None, False,
                            channel=channel)
-
-# def coins(self, event):
-#    if event["args_split"]:
-#        target = event["server"].get_user(event["args_split"][0])
-#    else:
-#        target = event["user"]
-#    coins = decimal.Decimal(target.get_setting("coins", "0.0"))
-#    event["stdout"].write("%s has %s coin%s" % (target.nickname,
-#        "{0:.2f}".format(coins), "" if coins == 1 else "s"))
