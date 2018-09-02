@@ -1,4 +1,5 @@
 import signal
+import Config
 
 class Module(object):
     def __init__(self, bot, events):
@@ -23,5 +24,7 @@ class Module(object):
         self.bot.running = False
 
     def SIGUSR1(self, signum, frame):
-        print("Reloading config file")
-        self.bot.config_object.load_config()
+        self.bot.log.info("Reloading config file", [])
+        config = Config.Config(self.bot, self.bot.args.config)
+        self.bot.config = config.load_config()
+        self.bot.log.info("Reloaded config file", [])
