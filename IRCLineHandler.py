@@ -276,14 +276,15 @@ class LineHandler(object):
     def mode(self, event):
         nickname, username, hostname = Utils.seperate_hostmask(
             event["prefix"])
+        user = event["server"].get_user(nickname)
         target = event["args"][0]
         is_channel = target[0] in event["server"].channel_types
         if is_channel:
             channel = event["server"].get_channel(target)
             remove = False
             args  = event["args"][2:]
+            _args = args[:]
             modes = RE_MODES.findall(event["args"][1])
-
             for chunk in modes:
                 remove = chunk[0] == "-"
                 for mode in chunk[1:]:
@@ -294,8 +295,9 @@ class LineHandler(object):
                         channel.change_mode(remove, mode, args.pop(0))
                     else:
                         args.pop(0)
-            self.events.on("received").on("mode").call(modes=modes,
-                mode_args=args, channel=channel, server=event["server"])
+            self.events.on("received").on("mode").on("channel").call(
+                modes=modes, mode_args=_args, channel=channel,
+                server=event["server"], user=user)
         elif event["server"].is_own_nickname(target):
             modes = RE_MODES.findall(event["arbitrary"] or args[1])
             for chunk in modes:
