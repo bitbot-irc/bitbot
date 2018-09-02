@@ -34,6 +34,8 @@ class Module(object):
         events.on("received").on("topic").hook(self.on_topic)
         events.on("received").on("numeric").on("333").hook(self.on_333)
 
+        events.on("received").on("mode").on("channel").hook(self.mode)
+
     def print_line(self, event, line, channel=None):
         timestamp = datetime.datetime.now().isoformat()
         target = str(event["server"])
@@ -114,3 +116,11 @@ class Module(object):
     def on_333(self, event):
         self._on_topic(event, event["setter"], "set",
             event["channel"].topic, event["channel"])
+
+    def mode(self, event):
+        args = " ".join(event["mode_args"])
+        if args:
+            args = " %s" % args
+        self.print_line(event, "%s set mode %s%s" % (
+            event["user"].nickname, "".join(event["modes"]),
+            args), channel=event["channel"].name)
