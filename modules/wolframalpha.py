@@ -1,10 +1,8 @@
 #--require-config wolframalpha-api-key
-
-import re
+import json
 import Utils
 
-URL_WA = "http://api.wolframalpha.com/v2/query"
-REGEX_CHARHEX = re.compile("\\\\:(\S{4})")
+URL_WA = "https://api.wolframalpha.com/v1/result"
 
 class Module(object):
     _name = "Wolfram|Alpha"
@@ -16,34 +14,14 @@ class Module(object):
             usage="<query>")
 
     def wa(self, event):
-        soup = Utils.get_url(URL_WA, get_params={"input": event["args"],
+        code, result = Utils.get_url(URL_WA, get_params={"i": event["args"],
             "appid": self.bot.config["wolframalpha-api-key"],
-            "format": "plaintext", "reinterpret": "true"}, soup=True)
+            "reinterpret": "true", "units": "metric"}, code=True)
 
-        if soup:
-            if int(soup.find("queryresult").get("numpods")) > 0:
-                input = soup.find(id="Input").find("subpod").find("plaintext"
-                    ).text
-                answered = False
-                for pod in soup.find_all("pod"):
-                    if pod.get("primary") == "true":
-                        answer = pod.find("subpod").find("plaintext")
-                        text = "(%s) %s" % (input.replace(" | ", ": "),
-                            answer.text.strip().replace(" | ", ": "
-                            ).replace("\n", " | ").replace("\r", ""))
-                        while True:
-                            match = re.search(REGEX_CHARHEX, text)
-                            if match:
-                                text = re.sub(REGEX_CHARHEX, chr(int(
-                                    match.group(1), 16)), text)
-                            else:
-                                break
-                        answered = True
-                        event["stdout"].write(text)
-                        break
-                if not answered:
-                    event["stderr"].write("No results found")
+        if not result == None:
+            if code == 200:
+                event["stdout"].write("%s: %s" % (event["args"], result))
             else:
-                event["stderr"].write("No results found")
+                event["stdout"].write("No results")
         else:
             event["stderr"].write("Failed to load results")
