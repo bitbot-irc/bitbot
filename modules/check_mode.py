@@ -1,7 +1,7 @@
 
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("preprocess").on("command").hook(self.preprocess_command)
 

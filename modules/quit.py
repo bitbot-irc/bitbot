@@ -55,7 +55,7 @@ QUOTES = {
 }
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("get.quit-quote").hook(self.quote)
 
     def quote(self, event):

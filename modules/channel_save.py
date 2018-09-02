@@ -1,7 +1,7 @@
 
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received.numeric.001").hook(self.on_connect)
         events.on("self.join").hook(self.on_join)
         events.on("self.kick").hook(self.on_kick)

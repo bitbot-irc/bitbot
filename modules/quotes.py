@@ -1,7 +1,7 @@
 import random, time
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("command").on("quoteadd",
             "qadd").hook(self.quote_add, min_args=1,

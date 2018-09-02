@@ -2,7 +2,7 @@ import socket
 
 class Module(object):
     _name = "DNS"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received").on("command").on("dns").hook(
             self.dns, min_args=1,
             help="Get all addresses for a given hostname (IPv4/IPv6)",

@@ -14,7 +14,7 @@ DUCK_LIST = [
 ]
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
 
@@ -33,10 +33,8 @@ class Module(object):
                                                            "stats!")
 
 
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="ducks-enabled",
-                                      help="Toggles ducks!",
-                                      validate=Utils.bool_or_none)
+        exports.add("channelset", {"setting": "ducks-enabled",
+            "help": "Toggle ducks!", "validate": Utils.bool_or_none})
 
         events.on("received.numeric.366").hook(self.bootstrap)
 

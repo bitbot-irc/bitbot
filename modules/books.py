@@ -7,7 +7,7 @@ REGEX_BOOKID = re.compile("id=([\w\-]+)")
 
 class Module(object):
     _name = "ISBN"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("command").on("isbn").hook(
             self.isbn, help="Get book information from a provided ISBN",

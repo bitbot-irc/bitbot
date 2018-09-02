@@ -7,7 +7,7 @@ URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
 REGEX_URL = re.compile("https?://", re.I)
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
         events.on("get").on("shortlink").hook(self.shortlink)

@@ -20,7 +20,7 @@ class Module(object):
     PASSENGER_ACTIVITIES = ["U", "P", "R"]
     COLOURS = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY, Utils.COLOR_ORANGE]
 
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self._client = None
         events.on("received").on("command").on("nrtrains"

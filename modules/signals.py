@@ -2,7 +2,7 @@ import signal
 import Config
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
         signal.signal(signal.SIGINT, self.SIGINT)

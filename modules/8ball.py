@@ -17,7 +17,7 @@ CHOICES = [
 ]
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received.command.8ball").hook(
             self.decide,
             min_args=1,

@@ -2,7 +2,7 @@ import random
 
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received.command.strax").hook(
             self.strax, help="Suggests a glorious method of battle for the glory of the Sontaran Empire, through IRC!")
 

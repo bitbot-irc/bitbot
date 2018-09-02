@@ -17,7 +17,7 @@ ARROW_UP = "▲"
 ARROW_DOWN = "▼"
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
         events.on("received").on("command").on("yt", "youtube"
@@ -26,11 +26,9 @@ class Module(object):
         events.on("received").on("message").on("channel").hook(
             self.channel_message)
 
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="auto-youtube",
-            help="Disable/Enable automatically getting info from youtube URLs",
-            validate=Utils.bool_or_none)
-
+        exports.add("channelset", {"setting": "auto-youtube",
+            "help": "Disable/Enable automatically getting info from "
+            "youtube URLs", "validate": Utils.bool_or_none})
 
     def get_video_page(self, video_id, part):
         return Utils.get_url(URL_YOUTUBEVIDEO, get_params={"part": part,

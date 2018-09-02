@@ -1,7 +1,7 @@
 import base64
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("preprocess.connect").hook(self.preprocess_connect)
         events.on("received.cap").hook(self.on_cap)

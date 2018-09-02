@@ -6,7 +6,7 @@ URL_WA = "https://api.wolframalpha.com/v1/result"
 
 class Module(object):
     _name = "Wolfram|Alpha"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("command").on("wolframalpha", "wa"
             ).hook(self.wa, min_args=1, help=

@@ -1,7 +1,7 @@
 import EventManager
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received").on("numeric").on("001").hook(
             self.on_connect, priority=EventManager.PRIORITY_URGENT)
 

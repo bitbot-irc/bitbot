@@ -8,7 +8,7 @@ URL_IMDBTITLE = "http://imdb.com/title/%s"
 
 class Module(object):
     _name = "IMDb"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("command").on("imdb").hook(
             self.imdb, min_args=1,

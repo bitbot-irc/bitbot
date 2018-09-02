@@ -2,7 +2,7 @@
 
 class Module(object):
     _name = "IDs"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received.command.myid").hook(self.my_id,
             help="Show your user ID")
         events.on("received.command.channelid").hook(

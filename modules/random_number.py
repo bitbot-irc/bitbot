@@ -2,7 +2,7 @@ import random, uuid
 
 class Module(object):
     _name = "Random"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received").on("command").on("random",
             "rand").hook(self.random, help="Get a random number",
             usage="[start] [end]")

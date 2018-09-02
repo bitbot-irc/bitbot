@@ -1,7 +1,7 @@
 import datetime
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("message").on("private").hook(
             self.private_message)

@@ -1,13 +1,12 @@
 import Utils
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
 
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="automode",
-            help="Disable/Enable automode",
-            validate=Utils.bool_or_none)
+        exports.add("channelset", {"setting": "automode",
+            "help": "Disable/Enable automode",
+            "validate": Utils.bool_or_none})
 
         events.on("channel").on("mode").hook(self.on_mode)
         events.on("received").on("join").hook(self.on_join)

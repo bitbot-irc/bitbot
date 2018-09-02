@@ -5,12 +5,11 @@ import Utils
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
 
-        events.on("postboot").on("configure").on(
-            "set").assure_call(setting="lastfm",
-            help="Set username on last.fm")
+        exports.add("set", {"setting": "lastfm",
+            "help": "Set username on last.fm"})
 
         events.on("received").on("command").on("np",
             "listening", "nowplaying").hook(self.np,

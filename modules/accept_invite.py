@@ -1,7 +1,7 @@
 
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received").on("invite").hook(self.on_invite)
 
     def on_invite(self, event):

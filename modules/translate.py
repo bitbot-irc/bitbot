@@ -6,7 +6,7 @@ URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
 REGEX_LANGUAGES = re.compile("(\w+)?:(\w+)? ")
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received").on("command").on("translate", "tr").hook(
             self.translate, help="Translate the provided phrase or the "
             "last line seen.", usage="[phrase]")

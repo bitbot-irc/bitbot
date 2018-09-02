@@ -5,20 +5,18 @@ REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^s/")
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
         events.on("received").on("message").on("channel").hook(
             self.channel_message)
 
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="sed",
-            help="Disable/Enable sed in a channel",
-            validate=Utils.bool_or_none)
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="sed-sender-only",
-            help="Disable/Enable sed only looking at the messages "
-            "sent by the user", validate=Utils.bool_or_none)
+        exports.add("channelset", {"setting": "sed",
+            "help": "Disable/Enable sed in a channel",
+            "validate": Utils.bool_or_none})
+        exports.add("channelset", {"setting": "sed-sender-only",
+            "help": "Disable/Enable sed only looking at the messages "
+            "sent by the user", "validate": Utils.bool_or_none})
 
     def channel_message(self, event):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)

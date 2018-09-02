@@ -2,7 +2,7 @@ import random
 import Utils
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received.command.roll").hook(
             self.roll_dice,
             min_args=1,

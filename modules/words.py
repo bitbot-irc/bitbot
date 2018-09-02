@@ -2,7 +2,7 @@ import time
 import Utils
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("message").on("channel"
             ).hook(self.channel_message)

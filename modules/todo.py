@@ -1,7 +1,7 @@
 
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("command").on("todo").hook(
             self.todo, help="Find out what's in your todo list",

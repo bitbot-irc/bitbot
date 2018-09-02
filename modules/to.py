@@ -1,7 +1,7 @@
 import EventManager
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received").on("message").on("channel"
             ).hook(self.channel_message,
             priority=EventManager.PRIORITY_MEDIUM)

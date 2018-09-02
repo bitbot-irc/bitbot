@@ -2,7 +2,7 @@ import Utils
 
 class Module(object):
     _name = "Channel Op"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("command").on("kick", "k"
             ).hook(self.kick, channel_only=True, require_mode="o",
@@ -40,21 +40,18 @@ class Module(object):
         events.on("received").on("message").on("channel").hook(
             self.highlight_spam)
 
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="highlight-spam-threshold",
-            help="Set the number of nicknames in a message that "
-            "qualifies as spam", validate=Utils.int_or_none)
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="highlight-spam-protection",
-            help="Enable/Disable highlight spam protection",
-            validate=Utils.bool_or_none)
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="highlight-spam-ban",
-            help="Enable/Disable banning highlight spammers "
-            "instead of just kicking", validate=Utils.bool_or_none)
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="ban-format",
-            help="Set ban format ($n = nick, $u = username, $h = hostname)")
+        exports.add("channelset", {"setting": "highlight-spam-threshold",
+            "help": "Set the number of nicknames in a message that "
+            "qualifies as spam", "validate": Utils.int_or_none})
+        exports.add("channelset", {"setting": "highlight-spam-protection",
+            "help": "Enable/Disable highlight spam protection",
+            "validate": Utils.bool_or_none})
+        exports.add("channelset", {"setting": "highlight-spam-ban",
+            "help": "Enable/Disable banning highlight spammers "
+            "instead of just kicking", "validate": Utils.bool_or_none})
+        exports.add("channelset", {"setting": "ban-format",
+            "help": "Set ban format ($n = nick, $u = username, "
+            "$h = hostname)"})
 
     def kick(self, event):
         target = event["args_split"][0]

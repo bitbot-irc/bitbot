@@ -5,7 +5,7 @@ REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
         events.on("new").on("user").hook(self.new_user)
@@ -19,10 +19,9 @@ class Module(object):
             min_args=1, help="Reset a specified karma to 0",
             usage="<target>")
 
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="karma-verbose",
-            help="Disable/Enable automatically responding to karma changes",
-            validate=Utils.bool_or_none)
+        exports.add("channelset", {"setting": "karma-verbose",
+            "help": "Disable/Enable automatically responding to "
+            "karma changes", "validate": Utils.bool_or_none})
 
     def new_user(self, event):
         event["user"].last_karma = None

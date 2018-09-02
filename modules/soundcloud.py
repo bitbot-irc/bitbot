@@ -9,7 +9,7 @@ REGEX_SOUNDCLOUD = "https?://soundcloud.com/([^/]+)/([^/]+)"
 
 class Module(object):
     _name = "SoundCloud"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("command").on("soundcloud", "sc"
             ).hook(self.soundcloud, help="Search SoundCloud")

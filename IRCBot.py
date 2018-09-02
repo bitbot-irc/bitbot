@@ -1,6 +1,6 @@
 import os, select, sys, threading, time, traceback, uuid
 
-import EventManager, IRCLineHandler, IRCServer, Logging
+import EventManager, Exports, IRCLineHandler, IRCServer, Logging
 import ModuleManager, Timer
 
 class Bot(object):
@@ -14,7 +14,9 @@ class Bot(object):
         self.running = True
         self.poll = select.epoll()
         self._events = EventManager.EventHook(self)
-        self.modules = ModuleManager.ModuleManager(self, self._events)
+        self._exports = Exports.Exports()
+        self.modules = ModuleManager.ModuleManager(self, self._events,
+            self._exports)
         self.log = Logging.Log(self)
         self.line_handler = IRCLineHandler.LineHandler(self, self._events)
         self.timers = []

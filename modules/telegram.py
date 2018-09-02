@@ -8,7 +8,7 @@ from threading import Thread
 class Module(Thread):
     _name = "telegram"
 
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         key = bot.config.get("telegram-api-key")
         if not key: return
 

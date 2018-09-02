@@ -4,7 +4,7 @@ UPCITEMDB_URL = "https://api.upcitemdb.com/prod/trial/lookup"
 
 class Module(object):
     _name = "UPC"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received").on("command").on(
             "upc", "ean", "gtin").hook(

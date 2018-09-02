@@ -45,7 +45,7 @@ class StdErr(Out):
             self.module_name, Utils.FONT_RESET)
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
         events.on("received").on("message").on("channel").hook(
@@ -60,9 +60,8 @@ class Module(object):
         events.on("received").on("command").on("more").hook(self.more,
             help="Get more output from the last command", skip_out=True)
 
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="command-prefix",
-            help="Set the command prefix used in this channel")
+        exports.add("channelset", {"setting": "command-prefix",
+            "help": "Set the command prefix used in this channel"})
 
         events.on("new").on("user", "channel").hook(self.new)
         events.on("send").on("stdout").hook(self.send_stdout)

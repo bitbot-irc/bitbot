@@ -20,7 +20,7 @@ PLATFORM_TYPES = ["Northbound", "Southbound", "Eastbound", "Westbound", "Inner R
 
 class Module(object):
     _name = "TFL"
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.result_map = {}
         events.on("received").on("command").on("tflbus"

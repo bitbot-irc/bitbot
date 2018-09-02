@@ -4,7 +4,7 @@ URL_HAVEIBEENPWNEDAPI = "https://haveibeenpwned.com/api/v2/breachedaccount/%s"
 URL_HAVEIBEENPWNED = "https://haveibeenpwned.com/"
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received").on("command").on("beenpwned").hook(
             self.beenpwned, min_args=1,
             help="Find out if a username, email or similar has appeared "

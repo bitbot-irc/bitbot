@@ -1,9 +1,10 @@
 import glob, imp, inspect, os, sys, uuid
 
 class ModuleManager(object):
-    def __init__(self, bot, events, directory="modules"):
+    def __init__(self, bot, events, exports, directory="modules"):
         self.bot = bot
         self.events = events
+        self.exports = exports
         self.directory = directory
         self.modules = {}
         self.waiting_requirement = {}
@@ -49,12 +50,12 @@ class ModuleManager(object):
         if not inspect.isclass(module.Module):
             raise ImportError("module '%s' has a Module attribute but it is not a class.")
 
-        event_context = str(uuid.uuid4())
+        context = str(uuid.uuid4())
         module_object = module.Module(self.bot, self.events.new_context(
-            event_context))
+            context), self.exports.new_context(context))
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
-        module_object._event_context = event_context
+        module_object._context = context
         module_object._import_name = name
 
         assert not module_object._name in self.modules, (
@@ -87,8 +88,9 @@ class ModuleManager(object):
         module = self.modules[name]
         del self.modules[name]
 
-        event_context = module._event_context
-        self.events.purge_context(event_context)
+        context = module._context
+        self.events.purge_context(context)
+        self.exports.purge_context(context)
 
         del sys.modules[name]
         references = sys.getrefcount(module)

@@ -5,7 +5,7 @@ REQUIRES_IDENTIFY = ("You need to be identified to use that command "
  "(/msg %s register | /msg %s identify)")
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("new").on("user").hook(self.new_user)
         events.on("preprocess").on("command").hook(

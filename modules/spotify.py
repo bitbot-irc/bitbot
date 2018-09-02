@@ -4,7 +4,7 @@ import Utils
 URL_SPOTIFY = "https://api.spotify.com/v1/search"
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         events.on("received").on("command").on("spotify").hook(
             self.spotify, help="Search for a track on spotify",
             min_args=1)

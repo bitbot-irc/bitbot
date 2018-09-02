@@ -7,18 +7,17 @@ URL_VIRUSTOTAL = "https://www.virustotal.com/vtapi/v2/url/report"
 RE_URL = re.compile(r"https?://\S+", re.I)
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
         events.on("received.message.channel").hook(self.message)
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="check-urls",
-            help="Enable/Disable automatically checking for malicious URLs",
-            validate=Utils.bool_or_none)
-        events.on("postboot").on("configure").on(
-            "channelset").assure_call(setting="check-urls-kick",
-            help="Enable/Disable automatically kicking users that send "
-            "malicious URLs", validate=Utils.bool_or_none)
+
+        exports.add("channelset", {"setting": "check-urls",
+            "help": "Enable/Disable automatically checking for "
+            "malicious URLs", "validate": Utils.bool_or_none})
+        exports.add("channelset", {"setting": "check-urls-kick",
+            "help": "Enable/Disable automatically kicking users that "
+            "send malicious URLs", "validate": Utils.bool_or_none})
 
     def message(self, event):
         match = RE_URL.search(event["message"])

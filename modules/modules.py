@@ -1,7 +1,7 @@
 
 
 class Module(object):
-    def __init__(self, bot, events):
+    def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received.command.loadmodule").hook(self.load,
             min_args=1, permission="load-module", help="Load a module",
