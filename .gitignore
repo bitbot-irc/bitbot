@@ -66,3 +66,5 @@ target/
 *.conf
 modules/nongit-*.py
 bot.log.*
+bot.db.*
+test-databases/*
