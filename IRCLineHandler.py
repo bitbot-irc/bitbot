@@ -8,7 +8,7 @@ RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify",
-    "account-tag", "account-notify"}
+    "account-tag", "account-notify", "extended-join"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
@@ -196,8 +196,16 @@ class LineHandler(object):
     def join(self, event):
         nickname, username, hostname = Utils.seperate_hostmask(
             event["prefix"])
-        channel = event["server"].get_channel(
-            event["arbitrary"] or event["args"][0])
+        account = None
+        realname = None
+        if len(event["args"]) == 2:
+            channel = event["server"].get_channel(event["args"][0])
+            if not event["args"] == "*":
+                account = event["args"][1]
+            realname = event["arbitrary"]
+        else:
+            channel = event["server"].get_channel(
+                event["arbitrary"] or event["args"][0])
 
         if not event["server"].is_own_nickname(nickname):
             user = event["server"].get_user(nickname)
@@ -207,12 +215,13 @@ class LineHandler(object):
             channel.add_user(user)
             user.join_channel(channel)
             self.events.on("received").on("join").call(channel=channel,
-                user=user, server=event["server"])
+                user=user, server=event["server"], account=account,
+                realname=realname)
         else:
             if channel.name in event["server"].attempted_join:
                 del event["server"].attempted_join[channel.name]
             self.events.on("self").on("join").call(channel=channel,
-                server=event["server"])
+                server=event["server"], account=account, realname=realname)
             channel.send_mode()
 
     # on user parting channel
