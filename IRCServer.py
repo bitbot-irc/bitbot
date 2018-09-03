@@ -293,6 +293,8 @@ class Server(object):
     def send_authenticate(self, text):
         self.send("AUTHENTICATE %s" % text)
 
+    def waiting_for_capabilities(self):
+        return bool(len(self._capabilities_waiting))
     def wait_for_capability(self, capability):
         self._capabilities_waiting.add(capability)
     def capability_done(self, capability):
