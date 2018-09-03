@@ -8,8 +8,7 @@ RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify",
-    "account-tag", "account-notify", "extended-join", "away-notify",
-    "echo-message"}
+    "account-tag", "account-notify", "extended-join", "away-notify"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
@@ -380,20 +379,9 @@ class LineHandler(object):
 
         if target[0] in event["server"].channel_types:
             channel = event["server"].get_channel(event["args"][0])
-
-            if not event["server"].is_own_nickname(nickname):
-                self.events.on("received.message.channel").call(
-                    user=user, channel=channel, **kwargs)
-                channel.buffer.add_line(user.nickname, message, action)
-            else:
-                # supporting echo-message
-                self.events.on("self.message.channel").call(
-                    channel=channel, **kwargs)
-                channel.buffer.add_line(user.nickname, message, action, True)
-        elif event["server"].is_own_nickname(nickname):
-            # supporting echo-message
-            self.events.on("self.message.private").call(
-                user=event["server"].get_user(target), **kwargs)
+            self.events.on("received.message.channel").call(
+                user=user, channel=channel, **kwargs)
+            channel.buffer.add_line(user.nickname, message, action)
         elif event["server"].is_own_nickname(target):
             self.events.on("received.message.private").call(
                 user=user, **kwargs)
