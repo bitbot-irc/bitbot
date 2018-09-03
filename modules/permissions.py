@@ -11,6 +11,7 @@ class Module(object):
         events.on("preprocess").on("command").hook(
             self.preprocess_command)
         events.on("received").on("part").hook(self.on_part)
+
         events.on("received").on("command").on("identify"
             ).hook(self.identify, private_only=True, min_args=1,
             usage="<password>", help="Identify yourself")
@@ -19,6 +20,10 @@ class Module(object):
             usage="<password>", help="Register your nickname")
         events.on("received.command.logout").hook(self.logout,
              private_only=True, help="Sign out from the bot")
+        events.on("received.command.resetpassword").hook(
+            self.reset_password, private_only=True,
+            help="Reset a user's password", min_args=2,
+            usage="<nickname> <password>", permission="resetpassword")
 
         events.on("received.command.mypermissions").hook(
             self.my_permissions, authenticated=True)
@@ -91,6 +96,19 @@ class Module(object):
             event["stdout"].write("You have been logged out")
         else:
             event["stderr"].write("You are not logged in")
+
+    def reset_password(self, event):
+        target = event["server"].get_user(event["args_split"][0])
+        password = " ".join(event["args_split"][1:])
+        registered = target.get_setting("authentication", None)
+
+        if registered == None:
+            event["stderr"].write("'%s' isn't registered" % target.nickname)
+        else:
+            hash, salt = self._make_hash(password)
+            target.set_setting("authentication", [hash, salt])
+            event["stdout"].write("Reset password for '%s'" %
+                target.nickname)
 
     def preprocess_command(self, event):
         authentication = event["user"].get_setting("authentication", None)
