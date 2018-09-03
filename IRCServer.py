@@ -329,27 +329,28 @@ class Server(object):
 
     def send_message(self, target, message, prefix=None):
         full_message = message if not prefix else prefix+message
-
         self.send("PRIVMSG %s :%s" % (target, full_message))
-        action = full_message.startswith("\01ACTION "
-            ) and full_message.endswith("\01")
 
-        if action:
-            message = full_message.split("\01ACTION ", 1)[1][:-1]
+        if not "echo-message" in self.capabilities:
+            action = full_message.startswith("\01ACTION "
+                ) and full_message.endswith("\01")
 
-        full_message_split = full_message.split()
-        if self.has_channel(target):
-            channel = self.get_channel(target)
-            channel.buffer.add_line(None, message, action, True)
-            self.events.on("self").on("message").on("channel").call(
-                message=full_message, message_split=full_message_split,
-                channel=channel, action=action, server=self)
-        else:
-            user = self.get_user(target)
-            user.buffer.add_line(None, message, action, True)
-            self.events.on("self").on("message").on("private").call(
-                message=full_message, message_split=full_message_split,
-                user=user, action=action, server=self)
+            if action:
+                message = full_message.split("\01ACTION ", 1)[1][:-1]
+
+            full_message_split = full_message.split()
+            if self.has_channel(target):
+                channel = self.get_channel(target)
+                channel.buffer.add_line(None, message, action, True)
+                self.events.on("self").on("message").on("channel").call(
+                    message=full_message, message_split=full_message_split,
+                    channel=channel, action=action, server=self)
+            else:
+                user = self.get_user(target)
+                user.buffer.add_line(None, message, action, True)
+                self.events.on("self").on("message").on("private").call(
+                    message=full_message, message_split=full_message_split,
+                    user=user, action=action, server=self)
 
     def send_notice(self, target, message):
         self.send("NOTICE %s :%s" % (target, message))

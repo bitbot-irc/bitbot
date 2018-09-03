@@ -8,7 +8,8 @@ RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify",
-    "account-tag", "account-notify", "extended-join", "away-notify"}
+    "account-tag", "account-notify", "extended-join", "away-notify",
+    "echo-message"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
@@ -372,17 +373,30 @@ class LineHandler(object):
         action = message.startswith("\01ACTION ") and message.endswith("\01")
         if action:
             message = message.replace("\01ACTION ", "", 1)[:-1]
+
+        kwargs = {"message": message, "message_split": message_split,
+            "server": event["server"], "tags": event["tags"],
+            "action": action}
+
         if target[0] in event["server"].channel_types:
             channel = event["server"].get_channel(event["args"][0])
-            self.events.on("received").on("message").on("channel").call(
-                user=user, message=message, message_split=message_split,
-                channel=channel, action=action, server=event["server"],
-                tags=event["tags"])
-            channel.buffer.add_line(user.nickname, message, action)
+
+            if not event["server"].is_own_nickname(nickname):
+                self.events.on("received.message.channel").call(
+                    user=user, channel=channel, **kwargs)
+                channel.buffer.add_line(user.nickname, message, action)
+            else:
+                # supporting echo-message
+                self.events.on("self.message.channel").call(
+                    channel=channel, **kwargs)
+                channel.buffer.add_line(user.nickname, message, action, True)
+        elif event["server"].is_own_nickname(nickname):
+            # supporting echo-message
+            self.events.on("self.message.private").call(
+                user=event["server"].get_user(target), **kwargs)
         elif event["server"].is_own_nickname(target):
-            self.events.on("received").on("message").on("private").call(
-                user=user, message=message, message_split=message_split,
-                action=action, server=event["server"], tags=event["tags"])
+            self.events.on("received.message.private").call(
+                user=user, **kwargs)
             user.buffer.add_line(user.nickname, message, action)
 
     # we've received a notice
