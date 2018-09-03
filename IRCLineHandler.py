@@ -372,12 +372,13 @@ class LineHandler(object):
             channel = event["server"].get_channel(event["args"][0])
             self.events.on("received").on("message").on("channel").call(
                 user=user, message=message, message_split=message_split,
-                channel=channel, action=action, server=event["server"])
+                channel=channel, action=action, server=event["server"],
+                tags=event["tags"])
             channel.buffer.add_line(user.nickname, message, action)
         elif event["server"].is_own_nickname(target):
             self.events.on("received").on("message").on("private").call(
                 user=user, message=message, message_split=message_split,
-                action=action, server=event["server"])
+                action=action, server=event["server"], tags=event["tags"])
             user.buffer.add_line(user.nickname, message, action)
 
     # we've received a notice
@@ -396,12 +397,13 @@ class LineHandler(object):
             if target[0] in event["server"].channel_types:
                 channel = event["server"].get_channel(target)
                 self.events.on("received.notice.channel").call(
-                    message=message, message_split=message_split,
-                    user=user, server=event["server"], channel=channel)
+                    message=message, message_split=message_split, user=user,
+                    server=event["server"], channel=channel,
+                    tags=event["tags"])
             elif event["server"].is_own_nickname(target):
                 self.events.on("received.notice.private").call(
-                    message=message, message_split=message_split,
-                    user=user, server=event["server"])
+                    message=message, message_split=message_split, user=user,
+                    server=event["server"], tags=event["tags"])
 
     # IRCv3 TAGMSG, used to send tags without any other information
     def tagmsg(self, event):

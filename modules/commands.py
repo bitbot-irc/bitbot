@@ -110,7 +110,7 @@ class Module(object):
 
             returns = self.events.on("preprocess").on("command"
                 ).call(hook=hook, user=event["user"], server=event["server"],
-                target=target, is_channel=is_channel)
+                target=target, is_channel=is_channel, tags=event["tags"])
             for returned in returns:
                 if returned:
                     stderr.write(returned).send()
@@ -133,7 +133,8 @@ class Module(object):
                     ).call_limited(1, user=user, server=server,
                     target=target, buffer=buffer, args=args,
                     args_split=args_split, stdout=stdout, stderr=stderr,
-                    command=command.lower(), is_channel=is_channel)
+                    command=command.lower(), is_channel=is_channel,
+                    tags=event["tags"])
                 if not hook.kwargs.get("skip_out", False):
                     stdout.send()
                     stderr.send()
