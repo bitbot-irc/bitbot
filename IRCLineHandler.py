@@ -415,10 +415,10 @@ class LineHandler(object):
         if target[0] in event["server"].channel_types:
             channel = event["server"].get_channel(target)
             self.events.on("received.tagmsg.channel").call(channel=channel,
-                user=user, tags=event["tags"], server=server)
+                user=user, tags=event["tags"], server=event["server"])
         elif event["server"].is_own_nickname(target):
             self.events.on("received.tagmsg.private").call(
-                user=user, tags=event["tags"], server=server)
+                user=user, tags=event["tags"], server=event["server"])
 
     # a user's username and/or hostname has changed
     def chghost(self, event):
