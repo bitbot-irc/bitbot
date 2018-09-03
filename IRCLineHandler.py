@@ -7,7 +7,8 @@ RE_CHANMODES = re.compile(
 RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 RE_MODES = re.compile(r"[-+]\w+")
 
-CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify"}
+CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify",
+    "account-tag", "account-notify"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
@@ -40,6 +41,7 @@ class LineHandler(object):
         events.on("raw").on("PRIVMSG").hook(self.privmsg)
         events.on("raw").on("NOTICE").hook(self.notice)
         events.on("raw").on("CHGHOST").hook(self.chghost)
+        events.on("raw").on("ACCOUNT").hook(self.account)
 
         events.on("raw").on("CAP").hook(self.cap)
         events.on("raw").on("authenticate").hook(self.authenticate)
@@ -399,6 +401,18 @@ class LineHandler(object):
         hostname = event["args"][1]
         user.username = username
         user.hostname = hostname
+
+    def account(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        user = event["server"].get_user("nickname")
+
+        if not event["args"][0] == "*":
+            self.events.on("received.account.login").call(user=user,
+                server=event["server"], account=account)
+        else:
+            self.events.on("received.account.logout").call(user=user,
+                server=event["server"])
 
     # response to a WHO command for user information
     def handle_352(self, event):
