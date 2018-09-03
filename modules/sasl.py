@@ -14,7 +14,8 @@ class Module(object):
             event["server"].send_capability_request("sasl")
 
     def on_cap(self, event):
-        if "sasl" in event["capabilities"]:
+        if "sasl" in event["capabilities"] and event["server"].get_setting(
+                "sasl", None):
             event["server"].queue_capability("sasl")
     def on_cap_ack(self, event):
         if "sasl" in event["capabilities"]:
