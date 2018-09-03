@@ -339,7 +339,7 @@ class LineHandler(object):
             event["prefix"])
         target_channel = event["arbitrary"] or event["args"][1]
         user = event["server"].get_user(nickname)
-        targer_user = event["server"].get_user(event["args"][0])
+        target_user = event["server"].get_user(event["args"][0])
         self.events.on("received").on("invite").call(
             user=user, target_channel=target_channel,
             server=event["server"], target_user=target_user)
