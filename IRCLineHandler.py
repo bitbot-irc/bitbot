@@ -43,8 +43,16 @@ class LineHandler(object):
 
     def handle(self, server, line):
         original_line = line
+        tags = {}
         prefix = None
         command = None
+
+        if line[0] == "@":
+            tags_prefix, line = line[1:].split(" ", 1)
+            for tag in tags_prefix.split(";"):
+                tag_split = tag.split("=", 1)
+                tags[tag[0]] = tag[1:]
+
         if line[0] == ":":
             prefix, command, line = line[1:].split(" ", 2)
         else:
@@ -66,16 +74,16 @@ class LineHandler(object):
 
         #server, prefix, command, args, arbitrary
         self.events.on("raw").on(command).call(server=server,
-            prefix=prefix, args=args, arbitrary=arbitrary)
+            prefix=prefix, args=args, arbitrary=arbitrary, tags=tags)
         if default_event or not hooks:
             if command.isdigit():
                 self.events.on("received").on("numeric").on(command
-                    ).call(line=original_line, server=server,
+                    ).call(line=original_line, server=server, tags=tags,
                     line_split=original_line.split(" "), number=command)
             else:
                 self.events.on("received").on(command).call(
                     line=original_line, line_split=original_line.split(" "),
-                    command=command, server=server)
+                    command=command, server=server, tags=tags)
 
     # ping from the server
     def ping(self, event):
@@ -243,9 +251,22 @@ class LineHandler(object):
     # the server is telling us about its capabilities!
     def cap(self, event):
         capabilities = (event["arbitrary"] or "").split(" ")
-        self.events.on("received").on("cap").call(
-            subcommand=event["args"][1], capabilities=capabilities,
-            server=event["server"])
+        subcommand = event["args"][1].lower()
+
+        if subcommand == "ls":
+            if "message-tags" in capabilities:
+                event["server"].queue_capability("message-tags")
+            if "multi-prefix" in capabilities:
+                event["server"].queue_capability("multi-prefix")
+
+        self.events.on("received").on("cap").on(subcommand).call(
+            capabilities=capabilities, server=event["server"])
+
+        if subcommand == "ls":
+            if event["server"].has_capability_queue():
+                event["server"].send_capability_queue()
+            else:
+                event["server"].send_capability_end()
 
     # the server is asking for authentication
     def authenticate(self, event):

@@ -26,6 +26,8 @@ class Server(object):
         self.original_username = username or nickname
         self.original_realname = realname or nickname
         self.name = None
+        self._capability_queue = set([])
+        self._capabilities_waiting = set([])
 
         self.write_buffer = b""
         self.buffered_lines = []
@@ -79,7 +81,7 @@ class Server(object):
 
     def connect(self):
         self.socket.connect((self.target_hostname, self.port))
-        self.events.on("preprocess.connect").call(server=self)
+        self.send_capibility_ls()
 
         if self.password:
             self.send_pass(self.password)
@@ -273,12 +275,30 @@ class Server(object):
     def send_nick(self, nickname):
         self.send("NICK %s" % nickname)
 
-    def send_capability_request(self, capname):
-        self.send("CAP REQ :%s" % capname)
+    def send_capibility_ls(self):
+        self.send("CAP LS")
+    def queue_capability(self, capability):
+        self._capability_queue.add(capability)
+    def send_capability_queue(self):
+        if self.has_capability_queue():
+            capabilities = " ".join(self._capability_queue)
+            self._capability_queue.clear()
+            self.send_capability_request(capabilities)
+    def has_capability_queue(self):
+        return bool(len(self._capability_queue))
+    def send_capability_request(self, capability):
+        self.send("CAP REQ :%s" % capability)
     def send_capability_end(self):
         self.send("CAP END")
     def send_authenticate(self, text):
         self.send("AUTHENTICATE %s" % text)
+
+    def wait_for_capability(self, capability):
+        self._capabilities_waiting.add(capability)
+    def capability_done(self, capability):
+        self._capabilities_waiting.remove(capability)
+        if not self._capabilities_waiting:
+            self.send_capability_end()
 
     def send_pass(self, password):
         self.send("PASS %s" % password)
