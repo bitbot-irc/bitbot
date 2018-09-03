@@ -26,8 +26,10 @@ class Server(object):
         self.original_username = username or nickname
         self.original_realname = realname or nickname
         self.name = None
+
         self._capability_queue = set([])
         self._capabilities_waiting = set([])
+        self.capabilities = set([])
 
         self.write_buffer = b""
         self.buffered_lines = []

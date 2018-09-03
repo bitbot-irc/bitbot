@@ -283,9 +283,12 @@ class LineHandler(object):
                 event["server"].send_capability_queue()
             else:
                 event["server"].send_capability_end()
-        elif subcommand == "ack" or subcommand == "nack":
+        elif subcommand == "ack":
             if not event["server"].waiting_for_capabilities():
                 event["server"].send_capability_end()
+            event["server"].capabilities = set(capabilities)
+        elif subcommand == "ack" or subcommand == "nack":
+            event["server"].send_capability_end()
 
     # the server is asking for authentication
     def authenticate(self, event):
