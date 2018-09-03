@@ -57,7 +57,7 @@ class LineHandler(object):
             for tag in tags_prefix.split(";"):
                 if tag:
                     tag_split = tag.split("=", 1)
-                    tags[tag_split[0]] = tag_split[1:]
+                    tags[tag_split[0]] = "".join(tag_split[1:])
 
         if line[0] == ":":
             prefix, command, line = line[1:].split(" ", 2)
