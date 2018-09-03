@@ -42,6 +42,7 @@ class LineHandler(object):
         events.on("raw").on("NOTICE").hook(self.notice)
         events.on("raw").on("CHGHOST").hook(self.chghost)
         events.on("raw").on("ACCOUNT").hook(self.account)
+        events.on("raw").on("TAGMSG").hook(self.account)
 
         events.on("raw").on("CAP").hook(self.cap)
         events.on("raw").on("authenticate").hook(self.authenticate)
@@ -401,6 +402,21 @@ class LineHandler(object):
                 self.events.on("received.notice.private").call(
                     message=message, message_split=message_split,
                     user=user, server=event["server"])
+
+    # IRCv3 TAGMSG, used to send tags without any other information
+    def tagmsg(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        user = event["channel"].get_user(nickname)
+        target = event["args"][0]
+
+        if target[0] in event["server"].channel_types:
+            channel = event["server"].get_channel(target)
+            self.events.on("received.tagmsg.channel").call(channel=channel,
+                user=user, tags=event["tags"], server=server)
+        elif event["server"].is_own_nickname(target):
+            self.events.on("received.tagmsg.private").call(
+                user=user, tags=event["tags"], server=server)
 
     # a user's username and/or hostname has changed
     def chghost(self, event):
