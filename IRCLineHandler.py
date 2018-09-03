@@ -8,7 +8,7 @@ RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify",
-    "account-tag", "account-notify", "extended-join"}
+    "account-tag", "account-notify", "extended-join", "away-notify"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
@@ -43,6 +43,7 @@ class LineHandler(object):
         events.on("raw").on("CHGHOST").hook(self.chghost)
         events.on("raw").on("ACCOUNT").hook(self.account)
         events.on("raw").on("TAGMSG").hook(self.account)
+        events.on("raw").on("AWAY").hook(self.away)
 
         events.on("raw").on("CAP").hook(self.cap)
         events.on("raw").on("authenticate").hook(self.authenticate)
@@ -420,7 +421,20 @@ class LineHandler(object):
             self.events.on("received.tagmsg.private").call(
                 user=user, tags=event["tags"], server=event["server"])
 
-    # a user's username and/or hostname has changed
+    # IRCv3 AWAY, used to notify us that a client we can see has changed /away
+    def away(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        user = event["server"].get_user(nickname)
+        message = event["arbitrary"]
+        if message:
+            self.events.on("received.away.on").call(user=user,
+                server=event["server"], message=message)
+        else:
+            self.events.on("received.away.off").call(user=user,
+                server=event["server"])
+
+    # IRCv3 CHGHOST, a user's username and/or hostname has changed
     def chghost(self, event):
         nickname, username, hostname = Utils.seperate_hostmask(
             event["prefix"])
