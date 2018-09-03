@@ -279,6 +279,8 @@ class Server(object):
         self.send("CAP LS")
     def queue_capability(self, capability):
         self._capability_queue.add(capability)
+    def queue_capabilities(self, capabilities):
+        self._capability_queue.update(capabilities)
     def send_capability_queue(self):
         if self.has_capability_queue():
             capabilities = " ".join(self._capability_queue)

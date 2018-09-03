@@ -7,6 +7,8 @@ RE_CHANMODES = re.compile(
 RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 RE_MODES = re.compile(r"[-+]\w+")
 
+CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify"}
+
 class LineHandler(object):
     def __init__(self, bot, events):
         self.bot = bot
@@ -37,6 +39,7 @@ class LineHandler(object):
         events.on("raw").on("TOPIC").hook(self.topic)
         events.on("raw").on("PRIVMSG").hook(self.privmsg)
         events.on("raw").on("NOTICE").hook(self.notice)
+        events.on("raw").on("CHGHOST").hook(self.chghost)
 
         events.on("raw").on("CAP").hook(self.cap)
         events.on("raw").on("authenticate").hook(self.authenticate)
@@ -254,10 +257,9 @@ class LineHandler(object):
         subcommand = event["args"][1].lower()
 
         if subcommand == "ls":
-            if "message-tags" in capabilities:
-                event["server"].queue_capability("message-tags")
-            if "multi-prefix" in capabilities:
-                event["server"].queue_capability("multi-prefix")
+            matched_capabilities = set(capabilities) & CAPABILITIES
+            if matched_capabilities:
+                event["server"].queue_capabilities(matched_capabilities)
 
         self.events.on("received").on("cap").on(subcommand).call(
             capabilities=capabilities, server=event["server"])
@@ -331,16 +333,16 @@ class LineHandler(object):
             self.events.on("self").on("mode").call(modes=modes,
                 server=event["server"])
 
-    # I've been invited somewhere
+    # someone (maybe me!) has been invited somewhere
     def invite(self, event):
         nickname, username, hostname = Utils.seperate_hostmask(
             event["prefix"])
-
         target_channel = event["arbitrary"] or event["args"][1]
         user = event["server"].get_user(nickname)
+        targer_user = event["server"].get_user(event["args"][0])
         self.events.on("received").on("invite").call(
             user=user, target_channel=target_channel,
-            server=event["server"])
+            server=event["server"], target_user=target_user)
 
     # we've received a message
     def privmsg(self, event):
@@ -387,6 +389,16 @@ class LineHandler(object):
                 self.events.on("received.notice.private").call(
                     message=message, message_split=message_split,
                     user=user, server=event["server"])
+
+    # a user's username and/or hostname has changed
+    def chghost(self, event):
+        nickname, username, hostname = Utils.seperate_hostmask(
+            event["prefix"])
+        user = event["server"].get_user("nickanme")
+        username = event["args"][0]
+        hostname = event["args"][1]
+        user.username = username
+        user.hostname = hostname
 
     # response to a WHO command for user information
     def handle_352(self, event):
