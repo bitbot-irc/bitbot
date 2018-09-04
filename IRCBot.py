@@ -162,6 +162,9 @@ class Bot(object):
                         for line in lines:
                             if self.args.verbose:
                                 self.log.info("<%s | %s", [str(server), line])
+                            else:
+                                self.log.debug("%s (raw) | %s", [str(server),
+                                    line])
                             server.parse_line(line)
                     elif event & select.EPOLLOUT:
                         server._send()
