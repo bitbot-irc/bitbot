@@ -225,6 +225,12 @@ class LineHandler(object):
             if not event["server"].has_user(nickname):
                 user.username = username
                 user.hostname = hostname
+
+            if account:
+                user.identified_account = account
+            if realname:
+                user.realname = realname
+
             channel.add_user(user)
             user.join_channel(channel)
             self.events.on("received").on("join").call(channel=channel,
@@ -465,9 +471,11 @@ class LineHandler(object):
         user = event["server"].get_user("nickname")
 
         if not event["args"][0] == "*":
+            user.identified_account = event["tags"]["account"]
             self.events.on("received.account.login").call(user=user,
                 server=event["server"], account=event["tags"]["account"])
         else:
+            user.identified_account = None
             self.events.on("received.account.logout").call(user=user,
                 server=event["server"])
 
