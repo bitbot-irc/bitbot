@@ -181,12 +181,6 @@ class LineHandler(object):
         channel = event["server"].get_channel(event["args"][2])
         nicknames = event["arbitrary"].split()
         for nickname in nicknames:
-            username = None
-            hostname = None
-            if "userhost-in-names" in event["server"].capabilities:
-                nickname, username, hostname = Utils.seperate_hostmask(
-                    event["prefix"])
-
             modes = set([])
 
             while nickname[0] in event["server"].mode_prefixes:
@@ -194,7 +188,9 @@ class LineHandler(object):
                 nickname = nickname[1:]
 
             user = event["server"].get_user(nickname)
-            if username and hostname:
+            if "userhost-in-names" in event["server"].capabilities:
+                nickname, username, hostname = Utils.seperate_hostmask(
+                    nickname)
                 user.username = username
                 user.hostname = hostname
             user.join_channel(channel)
