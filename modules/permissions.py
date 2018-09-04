@@ -7,10 +7,11 @@ REQUIRES_IDENTIFY = ("You need to be identified to use that command "
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("new").on("user").hook(self.new_user)
-        events.on("preprocess").on("command").hook(
+        events.on("new.user").hook(self.new_user)
+        events.on("preprocess.command").hook(
             self.preprocess_command)
-        events.on("received").on("part").hook(self.on_part)
+        events.on("received.part").hook(self.on_part)
+        events.on("received.nick").hook(self.on_nick)
 
         events.on("received").on("command").on("identify"
             ).hook(self.identify, private_only=True, min_args=1,
@@ -39,6 +40,12 @@ class Module(object):
         if len(event["user"].channels) == 1 and event["user"].identified:
             event["user"].send_notice("You no longer share any channels "
                 "with me so you have been signed out")
+
+    def on_nick(self, event):
+        if event["user"].identified:
+            self._logout(event["user"])
+            event["user"].send_notice("You've changed nickname so you "
+                "have been signed out")
 
     def _get_hash(self, user):
         hash, salt = user.get_setting("authentication", (None, None))
