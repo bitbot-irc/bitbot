@@ -12,6 +12,7 @@ class User(object):
         self.bot = bot
         self.channels = set([])
         self.identified_account = None
+        self.away = False
         self.buffer = IRCBuffer.Buffer(bot)
 
     def __repr__(self):

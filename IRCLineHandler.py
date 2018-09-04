@@ -449,9 +449,11 @@ class LineHandler(object):
         user = event["server"].get_user(nickname)
         message = event["arbitrary"]
         if message:
+            user.away = True
             self.events.on("received.away.on").call(user=user,
                 server=event["server"], message=message)
         else:
+            user.away = False
             self.events.on("received.away.off").call(user=user,
                 server=event["server"])
 
