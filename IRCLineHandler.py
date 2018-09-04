@@ -15,39 +15,39 @@ class LineHandler(object):
     def __init__(self, bot, events):
         self.bot = bot
         self.events = events
-        events.on("raw").on("PING").hook(self.ping)
+        events.on("raw.PING").hook(self.ping)
 
-        events.on("raw").on("001").hook(self.handle_001, default_event=True)
-        events.on("raw").on("005").hook(self.handle_005)
-        events.on("raw").on("311").hook(self.handle_311, default_event=True)
-        events.on("raw").on("332").hook(self.handle_332)
-        events.on("raw").on("333").hook(self.handle_333)
-        events.on("raw").on("353").hook(self.handle_353, default_event=True)
-        events.on("raw").on("366").hook(self.handle_366, default_event=True)
-        events.on("raw").on("421").hook(self.handle_421, default_event=True)
-        events.on("raw").on("352").hook(self.handle_352, default_event=True)
-        events.on("raw").on("324").hook(self.handle_324, default_event=True)
-        events.on("raw").on("329").hook(self.handle_329, default_event=True)
-        events.on("raw").on("433").hook(self.handle_433, default_event=True)
-        events.on("raw").on("477").hook(self.handle_477, default_event=True)
+        events.on("raw.001").hook(self.handle_001, default_event=True)
+        events.on("raw.005").hook(self.handle_005)
+        events.on("raw.311").hook(self.handle_311, default_event=True)
+        events.on("raw.332").hook(self.handle_332)
+        events.on("raw.333").hook(self.handle_333)
+        events.on("raw.353").hook(self.handle_353, default_event=True)
+        events.on("raw.366").hook(self.handle_366, default_event=True)
+        events.on("raw.421").hook(self.handle_421, default_event=True)
+        events.on("raw.352").hook(self.handle_352, default_event=True)
+        events.on("raw.324").hook(self.handle_324, default_event=True)
+        events.on("raw.329").hook(self.handle_329, default_event=True)
+        events.on("raw.433").hook(self.handle_433, default_event=True)
+        events.on("raw.477").hook(self.handle_477, default_event=True)
 
-        events.on("raw").on("JOIN").hook(self.join)
-        events.on("raw").on("PART").hook(self.part)
-        events.on("raw").on("QUIT").hook(self.quit)
-        events.on("raw").on("NICK").hook(self.nick)
-        events.on("raw").on("MODE").hook(self.mode)
-        events.on("raw").on("KICK").hook(self.kick)
-        events.on("raw").on("INVITE").hook(self.invite)
-        events.on("raw").on("TOPIC").hook(self.topic)
-        events.on("raw").on("PRIVMSG").hook(self.privmsg)
-        events.on("raw").on("NOTICE").hook(self.notice)
-        events.on("raw").on("CHGHOST").hook(self.chghost)
-        events.on("raw").on("ACCOUNT").hook(self.account)
-        events.on("raw").on("TAGMSG").hook(self.account)
-        events.on("raw").on("AWAY").hook(self.away)
+        events.on("raw.JOIN").hook(self.join)
+        events.on("raw.PART").hook(self.part)
+        events.on("raw.QUIT").hook(self.quit)
+        events.on("raw.NICK").hook(self.nick)
+        events.on("raw.MODE").hook(self.mode)
+        events.on("raw.KICK").hook(self.kick)
+        events.on("raw.INVITE").hook(self.invite)
+        events.on("raw.TOPIC").hook(self.topic)
+        events.on("raw.PRIVMSG").hook(self.privmsg)
+        events.on("raw.NOTICE").hook(self.notice)
+        events.on("raw.CHGHOST").hook(self.chghost)
+        events.on("raw.ACCOUNT").hook(self.account)
+        events.on("raw.TAGMSG").hook(self.account)
+        events.on("raw.AWAY").hook(self.away)
 
-        events.on("raw").on("CAP").hook(self.cap)
-        events.on("raw").on("authenticate").hook(self.authenticate)
+        events.on("raw.CAP").hook(self.cap)
+        events.on("raw.authenticate").hook(self.authenticate)
 
     def handle(self, server, line):
         original_line = line
@@ -88,7 +88,7 @@ class LineHandler(object):
             prefix=prefix, args=args, arbitrary=arbitrary, tags=tags)
         if default_event or not hooks:
             if command.isdigit():
-                self.events.on("received").on("numeric").on(command
+                self.events.on("received.numeric").on(command
                     ).call(line=original_line, server=server, tags=tags,
                     line_split=original_line.split(" "), number=command)
             else:
@@ -126,7 +126,7 @@ class LineHandler(object):
         match = re.search(RE_CHANTYPES, isupport_line)
         if match:
             event["server"].channel_types = list(match.group(1))
-        self.events.on("received").on("numeric").on("005").call(
+        self.events.on("received.numeric.005").call(
             isupport=isupport_line, server=event["server"])
 
     # whois respose (nickname, username, realname, hostname)
@@ -145,9 +145,8 @@ class LineHandler(object):
         channel = event["server"].get_channel(event["args"][1])
 
         channel.set_topic(event["arbitrary"])
-        self.events.on("received").on("numeric").on("332"
-            ).call(channel=channel, server=event["server"],
-            topic=event["arbitrary"])
+        self.events.on("received.numeric.332").call(channel=channel,
+            server=event["server"], topic=event["arbitrary"])
 
     # channel topic changed
     def topic(self, event):
@@ -157,7 +156,7 @@ class LineHandler(object):
         channel = event["server"].get_channel(event["args"][0])
 
         channel.set_topic(event["arbitrary"])
-        self.events.on("received").on("topic").call(channel=channel,
+        self.events.on("received.topic").call(channel=channel,
             server=event["server"], topic=event["arbitrary"], user=user)
 
     # on-join channel topic set by/at
@@ -172,9 +171,8 @@ class LineHandler(object):
 
         channel.set_topic_setter(nickname, username, hostname)
         channel.set_topic_time(topic_time)
-        self.events.on("received").on("numeric").on("333"
-            ).call(channel=channel, setter=nickname, set_at=topic_time,
-            server=event["server"])
+        self.events.on("received.numeric.333").call(channel=channel,
+            setter=nickname, set_at=topic_time, server=event["server"])
 
     # /names response, also on-join user list
     def handle_353(self, event):
@@ -233,13 +231,13 @@ class LineHandler(object):
 
             channel.add_user(user)
             user.join_channel(channel)
-            self.events.on("received").on("join").call(channel=channel,
+            self.events.on("received.join").call(channel=channel,
                 user=user, server=event["server"], account=account,
                 realname=realname)
         else:
             if channel.name in event["server"].attempted_join:
                 del event["server"].attempted_join[channel.name]
-            self.events.on("self").on("join").call(channel=channel,
+            self.events.on("self.join").call(channel=channel,
                 server=event["server"], account=account, realname=realname)
             channel.send_mode()
 
@@ -252,7 +250,7 @@ class LineHandler(object):
 
         if not event["server"].is_own_nickname(nickname):
             user = event["server"].get_user(nickname)
-            self.events.on("received").on("part").call(channel=channel,
+            self.events.on("received.part").call(channel=channel,
                 reason=reason, user=user, server=event["server"])
             channel.remove_user(user)
             user.part_channel(channel)
@@ -260,7 +258,7 @@ class LineHandler(object):
                 event["server"].remove_user(user)
         else:
             event["server"].remove_channel(channel)
-            self.events.on("self").on("part").call(channel=channel,
+            self.events.on("self.part").call(channel=channel,
                 reason=reason, server=event["server"])
 
     # unknown command sent by us, oops!
@@ -276,7 +274,7 @@ class LineHandler(object):
         if not event["server"].is_own_nickname(nickname):
             user = event["server"].get_user(nickname)
             event["server"].remove_user(user)
-            self.events.on("received").on("quit").call(reason=reason,
+            self.events.on("received.quit").call(reason=reason,
                 user=user, server=event["server"])
         else:
             event["server"].disconnect()
@@ -291,7 +289,7 @@ class LineHandler(object):
             if matched_capabilities:
                 event["server"].queue_capabilities(matched_capabilities)
 
-        self.events.on("received").on("cap").on(subcommand).call(
+        self.events.on("received.cap").on(subcommand).call(
             capabilities=capabilities, server=event["server"])
 
         if subcommand == "ls":
@@ -308,7 +306,7 @@ class LineHandler(object):
 
     # the server is asking for authentication
     def authenticate(self, event):
-        self.events.on("received").on("authenticate").call(
+        self.events.on("received.authenticate").call(
             message=event["args"][0], server=event["server"])
 
     # someone has changed their nickname
@@ -321,15 +319,15 @@ class LineHandler(object):
             old_nickname = user.nickname
             user.set_nickname(new_nickname)
             event["server"].change_user_nickname(old_nickname, new_nickname)
-            self.events.on("received").on("nick").call(
-                new_nickname=new_nickname, old_nickname=old_nickname,
-                user=user, server=event["server"])
+
+            self.events.on("received.nick").call(new_nickname=new_nickname,
+                old_nickname=old_nickname, user=user, server=event["server"])
         else:
             old_nickname = event["server"].nickname
             event["server"].set_own_nickname(new_nickname)
-            self.events.on("self").on("nick").call(
-                server=event["server"], new_nickname=new_nickname,
-                old_nickname=old_nickname)
+
+            self.events.on("self.nick").call(server=event["server"],
+                new_nickname=new_nickname, old_nickname=old_nickname)
 
     # something's mode has changed
     def mode(self, event):
@@ -354,16 +352,16 @@ class LineHandler(object):
                         channel.change_mode(remove, mode, args.pop(0))
                     else:
                         args.pop(0)
-            self.events.on("received").on("mode").on("channel").call(
-                modes=modes, mode_args=_args, channel=channel,
-                server=event["server"], user=user)
+            self.events.on("received.mode.channel").call(modes=modes,
+                mode_args=_args, channel=channel, server=event["server"],
+                user=user)
         elif event["server"].is_own_nickname(target):
             modes = RE_MODES.findall(event["arbitrary"] or args[1])
             for chunk in modes:
                 remove = chunk[0] == "-"
                 for mode in chunk[1:]:
                     event["server"].change_own_mode(remove, mode)
-            self.events.on("self").on("mode").call(modes=modes,
+            self.events.on("self.mode").call(modes=modes,
                 server=event["server"])
 
     # someone (maybe me!) has been invited somewhere
@@ -373,9 +371,9 @@ class LineHandler(object):
         target_channel = event["arbitrary"] or event["args"][1]
         user = event["server"].get_user(nickname)
         target_user = event["server"].get_user(event["args"][0])
-        self.events.on("received").on("invite").call(
-            user=user, target_channel=target_channel,
-            server=event["server"], target_user=target_user)
+        self.events.on("received.invite").call(user=user,
+            target_channel=target_channel, server=event["server"],
+            target_user=target_user)
 
     # we've received a message
     def privmsg(self, event):
@@ -524,9 +522,9 @@ class LineHandler(object):
 
         if not event["server"].is_own_nickname(target):
             target_user = event["server"].get_user(target)
-            self.events.on("received").on("kick").call(channel=channel,
+            self.events.on("received.kick").call(channel=channel,
                 reason=reason, target_user=target_user, user=user,
                 server=event["server"])
         else:
-            self.events.on("self").on("kick").call(channel=channel,
+            self.events.on("self.kick").call(channel=channel,
                 reason=reason, user=user, server=event["server"])
