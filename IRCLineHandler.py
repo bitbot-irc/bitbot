@@ -8,7 +8,8 @@ RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify",
-    "account-tag", "account-notify", "extended-join", "away-notify"}
+    "account-tag", "account-notify", "extended-join", "away-notify",
+    "userhost-in-names"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
@@ -173,23 +174,32 @@ class LineHandler(object):
             ).call(channel=channel, setter=nickname, set_at=topic_time,
             server=event["server"])
 
-    # on-join user list with status symbols
+    # /names response, also on-join user list
     def handle_353(self, event):
         channel = event["server"].get_channel(event["args"][2])
         nicknames = event["arbitrary"].split()
         for nickname in nicknames:
-            if nickname.strip():
-                modes = set([])
+            username = None
+            hostname = None
+            if "userhost-in-names" in event["server"].capabilities:
+                nickname, username, hostname = Utils.seperate_hostmask(
+                    event["prefix"])
 
-                while nickname[0] in event["server"].mode_prefixes:
-                    modes.add(event["server"].mode_prefixes[nickname[0]])
-                    nickname = nickname[1:]
+            modes = set([])
 
-                user = event["server"].get_user(nickname)
-                user.join_channel(channel)
-                channel.add_user(user)
-                for mode in modes:
-                    channel.add_mode(mode, nickname)
+            while nickname[0] in event["server"].mode_prefixes:
+                modes.add(event["server"].mode_prefixes[nickname[0]])
+                nickname = nickname[1:]
+
+            user = event["server"].get_user(nickname)
+            if username and hostname:
+                user.username = username
+                user.hostname = hostname
+            user.join_channel(channel)
+            channel.add_user(user)
+
+            for mode in modes:
+                channel.add_mode(mode, nickname)
 
     # on-join user list has finished
     def handle_366(self, event):
