@@ -7,9 +7,9 @@ RE_CHANMODES = re.compile(
 RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
 RE_MODES = re.compile(r"[-+]\w+")
 
-CAPABILITIES = {"message-tags", "multi-prefix", "chghost", "invite-notify",
-    "account-tag", "account-notify", "extended-join", "away-notify",
-    "userhost-in-names"}
+CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
+    "account-notify", "extended-join", "away-notify", "userhost-in-names",
+    "draft/message-tags-0.2"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
