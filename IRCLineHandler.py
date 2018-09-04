@@ -456,7 +456,7 @@ class LineHandler(object):
 
         if not event["args"][0] == "*":
             self.events.on("received.account.login").call(user=user,
-                server=event["server"], account=account)
+                server=event["server"], account=event["tags"]["account"])
         else:
             self.events.on("received.account.logout").call(user=user,
                 server=event["server"])
