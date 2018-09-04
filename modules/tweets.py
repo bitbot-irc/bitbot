@@ -13,8 +13,8 @@ REGEX_TWITTERURL = re.compile(
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("twitter", "tw"
-            ).hook(self.twitter, help="Find a tweet",
+        events.on("received").on("command").on("tweet", "tw"
+            ).hook(self.tweet, help="Find a tweet",
             usage="[@username/URL/ID]")
 
     def make_timestamp(self, s):
@@ -23,7 +23,7 @@ class Module(object):
         since, unit = Utils.time_unit(seconds_since)
         return "%s %s ago" % (since, unit)
 
-    def twitter(self, event):
+    def tweet(self, event):
         api_key = self.bot.config["twitter-api-key"]
         api_secret = self.bot.config["twitter-api-secret"]
         access_token = self.bot.config["twitter-access-token"]
