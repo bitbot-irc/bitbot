@@ -20,7 +20,7 @@ def seperate_hostmask(hostmask):
     nickname = username = hostname = hostmask
     if first_delim > -1 and second_delim > first_delim:
         nickname, username = hostmask.split("!", 1)
-        username, hostname = hostmask.split("@", 1)
+        username, hostname = username.split("@", 1)
     return nickname, username, hostname
 
 def get_url(url, **kwargs):
