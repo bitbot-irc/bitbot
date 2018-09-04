@@ -187,12 +187,14 @@ class LineHandler(object):
                 modes.add(event["server"].mode_prefixes[nickname[0]])
                 nickname = nickname[1:]
 
-            user = event["server"].get_user(nickname)
             if "userhost-in-names" in event["server"].capabilities:
                 nickname, username, hostname = Utils.seperate_hostmask(
                     nickname)
+                user = event["server"].get_user(nickname)
                 user.username = username
                 user.hostname = hostname
+            else:
+                user = event["server"].get_user(nickname)
             user.join_channel(channel)
             channel.add_user(user)
 
