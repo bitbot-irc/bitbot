@@ -30,24 +30,32 @@ class Module(object):
         self.bot = bot
         events.on("received.command.coins").hook(self.coins,
             help="Show how many coins you have")
-        events.on("received").on("command").on("resetcoins").hook(
-            self.reset_coins, permission="resetcoins",
-            min_args=1, help=
-            "Reset a specified user's coins to %s" % str(DECIMAL_ZERO),
-            usage="<target>")
+
         events.on("received.command.richest").hook(
             self.richest, help="Show the top 10 richest users")
         events.on("received.command.redeemcoins").hook(
             self.redeem_coins, help="Redeem free coins")
+
+        events.on("received.command.resetcoins").hook(
+            self.reset_coins, permission="resetcoins",
+            min_args=1, help=
+            "Reset a specified user's coins to %s" % str(DECIMAL_ZERO),
+            usage="<target>")
+        events.on("received.command.givecoins").hook(self.give_coins,
+            min_args=1, help="Give coins to a user",
+            usage="<nickname> <coins>", permission="givecoins")
+
+
         events.on("received.command.flip").hook(self.flip,
             help="Bet coins on a coin flip", usage=
             "heads|tails <coin amount>", min_args=2, authenticated=True)
-        events.on("received.command.sendcoins").hook(
-            self.send, min_args=2, help="Send coins to a user",
-            usage="<nickname> <amount>", authenticated=True)
         events.on("received.command.roulette").hook(
             self.roulette, min_args=2, help="Spin the roulette wheel",
             usage="<type> <amount>", authenticated=True)
+
+        events.on("received.command.sendcoins").hook(
+            self.send, min_args=2, help="Send coins to a user",
+            usage="<nickname> <amount>", authenticated=True)
 
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
@@ -76,6 +84,19 @@ class Module(object):
             target.del_setting("coins")
             event["stdout"].write("Reset coins for %s" % target.nickname)
 
+    def give_coins(self, event):
+        target = event["server"].get_user(event["args_split"][0])
+        coins = event["args_split"][1]
+        match = REGEX_FLOAT.match(coins)
+        if not match or round(decimal.Decimal(coins), 2) <= DECIMAL_ZERO:
+            event["stderr"].write(
+                "Please provide a positive number of coins to send")
+            return
+        coins = decimal.Decimal(match.group(0))
+        target_coins = decimal.Decimal(target.get_setting("coins", "0.0"))
+        target.set_setting("coins", str(target_coins+coins))
+        event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
+            str(coins)))
 
     def richest(self, event):
         all_coins = event["server"].get_all_user_settings("coins", [])
