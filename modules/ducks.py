@@ -186,7 +186,7 @@ class Module(object):
             self.duck_loop_entry(event)
 
     def get_random_duck_time(self):
-        return random.randint(360, 2400)
+        return random.randint(720, 3600)
 
     def show_duck(self, event):
         for server in self.bot.servers.values():
