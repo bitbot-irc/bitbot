@@ -135,7 +135,8 @@ class Module(object):
         if identity_mechanism == "internal":
             identified_account = event["user"].identified_account_override
         elif identity_mechanism == "ircv3-account":
-            identified_account = event["user"].identified_account
+            identified_account = (event["user"].identified_account or
+                event["tags"].get("account", None))
 
         identified_user = None
         permissions = []
