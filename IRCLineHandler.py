@@ -471,9 +471,9 @@ class LineHandler(object):
         user = event["server"].get_user("nickname")
 
         if not event["args"][0] == "*":
-            user.identified_account = event["tags"]["account"]
+            user.identified_account = event["args"][0]
             self.events.on("received.account.login").call(user=user,
-                server=event["server"], account=event["tags"]["account"])
+                server=event["server"], account=event["args"][0])
         else:
             user.identified_account = None
             self.events.on("received.account.logout").call(user=user,
