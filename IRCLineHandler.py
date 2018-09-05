@@ -388,9 +388,11 @@ class LineHandler(object):
         message = event["arbitrary"] or ""
         message_split = message.split(" ")
         target = event["args"][0]
-        action = message.startswith("\01ACTION ") and message.endswith("\01")
+        action = message.startswith("\x01ACTION ")
         if action:
-            message = message.replace("\01ACTION ", "", 1)[:-1]
+            message = message.replace("\x01ACTION ", "", 1)
+            if message.endswith("\x01"):
+                message = message[:-1]
 
         kwargs = {"message": message, "message_split": message_split,
             "server": event["server"], "tags": event["tags"],
