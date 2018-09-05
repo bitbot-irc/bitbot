@@ -188,9 +188,13 @@ class Module(object):
             event["stderr"].write("You can only send coins to users that "
                 "have had coins before")
             return
-        target_user_coins = decimal.Decimal(target_user_coins)
 
         event["user"].set_setting("coins", str(new_user_coins))
+        # get target_user_coins again, just in case *somehow* someone's
+        # sending coins to themselves.
+        target_user_coins = target_user.get_setting("coins", None)
+        target_user_coins = decimal.Decimal(target_user_coins)
+
         target_user.set_setting("coins", str(target_user_coins+send_amount))
 
         event["stdout"].write("%s sent %s coins to %s" % (
