@@ -229,6 +229,8 @@ class LineHandler(object):
 
             if account:
                 user.identified_account = account
+                user.identified_account_id = event["server"].get_user(
+                    account).id
             if realname:
                 user.realname = realname
 
@@ -475,10 +477,13 @@ class LineHandler(object):
 
         if not event["args"][0] == "*":
             user.identified_account = event["args"][0]
+            user.identified_account_id = event["server"].get_user(
+                event["args"][0]).id
             self.events.on("received.account.login").call(user=user,
                 server=event["server"], account=event["args"][0])
         else:
             user.identified_account = None
+            user.identified_account_id = None
             self.events.on("received.account.logout").call(user=user,
                 server=event["server"])
 
