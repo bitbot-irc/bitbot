@@ -11,11 +11,10 @@ class Module(object):
         events.on("preprocess.command").hook(
             self.preprocess_command)
         events.on("received.part").hook(self.on_part)
-        events.on("received.nick").hook(self.on_nick)
 
         events.on("received").on("command").on("identify"
-            ).hook(self.identify, private_only=True, min_args=1,
-            usage="<password>", help="Identify yourself")
+            ).hook(self.identify, private_only=True, min_args=2,
+            usage="<account> <password>", help="Identify yourself")
         events.on("received").on("command").on("register"
             ).hook(self.register, private_only=True, min_args=1,
             usage="<password>", help="Register your nickname")
@@ -37,18 +36,14 @@ class Module(object):
         self._logout(event["user"])
 
     def on_part(self, event):
-        if len(event["user"].channels) == 1 and event["user"].identified:
+        if len(event["user"].channels) == 1 and event["user"
+                ].identified_account_override:
             event["user"].send_notice("You no longer share any channels "
                 "with me so you have been signed out")
 
-    def on_nick(self, event):
-        if event["user"].identified:
-            self._logout(event["user"])
-            event["user"].send_notice("You've changed nickname so you "
-                "have been signed out")
-
-    def _get_hash(self, user):
-        hash, salt = user.get_setting("authentication", (None, None))
+    def _get_hash(self, server, account):
+        hash, salt = server.get_user(account).get_setting("authentication",
+            (None, None))
         return hash, salt
 
     def _make_salt(self):
@@ -59,35 +54,48 @@ class Module(object):
         hash = base64.b64encode(scrypt.hash(password, salt)).decode("utf8")
         return hash, salt
 
-    def _identified(self, user):
-        user.identified = True
+    def _identified(self, server, user, account):
+        user.identified_account_override = account
+        user.identified_account_id_override = server.get_user(account).id
 
     def _logout(self, user):
-        user.identified = False
+        user.identified_account_override = None
+        user.identified_account_id_override = None
 
     def identify(self, event):
+        identity_mechanism = event["server"].get_setting("identity-mechanism",
+            "internal")
+        if not identity_mechanism == "internal":
+            event["stderr"].write("The 'identify' command isn't available "
+                "on this network")
+            return
+
         if not event["user"].channels:
             event["stderr"].write("You must share at least one channel "
                 "with me before you can identify")
             return
-        if not event["user"].identified:
-            password = event["args_split"][0]
-            hash, salt = self._get_hash(event["user"])
+
+        if not event["user"].identified_account_override:
+            account = event["args_split"][0]
+            password = " ".join(event["args_split"][1:])
+            hash, salt = self._get_hash(event["server"], account)
             if hash and salt:
                 attempt, _ = self._make_hash(password, salt)
                 if attempt == hash:
-                    self._identified(event["user"])
+                    self._identified(event["server"], event["user"], account)
                     event["stdout"].write("Correct password, you have "
-                        "been identified.")
+                        "been identified as '%s'." % account)
                 else:
-                    event["stderr"].write("Incorrect password")
+                    event["stderr"].write("Incorrect password for '%s'" %
+                        account)
             else:
-                event["stderr"].write("This nickname is not registered")
+                event["stderr"].write("Account '%s' is not registered" %
+                    account)
         else:
             event["stderr"].write("You are already identified")
 
     def register(self, event):
-        hash, salt = self._get_hash(event["user"])
+        hash, salt = self._get_hash(event["server"], event["user"].nickname)
         if not hash and not salt:
             password = event["args_split"][0]
             hash, salt = self._make_hash(password)
@@ -98,7 +106,7 @@ class Module(object):
             event["stderr"].write("This nickname is already registered")
 
     def logout(self, event):
-        if event["user"].identified:
+        if event["user"].identified_account_override:
             self._logout(event["user"])
             event["stdout"].write("You have been logged out")
         else:
@@ -118,25 +126,30 @@ class Module(object):
                 target.nickname)
 
     def preprocess_command(self, event):
-        authentication = event["user"].get_setting("authentication", None)
         permission = event["hook"].kwargs.get("permission", None)
         authenticated = event["hook"].kwargs.get("authenticated", False)
-        protect_registered = event["hook"].kwargs.get("protect_registered",
-            False)
+
+        identity_mechanism = event["server"].get_setting("identity-mechanism",
+            "internal")
+        identified_account = None
+        if identity_mechanism == "internal":
+            identified_account = event["user"].identified_account_override
+        elif identity_mechanism == "ircv3-account":
+            identified_account = event["user"].identified_account
+
+        identified_user = None
+        permissions = []
+        if identified_account:
+            identified_user = event["server"].get_user(identified_account)
+            permissions = identified_user.get_setting("permissions", [])
 
         if permission:
-            identified = event["user"].identified
-            user_permissions = event["user"].get_setting("permissions", [])
             has_permission = permission and (
-                permission in user_permissions or "*" in user_permissions)
-            if not identified or not has_permission:
+                permission in permissions or "*" in permissions)
+            if not identified_account or not has_permission:
                 return "You do not have permission to do that"
         elif authenticated:
-            if not event["user"].identified:
-                return REQUIRES_IDENTIFY % (event["server"].nickname,
-                    event["server"].nickname)
-        elif protect_registered:
-            if authentication and not event["user"].identified:
+            if not identified_account:
                 return REQUIRES_IDENTIFY % (event["server"].nickname,
                     event["server"].nickname)
 

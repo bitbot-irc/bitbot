@@ -26,6 +26,7 @@ class LineHandler(object):
         events.on("raw.366").hook(self.handle_366, default_event=True)
         events.on("raw.421").hook(self.handle_421, default_event=True)
         events.on("raw.352").hook(self.handle_352, default_event=True)
+        events.on("raw.354").hook(self.handle_354, default_event=True)
         events.on("raw.324").hook(self.handle_324, default_event=True)
         events.on("raw.329").hook(self.handle_329, default_event=True)
         events.on("raw.433").hook(self.handle_433, default_event=True)
@@ -110,8 +111,10 @@ class LineHandler(object):
     # server telling us what it supports
     def handle_005(self, event):
         isupport_line = " ".join(event["args"][1:])
+
         if "NAMESX" in isupport_line:
             event["server"].send("PROTOCTL NAMESX")
+
         match = re.search(RE_PREFIXES, isupport_line)
         if match:
             event["server"].mode_prefixes.clear()
@@ -201,7 +204,7 @@ class LineHandler(object):
 
     # on-join user list has finished
     def handle_366(self, event):
-        event["server"].send_who(event["args"][1])
+        event["server"].send_whox(event["args"][1], "ahnrtu", "001")
 
     # on user joining channel
     def join(self, event):
@@ -484,6 +487,21 @@ class LineHandler(object):
         user = event["server"].get_user(event["args"][5])
         user.username = event["args"][2]
         user.hostname = event["args"][3]
+    # response to a WHOX command for user information, including account name
+    def handle_354(self, event):
+        if event["args"][1] == "001":
+            username = event["args"][2]
+            hostname = event["args"][3]
+            nickname = event["args"][4]
+            account = event["args"][5]
+            realname = event["arbitrary"]
+
+            user = event["server"].get_user(nickname)
+            user.username = username
+            user.hostname = hostname
+            user.realname = realname
+            if not account == "0":
+                user.identified_account = account
 
     # response to an empty mode command
     def handle_324(self, event):

@@ -11,12 +11,21 @@ class User(object):
         self.server = server
         self.bot = bot
         self.channels = set([])
+
         self.identified_account = None
+        self.identified_account_override = None
+
+        self.identified_account_id = None
+        self.identified_account_id_override = None
         self.away = False
         self.buffer = IRCBuffer.Buffer(bot)
 
     def __repr__(self):
         return "IRCUser.User(%s|%s)" % (self.server.name, self.name)
+
+    def _get_id(self):
+        return (self.identified_account_id_override or
+            self.identified_account_id or self.id)
 
     def set_nickname(self, nickname):
         self.nickname = nickname
@@ -27,21 +36,21 @@ class User(object):
     def part_channel(self, channel):
         self.channels.remove(channel)
     def set_setting(self, setting, value):
-        self.bot.database.user_settings.set(self.id, setting, value)
+        self.bot.database.user_settings.set(self._get_id(), setting, value)
     def get_setting(self, setting, default=None):
-        return self.bot.database.user_settings.get(self.id, setting,
+        return self.bot.database.user_settings.get(self._get_id(), setting,
             default)
     def find_settings(self, pattern, default=[]):
-        return self.bot.database.user_settings.find(self.id, pattern,
+        return self.bot.database.user_settings.find(self._get_id(), pattern,
             default)
     def find_settings_prefix(self, prefix, default=[]):
-        return self.bot.database.user_settings.find_prefix(self.id,
+        return self.bot.database.user_settings.find_prefix(self._get_id(),
             prefix, default)
     def del_setting(self, setting):
-        self.bot.database.user_settings.delete(self.id, setting)
+        self.bot.database.user_settings.delete(self._get_id(), setting)
     def get_channel_settings_per_setting(self, setting, default=[]):
         return self.bot.database.user_channel_settings.find_by_setting(
-            self.id, setting, default)
+            self._get_id(), setting, default)
 
     def send_message(self, message, prefix=None):
         self.server.send_message(self.nickname, message, prefix=prefix)
