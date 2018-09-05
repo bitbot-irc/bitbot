@@ -33,7 +33,7 @@ class Module(object):
     def _remove_channel(self, server, channel_name):
         channels = server.get_setting("autojoin", [])
         if channel_name in channels:
-            channes.remove(channel_name)
+            channels.remove(channel_name)
             event["server"].set_setting("autojoin", channels)
 
     def self_part(self, event):
