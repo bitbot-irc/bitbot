@@ -4,7 +4,7 @@ import IRCBuffer
 class User(object):
     def __init__(self, nickname, id, server, bot):
         self.set_nickname(nickname)
-        self.id = id
+        self._id = id
         self.username = None
         self.hostname = None
         self.realname = None
