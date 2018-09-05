@@ -124,7 +124,7 @@ class Module(object):
     def duck_bef(self, event):
         user = event["user"]
         target = user.nickname
-        id = user.id
+        id = user.get_id()
 
         active_duck = event["target"].get_setting("active-duck", False)
 
@@ -159,7 +159,7 @@ class Module(object):
     def duck_bang(self, event):
         user = event["user"]
         target = user.nickname
-        id = user.id
+        id = user.get_id()
         if not event["target"].get_setting("active-duck", False):
             event["stderr"].set_prefix("Kick")
             if event["server"].has_user(target):
@@ -224,7 +224,7 @@ class Module(object):
         user = event["user"]
         channel = event["target"].name
         nick = user.nickname
-        id = user.id
+        id = user.get_id()
 
         poached = user.get_channel_settings_per_setting("ducks-shot", []
                                                         )

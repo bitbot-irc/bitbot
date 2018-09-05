@@ -23,9 +23,9 @@ class User(object):
     def __repr__(self):
         return "IRCUser.User(%s|%s)" % (self.server.name, self.name)
 
-    def _get_id(self):
+    def get_id(self):
         return (self.identified_account_id_override or
-            self.identified_account_id or self.id)
+            self.identified_account_id or self._id)
 
     def set_nickname(self, nickname):
         self.nickname = nickname
@@ -36,21 +36,21 @@ class User(object):
     def part_channel(self, channel):
         self.channels.remove(channel)
     def set_setting(self, setting, value):
-        self.bot.database.user_settings.set(self._get_id(), setting, value)
+        self.bot.database.user_settings.set(self.get_id(), setting, value)
     def get_setting(self, setting, default=None):
-        return self.bot.database.user_settings.get(self._get_id(), setting,
+        return self.bot.database.user_settings.get(self.get_id(), setting,
             default)
     def find_settings(self, pattern, default=[]):
-        return self.bot.database.user_settings.find(self._get_id(), pattern,
+        return self.bot.database.user_settings.find(self.get_id(), pattern,
             default)
     def find_settings_prefix(self, prefix, default=[]):
-        return self.bot.database.user_settings.find_prefix(self._get_id(),
+        return self.bot.database.user_settings.find_prefix(self.get_id(),
             prefix, default)
     def del_setting(self, setting):
-        self.bot.database.user_settings.delete(self._get_id(), setting)
+        self.bot.database.user_settings.delete(self.get_id(), setting)
     def get_channel_settings_per_setting(self, setting, default=[]):
         return self.bot.database.user_channel_settings.find_by_setting(
-            self._get_id(), setting, default)
+            self.get_id(), setting, default)
 
     def send_message(self, message, prefix=None):
         self.server.send_message(self.nickname, message, prefix=prefix)

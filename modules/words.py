@@ -25,15 +25,14 @@ class Module(object):
         words = list(filter(None, event["message_split"]))
         word_count = len(words)
 
-        user_words = event["channel"].get_user_setting(user.id,
+        user_words = event["channel"].get_user_setting(user.get_id(),
             "words", 0)
         user_words += word_count
 
         if user.get_setting("first-words", None) == None:
             user.set_setting("first-words", time.time())
 
-        event["channel"].set_user_setting(user.id,
-            "words", user_words)
+        event["channel"].set_user_setting(user.get_id(), "words", user_words)
 
         tracked_words = set(event["server"].get_setting(
             "tracked-words", []))

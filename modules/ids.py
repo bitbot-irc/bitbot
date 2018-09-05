@@ -11,7 +11,7 @@ class Module(object):
 
     def my_id(self, event):
         event["stdout"].write("%s: %d" % (event["user"].nickname,
-            event["user"].id))
+            event["user"].get_id()))
 
     def channel_id(self, event):
         event["stdout"].write("%s: %d" % (event["target"].name,

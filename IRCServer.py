@@ -160,7 +160,7 @@ class Server(object):
 
     def change_user_nickname(self, old_nickname, new_nickname):
         user = self.users.pop(old_nickname.lower())
-        user.id = self.get_user_id(new_nickname)
+        user._id = self.get_user_id(new_nickname)
         self.users[new_nickname.lower()] = user
     def has_channel(self, channel_name):
         return channel_name[0] in self.channel_types and channel_name.lower(

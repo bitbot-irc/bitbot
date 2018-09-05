@@ -156,7 +156,7 @@ class Module(object):
                 "" if coin_bet == 1 else "s"))
 
     def send(self, event):
-        if event["user"].nickname_lower == event["args_split"][0].lower():
+        if event["user"].get_id() == event["args_split"][0].get_id():
             event["stderr"].write("You can't send coins to yourself")
             return
         send_amount = event["args_split"][1]
