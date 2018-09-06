@@ -51,6 +51,9 @@ class Module(object):
             automodes.append(mode)
             event["target"].set_user_setting(target_user.get_id(), "automodes",
                 automodes)
+            if event["target"] in target_user.channels:
+                self._check_modes(event["target"], target_user)
+
             event["stdout"].write("Added automode %s for '%s'" % (
                 mode_name, target_user.nickname))
     def _remove_mode(self, event, mode, mode_name):
