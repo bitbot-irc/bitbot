@@ -27,13 +27,18 @@ class Module(object):
             "help": "Disable/Enable automode",
             "validate": Utils.bool_or_none})
 
-    def on_join(self, event):
-        if event["channel"].get_setting("automode", False):
-            modes = event["channel"].get_user_setting(event["user"].get_id(),
-                "automodes", [])
+    def _check_modes(self, channel, user):
+        identified_account = user.get_identified_account()
+        if identified_account and channel.get_setting("automode", False):
+            modes = channel.get_user_setting(user.get_id(), "automodes", [])
             if modes:
-                event["channel"].send_mode("+%s" % "".join(modes),
-                    " ".join([event["user"].nickname for mode in modes]))
+                channel.send_mode("+%s" % "".join(modes),
+                    " ".join([user.nickname for mode in modes]))
+    def on_join(self, event):
+        self._check_modes(event["channel"], event["user"])
+    def on_account(self, event):
+        for channel in event["user"].channels:
+            self._check_modes(channel, event["user"])
 
     def _add_mode(self, event, mode, mode_name):
         target_user = event["server"].get_user(event["args_split"][0])

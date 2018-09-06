@@ -26,6 +26,8 @@ class User(object):
     def get_id(self):
         return (self.identified_account_id_override or
             self.identified_account_id or self._id)
+    def get_identified_account(self):
+        return (self.identified_account_override or self.identified_account)
 
     def set_nickname(self, nickname):
         self.nickname = nickname
