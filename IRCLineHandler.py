@@ -411,17 +411,22 @@ class LineHandler(object):
 
     # we've received a notice
     def notice(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
         message = event["arbitrary"] or ""
         message_split = message.split(" ")
         target = event["args"][0]
-        if nickname == event["server"].name or target == "*":
+        sender = Utils.remove_colon(event["prefix"] or "")
+
+        if sender == event["server"].name or target == "*" or not event[
+                "prefix"]:
+            event["server"].name = Utils.remove_colon(event["prefix"])
+
             self.events.on("received.server-notice").call(
                 message=message, message_split=message_split,
                 server=event["server"])
         else:
+            nickname, username, hostname = Utils.seperate_hostmask(sender)
             user = event["server"].get_user(nickname)
+
             if target[0] in event["server"].channel_types:
                 channel = event["server"].get_channel(target)
                 self.events.on("received.notice.channel").call(
