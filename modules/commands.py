@@ -124,7 +124,7 @@ class Module(object):
                     stderr.write(returned).send()
                     buffer.skip_next()
                     return
-            args_split = list(filter(None, event["message_split"][args_index:]))
+            args_split = event["message_split"][args_index:]
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
                 if "usage" in hook.kwargs:
