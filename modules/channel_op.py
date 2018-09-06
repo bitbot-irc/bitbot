@@ -4,41 +4,44 @@ class Module(object):
     _name = "Channel Op"
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("kick", "k"
-            ).hook(self.kick, channel_only=True, require_mode="o",
-            min_args=1, help="Kick a user from the channel",
-            usage="<nickname> [reason]")
 
-        events.on("received").on("command").on("ban"
-            ).hook(self.ban, channel_only=True, require_mode="o",
-            min_args=1, help="Ban a user/hostmask from the channel",
-            usage="<nickname/hostmask>")
-        events.on("received").on("command").on("unban"
-            ).hook(self.unban, channel_only=True, require_mode="o",
-            min_args=1, help="Unban a user/hostmask from the channel",
-            usage="<nickname/hostmask>")
+        events.on("received.command").on("kick", "k").hook(self.kick,
+            channel_only=True, require_mode="o", usage="<nickname> [reason]",
+            min_args=1, help="Kick a user from the channel")
+        events.on("received.command.ban").hook(self.ban, channel_only=True,
+            require_mode="o", min_args=1, usage="<nickname/hostmask>",
+            help="Ban a user/hostmask from the channel")
+        events.on("received.command.unban").hook(self.unban,
+            channel_only=True, require_mode="o", usage="<nickname/hostmask>",
+            min_args=1, help="Unban a user/hostmask from the channel")
 
-        events.on("received").on("command").on("kickban", "kb"
+        events.on("received.command").on("kickban", "kb"
             ).hook(self.kickban, channel_only=True, require_mode="o",
             min_args=1, help="Kickban a user from the channel",
             usage="<nickanme> [reason]")
 
-        events.on("received").on("command").on("op"
+        events.on("received.command.op"
             ).hook(self.op, channel_only=True, require_mode="o",
             help="Give +o to a user", usage="[nickname]")
-        events.on("received").on("command").on("deop"
+        events.on("received.command.deop"
             ).hook(self.deop, channel_only=True, require_mode="o",
             help="Take +o from a user", usage="[nickname]")
 
-        events.on("received").on("command").on("voice"
-            ).hook(self.voice, channel_only=True, require_mode="o",
-            help="Give +v to a user", usage="[nickname]")
-        events.on("received").on("command").on("devoice"
-            ).hook(self.devoice, channel_only=True, require_mode="o",
-            help="Take +v from a user", usage="[nickname]")
+        events.on("received.command.voice").hook(self.voice,
+            channel_only=True, require_mode="o", usage="[nickname]",
+             help="Give +v to a user")
+        events.on("received.command.devoice").hook(self.devoice,
+            channel_only=True, require_mode="o", usage="[nickname]",
+            help="Take +v from a user")
 
-        events.on("received").on("message").on("channel").hook(
-            self.highlight_spam)
+        events.on("received.command.topic").hook(self.topic, min_args=1,
+            require_mode="o", channel_only=True, usage="<topic>",
+            help="Set the topic of the current channel")
+        events.on("received.command").on("topicappend", "tappend").hook(
+            self.tappend, min_args=1, require_mode="o", channel_only=True,
+            usage="<topic>", help="Set the topic of the current channel")
+
+        events.on("received.message.channel").hook(self.highlight_spam)
 
         exports.add("channelset", {"setting": "highlight-spam-threshold",
             "help": "Set the number of nicknames in a message that "
@@ -117,6 +120,11 @@ class Module(object):
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("-v", target)
+
+    def topic(self, event):
+        event["target"].send_topic(event["args"])
+    def tappend(self, event):
+        event["target"].send_topic(event["target"].topic + event["args"])
 
     def highlight_spam(self, event):
         if event["channel"].get_setting("highlight-spam-protection", False):
