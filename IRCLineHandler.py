@@ -63,18 +63,19 @@ class LineHandler(object):
                     tag_split = tag.split("=", 1)
                     tags[tag_split[0]] = "".join(tag_split[1:])
 
+        arbitrary = None
+        if " :" in line:
+            line, arbitrary = line.split(" :", 1)
+            if line.endswith(" "):
+                line = line[:-1]
         if line[0] == ":":
             prefix, command = line[1:].split(" ", 1)
             if " " in command:
                 command, line = command.split(" ", 1)
         else:
-            command, line = line.split(" ", 1)
-
-        arbitrary = None
-        if ":" in line:
-            line, arbitrary = line.split(":", 1)
-            if line.endswith(" "):
-                line = line[:-1]
+            command = line
+            if " " in line:
+                command, line = line.split(" ", 1)
         args = line.split(" ")
 
         hooks = self.events.on("raw").on(command).get_hooks()
