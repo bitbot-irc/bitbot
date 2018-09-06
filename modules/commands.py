@@ -48,17 +48,21 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
-        events.on("received").on("message").on("channel").hook(
-            self.channel_message)
-        events.on("received").on("message").on("private").hook(
-            self.private_message)
-        events.on("received").on("command").on("help").hook(self.help,
+        events.on("received.message.channel").hook(self.channel_message)
+        events.on("received.message.private").hook(self.private_message)
+
+        events.on("received.command.help").hook(self.help,
             help="Show help for commands", usage="<command>")
-        events.on("received").on("command").on("usage").hook(self.usage,
-            help="Show usage help for commands", min_args=1,
-            usage="<command>")
-        events.on("received").on("command").on("more").hook(self.more,
-            help="Get more output from the last command", skip_out=True)
+        events.on("received.command.usage").hook(self.usage, min_args=1,
+            help="Show usage help for commands", usage="<command>")
+        events.on("received.command.more").hook(self.more, skip_out=True,
+            help="Get more output from the last command")
+        events.on("received.command.ignore").hook(self.ignore, min_args=1,
+            help="Ignore commands from a given user", usage="<nickname>",
+            permission="ignore")
+        events.on("received.command.unignore").hook(self.unignore, min_args=1,
+            help="Unignore commands from a given user", usage="<nickname>",
+            permission="unignore")
 
         exports.add("channelset", {"setting": "command-prefix",
             "help": "Set the command prefix used in this channel"})
@@ -89,6 +93,10 @@ class Module(object):
 
     def message(self, event, command, args_index=1):
         if self.has_command(command):
+            ignore = event["user"].get_setting("ignore", False)
+            if ignore:
+                return
+
             hook = self.get_hook(command)
             is_channel = False
 
@@ -196,6 +204,23 @@ class Module(object):
     def more(self, event):
         if event["target"].last_stdout and event["target"].last_stdout.has_text():
             event["target"].last_stdout.send()
+
+    def ignore(self, event):
+        user = event["server"].get_user(event["args_split"][0])
+        if user.get_setting("ignore", False):
+            event["stderr"].write("I'm already ignoring '%s'" %
+                user.nickname)
+        else:
+            user.set_setting("ignore", True)
+            event["stdout"].write("Now ignoring '%s'" % user.nickname)
+
+    def unignore(self, event):
+        user = event["server"].get_user(event["args_split"][0])
+        if not user.get_setting("ignore", False):
+            event["stderr"].write("I'm not ignoring '%s'" % user.nickname)
+        else:
+            user.set_setting("ignore", False)
+            event["stdout"].write("Removed ignore for '%s'" % user.nickname)
 
     def send_stdout(self, event):
         stdout = StdOut(event["module_name"], event["target"])
