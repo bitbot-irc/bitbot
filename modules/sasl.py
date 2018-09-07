@@ -7,6 +7,7 @@ class Module(object):
         events.on("received.cap.ls").hook(self.on_cap)
         events.on("received.cap.ack").hook(self.on_cap_ack)
         events.on("received.authenticate").hook(self.on_authenticate)
+        events.on("received.numeric.900").hook(self.sasl_success)
 
     def preprocess_connect(self, event):
         sasl = event["server"].get_setting("sasl")
@@ -39,4 +40,6 @@ class Module(object):
             auth_text = base64.b64encode(auth_text.encode("utf8"))
             auth_text = auth_text.decode("utf8")
             event["server"].send_authenticate(auth_text)
+
+    def sasl_success(self, event):
         event["server"].capability_done("sasl")
