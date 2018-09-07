@@ -7,7 +7,7 @@ class Module(object):
         events.on("received.cap.ls").hook(self.on_cap)
         events.on("received.cap.ack").hook(self.on_cap_ack)
         events.on("received.authenticate").hook(self.on_authenticate)
-        events.on("received.numeric.900").hook(self.sasl_success)
+        events.on("received.numeric.903").hook(self.sasl_success)
 
     def preprocess_connect(self, event):
         sasl = event["server"].get_setting("sasl")
