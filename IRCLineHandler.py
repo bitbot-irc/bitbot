@@ -9,7 +9,7 @@ RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
-    "draft/message-tags-0.2"}
+    "draft/message-tags-0.2", "server-time"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
