@@ -30,6 +30,7 @@ class Server(object):
         self._capability_queue = set([])
         self._capabilities_waiting = set([])
         self.capabilities = set([])
+        self.server_capabilities = {}
 
         self.write_buffer = b""
         self.buffered_lines = []
@@ -278,7 +279,7 @@ class Server(object):
         self.send("NICK %s" % nickname)
 
     def send_capibility_ls(self):
-        self.send("CAP LS")
+        self.send("CAP LS 302")
     def queue_capability(self, capability):
         self._capability_queue.add(capability)
     def queue_capabilities(self, capabilities):

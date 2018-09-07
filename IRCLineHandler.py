@@ -287,27 +287,43 @@ class LineHandler(object):
 
     # the server is telling us about its capabilities!
     def cap(self, event):
-        capabilities = (event["arbitrary"] or "").split(" ")
+        capabilities_list = (event["arbitrary"] or "").split(" ")
+        capabilities = {}
+        for capability in capabilities_list:
+            argument = None
+            if "=" in capability:
+                capability, argument = capability.split("=", 1)
+            capabilities[capability] = argument
+
         subcommand = event["args"][1].lower()
+        is_multiline = len(event["args"]) > 2 and event["args"][2] == "*"
 
         if subcommand == "ls":
-            matched_capabilities = set(capabilities) & CAPABILITIES
-            if matched_capabilities:
-                event["server"].queue_capabilities(matched_capabilities)
+            event["server"].server_capabilities.update(capabilities)
+            if not is_multiline:
+                matched_capabilities = set(event["server"
+                    ].server_capabilities.keys()) & CAPABILITIES
+                if matched_capabilities:
+                    event["server"].queue_capabilities(matched_capabilities)
 
-        self.events.on("received.cap").on(subcommand).call(
-            capabilities=capabilities, server=event["server"])
+                    self.events.on("received.cap.ls").call(
+                        capabilities=event["server"].server_capabilities,
+                        server=event["server"])
 
-        if subcommand == "ls":
-            if event["server"].has_capability_queue():
-                event["server"].send_capability_queue()
-            else:
-                event["server"].send_capability_end()
+                    if event["server"].has_capability_queue():
+                        event["server"].send_capability_queue()
+                    else:
+                        event["server"].send_capability_end()
         elif subcommand == "ack":
-            if not event["server"].waiting_for_capabilities():
-                event["server"].send_capability_end()
-            event["server"].capabilities = set(capabilities)
-        elif subcommand == "ack" or subcommand == "nack":
+            event["server"].capabilities.update(capabilities)
+            if not is_multiline:
+                self.events.on("received.cap.ack").call(
+                   capabilities=event["server"].capabilities,
+                   server=event["server"])
+
+                if not event["server"].waiting_for_capabilities():
+                    event["server"].send_capability_end()
+        elif subcommand == "nack":
             event["server"].send_capability_end()
 
     # the server is asking for authentication
