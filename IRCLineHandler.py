@@ -9,7 +9,7 @@ RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
-    "draft/message-tags-0.2", "server-time"}
+    "draft/message-tags-0.2", "server-time", "cap-notify"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
@@ -314,6 +314,15 @@ class LineHandler(object):
                         event["server"].send_capability_queue()
                     else:
                         event["server"].send_capability_end()
+        elif subcommand == "new":
+            event["server"].capabilities.update(set(capabilities.keys()))
+            self.events.on("received.cap.new").call(server=event["server"],
+                capabilities=capabilities)
+        elif subcommand == "del":
+            event["server"].capabilities.difference_update(set(
+                capabilities.keys()))
+            self.events.on("received.cap.del").call(server=event["server"],
+                capabilities=capabilities)
         elif subcommand == "ack":
             event["server"].capabilities.update(capabilities)
             if not is_multiline:
