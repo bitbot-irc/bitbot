@@ -65,11 +65,7 @@ class Server(object):
         self.socket.settimeout(5.0)
 
         if self.tls:
-            context = ssl.SSLContext(OUR_TLS_PROTOCOL)
-            context.options |= ssl.OP_NO_SSLv2
-            context.options |= ssl.OP_NO_SSLv3
-            context.options |= ssl.OP_NO_TLSv1
-            self.socket = context.wrap_socket(self.socket)
+            self.tls_wrap()
         self.cached_fileno = self.socket.fileno()
         self.events.on("timer").on("rejoin").hook(self.try_rejoin)
 
@@ -81,6 +77,13 @@ class Server(object):
     def fileno(self):
         fileno = self.socket.fileno()
         return self.cached_fileno if fileno == -1 else fileno
+
+    def tls_wrap(self):
+        context = ssl.SSLContext(OUR_TLS_PROTOCOL)
+        context.options |= ssl.OP_NO_SSLv2
+        context.options |= ssl.OP_NO_SSLv3
+        context.options |= ssl.OP_NO_TLSv1
+        self.socket = context.wrap_socket(self.socket)
 
     def connect(self):
         self.socket.connect((self.target_hostname, self.port))
@@ -297,6 +300,8 @@ class Server(object):
         self.send("CAP END")
     def send_authenticate(self, text):
         self.send("AUTHENTICATE %s" % text)
+    def send_starttls(self):
+        self.send("STARTTLS")
 
     def waiting_for_capabilities(self):
         return bool(len(self._capabilities_waiting))
