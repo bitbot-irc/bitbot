@@ -8,8 +8,8 @@ DUCK_TAIL = "・゜゜・。。・゜゜"
 DUCK_HEAD = ["\_o< ", "\_O< ", "\_0< ", "\_\u00f6< ", "\_\u00f8< ",
              "\_\u00f3< "]
 DUCK_MESSAGE = ["QUACK!", "FLAP FLAP!", "quack!", "squawk!"]
-DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!",
-                     "HONK!", "I AM THE METAL DUCK"]
+DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!", "HONK!",
+                     "I AM THE METAL DUCK"]
 
 DUCK_MINIMUM_MESSAGES = 10
 DUCK_MINIMUM_UNIQUE = 3
@@ -23,34 +23,31 @@ class Module(object):
         self.bot = bot
         self.events = events
 
-        events.on("received").on("command").on("bef").hook(self.befriend,
-                                                           priority=1,
-                                                           help="Befriend a "
-                                                                "duck!")
-        events.on("received").on("command").on("bang").hook(self.shoot,
-                                                            priority=1,
-                                                            help="Shoot a "
-                                                                 "duck! "
-                                                                 "Meanie.",
-                                                            )
+        events.on("received.command.bef").hook(self.befriend,
+                                               priority=1,
+                                               help="Befriend a "
+                                                    "duck!")
+        events.on("received.command.bang").hook(self.shoot,
+                                                priority=1,
+                                                help="Shoot a "
+                                                     "duck! "
+                                                     "Meanie.", )
         # events.on("received").on("command").on("decoy").hook(self.set_decoy,
         #                                                     help="Be a
         # sneaky fellow
         #                                                          and make a
         # decoy duck!")
-        events.on("received").on("command").on("friends").hook(
+        events.on("rreceived.command.friends").hook(
             self.duck_friends,
             help="See who the friendliest people to ducks are!")
-        events.on("received").on("command").on("killers").hook(
-            self.duck_enemies,
-            help="See who shoots the most smount of ducks!")
-        events.on("received").on("command").on("duckstats").hook(
-            self.duck_stats,
-            help="Shows your duck stats!")
+        events.on("received.command.killers").hook(
+            self.duck_enemies, help="See who shoots the most smount of ducks!")
+        events.on("received.command.duckstats").hook(
+            self.duck_stats, help="Shows your duck stats!")
 
-        exports.add("channelset", {"setting": "ducks-enabled",
-                                   "help": "Toggle ducks!",
-                                   "validate": Utils.bool_or_none})
+        exports.add("channelset",
+                    {"setting": "ducks-enabled", "help": "Toggle ducks!",
+                     "validate": Utils.bool_or_none})
 
         exports.add("channelset", {"setting": "ducks-kick",
                                    "help": "Should the bot kick if there's no "
@@ -91,12 +88,9 @@ class Module(object):
     def clear_ducks(self, channel):
         rand_time = self.generate_next_duck_time()
 
-        channel.games["ducks"] = {
-            'messages': 0,
-            'duck_spawned': 0,
-            'unique_users': [],
-            'next_duck_time': rand_time
-        }
+        channel.games["ducks"] = {'messages': 0, 'duck_spawned': 0,
+                                  'unique_users': [],
+                                  'next_duck_time': rand_time}
 
     def start_game(self, channel):
         #   event is immediately the IRCChannel.Channel() event for the current
@@ -144,9 +138,7 @@ class Module(object):
         # DUCK_MINIMUM_UNIQUE = 3
 
         if spawned == 0 and next_duck < time() and unique > \
-                DUCK_MINIMUM_UNIQUE and \
-                messages > \
-                DUCK_MINIMUM_MESSAGES:
+                DUCK_MINIMUM_UNIQUE and messages > DUCK_MINIMUM_MESSAGES:
             return True
         else:
             return False
@@ -161,10 +153,10 @@ class Module(object):
         duck += DUCK_TAIL
         duck += random.choice(DUCK_HEAD)
 
-        duck = str(Utils.color(4) + Utils.bold(duck + random.choice(
-            DUCK_MESSAGE_RARE)) + Utils.color(4)) if 1 == random.randint(1,
-                                                                         20) \
-            else duck + random.choice(DUCK_MESSAGE)
+        duck = str(Utils.color(4) + Utils.bold(
+            duck + random.choice(DUCK_MESSAGE_RARE)) + Utils.color(
+            4)) if 1 == random.randint(1, 20) else duck + random.choice(
+            DUCK_MESSAGE)
 
         channel.send_message(duck)
         channel.games["ducks"]["duck_spawned"] = 1
@@ -219,10 +211,9 @@ class Module(object):
         channel.set_user_setting(uid, "ducks-befriended", total_befriended)
 
         event["stdout"].write(
-            "Aww! " + nick + " befriended a duck! You've befriended "
-            + Utils.bold(
-                str(
-                    total_befriended)) + " ducks in " + Utils.bold(
+            "Aww! " + nick + " befriended a duck! You've befriended " +
+            Utils.bold(
+                str(total_befriended)) + " ducks in " + Utils.bold(
                 channel.name) + "!")
 
         self.clear_ducks(channel)
@@ -252,8 +243,7 @@ class Module(object):
 
         event["stdout"].write(
             "Pow! " + nick + " shot a duck! You've shot " + Utils.bold(
-                str(
-                    total_shot)) + " ducks in " + Utils.bold(
+                str(total_shot)) + " ducks in " + Utils.bold(
                 channel.name) + "!")
 
         self.clear_ducks(channel)
@@ -264,11 +254,8 @@ class Module(object):
         nick = user.nickname
         id = user.get_id()
 
-        poached = user.get_channel_settings_per_setting("ducks-shot", []
-                                                        )
-        friends = user.get_channel_settings_per_setting(
-            "ducks-befriended", []
-        )
+        poached = user.get_channel_settings_per_setting("ducks-shot", [])
+        friends = user.get_channel_settings_per_setting("ducks-befriended", [])
 
         channel_friends = 0
         channel_poached = 0
@@ -294,12 +281,10 @@ class Module(object):
             nick + ": " + str(total_poached) + " ducks killed (" + str(
                 channel_poached) + " in " + channel + "), and " + str(
                 total_friends) + " ducks befriended (" + str(
-                channel_friends)
-            + " in " + channel + ")")
+                channel_friends) + " in " + channel + ")")
 
     def duck_enemies(self, event):
-        the_enemy = event["server"].find_all_user_channel_settings(
-            "ducks-shot")
+        the_enemy = event["server"].find_all_user_channel_settings("ducks-shot")
 
         notorious = {}
         enemy_nicks = []
