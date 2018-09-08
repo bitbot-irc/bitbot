@@ -96,11 +96,10 @@ class Module(object):
             return
 
         user = event["user"]
-        hostname = user.hostname
         game = channel.games["ducks"]
 
-        if hostname not in game["unique_nicks"]:
-            game["unique_nicks"].append(hostname)
+        if user not in game["unique_nicks"]:
+            game["unique_nicks"].append(user)
 
             if game["current_unique_nicks"] > 0:
                 game["current_unique_nicks"] = game["current_unique_nicks"] - 1
@@ -112,3 +111,5 @@ class Module(object):
             if game["current_active_delay"] > 0:
                 game["current_active_delay"] = game["current_active_delay"] \
                 - DELAY_REDUCE
+
+        print(game)
