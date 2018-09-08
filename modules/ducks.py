@@ -177,7 +177,6 @@ class Module(object):
 
         user = event["user"]
         game = channel.games["ducks"]
-        delay_increment = 0
 
         if game["duck_spawned"] == 1 or channel.has_user(
                 event["user"]) == False:
