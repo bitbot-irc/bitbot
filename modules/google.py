@@ -22,8 +22,8 @@ class Module(object):
                 "num": 1, "gl": "gb"}, json=True)
             if page:
                 if "items" in page and len(page["items"]):
-                    event["stdout"].write(page["items"][0][
-                        "link"])
+                    event["stdout"].write("(" + Utils.bold(phrase) + ") " \
+                                          + page["items"][0]["link"])
                 else:
                     event["stderr"].write("No results found")
             else:
