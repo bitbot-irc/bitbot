@@ -137,8 +137,8 @@ class Module(object):
         # DUCK_MINIMUM_MESSAGES = 10
         # DUCK_MINIMUM_UNIQUE = 3
 
-        if spawned == 0 and next_duck < time() and unique > \
-                DUCK_MINIMUM_UNIQUE and messages > DUCK_MINIMUM_MESSAGES:
+        if spawned == 0 and next_duck < time() and unique >= \
+                DUCK_MINIMUM_UNIQUE and messages >= DUCK_MINIMUM_MESSAGES:
             return True
         else:
             return False
