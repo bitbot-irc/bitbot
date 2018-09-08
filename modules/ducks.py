@@ -98,7 +98,7 @@ class Module(object):
         self.clear_ducks(channel)
 
     def generate_next_duck_time(self):
-        rand_time = random.randint(int(time()) + 180, int(time()) + 960)
+        rand_time = random.randint(int(time()) + 360, int(time()) + 1200)
         return rand_time
 
     def is_duck_visible(self, event):
