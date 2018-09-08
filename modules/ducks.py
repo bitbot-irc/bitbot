@@ -53,11 +53,21 @@ class Module(object):
 
         events.on("new.channel").hook(self.bootstrap)
 
+
         events.on("received").on("message").on("channel").hook(
             self.channel_message, priority=2)
 
+        self.bootstrap_lazy(events)
+
+    def bootstrap_lazy(self, event):
+        servers = self.bot.servers
+
+        for server in servers.values():
+            for channel in server.channels.values():
+                self.bootstrap(channel)
+
     def bootstrap(self, event):
-        channel = event["channel"]
+        channel = event["channel"] if hasattr(event, "channel") else event
 
         self.init_game_var(channel)
         # getset
