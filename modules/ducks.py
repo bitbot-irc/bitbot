@@ -37,7 +37,7 @@ class Module(object):
         # sneaky fellow
         #                                                          and make a
         # decoy duck!")
-        events.on("rreceived.command.friends").hook(
+        events.on("received.command.friends").hook(
             self.duck_friends,
             help="See who the friendliest people to ducks are!")
         events.on("received.command.killers").hook(
