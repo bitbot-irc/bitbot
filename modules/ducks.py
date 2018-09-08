@@ -33,15 +33,15 @@ class Module(object):
                                                            "stats!")
 
 
-        exports.add("channelset", {"setting": "ducks-enabled",
-            "help": "Toggle ducks!", "validate": Utils.bool_or_none})
+        #exports.add("channelset", {"setting": "ducks-enabled",
+        #    "help": "Toggle ducks!", "validate": Utils.bool_or_none})
 
-        events.on("received.numeric.366").hook(self.bootstrap)
+        #events.on("received.numeric.366").hook(self.bootstrap)
 
-        events.on("raw").on("376").hook(self.duck_loop_entry)
+        #events.on("raw").on("376").hook(self.duck_loop_entry)
 
-        events.on("timer").on("duck-decoy").hook(self.duck_decoy)
-        events.on("timer").on("show-duck").hook(self.show_duck)
+        #events.on("timer").on("duck-decoy").hook(self.duck_decoy)
+        #events.on("timer").on("show-duck").hook(self.show_duck)
 
     def duck_loop_entry(self, event):
         wait = self.get_random_duck_time()
