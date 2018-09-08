@@ -25,7 +25,8 @@ class Module(object):
 
         events.on("received").on("command").on("bef").hook(self.befriend,
                                                            priority=1,
-                                                           help="Befriend a duck!")
+                                                           help="Befriend a "
+                                                                "duck!")
         events.on("received").on("command").on("bang").hook(self.shoot,
                                                             priority=1,
                                                             help="Shoot a "
@@ -52,7 +53,8 @@ class Module(object):
                                    "validate": Utils.bool_or_none})
 
         exports.add("channelset", {"setting": "ducks-kick",
-                                   "help": "Should the bot kick if there's no duck?",
+                                   "help": "Should the bot kick if there's no "
+                                           "duck?",
                                    "validate": Utils.bool_or_none})
 
         events.on("new.channel").hook(self.bootstrap)
@@ -160,7 +162,8 @@ class Module(object):
         duck += random.choice(DUCK_HEAD)
 
         duck = str(Utils.color(4) + Utils.bold(duck + random.choice(
-            DUCK_MESSAGE_RARE)) + Utils.color(4)) if 1 == random.randint(1, 20) \
+            DUCK_MESSAGE_RARE)) + Utils.color(4)) if 1 == random.randint(1,
+                                                                         20) \
             else duck + random.choice(DUCK_MESSAGE)
 
         channel.send_message(duck)
