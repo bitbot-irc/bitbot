@@ -1,4 +1,5 @@
 import random
+import Utils
 
 CHOICES = [
     "Definitely",
@@ -13,7 +14,18 @@ CHOICES = [
     "The answer is unclear",
     "Absolutely",
     "Dubious at best",
-    "I'm on a break, ask again later"
+    "I'm on a break, ask again later",
+    "As I see it, yes",
+    "It is certain",
+    "Naturally",
+    "Reply hazy, try again later",
+    Utils.color(4) + Utils.underline("DO NOT WASTE MY TIME"),
+    "Hmm... Could be!",
+    "I'm leaning towards no",
+    "Without a doubt",
+    "Sources say no",
+    "Sources say yes",
+    "Sources say maybe"
 ]
 
 class Module(object):
@@ -26,4 +38,5 @@ class Module(object):
         )
 
     def decide(selfs, event):
-        event["stdout"].write(random.choice(CHOICES))
+        event["stdout"].write("You shake the magic ball... it "
+                              "says " + Utils.bold(random.choice(CHOICES)))
