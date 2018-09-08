@@ -19,7 +19,13 @@ CHOICES = [
     "It is certain",
     "Naturally",
     "Reply hazy, try again later",
-    Utils.color(4) + Utils.underline("DO NOT WASTE MY TIME")
+    Utils.color(4) + Utils.underline("DO NOT WASTE MY TIME"),
+    "Hmm... Could be!",
+    "I'm leaning towards no",
+    "Without a doubt",
+    "Sources say no",
+    "Sources say yes",
+    "Sources say maybe"
 ]
 
 class Module(object):
