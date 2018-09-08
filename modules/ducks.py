@@ -201,7 +201,6 @@ class Module(object):
         user = event["user"]
         nick = user.nickname
         uid = user.get_id()
-        print(channel)
         if self.is_duck_channel(channel) == False:
             return
 
