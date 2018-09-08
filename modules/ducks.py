@@ -79,7 +79,7 @@ class Module(object):
         if hasattr(channel, 'games') == False:
             return False
 
-        if hasattr(channel["games"], 'ducks') == False:
+        if "ducks" not in channel.games.keys():
             return False
 
         return True

@@ -14,7 +14,12 @@ CHOICES = [
     "The answer is unclear",
     "Absolutely",
     "Dubious at best",
-    "I'm on a break, ask again later"
+    "I'm on a break, ask again later",
+    "As I see it, yes",
+    "It is certain",
+    "Naturally",
+    "Reply hazy, try again later",
+    Utils.color(4) + Utils.underline("DO NOT WASTE MY TIME")
 ]
 
 class Module(object):
