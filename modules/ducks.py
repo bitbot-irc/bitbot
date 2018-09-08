@@ -14,9 +14,6 @@ DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!", "HONK!",
 DUCK_MINIMUM_MESSAGES = 10
 DUCK_MINIMUM_UNIQUE = 3
 
-CHANNELS_ENABLED = []
-
-
 class Module(object):
 
     def __init__(self, bot, events, exports):
