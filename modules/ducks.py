@@ -51,24 +51,19 @@ class Module(object):
                                            "duck?",
                                    "validate": Utils.bool_or_none})
 
-        events.on("new.channel").hook(self.bootstrap)
+        events.on("new.channel").hook(self.new_channel)
 
 
         events.on("received").on("message").on("channel").hook(
             self.channel_message, priority=2)
 
-        self.bootstrap_lazy(events)
-
-    def bootstrap_lazy(self, event):
-        servers = self.bot.servers
-
-        for server in servers.values():
+        for server in self.bot.servers.values():
             for channel in server.channels.values():
                 self.bootstrap(channel)
 
-    def bootstrap(self, event):
-        channel = event["channel"] if hasattr(event, "channel") else event
-
+    def new_channel(self, event):
+        self.bootstrap(event["channel"])
+    def bootstrap(self, channel):
         self.init_game_var(channel)
         # getset
         ducks_enabled = channel.get_setting("ducks-enabled", False)
