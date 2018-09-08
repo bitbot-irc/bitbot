@@ -1,4 +1,5 @@
 import random
+import Utils
 
 CHOICES = [
     "Definitely",
@@ -26,4 +27,5 @@ class Module(object):
         )
 
     def decide(selfs, event):
-        event["stdout"].write(random.choice(CHOICES))
+        event["stdout"].write("You shake the magic ball... it "
+                              "says " + Utils.bold(random.choice(CHOICES)))
