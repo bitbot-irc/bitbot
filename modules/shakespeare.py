@@ -1,7 +1,7 @@
 import random
 import Utils
 
-INSULT_INTRO = ["Thou art", "Ye", "Thou", "Thy", "Thee"]
+INSULT_INTRO = ["Thou art a", "Ye", "Thou", "Thy", "Thee"]
 
 INSULT_PART_1 = ["artless", "bawdy", "beslubbering", "bootless", "churlish",
                  "cockered", "clouted", "craven", "currish", "dankish",
@@ -71,4 +71,4 @@ class Module(object):
             target = Utils.bold(event["server"].get_user(
                 event["args_split"][0]).nickname) + ", "
 
-        event["stdout"].write(target + insult)
+        event["stdout"].write(target + insult + "!")
