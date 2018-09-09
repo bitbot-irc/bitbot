@@ -315,8 +315,10 @@ class Module(object):
         length = len(enemy_nicks) if len(enemy_nicks) < 8 else 8
 
         for i in range(0, length):
-            build.append("%s (%s)" % (Utils.bold(enemy_nicks[i]),
-                                      enemy_ducks[i]))
+            nick = Utils.prevent_highlight(enemy_nicks[i])
+            build.append("%s (%s)" \
+                         % (Utils.bold(nick),
+                            enemy_ducks[i]))
 
         sentence += ", ".join(build)
 
@@ -347,8 +349,10 @@ class Module(object):
         build = []
 
         for i in range(0, length):
-            build.append("%s (%s)" % ( Utils.bold(friend_nicks[i]),
-                                       friend_ducks[i])
+            nick = Utils.prevent_highlight(friend_nicks[i])
+            build.append("%s (%s)" \
+                         % ( Utils.bold(nick),
+                             friend_ducks[i])
                          )
 
         sentence += ", ".join(build)
