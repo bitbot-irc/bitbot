@@ -15,7 +15,7 @@ class Module(object):
 
     def __init__(self, bot, events, exports):
         self.bot = bot
-        self.bitly_is_enabled = "bitly" in self.bot.modules.modules
+        self.url_shortener_enabled = "bitly" in self.bot.modules.modules
         self.events = events
 
         events.on("received").on("command").on("tweet", "tw"
@@ -67,13 +67,13 @@ class Module(object):
                 linked_id = tweet["id"]
                 username = "@%s" % tweet["user"]["screen_name"]
 
-                bitly_link = ""
-                if self.bitly_is_enabled:
+                url_shortener_link = ""
+                if self.url_shortener_enabled:
                     chopped_uname = username[1:]
                     tweet_link = "https://twitter.com/%s/status/%s" % (
                         chopped_uname, linked_id)
 
-                    bitly_link = " -- " + self.events.on("get").on(
+                    url_shortener_link = " -- " + self.events.on("get").on(
                         "shortlink").call(
                         url=tweet_link)[0]
 
@@ -91,14 +91,14 @@ class Module(object):
                             username, retweet_timestamp,
                             original_username, original_timestamp,
                             original_text,
-                            bitly_link))
+                            url_shortener_link))
                 else:
                     event["stdout"].write("(%s, %s) %s %s" % (username,
                                                               self.make_timestamp(
                                                                   tweet[
                                                                       "created_at"]),
                                                               tweet["text"],
-                                                              bitly_link)
+                                                              url_shortener_link)
                                           )
             else:
                 event["stderr"].write("Invalid tweet identifiers provided")
