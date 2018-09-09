@@ -1,7 +1,7 @@
 import re, time
 import EventManager, Utils
 
-REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})$")
+REGEX_KARMA = re.compile("^(.*[^-+])[-+]*(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
 
 class Module(object):
