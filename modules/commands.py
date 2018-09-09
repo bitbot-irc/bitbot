@@ -38,11 +38,11 @@ class Out(object):
 class StdOut(Out):
     def prefix(self):
         return "%s%s%s" % (Utils.color(Utils.COLOR_GREEN),
-            self.module_name, Utils.FONT_RESET)
+                            self.module_name, Utils.FONT_COLOR)
 class StdErr(Out):
     def prefix(self):
         return "%s!%s%s" % (Utils.color(Utils.COLOR_RED),
-            self.module_name, Utils.FONT_RESET)
+                            self.module_name, Utils.FONT_COLOR)
 
 class Module(object):
     def __init__(self, bot, events, exports):
@@ -190,12 +190,24 @@ class Module(object):
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 
     def usage(self, event):
+        if event["is_channel"]:
+            command_prefix = event["target"].get_setting("command-prefix",
+                                        event["server"].get_setting(
+                                                        "command-prefix",
+                                                        "!"))
+        else:
+            command_prefix = ""
+
+
         command = event["args_split"][0].lower()
         if command in self.events.on("received").on(
                 "command").get_children():
             hooks = self.events.on("received").on("command").on(command).get_hooks()
             if hooks and "usage" in hooks[0].kwargs:
-                event["stdout"].write("Usage: %s %s" % (command, hooks[0].kwargs["usage"]))
+                event["stdout"].write("Usage: %s%s %s" % (command_prefix,
+                                                          command,
+                                                          hooks[0].kwargs[
+                                                              "usage"]))
             else:
                 event["stderr"].write("No usage help available for %s" % command)
         else:

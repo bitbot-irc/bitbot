@@ -1,6 +1,7 @@
 import random
 from operator import itemgetter
 from time import time
+import EventManager
 
 import Utils
 
@@ -14,6 +15,7 @@ DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!", "HONK!",
 DUCK_MINIMUM_MESSAGES = 10
 DUCK_MINIMUM_UNIQUE = 3
 
+
 class Module(object):
 
     def __init__(self, bot, events, exports):
@@ -21,14 +23,11 @@ class Module(object):
         self.events = events
 
         events.on("received.command.bef").hook(self.befriend,
-                                               priority=1,
-                                               help="Befriend a "
-                                                    "duck!")
+                                            priority=EventManager.PRIORITY_HIGH,
+                                            help="Befriend a duck!")
         events.on("received.command.bang").hook(self.shoot,
-                                                priority=1,
-                                                help="Shoot a "
-                                                     "duck! "
-                                                     "Meanie.", )
+                                            priority=EventManager.PRIORITY_HIGH,
+                                            help="Shoot a duck! Meanie." )
         # events.on("received").on("command").on("decoy").hook(self.set_decoy,
         #                                                     help="Be a
         # sneaky fellow
@@ -53,9 +52,8 @@ class Module(object):
 
         events.on("new.channel").hook(self.new_channel)
 
-
         events.on("received").on("message").on("channel").hook(
-            self.channel_message, priority=2)
+            self.channel_message)
 
         for server in self.bot.servers.values():
             for channel in server.channels.values():
@@ -63,6 +61,7 @@ class Module(object):
 
     def new_channel(self, event):
         self.bootstrap(event["channel"])
+
     def bootstrap(self, channel):
         self.init_game_var(channel)
         # getset
@@ -212,11 +211,11 @@ class Module(object):
 
         channel.set_user_setting(uid, "ducks-befriended", total_befriended)
 
-        event["stdout"].write(
-            "Aww! " + nick + " befriended a duck! You've befriended " +
-            Utils.bold(
-                str(total_befriended)) + " ducks in " + Utils.bold(
-                channel.name) + "!")
+        msg = "Aww! %s befriended a duck! You've befriended %s ducks in %s!" \
+              % (Utils.bold(nick), Utils.bold(total_befriended),
+                 Utils.bold(channel.name))
+
+        event["stdout"].write(msg)
 
         self.clear_ducks(channel)
 
@@ -243,10 +242,11 @@ class Module(object):
 
         channel.set_user_setting(uid, "ducks-shot", total_shot)
 
-        event["stdout"].write(
-            "Pow! " + nick + " shot a duck! You've shot " + Utils.bold(
-                str(total_shot)) + " ducks in " + Utils.bold(
-                channel.name) + "!")
+        msg = "Pow! %s shot a duck! You've shot %s ducks in %s!" \
+              % (Utils.bold(nick), Utils.bold(total_shot),
+                 Utils.bold(channel.name))
+
+        event["stdout"].write(msg)
 
         self.clear_ducks(channel)
 
@@ -279,11 +279,16 @@ class Module(object):
             else:
                 total_poached += number
 
-        event["stdout"].write(
-            nick + ": " + str(total_poached) + " ducks killed (" + str(
-                channel_poached) + " in " + channel + "), and " + str(
-                total_friends) + " ducks befriended (" + str(
-                channel_friends) + " in " + channel + ")")
+        tf = total_friends
+        tp = total_poached
+        cp = channel_poached
+        cf = channel_friends
+
+        msg = "%s ducks killed (%s in %s), and %s ducks befriended (%s in %s)" \
+              % (Utils.bold(tp), Utils.bold(cp), Utils.bold(channel),
+                 Utils.bold(tf), Utils.bold(cf), Utils.bold(channel))
+
+        event["stdout"].write(Utils.bold(nick) + ": " + msg)
 
     def duck_enemies(self, event):
         the_enemy = event["server"].find_all_user_channel_settings("ducks-shot")
@@ -303,16 +308,18 @@ class Module(object):
             enemy_nicks.append(user)
             enemy_ducks.append(enemies)
 
-        sentence = "Most Notorious Users -- "
+        sentence = Utils.bold("Duck Wranglers: ")
+        build = []
 
-        length = len(enemy_nicks) if len(enemy_nicks) < 11 else 11
+        length = len(enemy_nicks) if len(enemy_nicks) < 8 else 8
 
         for i in range(0, length):
-            sentence += enemy_nicks[i] + " (" + str(enemy_ducks[i]) + ")"
-            if i < 10:
-                sentence += ", "
+            nick = Utils.prevent_highlight(enemy_nicks[i])
+            build.append("%s (%s)" \
+                         % (Utils.bold(nick),
+                            enemy_ducks[i]))
 
-        sentence = sentence[0:-2]
+        sentence += ", ".join(build)
 
         event["stdout"].write(sentence)
 
@@ -335,15 +342,18 @@ class Module(object):
             friend_nicks.append(user)
             friend_ducks.append(friends)
 
-        sentence = "Friendliest Users -- "
+        sentence = Utils.bold("Duck Friends: ")
 
-        length = len(friend_nicks) if len(friend_nicks) < 11 else 11
+        length = len(friend_nicks) if len(friend_nicks) < 8 else 8
+        build = []
 
         for i in range(0, length):
-            sentence += friend_nicks[i] + " (" + str(friend_ducks[i]) + ")"
-            if i < 10:
-                sentence += ", "
+            nick = Utils.prevent_highlight(friend_nicks[i])
+            build.append("%s (%s)" \
+                         % (Utils.bold(nick),
+                            friend_ducks[i])
+                         )
 
-        sentence = sentence[0:-2]
+        sentence += ", ".join(build)
 
         event["stdout"].write(sentence)
