@@ -1,9 +1,7 @@
-#--require-config bitly-api-key
-
 import re
 import Utils
 
-URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
+ISGD_API_URL = "https://is.gd/create.php"
 REGEX_URL = re.compile("https?://", re.I)
 
 class Module(object):
@@ -12,22 +10,24 @@ class Module(object):
         self.events = events
         events.on("get.shortlink").hook(self.shortlink)
         events.on("received.command.shorten").hook(self.shorten, min_args=1,
-            help="Shorten a URL.", usage="<url>")
+            help="Shorten a URL using the is.gd service.", usage="<url>")
 
     def shortlink(self, event):
         url = event["url"]
         if not re.match(REGEX_URL, url):
             url = "http://%s" % url
-        data = Utils.get_url(URL_BITLYSHORTEN, get_params={
-            "access_token": self.bot.config["bitly-api-key"],
-            "longUrl": url}, json=True)
-        if data and data["data"]:
-            return data["data"]["url"]
+        data = Utils.get_url(ISGD_API_URL, get_params={
+            "format": "json",
+            "url": url
+        }, json=True)
+
+        if data and data["shorturl"]:
+            return data["shorturl"]
 
     def shorten(self, event):
         link = self.events.on("get.shortlink").call_for_result(
             url=event["args"])
         if link:
-            event["stdout"].write("Short URL: %s" % link)
+            event["stdout"].write("Shortened URL: %s" % link)
         else:
             event["stderr"].write("Unable to shorten that URL.")
