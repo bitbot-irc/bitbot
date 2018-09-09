@@ -1,5 +1,5 @@
 import re, time
-import Utils
+import EventManager, Utils
 
 REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
@@ -10,7 +10,7 @@ class Module(object):
         self.events = events
         events.on("new").on("user").hook(self.new_user)
         events.on("received").on("message").on("channel").hook(
-            self.channel_message)
+            self.channel_message, priority=EventManager.PRIORITY_MONITOR)
         events.on("received").on("command").on("karma").hook(
             self.karma, help="Get your or someone else's karma",
             usage="[target]")
@@ -52,10 +52,14 @@ class Module(object):
                     event["user"].last_karma = time.time()
                 elif verbose:
                     if target:
-                        self.events.on("send").on("stderr").call(module_name="Karma",
-                            target=event["channel"], message="You cannot change your own karma")
+                        self.events.on("send.stderr").call(
+                            module_name="Karma", target=event["channel"],
+                            message="You cannot change your own karma")
             elif verbose:
-                event["stderr"].write("Try again in a couple of seconds")
+                self.events.on("send.stderr").call(module_name="Karma",
+                    target=event["channel"],
+                    message="Try again in a couple of seconds")
+
     def karma(self, event):
         if event["args"]:
             target = event["args"]

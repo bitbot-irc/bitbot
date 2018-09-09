@@ -1,5 +1,5 @@
 import re
-import Utils
+import EventManager, Utils
 
 STR_MORE = "%s (more...)" % Utils.FONT_RESET
 STR_CONTINUED = "(...continued) "
@@ -48,8 +48,10 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
-        events.on("received.message.channel").hook(self.channel_message)
-        events.on("received.message.private").hook(self.private_message)
+        events.on("received.message.channel").hook(self.channel_message,
+            priority=EventManager.PRIORITY_LOW)
+        events.on("received.message.private").hook(self.private_message,
+            priority=EventManager.PRIORITY_LOW)
 
         events.on("received.command.help").hook(self.help,
             help="Show help for commands", usage="<command>")
@@ -153,7 +155,7 @@ class Module(object):
                     target.last_stdout = stdout
                     target.last_stderr = stderr
             buffer.skip_next()
-
+        event.eat()
 
     def channel_message(self, event):
         command_prefix = event["channel"].get_setting("command-prefix",

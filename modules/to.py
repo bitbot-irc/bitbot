@@ -4,7 +4,7 @@ class Module(object):
     def __init__(self, bot, events, exports):
         events.on("received").on("message").on("channel"
             ).hook(self.channel_message,
-            priority=EventManager.PRIORITY_MEDIUM)
+            priority=EventManager.PRIORITY_HIGH)
         events.on("received").on("command").on("to").hook(
             self.to, min_args=2, help=("Relay a message to a "
             "user the next time they talk in a channel"),
