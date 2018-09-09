@@ -52,10 +52,14 @@ class Module(object):
                     event["user"].last_karma = time.time()
                 elif verbose:
                     if target:
-                        self.events.on("send").on("stderr").call(module_name="Karma",
-                            target=event["channel"], message="You cannot change your own karma")
+                        self.events.on("send.stderr").call(
+                            module_name="Karma", target=event["channel"],
+                            message="You cannot change your own karma")
             elif verbose:
-                event["stderr"].write("Try again in a couple of seconds")
+                self.events.on("send.stderr").call(module_name="Karma",
+                    target=event["channel"],
+                    message="Try again in a couple of seconds")
+
     def karma(self, event):
         if event["args"]:
             target = event["args"]
