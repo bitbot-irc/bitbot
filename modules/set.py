@@ -78,5 +78,5 @@ class Module(object):
 
     def server_get(self, event):
         setting = event["args_split"][0]
-        self._get(event, setting, " for %s" % event["server"].name,
-            event["server"].get_setting(setting, None))
+        self._get(event, setting, "", event["server"].get_setting(
+            setting, None))
