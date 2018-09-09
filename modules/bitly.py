@@ -17,7 +17,6 @@ class Module(object):
 
     def shortlink(self, event):
         url = event["url"]
-
         if not re.match(REGEX_URL, url):
             url = "http://%s" % url
         data = Utils.get_url(URL_BITLYSHORTEN, get_params={
