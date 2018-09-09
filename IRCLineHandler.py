@@ -44,7 +44,7 @@ class LineHandler(object):
         events.on("raw.NOTICE").hook(self.notice)
         events.on("raw.CHGHOST").hook(self.chghost)
         events.on("raw.ACCOUNT").hook(self.account)
-        events.on("raw.TAGMSG").hook(self.account)
+        events.on("raw.TAGMSG").hook(self.tagmsg)
         events.on("raw.AWAY").hook(self.away)
 
         events.on("raw.CAP").hook(self.cap)
