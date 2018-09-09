@@ -10,23 +10,17 @@ import Utils
 REGEX_TWITTERURL = re.compile(
     "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)
 
-
 class Module(object):
-
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
 
-        events.on("received").on("command").on("tweet", "tw"
-                                               ).hook(self.tweet,
-                                                      help="Find a tweet",
-                                                      usage="[@username/URL/ID]")
+        events.on("received.command").on("tweet", "tw").hook(self.tweet,
+            help="Find a tweet", usage="[@username/URL/ID]")
 
     def make_timestamp(self, s):
         seconds_since = time.time() - datetime.datetime.strptime(s,
-                                                                 "%a %b %d "
-                                                                 "%H:%M:%S %z "
-                                                                 "%Y").timestamp()
+            "%a %b %d %H:%M:%S %z %Y").timestamp()
         since, unit = Utils.time_unit(seconds_since)
         return "%s %s ago" % (since, unit)
 
@@ -64,45 +58,31 @@ class Module(object):
                     tweet = None
             if tweet:
                 linked_id = tweet["id"]
-                username = "@%s" % tweet["user"]["screen_name"]
+                username = tweet["user"]["screen_name"]
 
-                url_shortener_link = False
-                chopped_uname = username[1:]
-                tweet_link = "https://twitter.com/%s/status/%s" % (
-                        chopped_uname, linked_id)
+                tweet_link = "https://twitter.com/%s/status/%s" % (username,
+                    linked_id)
 
-                url_shortener_link = self.events.on("get").on(
-                        "shortlink").call(
-                        url=tweet_link)[0]
-
-                url_shortener_link = "" if url_shortener_link == False else \
-                    "-- " + url_shortener_link
-
+                short_url = self.events.on("get.shortlink").call_for_result(
+                    url=tweet_link)
+                short_url = " -- %s" % short_url if short_url else ""
 
                 if "retweeted_status" in tweet:
                     original_username = "@%s" % tweet["retweeted_status"
-                    ]["user"]["screen_name"]
+                        ]["user"]["screen_name"]
                     original_text = tweet["retweeted_status"]["text"]
                     retweet_timestamp = self.make_timestamp(tweet[
-                                                                "created_at"])
+                        "created_at"])
                     original_timestamp = self.make_timestamp(tweet[
-                                                                 "retweeted_status"][
-                                                                 "created_at"])
+                        "retweeted_status"]["created_at"])
                     event["stdout"].write(
-                        "(%s (%s) retweeted %s (%s)) %s %s" % (
-                            username, retweet_timestamp,
-                            original_username, original_timestamp,
-                            original_text,
-                            url_shortener_link))
+                        "(@%s (%s) retweeted %s (%s)) %s%s" % (
+                        username, retweet_timestamp, original_username,
+                        original_timestamp, original_text, short_url))
                 else:
-                    event["stdout"].write("(%s, %s) %s %s" %
-                                              (username,
-                                               self.make_timestamp(
-                                                   tweet["created_at"]
-                                               ),
-                                                tweet["text"],
-                                                url_shortener_link)
-                                          )
+                    event["stdout"].write("(@%s, %s) %s%s" % (username,
+                        self.make_timestamp(tweet["created_at"]),
+                        tweet["text"], short_url))
             else:
                 event["stderr"].write("Invalid tweet identifiers provided")
         else:
