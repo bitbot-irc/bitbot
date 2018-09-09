@@ -70,6 +70,8 @@ class Module(object):
 
         exports.add("channelset", {"setting": "command-prefix",
             "help": "Set the command prefix used in this channel"})
+        exports.add("serverset", {"setting": "command-prefix",
+            "help": "Set the command prefix used on this server"})
         exports.add("serverset", {"setting": "identity-mechanism",
             "help": "Set the identity mechanism for this server"})
 

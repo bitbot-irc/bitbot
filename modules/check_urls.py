@@ -15,6 +15,9 @@ class Module(object):
         exports.add("channelset", {"setting": "check-urls",
             "help": "Enable/Disable automatically checking for "
             "malicious URLs", "validate": Utils.bool_or_none})
+        exports.add("serverset", {"setting": "check-urls",
+            "help": "Enable/Disable automatically checking for "
+            "malicious URLs", "validate": Utils.bool_or_none})
         exports.add("channelset", {"setting": "check-urls-kick",
             "help": "Enable/Disable automatically kicking users that "
             "send malicious URLs", "validate": Utils.bool_or_none})
