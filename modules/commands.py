@@ -190,14 +190,10 @@ class Module(object):
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 
     def usage(self, event):
+        command_prefix = ""
         if event["is_channel"]:
             command_prefix = event["target"].get_setting("command-prefix",
-                                        event["server"].get_setting(
-                                                        "command-prefix",
-                                                        "!"))
-        else:
-            command_prefix = ""
-
+                event["server"].get_setting("command-prefix", "!"))
 
         command = event["args_split"][0].lower()
         if command in self.events.on("received").on(
@@ -205,9 +201,7 @@ class Module(object):
             hooks = self.events.on("received").on("command").on(command).get_hooks()
             if hooks and "usage" in hooks[0].kwargs:
                 event["stdout"].write("Usage: %s%s %s" % (command_prefix,
-                                                          command,
-                                                          hooks[0].kwargs[
-                                                              "usage"]))
+                    command, hooks[0].kwargs["usage"]))
             else:
                 event["stderr"].write("No usage help available for %s" % command)
         else:
