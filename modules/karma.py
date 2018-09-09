@@ -1,5 +1,5 @@
 import re, time
-import Utils
+import EventManager, Utils
 
 REGEX_KARMA = re.compile("(.*)(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
@@ -10,7 +10,7 @@ class Module(object):
         self.events = events
         events.on("new").on("user").hook(self.new_user)
         events.on("received").on("message").on("channel").hook(
-            self.channel_message)
+            self.channel_message, priority=EventManager.PRIORITY_MONITOR)
         events.on("received").on("command").on("karma").hook(
             self.karma, help="Get your or someone else's karma",
             usage="[target]")
