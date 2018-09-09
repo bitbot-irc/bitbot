@@ -73,8 +73,9 @@ class Module(object):
                     tweet_link = "https://twitter.com/%s/status/%s" % (
                         chopped_uname, linked_id)
 
-                    bitly_link = " -- " + self.events.call("get.shortlink",
-                                                           url=tweet_link)
+                    bitly_link = " -- " + self.events.on("get").on(
+                        "shortlink").call(
+                        url=tweet_link)[0]
 
                 if "retweeted_status" in tweet:
                     original_username = "@%s" % tweet["retweeted_status"
