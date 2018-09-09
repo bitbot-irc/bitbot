@@ -5,25 +5,22 @@ class Module(object):
         self.bot = bot
         self.exports = exports
 
-        events.on("received").on("command").on("set").hook(
-            self.set, help="Set a specified user setting",
-            usage="<setting> <value>")
-        events.on("received").on("command").on("get").hook(
-            self.get, help="Get a specified user setting",
-            usage="<setting>", min_args=1)
+        events.on("received.command.set").hook(self.set,
+            usage="<setting> <value>", help="Set a specified user setting")
+        events.on("received.command.get").hook(self.get, min_args=1,
+            usage="<setting>", help="Get a specified user setting")
 
-        events.on("received").on("command").on("channelset"
-            ).hook(self.channel_set, channel_only=True,
-            help="Set a specified setting for the current channel",
-            usage="<setting> <value>", require_mode="o")
-        events.on("received").on("command").on("channelsetoverride"
-            ).hook(self.channel_set, channel_only=True,
-            help="Set a specified setting for the current channel",
-            usage="<setting> <value>", permission="channelsetoverride")
-        events.on("received").on("command").on("channelget"
-            ).hook(self.channel_get, channel_only=True,
-            help="Get a specified setting for the current channel",
-            usage="<setting>", min_args=1, require_mode="o")
+        events.on("received.command.channelset").hook(self.channel_set,
+            channel_only=True, usage="<setting> <value>", require_mode="o",
+            help="Set a specified setting for the current channel")
+        events.on("received.command.channelsetoverride").hook(
+            self.channel_set, channel_only=True, usage="<setting> <value>",
+            permission="channelsetoverride",
+            help="Set a specified setting for the current channel")
+        events.on("received.command.channelget").hook(self.channel_get,
+            channel_only=True, usage="<setting>", min_args=1,
+            require_mode="o", help="Get a specified setting for the current "
+            "channel")
 
     def _set(self, settings, event, target):
         settings_dict = dict([(setting["setting"], setting
