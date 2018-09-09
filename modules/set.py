@@ -22,6 +22,13 @@ class Module(object):
             require_mode="o", help="Get a specified setting for the current "
             "channel")
 
+        events.on("received.command.serverset").hook(self.server_set,
+            usage="<setting> <value>", permission="serverset",
+            help="Set a specified setting for the current server")
+        events.on("received.command.serverget").hook(self.server_get,
+            usage="<setting>", min_args=1, permission="serverget",
+            help="Get a specified setting for the current server")
+
     def _set(self, settings, event, target):
         settings_dict = dict([(setting["setting"], setting
             ) for setting in settings])
@@ -47,8 +54,10 @@ class Module(object):
         self._set(self.exports.get_all("set"), event, event["user"])
 
     def channel_set(self, event):
-        self._set(self.exports.get_all("channelset"), event,
-            event["target"])
+        self._set(self.exports.get_all("channelset"), event, event["target"])
+
+    def server_set(self, event):
+        self._set(self.exports.get_all("serverset"), event, event["server"])
 
     def _get(self, event, setting, qualifier, value):
         if not value == None:
@@ -57,12 +66,17 @@ class Module(object):
         else:
             event["stdout"].write("'%s' has no value set" % setting)
 
+    def get(self, event):
+        setting = event["args_split"][0]
+        self._get(event, setting, "", event["user"].get_setting(
+            setting, None))
+
     def channel_get(self, event):
         setting = event["args_split"][0]
         self._get(event, setting, " for %s" % event["target"].name,
             event["target"].get_setting(setting, None))
 
-    def get(self, event):
+    def server_get(self, event):
         setting = event["args_split"][0]
-        self._get(event, setting, "", event["user"].get_setting(
-            setting, None))
+        self._get(event, setting, " for %s" % event["server"].name,
+            event["server"].get_setting(setting, None))

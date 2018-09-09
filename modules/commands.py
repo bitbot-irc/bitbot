@@ -64,12 +64,14 @@ class Module(object):
             help="Unignore commands from a given user", usage="<nickname>",
             permission="unignore")
 
-        exports.add("channelset", {"setting": "command-prefix",
-            "help": "Set the command prefix used in this channel"})
-
         events.on("new").on("user", "channel").hook(self.new)
         events.on("send").on("stdout").hook(self.send_stdout)
         events.on("send").on("stderr").hook(self.send_stderr)
+
+        exports.add("channelset", {"setting": "command-prefix",
+            "help": "Set the command prefix used in this channel"})
+        exports.add("serverset", {"setting": "identity-mechanism",
+            "help": "Set the identity mechanism for this server"})
 
     def new(self, event):
         if "user" in event:
