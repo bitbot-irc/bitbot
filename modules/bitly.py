@@ -10,10 +10,9 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
-        events.on("get").on("shortlink").hook(self.shortlink)
-        events.on("received").on("command").on("shorten"
-            ).hook(self.shorten, min_args=1, help="Shorten a URL.",
-            usage="<url>")
+        events.on("get.shortlink").hook(self.shortlink)
+        events.on("received.command.shorten").hook(self.shorten, min_args=1,
+            help="Shorten a URL.", usage="<url>")
 
     def shortlink(self, event):
         url = event["url"]
@@ -26,8 +25,8 @@ class Module(object):
             return data["data"]["url"]
 
     def shorten(self, event):
-        link = self.events.on("get").on("shortlink"
-            ).call_for_result(url=event["args"])
+        link = self.events.on("get.shortlink").call_for_result(
+            url=event["args"])
         if link:
             event["stdout"].write("Short URL: %s" % link)
         else:
