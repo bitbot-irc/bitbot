@@ -16,6 +16,7 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.bitly_is_enabled = "bitly" in self.bot.modules.modules
+        self.events = events
 
         events.on("received").on("command").on("tweet", "tw"
                                                ).hook(self.tweet,
@@ -68,12 +69,12 @@ class Module(object):
 
                 bitly_link = ""
                 if self.bitly_is_enabled:
-                    bitly = self.bot.modules.modules["bitly"]
                     chopped_uname = username[1:]
                     tweet_link = "https://twitter.com/%s/status/%s" % (
                         chopped_uname, linked_id)
 
-                    bitly_link = " -- " + bitly.shortlink(tweet_link)
+                    bitly_link = " -- " + self.events.call("get.shortlink",
+                                                           url=tweet_link)
 
                 if "retweeted_status" in tweet:
                     original_username = "@%s" % tweet["retweeted_status"

@@ -16,7 +16,7 @@ class Module(object):
             usage="<url>")
 
     def shortlink(self, event):
-        url = event if type(event) is str else event["url"]
+        url = event["url"]
 
         if not re.match(REGEX_URL, url):
             url = "http://%s" % url
