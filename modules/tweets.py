@@ -66,17 +66,17 @@ class Module(object):
                 linked_id = tweet["id"]
                 username = "@%s" % tweet["user"]["screen_name"]
 
-                url_shortener_link = False
+                url_shortener_link = None
                 chopped_uname = username[1:]
                 tweet_link = "https://twitter.com/%s/status/%s" % (
                         chopped_uname, linked_id)
 
                 url_shortener_link = self.events.on("get").on(
                         "shortlink").call(
-                        url=tweet_link)[0]
+                        url=tweet_link)
 
-                url_shortener_link = "" if url_shortener_link == False else \
-                    "-- " + url_shortener_link
+                url_shortener_link = "" if url_shortener_link == None else \
+                    "-- " + url_shortener_link[0]
 
 
                 if "retweeted_status" in tweet:
