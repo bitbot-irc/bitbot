@@ -190,10 +190,14 @@ class Module(object):
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 
     def usage(self, event):
-        command_prefix = event["target"].get_setting("command-prefix",
+        if event["is_channel"]:
+            command_prefix = event["target"].get_setting("command-prefix",
                                         event["server"].get_setting(
                                                         "command-prefix",
                                                         "!"))
+        else:
+            command_prefix = ""
+
 
         command = event["args_split"][0].lower()
         if command in self.events.on("received").on(

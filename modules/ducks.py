@@ -1,6 +1,7 @@
 import random
 from operator import itemgetter
 from time import time
+import EventManager
 
 import Utils
 
@@ -14,6 +15,7 @@ DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!", "HONK!",
 DUCK_MINIMUM_MESSAGES = 10
 DUCK_MINIMUM_UNIQUE = 3
 
+
 class Module(object):
 
     def __init__(self, bot, events, exports):
@@ -21,14 +23,11 @@ class Module(object):
         self.events = events
 
         events.on("received.command.bef").hook(self.befriend,
-                                               priority=1,
-                                               help="Befriend a "
-                                                    "duck!")
+                                            priority=EventManager.PRIORITY_HIGH,
+                                            help="Befriend a duck!")
         events.on("received.command.bang").hook(self.shoot,
-                                                priority=1,
-                                                help="Shoot a "
-                                                     "duck! "
-                                                     "Meanie.", )
+                                            priority=EventManager.PRIORITY_HIGH,
+                                            help="Shoot a duck! Meanie." )
         # events.on("received").on("command").on("decoy").hook(self.set_decoy,
         #                                                     help="Be a
         # sneaky fellow
@@ -53,9 +52,8 @@ class Module(object):
 
         events.on("new.channel").hook(self.new_channel)
 
-
         events.on("received").on("message").on("channel").hook(
-            self.channel_message, priority=2)
+            self.channel_message)
 
         for server in self.bot.servers.values():
             for channel in server.channels.values():
@@ -63,6 +61,7 @@ class Module(object):
 
     def new_channel(self, event):
         self.bootstrap(event["channel"])
+
     def bootstrap(self, channel):
         self.init_game_var(channel)
         # getset
@@ -213,8 +212,8 @@ class Module(object):
         channel.set_user_setting(uid, "ducks-befriended", total_befriended)
 
         msg = "Aww! %s befriended a duck! You've befriended %s ducks in %s!" \
-              % ( Utils.bold(nick), Utils.bold(total_befriended),
-                 Utils.bold(channel.name) )
+              % (Utils.bold(nick), Utils.bold(total_befriended),
+                 Utils.bold(channel.name))
 
         event["stdout"].write(msg)
 
@@ -244,8 +243,8 @@ class Module(object):
         channel.set_user_setting(uid, "ducks-shot", total_shot)
 
         msg = "Pow! %s shot a duck! You've shot %s ducks in %s!" \
-                % ( Utils.bold(nick), Utils.bold(total_shot),
-                    Utils.bold(channel.name) )
+              % (Utils.bold(nick), Utils.bold(total_shot),
+                 Utils.bold(channel.name))
 
         event["stdout"].write(msg)
 
@@ -286,8 +285,8 @@ class Module(object):
         cf = channel_friends
 
         msg = "%s ducks killed (%s in %s), and %s ducks befriended (%s in %s)" \
-                % ( Utils.bold(tp), Utils.bold(cp), Utils.bold(channel),
-                    Utils.bold(tf), Utils.bold(cf), Utils.bold(channel) )
+              % (Utils.bold(tp), Utils.bold(cp), Utils.bold(channel),
+                 Utils.bold(tf), Utils.bold(cf), Utils.bold(channel))
 
         event["stdout"].write(Utils.bold(nick) + ": " + msg)
 
@@ -351,8 +350,8 @@ class Module(object):
         for i in range(0, length):
             nick = Utils.prevent_highlight(friend_nicks[i])
             build.append("%s (%s)" \
-                         % ( Utils.bold(nick),
-                             friend_ducks[i])
+                         % (Utils.bold(nick),
+                            friend_ducks[i])
                          )
 
         sentence += ", ".join(build)
