@@ -151,7 +151,7 @@ class EventHook(object):
         return child
 
     def call_for_result(self, default=None, **kwargs):
-        results = self.call_limited(0, **kwargs)
+        results = self.call_limited(1, **kwargs)
         return default if not len(results) else results[0]
     def assure_call(self, **kwargs):
         if not self._stored_events == None:
