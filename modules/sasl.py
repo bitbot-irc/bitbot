@@ -8,6 +8,14 @@ class Module(object):
         events.on("received.authenticate").hook(self.on_authenticate)
         events.on("received.numeric.903").hook(self.sasl_success)
 
+        exports.add("serverset", {"setting": "sasl",
+            "help": "Set the sasl username/password for this server",
+            "validate": self._validate})
+
+    def _validate(self, s):
+        if " " in s:
+            return s.split(" ", 1)
+
     def on_cap(self, event):
         has_sasl = "sasl" in event["capabilities"]
         has_mechanisms = has_sasl and not event["capabilities"]["sasl"
