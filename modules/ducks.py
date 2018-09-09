@@ -303,16 +303,16 @@ class Module(object):
             enemy_nicks.append(user)
             enemy_ducks.append(enemies)
 
-        sentence = "Most Notorious Users -- "
+        sentence = "Duck Wranglers -- "
+        build = []
 
-        length = len(enemy_nicks) if len(enemy_nicks) < 11 else 11
+        length = len(enemy_nicks) if len(enemy_nicks) < 8 else 8
 
         for i in range(0, length):
-            sentence += enemy_nicks[i] + " (" + str(enemy_ducks[i]) + ")"
-            if i < 10:
-                sentence += ", "
+            build.append(Utils.bold(enemy_nicks[i]) + " ("
+                         + str(enemy_ducks[i]) + ")")
 
-        sentence = sentence[0:-2]
+        sentence += ", ".join(build)
 
         event["stdout"].write(sentence)
 
@@ -335,15 +335,15 @@ class Module(object):
             friend_nicks.append(user)
             friend_ducks.append(friends)
 
-        sentence = "Friendliest Users -- "
+        sentence = "Duck Befrienders -- "
 
-        length = len(friend_nicks) if len(friend_nicks) < 11 else 11
+        length = len(friend_nicks) if len(friend_nicks) < 8 else 8
+        build = []
 
         for i in range(0, length):
-            sentence += friend_nicks[i] + " (" + str(friend_ducks[i]) + ")"
-            if i < 10:
-                sentence += ", "
+            build.append(Utils.bold(friend_nicks[i]) + " ("
+                         + str(friend_ducks[i]) + ")")
 
-        sentence = sentence[0:-2]
+        sentence += ", ".join(build)
 
         event["stdout"].write(sentence)
