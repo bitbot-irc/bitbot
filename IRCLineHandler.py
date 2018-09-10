@@ -75,6 +75,7 @@ class LineHandler(object):
                 line = line[:-1]
         if line[0] == ":":
             prefix, command = line[1:].split(" ", 1)
+            prefix = Utils.seperate_hostmask(prefix)
             if " " in command:
                 command, line = command.split(" ", 1)
         else:
@@ -110,7 +111,7 @@ class LineHandler(object):
 
     # first numeric line the server sends
     def handle_001(self, event):
-        event["server"].name = Utils.remove_colon(event["prefix"])
+        event["server"].name = event["prefix"].nickname
         event["server"].set_own_nickname(event["args"][0])
         event["server"].send_whois(event["server"].nickname)
 
@@ -159,11 +160,8 @@ class LineHandler(object):
 
     # channel topic changed
     def topic(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
-        user = event["server"].get_user(nickname)
+        user = event["server"].get_user(event["prefix"].nickname)
         channel = event["server"].get_channel(event["args"][0])
-
         channel.set_topic(event["arbitrary"])
         self.events.on("received.topic").call(channel=channel,
             server=event["server"], topic=event["arbitrary"], user=user)
@@ -173,15 +171,16 @@ class LineHandler(object):
         channel = event["server"].get_channel(event["args"][1])
 
         topic_setter_hostmask = event["args"][2]
-        nickname, username, hostname = Utils.seperate_hostmask(
-            topic_setter_hostmask)
+        topic_setter = Utils.seperate_hostmask(topic_setter_hostmask)
         topic_time = int(event["args"][3]) if event["args"][3].isdigit(
             ) else None
 
-        channel.set_topic_setter(nickname, username, hostname)
+        channel.set_topic_setter(topic_setter.nickname, topic_setter.username,
+            topic_setter.hostname)
         channel.set_topic_time(topic_time)
         self.events.on("received.numeric.333").call(channel=channel,
-            setter=nickname, set_at=topic_time, server=event["server"])
+            setter=topic_setter.nickname, set_at=topic_time,
+            server=event["server"])
 
     # /names response, also on-join user list
     def handle_353(self, event):
@@ -195,11 +194,10 @@ class LineHandler(object):
                 nickname = nickname[1:]
 
             if "userhost-in-names" in event["server"].capabilities:
-                nickname, username, hostname = Utils.seperate_hostmask(
-                    nickname)
-                user = event["server"].get_user(nickname)
-                user.username = username
-                user.hostname = hostname
+                hostmask = Utils.seperate_hostmask(nickname)
+                user = event["server"].get_user(hostmask.nickname)
+                user.username = hostmask.username
+                user.hostname = hostmask.hostname
             else:
                 user = event["server"].get_user(nickname)
             user.join_channel(channel)
@@ -214,8 +212,6 @@ class LineHandler(object):
 
     # on user joining channel
     def join(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
         account = None
         realname = None
         if len(event["args"]) == 2:
@@ -226,11 +222,11 @@ class LineHandler(object):
         else:
             channel = event["server"].get_channel(event["last"])
 
-        if not event["server"].is_own_nickname(nickname):
-            user = event["server"].get_user(nickname)
-            if not event["server"].has_user(nickname):
-                user.username = username
-                user.hostname = hostname
+        if not event["server"].is_own_nickname(event["prefix"].nickname):
+            user = event["server"].get_user(event["prefix"].nickname)
+            if not user.username and not user.hostname:
+                user.username = event["prefix"].username
+                user.hostname = event["prefix"].hostname
 
             if account:
                 user.identified_account = account
@@ -253,13 +249,11 @@ class LineHandler(object):
 
     # on user parting channel
     def part(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
         channel = event["server"].get_channel(event["args"][0])
         reason = event["arbitrary"] or ""
 
-        if not event["server"].is_own_nickname(nickname):
-            user = event["server"].get_user(nickname)
+        if not event["server"].is_own_nickname(event["prefix"].nickname):
+            user = event["server"].get_user(event["prefix"].nickname)
             self.events.on("received.part").call(channel=channel,
                 reason=reason, user=user, server=event["server"])
             channel.remove_user(user)
@@ -277,12 +271,10 @@ class LineHandler(object):
 
     # a user has disconnected!
     def quit(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
         reason = event["arbitrary"] or ""
 
-        if not event["server"].is_own_nickname(nickname):
-            user = event["server"].get_user(nickname)
+        if not event["server"].is_own_nickname(event["prefix"].nickname):
+            user = event["server"].get_user(event["prefix"].nickname)
             event["server"].remove_user(user)
             self.events.on("received.quit").call(reason=reason,
                 user=user, server=event["server"])
@@ -346,11 +338,9 @@ class LineHandler(object):
 
     # someone has changed their nickname
     def nick(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
         new_nickname = event["arbitrary"]
-        if not event["server"].is_own_nickname(nickname):
-            user = event["server"].get_user(nickname)
+        if not event["server"].is_own_nickname(event["prefix"].nickname):
+            user = event["server"].get_user(event["prefix"].nickname)
             old_nickname = user.nickname
             user.set_nickname(new_nickname)
             event["server"].change_user_nickname(old_nickname, new_nickname)
@@ -366,9 +356,7 @@ class LineHandler(object):
 
     # something's mode has changed
     def mode(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
-        user = event["server"].get_user(nickname)
+        user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][0]
         is_channel = target[0] in event["server"].channel_types
         if is_channel:
@@ -401,10 +389,8 @@ class LineHandler(object):
 
     # someone (maybe me!) has been invited somewhere
     def invite(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
         target_channel = event["last"]
-        user = event["server"].get_user(nickname)
+        user = event["server"].get_user(event["prefix"].nickname)
         target_user = event["server"].get_user(event["args"][0])
         self.events.on("received.invite").call(user=user,
             target_channel=target_channel, server=event["server"],
@@ -412,9 +398,7 @@ class LineHandler(object):
 
     # we've received a message
     def privmsg(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
-        user = event["server"].get_user(nickname)
+        user = event["server"].get_user(event["prefix"].nickname)
         message = event["arbitrary"] or ""
         message_split = message.split(" ")
         target = event["args"][0]
@@ -443,18 +427,16 @@ class LineHandler(object):
         message = event["arbitrary"] or ""
         message_split = message.split(" ")
         target = event["args"][0]
-        sender = Utils.remove_colon(event["prefix"] or "")
 
-        if sender == event["server"].name or target == "*" or not event[
-                "prefix"]:
-            event["server"].name = Utils.remove_colon(event["prefix"])
+        if not event["prefix"] or event["prefix"].hostmask == event["server"
+                ].name or target == "*":
+            event["server"].name = event["prefix"].hostmask
 
             self.events.on("received.server-notice").call(
                 message=message, message_split=message_split,
                 server=event["server"])
         else:
-            nickname, username, hostname = Utils.seperate_hostmask(sender)
-            user = event["server"].get_user(nickname)
+            user = event["server"].get_user(event["prefix"].nickname)
 
             if target[0] in event["server"].channel_types:
                 channel = event["server"].get_channel(target)
@@ -469,9 +451,7 @@ class LineHandler(object):
 
     # IRCv3 TAGMSG, used to send tags without any other information
     def tagmsg(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
-        user = event["channel"].get_user(nickname)
+        user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][0]
 
         if target[0] in event["server"].channel_types:
@@ -484,9 +464,7 @@ class LineHandler(object):
 
     # IRCv3 AWAY, used to notify us that a client we can see has changed /away
     def away(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
-        user = event["server"].get_user(nickname)
+        user = event["server"].get_user(event["prefix"].nickname)
         message = event["arbitrary"]
         if message:
             user.away = True
@@ -510,12 +488,10 @@ class LineHandler(object):
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
     def chghost(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
         username = event["args"][0]
         hostname = event["args"][1]
 
-        if not event["server"].is_own_nickname(nickname):
+        if not event["server"].is_own_nickname(event["prefix"].nickname):
             target = event["server"].get_user("nickanme")
         else:
             target = event["server"]
@@ -523,9 +499,7 @@ class LineHandler(object):
         target.hostname = hostname
 
     def account(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
-        user = event["server"].get_user("nickname")
+        user = event["server"].get_user(event["prefix"].nickname)
 
         if not event["args"][0] == "*":
             user.identified_account = event["args"][0]
@@ -588,9 +562,7 @@ class LineHandler(object):
 
     # someone's been kicked from a channel
     def kick(self, event):
-        nickname, username, hostname = Utils.seperate_hostmask(
-            event["prefix"])
-        user = event["server"].get_user(nickname)
+        user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][1]
         channel = event["server"].get_channel(event["args"][0])
         reason = event["arbitrary"] or ""

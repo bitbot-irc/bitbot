@@ -13,6 +13,12 @@ def remove_colon(s):
 def arbitrary(s, n):
     return remove_colon(" ".join(s[n:]))
 
+class IRCHostmask(object):
+    def __init__(self, nickname, username, hostname, hostmask):
+        self.nickname = nickname
+        self.username = username
+        self.hostname = hostname
+        self.hostmask = hostmask
 def seperate_hostmask(hostmask):
     hostmask = remove_colon(hostmask)
     first_delim = hostmask.find("!")
@@ -21,7 +27,7 @@ def seperate_hostmask(hostmask):
     if first_delim > -1 and second_delim > first_delim:
         nickname, username = hostmask.split("!", 1)
         username, hostname = username.split("@", 1)
-    return nickname, username, hostname
+    return IRCHostmask(nickname, username, hostname, hostmask)
 
 def get_url(url, **kwargs):
     if not urllib.parse.urlparse(url).scheme:
