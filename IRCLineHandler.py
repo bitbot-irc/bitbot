@@ -84,24 +84,24 @@ class LineHandler(object):
             if hook.kwargs.get("default_event", False):
                 default_event = True
                 break
+        last = arbitrary or args[-1]
 
         #server, prefix, command, args, arbitrary
-        self.events.on("raw").on(command).call(server=server,
+        self.events.on("raw").on(command).call(server=server, last=last,
             prefix=prefix, args=args, arbitrary=arbitrary, tags=tags)
         if default_event or not hooks:
             if command.isdigit():
-                self.events.on("received.numeric").on(command
-                    ).call(line=original_line, server=server, tags=tags,
+                self.events.on("received.numeric").on(command).call(
+                    line=original_line, server=server, tags=tags, last=last,
                     line_split=original_line.split(" "), number=command)
             else:
                 self.events.on("received").on(command).call(
                     line=original_line, line_split=original_line.split(" "),
-                    command=command, server=server, tags=tags)
+                    command=command, server=server, tags=tags, last=last)
 
     # ping from the server
     def ping(self, event):
-        nonce = event["arbitrary"]
-        event["server"].send_pong(nonce)
+        event["server"].send_pong(event["last"])
 
     # first numeric line the server sends
     def handle_001(self, event):
@@ -219,8 +219,7 @@ class LineHandler(object):
                 account = event["args"][1]
             realname = event["arbitrary"]
         else:
-            channel = event["server"].get_channel(
-                event["arbitrary"] or event["args"][0])
+            channel = event["server"].get_channel(event["last"])
 
         if not event["server"].is_own_nickname(nickname):
             user = event["server"].get_user(nickname)
@@ -387,7 +386,7 @@ class LineHandler(object):
                 mode_args=_args, channel=channel, server=event["server"],
                 user=user)
         elif event["server"].is_own_nickname(target):
-            modes = RE_MODES.findall(event["arbitrary"] or args[1])
+            modes = RE_MODES.findall(event["last"])
             for chunk in modes:
                 remove = chunk[0] == "-"
                 for mode in chunk[1:]:
@@ -399,7 +398,7 @@ class LineHandler(object):
     def invite(self, event):
         nickname, username, hostname = Utils.seperate_hostmask(
             event["prefix"])
-        target_channel = event["arbitrary"] or event["args"][1]
+        target_channel = event["last"]
         user = event["server"].get_user(nickname)
         target_user = event["server"].get_user(event["args"][0])
         self.events.on("received.invite").call(user=user,
@@ -532,7 +531,7 @@ class LineHandler(object):
             hostname = event["args"][3]
             nickname = event["args"][4]
             account = event["args"][5]
-            realname = event["arbitrary"]
+            realname = event["last"]
 
             user = event["server"].get_user(nickname)
             user.username = username
