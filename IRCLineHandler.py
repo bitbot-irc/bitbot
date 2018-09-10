@@ -210,7 +210,7 @@ class LineHandler(object):
 
     # on-join user list has finished
     def handle_366(self, event):
-        event["server"].send_whox(event["args"][1], "ahnrtu", "001")
+        event["server"].send_whox(event["args"][1], "ahnrtu", "111")
 
     # on user joining channel
     def join(self, event):
@@ -542,7 +542,7 @@ class LineHandler(object):
         user.hostname = event["args"][3]
     # response to a WHOX command for user information, including account name
     def handle_354(self, event):
-        if event["args"][1] == "001":
+        if event["args"][1] == "111":
             username = event["args"][2]
             hostname = event["args"][3]
             nickname = event["args"][4]
