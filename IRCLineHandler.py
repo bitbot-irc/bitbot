@@ -512,11 +512,15 @@ class LineHandler(object):
     def chghost(self, event):
         nickname, username, hostname = Utils.seperate_hostmask(
             event["prefix"])
-        user = event["server"].get_user("nickanme")
         username = event["args"][0]
         hostname = event["args"][1]
-        user.username = username
-        user.hostname = hostname
+
+        if not event["server"].is_own_nickname(nickname):
+            target = event["server"].get_user("nickanme")
+        else:
+            target = event["server"]
+        target.username = username
+        target.hostname = hostname
 
     def account(self, event):
         nickname, username, hostname = Utils.seperate_hostmask(
