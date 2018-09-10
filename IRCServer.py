@@ -31,6 +31,7 @@ class Server(object):
         self._capabilities_waiting = set([])
         self.capabilities = set([])
         self.server_capabilities = {}
+        self.batches = {}
 
         self.write_buffer = b""
         self.buffered_lines = []

@@ -9,7 +9,8 @@ RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
-    "draft/message-tags-0.2", "server-time", "cap-notify"}
+    "draft/message-tags-0.2", "server-time", "cap-notify",
+    "batch", "draft/labeled-response"}
 
 class LineHandler(object):
     def __init__(self, bot, events):
@@ -42,13 +43,14 @@ class LineHandler(object):
         events.on("raw.TOPIC").hook(self.topic)
         events.on("raw.PRIVMSG").hook(self.privmsg)
         events.on("raw.NOTICE").hook(self.notice)
+
+        events.on("raw.CAP").hook(self.cap)
+        events.on("raw.AUTHENTICATE").hook(self.authenticate)
         events.on("raw.CHGHOST").hook(self.chghost)
         events.on("raw.ACCOUNT").hook(self.account)
         events.on("raw.TAGMSG").hook(self.tagmsg)
         events.on("raw.AWAY").hook(self.away)
-
-        events.on("raw.CAP").hook(self.cap)
-        events.on("raw.authenticate").hook(self.authenticate)
+        events.on("raw.BATCH").hook(self.batch)
 
     def handle(self, server, line):
         original_line = line
@@ -62,6 +64,9 @@ class LineHandler(object):
                 if tag:
                     tag_split = tag.split("=", 1)
                     tags[tag_split[0]] = "".join(tag_split[1:])
+        if "batch" in tags and tags["batch"] in server.batches:
+            server.batches[tag["batch"]].append(line)
+            return
 
         arbitrary = None
         if " :" in line:
@@ -491,6 +496,17 @@ class LineHandler(object):
             user.away = False
             self.events.on("received.away.off").call(user=user,
                 server=event["server"])
+
+    def batch(self, event):
+        identifier = event["args"][0]
+        modifier, identifier = identifier[0], identifier[1:]
+        if modifier == "+":
+            event["server"].batches[identifier] = []
+        else:
+            lines = event["server"].batches[identifier]
+            del event["server"].batches[identifier]
+            for line in lines:
+                self.handle(event["server"], line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
     def chghost(self, event):
