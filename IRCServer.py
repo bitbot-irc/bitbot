@@ -47,6 +47,7 @@ class Server(object):
             {"@": "o", "+": "v"})
         self.channel_modes = []
         self.channel_types = []
+        self.case_mapping = "rfc1459"
 
         self.last_read = time.monotonic()
         self.last_send = None
@@ -130,9 +131,9 @@ class Server(object):
 
     def set_own_nickname(self, nickname):
         self.nickname = nickname
-        self.nickname_lower = nickname.lower()
+        self.nickname_lower = Utils.irc_lower(nickname)
     def is_own_nickname(self, nickname):
-        return nickname.lower() == self.nickname_lower
+        return Utils.irc_equals(nickname, self.nickname)
 
     def add_own_mode(self, mode, arg=None):
         self.own_modes[mode] = arg
@@ -145,7 +146,7 @@ class Server(object):
             self.add_own_mode(mode, arg)
 
     def has_user(self, nickname):
-        return nickname.lower() in self.users
+        return Utils.irc_lower(nickname) in self.users
     def get_user(self, nickname):
         if not self.has_user(nickname):
             user_id = self.get_user_id(nickname)
@@ -154,7 +155,7 @@ class Server(object):
                 user=new_user, server=self)
             self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
-        return self.users[nickname.lower()]
+        return self.users[Utils.irc_lower(nickname)]
     def get_user_id(self, nickname):
         self.bot.database.users.add(self.id, nickname)
         return self.bot.database.users.get_id(self.id, nickname)
@@ -164,12 +165,12 @@ class Server(object):
             channel.remove_user(user)
 
     def change_user_nickname(self, old_nickname, new_nickname):
-        user = self.users.pop(old_nickname.lower())
+        user = self.users.pop(Utils.irc_lower(old_nickname))
         user._id = self.get_user_id(new_nickname)
-        self.users[new_nickname.lower()] = user
+        self.users[Utils.irc_lower(new_nickname)] = user
     def has_channel(self, channel_name):
-        return channel_name[0] in self.channel_types and channel_name.lower(
-            ) in self.channels
+        return channel_name[0] in self.channel_types and Utils.irc_lower(
+            channel_name) in self.channels
     def get_channel(self, channel_name):
         if not self.has_channel(channel_name):
             channel_id = self.get_channel_id(channel_name)
@@ -178,7 +179,7 @@ class Server(object):
             self.events.on("new").on("channel").call(
                 channel=new_channel, server=self)
             self.channels[new_channel.name] = new_channel
-        return self.channels[channel_name.lower()]
+        return self.channels[Utils.irc_lower(channel_name)]
     def get_channel_id(self, channel_name):
         self.bot.database.channels.add(self.id, channel_name)
         return self.bot.database.channels.get_id(self.id, channel_name)

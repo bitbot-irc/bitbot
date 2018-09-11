@@ -5,6 +5,7 @@ RE_PREFIXES = re.compile(r"\bPREFIX=\((\w+)\)(\W+)(?:\b|$)")
 RE_CHANMODES = re.compile(
     r"\bCHANMODES=(\w*),(\w*),(\w*),(\w*)(?:\b|$)")
 RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
+RE_CASEMAPPING = re.compile(r"\bCASEMAPPING=(\S+)")
 RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
@@ -136,6 +137,11 @@ class LineHandler(object):
         match = re.search(RE_CHANTYPES, isupport_line)
         if match:
             event["server"].channel_types = list(match.group(1))
+
+        match = re.search(RE_CASEMAPPING, isupport_line)
+        if match:
+            event["server"].case_mapping = match.group(1)
+
         self.events.on("received.numeric.005").call(
             isupport=isupport_line, server=event["server"])
 
@@ -554,10 +560,11 @@ class LineHandler(object):
 
     # we need a registered nickname for this channel
     def handle_477(self, event):
-        if event["args"][1].lower() in event["server"].attempted_join:
+        channel_name = Utils.irc_lower(event["args"][1])
+        if channel_name in event["server"].attempted_join:
             self.bot.add_timer("rejoin", 5,
                 channel_name=event["args"][1],
-                key=event["server"].attempted_join[event["args"][1].lower()],
+                key=event["server"].attempted_join[channel_name],
                 server_id=event["server"].id)
 
     # someone's been kicked from a channel

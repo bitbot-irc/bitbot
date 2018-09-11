@@ -1,9 +1,13 @@
 import json, re, traceback, urllib.request, urllib.parse, urllib.error, ssl
+import string
 import bs4
 
 USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
 REGEX_HTTP = re.compile("https?://", re.I)
+
+RFC1459_UPPER = r'\[]~'
+RFC1459_UPPER = r'|{}^'
 
 def remove_colon(s):
     if s.startswith(":"):
@@ -12,6 +16,21 @@ def remove_colon(s):
 
 def arbitrary(s, n):
     return remove_colon(" ".join(s[n:]))
+
+def _rfc1459_lower(s):
+    for upper, lower in zip(RFC1459_UPPER, RFC1459_LOWER):
+        s = s.replace(upper, lower)
+    return s.lower()
+def irc_lower(server, s):
+    if server.case_mapping == "ascii":
+        return s.lower()
+    elif server.case_mapping == "rfc1459":
+        return _rfc1459_lower(s)
+    else:
+        raise ValueError("unknown casemapping '%s'" % server.case_mapping)
+
+def irc_equals(server, s1, s2):
+    return irc_lower(server, s1) == irc_lower(server, s2)
 
 class IRCHostmask(object):
     def __init__(self, nickname, username, hostname, hostmask):

@@ -1,5 +1,5 @@
 import uuid
-import IRCBuffer
+import IRCBuffer, Utils
 
 class User(object):
     def __init__(self, nickname, id, server, bot):
@@ -31,7 +31,7 @@ class User(object):
 
     def set_nickname(self, nickname):
         self.nickname = nickname
-        self.nickname_lower = nickname.lower()
+        self.nickname_lower = Utils.irc_lower(nickname)
         self.name = self.nickname_lower
     def join_channel(self, channel):
         self.channels.add(channel)
