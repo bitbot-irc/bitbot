@@ -7,7 +7,7 @@ USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
 REGEX_HTTP = re.compile("https?://", re.I)
 
 RFC1459_UPPER = r'\[]~'
-RFC1459_UPPER = r'|{}^'
+RFC1459_LOWER = r'|{}^'
 
 def remove_colon(s):
     if s.startswith(":"):
