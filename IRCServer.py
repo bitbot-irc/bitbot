@@ -228,6 +228,8 @@ class Server(object):
         return decoded_lines
 
     def until_next_ping(self):
+        if self.ping_sent:
+            return None
         return max(0, (self.last_read+PING_INTERVAL_SECONDS
             )-time.monotonic())
     def ping_due(self):

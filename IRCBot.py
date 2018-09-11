@@ -95,7 +95,9 @@ class Bot(object):
     def next_ping(self):
         timeouts = []
         for server in self.servers.values():
-            timeouts.append(server.until_next_ping())
+            timeout = server.until_next_ping()
+            if not timeout == None:
+                timeouts.append(timeout)
         if not timeouts:
             return None
         return min(timeouts)
