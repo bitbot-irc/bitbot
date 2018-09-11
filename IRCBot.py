@@ -5,6 +5,7 @@ import ModuleManager, Timer
 
 class Bot(object):
     def __init__(self):
+        self.start_time = time.time()
         self.lock = threading.Lock()
         self.args = None
         self.database = None

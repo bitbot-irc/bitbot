@@ -3,7 +3,6 @@ import Utils
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        self.boot_time = time.time()
         self.bot = bot
         events.on("received").on("command").on("uptime"
             ).hook(self.uptime, help="Show my uptime")
@@ -11,7 +10,7 @@ class Module(object):
             ).hook(self.stats, help="Show my network/channel/user stats")
 
     def uptime(self, event):
-        seconds = int(time.time()-self.boot_time)
+        seconds = int(time.time()-self.bot.start_time)
         event["stdout"].write("Uptime: %s" % Utils.to_pretty_time(
             seconds))
 
