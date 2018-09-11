@@ -179,8 +179,8 @@ class Bot(object):
                     print("pingout from %s" % str(server))
                     server.disconnect()
                 elif server.ping_due() and not server.ping_sent:
-                        server.send_ping()
-                        server.ping_sent = True
+                    server.send_ping()
+                    server.ping_sent = True
                 if not server.connected:
                     self.disconnect(server)
 
