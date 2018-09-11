@@ -560,7 +560,7 @@ class LineHandler(object):
 
     # we need a registered nickname for this channel
     def handle_477(self, event):
-        channel_name = Utils.irc_lower(event["args"][1])
+        channel_name = Utils.irc_lower(event["server"], event["args"][1])
         if channel_name in event["server"].attempted_join:
             self.bot.add_timer("rejoin", 5,
                 channel_name=event["args"][1],

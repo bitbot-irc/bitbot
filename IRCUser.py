@@ -3,12 +3,12 @@ import IRCBuffer, Utils
 
 class User(object):
     def __init__(self, nickname, id, server, bot):
+        self.server = server
         self.set_nickname(nickname)
         self._id = id
         self.username = None
         self.hostname = None
         self.realname = None
-        self.server = server
         self.bot = bot
         self.channels = set([])
 
@@ -18,7 +18,7 @@ class User(object):
         self.identified_account_id = None
         self.identified_account_id_override = None
         self.away = False
-        self.buffer = IRCBuffer.Buffer(bot)
+        self.buffer = IRCBuffer.Buffer(bot, server)
 
     def __repr__(self):
         return "IRCUser.User(%s|%s)" % (self.server.name, self.name)
@@ -31,7 +31,7 @@ class User(object):
 
     def set_nickname(self, nickname):
         self.nickname = nickname
-        self.nickname_lower = Utils.irc_lower(nickname)
+        self.nickname_lower = Utils.irc_lower(self.server, nickname)
         self.name = self.nickname_lower
     def join_channel(self, channel):
         self.channels.add(channel)

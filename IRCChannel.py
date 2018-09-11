@@ -3,7 +3,7 @@ import IRCBuffer, Utils
 
 class Channel(object):
     def __init__(self, name, id, server, bot):
-        self.name = Utils.irc_lower(name)
+        self.name = Utils.irc_lower(server, name)
         self.id = id
         self.server = server
         self.bot = bot
@@ -15,7 +15,7 @@ class Channel(object):
         self.users = set([])
         self.modes = {}
         self.created_timestamp = None
-        self.buffer = IRCBuffer.Buffer(bot)
+        self.buffer = IRCBuffer.Buffer(bot, server)
 
     def __repr__(self):
         return "IRCChannel.Channel(%s|%s)" % (self.server.name, self.name)
