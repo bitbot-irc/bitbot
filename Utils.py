@@ -8,6 +8,8 @@ REGEX_HTTP = re.compile("https?://", re.I)
 
 RFC1459_UPPER = r'\[]~'
 RFC1459_LOWER = r'|{}^'
+STRICT_RFC1459_UPPER = r'\[]'
+STRICT_RFC1459_LOWER = r'|{}'
 
 def remove_colon(s):
     if s.startswith(":"):
@@ -21,11 +23,17 @@ def _rfc1459_lower(s):
     for upper, lower in zip(RFC1459_UPPER, RFC1459_LOWER):
         s = s.replace(upper, lower)
     return s.lower()
+def _strict_rfc1459_lower(s):
+    for upper, lower in zip(STRICT_RFC1459_UPPER, STRICT_RFC1459_LOWER):
+        s = s.replace(upper, lower)
+    return s.lower()
 def irc_lower(server, s):
     if server.case_mapping == "ascii":
         return s.lower()
     elif server.case_mapping == "rfc1459":
         return _rfc1459_lower(s)
+    elif server.case_mapping == "strict-rfc1459":
+        return _strict_rfc1459_lower(s)
     else:
         raise ValueError("unknown casemapping '%s'" % server.case_mapping)
 
