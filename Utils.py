@@ -24,17 +24,13 @@ def _multi_replace(s, chars1, chars2):
     for char1, char2 in zip(chars1, chars2):
         s.replace(char1, char2)
     return s
-def _rfc1459_lower(s):
-    return _multi_replace(RFC1459_UPPER, RFC1459_LOWER)
-def _strict_rfc1459_lower(s):
-    return _multi_replace(STRICT_RFC1459_UPPER, STRICT_RFC1459_LOWER)
 def irc_lower(server, s):
     if server.case_mapping == "ascii":
-        return s.lower()
+        return _multi_replace(string.ascii_uppercase, string.ascii_lowercase)
     elif server.case_mapping == "rfc1459":
-        return _rfc1459_lower(s)
+        return _multi_replace(RFC1459_UPPER, RFC1459_LOWER)
     elif server.case_mapping == "strict-rfc1459":
-        return _strict_rfc1459_lower(s)
+        return _multi_replace(STRICT_RFC1459_UPPER, STRICT_RFC1459_LOWER)
     else:
         raise ValueError("unknown casemapping '%s'" % server.case_mapping)
 
