@@ -5,9 +5,10 @@ import bs4
 USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
 REGEX_HTTP = re.compile("https?://", re.I)
-
-STRICT_RFC1459_UPPER = string.ascii_uppercase+r'\[]'
-STRICT_RFC1459_LOWER = string.ascii_lowercase+r'|{}'
+ASCII_UPPER = string.ascii_uppercase
+ASCII_LOWER = string.ascii_lowercase
+STRICT_RFC1459_UPPER = ASCII_UPPER+r'\[]'
+STRICT_RFC1459_LOWER = ASCII_LOWER+r'|{}'
 RFC1459_UPPER = STRICT_RFC1459_UPPER+"^"
 RFC1459_LOWER = STRICT_RFC1459_LOWER+"~"
 
@@ -26,11 +27,11 @@ def _multi_replace(s, chars1, chars2):
     return s
 def irc_lower(server, s):
     if server.case_mapping == "ascii":
-        return _multi_replace(string.ascii_uppercase, string.ascii_lowercase)
+        return _multi_replace(s, ASCII_UPPER, ASCII_LOWER)
     elif server.case_mapping == "rfc1459":
-        return _multi_replace(RFC1459_UPPER, RFC1459_LOWER)
+        return _multi_replace(s, RFC1459_UPPER, RFC1459_LOWER)
     elif server.case_mapping == "strict-rfc1459":
-        return _multi_replace(STRICT_RFC1459_UPPER, STRICT_RFC1459_LOWER)
+        return _multi_replace(s, STRICT_RFC1459_UPPER, STRICT_RFC1459_LOWER)
     else:
         raise ValueError("unknown casemapping '%s'" % server.case_mapping)
 
