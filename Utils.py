@@ -6,10 +6,10 @@ USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
 REGEX_HTTP = re.compile("https?://", re.I)
 
-RFC1459_UPPER = r'\[]~'
-RFC1459_LOWER = r'|{}^'
-STRICT_RFC1459_UPPER = r'\[]'
-STRICT_RFC1459_LOWER = r'|{}'
+STRICT_RFC1459_UPPER = string.ascii_uppercase+r'\[]'
+STRICT_RFC1459_LOWER = string.ascii_lowercase+r'|{}'
+RFC1459_UPPER = STRICT_RFC1459_UPPER+"^"
+RFC1459_LOWER = STRICT_RFC1459_LOWER+"~"
 
 def remove_colon(s):
     if s.startswith(":"):
@@ -19,14 +19,15 @@ def remove_colon(s):
 def arbitrary(s, n):
     return remove_colon(" ".join(s[n:]))
 
+# case mapping lowercase/uppcase logic
+def _multi_replace(s, chars1, chars2):
+    for char1, char2 in zip(chars1, chars2):
+        s.replace(char1, char2)
+    return s
 def _rfc1459_lower(s):
-    for upper, lower in zip(RFC1459_UPPER, RFC1459_LOWER):
-        s = s.replace(upper, lower)
-    return s.lower()
+    return _multi_replace(RFC1459_UPPER, RFC1459_LOWER)
 def _strict_rfc1459_lower(s):
-    for upper, lower in zip(STRICT_RFC1459_UPPER, STRICT_RFC1459_LOWER):
-        s = s.replace(upper, lower)
-    return s.lower()
+    return _multi_replace(STRICT_RFC1459_UPPER, STRICT_RFC1459_LOWER)
 def irc_lower(server, s):
     if server.case_mapping == "ascii":
         return s.lower()
@@ -37,6 +38,7 @@ def irc_lower(server, s):
     else:
         raise ValueError("unknown casemapping '%s'" % server.case_mapping)
 
+# compare a string while respecting case mapping
 def irc_equals(server, s1, s2):
     return irc_lower(server, s1) == irc_lower(server, s2)
 
