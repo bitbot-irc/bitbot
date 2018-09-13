@@ -25,10 +25,9 @@ bot.database = database
 bot.config = config.load_config()
 bot.args = args
 
-whitelist = bot.config.get("module_whitelist", None)
-if not whitelist == None:
-    whitelist = whitelist.split(",")
-bot.modules.load_modules(whitelist=whitelist)
+whitelist = bot.get_setting("module-whitelist", [])
+blacklist = bot.get_setting("module-blacklist", [])
+bot.modules.load_modules(whitelist=whitelist, blacklist=blacklist)
 
 server_details = database.servers.get_all()
 servers = []

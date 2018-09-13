@@ -78,10 +78,10 @@ class ModuleManager(object):
         else:
             self.bot.log.error("Module '%s' not loaded", [name])
 
-    def load_modules(self, whitelist=None):
+    def load_modules(self, whitelist=[], blacklist=[]):
         for path in self.list_modules():
             name = self._module_name(path)
-            if whitelist == None or name in whitelist:
+            if name in whitelist or (not whitelist and not name in blacklist):
                 self.load_module(name)
 
     def unload_module(self, name):
