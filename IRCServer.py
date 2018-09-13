@@ -390,5 +390,5 @@ class Server(object):
     def send_who(self, filter=None):
         self.send("WHO%s" % ("" if filter == None else " %s" % filter))
     def send_whox(self, mask, filter, fields, label=None):
-        self.send("WHO %s %s%%%%s%s" % (mask, filter, fields,
+        self.send("WHO %s %s%%%s%s" % (mask, filter, fields,
             ","+label if label else ""))
