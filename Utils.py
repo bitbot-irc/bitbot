@@ -49,10 +49,12 @@ def seperate_hostmask(hostmask):
     hostmask = remove_colon(hostmask)
     first_delim = hostmask.find("!")
     second_delim = hostmask.find("@")
-    nickname = username = hostname = hostmask
+    nickname, username, hostname = hostmask, None, None
     if first_delim > -1 and second_delim > first_delim:
         nickname, username = hostmask.split("!", 1)
         username, hostname = username.split("@", 1)
+    else if second_delim > -1:
+        nickname, hostname = hostmask.split("@", 1)
     return IRCHostmask(nickname, username, hostname, hostmask)
 
 def get_url(url, **kwargs):
