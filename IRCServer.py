@@ -389,7 +389,6 @@ class Server(object):
             "" if server == None else " :%s" % server))
     def send_who(self, filter=None):
         self.send("WHO%s" % ("" if filter == None else " %s" % filter))
-    def send_whox(self, filter, flags, label=None):
-        self.send("WHO %s %s%s" % (filter,
-            "%"+flags if flags else "",
+    def send_whox(self, mask, filter, fields, label=None):
+        self.send("WHO %s %s%%%%s%s" % (mask, filter, fields,
             ","+label if label else ""))

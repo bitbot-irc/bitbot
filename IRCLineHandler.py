@@ -214,7 +214,7 @@ class LineHandler(object):
 
     # on-join user list has finished
     def handle_366(self, event):
-        event["server"].send_whox(event["args"][1], "ahnrtu", "111")
+        event["server"].send_whox(event["args"][1], "n", "ahnrtu", "111")
 
     # on user joining channel
     def join(self, event):
