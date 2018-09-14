@@ -201,6 +201,7 @@ class LineHandler(object):
 
             if "userhost-in-names" in event["server"].capabilities:
                 hostmask = Utils.seperate_hostmask(nickname)
+                nickname = hostmask.nickname
                 user = event["server"].get_user(hostmask.nickname)
                 user.username = hostmask.username
                 user.hostname = hostmask.hostname
