@@ -23,7 +23,7 @@ def arbitrary(s, n):
 # case mapping lowercase/uppcase logic
 def _multi_replace(s, chars1, chars2):
     for char1, char2 in zip(chars1, chars2):
-        s.replace(char1, char2)
+        s = s.replace(char1, char2)
     return s
 def irc_lower(server, s):
     if server.case_mapping == "ascii":
