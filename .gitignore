@@ -61,10 +61,21 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-# custom
+# BitBot
+# databases
 *.db
-*.conf
-modules/nongit-*.py
-bot.log.*
 bot.db.*
 test-databases/*
+
+# configs
+*.conf
+
+# log
+bot.log.*
+
+# ignored modules
+modules/nongit-*.py
+
+# tls
+bot.crt
+bot.key
