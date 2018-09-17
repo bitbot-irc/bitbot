@@ -13,8 +13,10 @@ class Module(object):
             "validate": self._validate})
 
     def _validate(self, s):
+        mechanism = s
         if " " in s:
-            return s.split(" ", 1)
+            mechanism, arguments = s.split(" ", 1)
+        return {"mechanism": mechanism, "args": arguments}
 
     def on_cap(self, event):
         has_sasl = "sasl" in event["capabilities"]
@@ -29,18 +31,28 @@ class Module(object):
 
     def on_cap_ack(self, event):
         if "sasl" in event["capabilities"]:
-            event["server"].send_authenticate("PLAIN")
+            sasl = event["server"].get_setting("sasl")
+            event["server"].send_authenticate(sasl["mechanism"].upper())
             event["server"].wait_for_capability("sasl")
 
     def on_authenticate(self, event):
         if event["message"] != "+":
             event["server"].send_authenticate("*")
         else:
-            sasl_nick, sasl_pass = event["server"].get_setting("sasl")
-            auth_text = "%s\0%s\0%s" % (
-                sasl_nick, sasl_nick, sasl_pass)
-            auth_text = base64.b64encode(auth_text.encode("utf8"))
-            auth_text = auth_text.decode("utf8")
+            sasl = event["server"].get_setting("sasl")
+            mechanism = sasl["mechanism"].upper()
+
+            if mechanism == "PLAIN":
+                sasl_nick, sasl_pass = sasl["args"].split(":", 1)
+                auth_text = "%s\0%s\0%s" % (sasl_nick, sasl_nick, sasl_pass)
+            elif mechanism == "EXTERNAL":
+                auth_text = "+"
+            else:
+                raise ValueError("unknown sasl mechanism '%s'" % mechanism)
+
+            if not auth_text == "+":
+                auth_text = base64.b64encode(auth_text.encode("utf8"))
+                auth_text = auth_text.decode("utf8")
             event["server"].send_authenticate(auth_text)
 
     def sasl_success(self, event):
