@@ -45,6 +45,11 @@ class IRCHostmask(object):
         self.username = username
         self.hostname = hostname
         self.hostmask = hostmask
+    def __repr__(self):
+        return "Utils.IRCHostmask(%s)" % self.__str__()
+    def __str__(self):
+        return self.hostmask
+
 def seperate_hostmask(hostmask):
     hostmask = remove_colon(hostmask)
     first_delim = hostmask.find("!")
