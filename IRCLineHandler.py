@@ -268,9 +268,9 @@ class LineHandler(object):
             if not len(user.channels):
                 event["server"].remove_user(user)
         else:
-            event["server"].remove_channel(channel)
             self.events.on("self.part").call(channel=channel,
                 reason=reason, server=event["server"])
+            event["server"].remove_channel(channel)
 
     # unknown command sent by us, oops!
     def handle_421(self, event):
