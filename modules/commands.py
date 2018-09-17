@@ -93,9 +93,9 @@ class Module(object):
             ).get_hooks()[0]
 
     def is_highlight(self, server, s):
-        return s.lower() == server.nickname_lower or (s.lower().startswith(
-            server.nickname_lower) and len(s) == len(server.nickname_lower
-            )+1 and s[-1] in [":", ","])
+        if s[-1] in [":", ","]:
+            s = s[:-1]
+        return server.is_own_nickname(s)
 
     def message(self, event, command, args_index=1):
         if self.has_command(command):
