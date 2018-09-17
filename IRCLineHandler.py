@@ -79,6 +79,8 @@ class LineHandler(object):
             prefix = Utils.seperate_hostmask(prefix)
             if " " in command:
                 command, line = command.split(" ", 1)
+            else:
+                line = ""
         else:
             command = line
             if " " in line:
