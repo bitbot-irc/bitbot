@@ -291,7 +291,7 @@ class Server(object):
         return time_left
 
     def send_user(self, username, realname):
-        self.send("USER %s - - :%s" % (username, realname))
+        self.send("USER %s 0 * :%s" % (username, realname))
     def send_nick(self, nickname):
         self.send("NICK %s" % nickname)
 
