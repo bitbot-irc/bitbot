@@ -7,6 +7,7 @@ class Module(object):
         events.on("received.cap.ack").hook(self.on_cap_ack)
         events.on("received.authenticate").hook(self.on_authenticate)
         events.on("received.numeric.903").hook(self.sasl_success)
+        events.on("received.numeric.904").hook(self.sasl_failure)
 
         exports.add("serverset", {"setting": "sasl",
             "help": "Set the sasl username/password for this server",
@@ -60,5 +61,9 @@ class Module(object):
                 auth_text = auth_text.decode("utf8")
             event["server"].send_authenticate(auth_text)
 
+    def _end_sasl(self, server):
+        server.capability_done("sasl")
     def sasl_success(self, event):
-        event["server"].capability_done("sasl")
+        self._end_sasl(event["server"])
+    def sasl_success(self, event):
+        self._end_sasl(event["server"])
