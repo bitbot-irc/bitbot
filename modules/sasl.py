@@ -20,13 +20,18 @@ class Module(object):
 
     def on_cap(self, event):
         has_sasl = "sasl" in event["capabilities"]
-        has_mechanisms = has_sasl and not event["capabilities"]["sasl"
-            ] == None
-        has_plaintext = has_mechanisms and "PLAIN" in event["capabilities"
-            ]["sasl"].split(",")
+        our_sasl = event["server"].get_setting("sasl", None)
 
-        if has_sasl and (has_plaintext or not has_mechanisms) and event[
-                "server"].get_setting("sasl", None):
+        do_sasl = False
+        if has_sasl and our_sasl:
+            if not event["capabilities"]["sasl"] == None:
+                our_mechanism = our_sasl["mechanism"].upper()
+                do_sasl = our_mechanism in event["capabilities"
+                    ]["sasl"].split(",")
+            else:
+                do_sasl = False
+
+        if do_sasl:
             event["server"].queue_capability("sasl")
 
     def on_cap_ack(self, event):
