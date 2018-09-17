@@ -46,7 +46,7 @@ class Server(object):
         self.mode_prefixes = collections.OrderedDict(
             {"@": "o", "+": "v"})
         self.channel_modes = []
-        self.channel_types = []
+        self.channel_types = ["#"]
         self.case_mapping = "rfc1459"
 
         self.last_read = time.monotonic()
