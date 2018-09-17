@@ -87,7 +87,8 @@ class Server(object):
         context.options |= ssl.OP_NO_TLSv1
 
         context.load_default_certs()
-        context.verify_mode = ssl.CERT_REQUIRED
+        if self.get_setting("ssl-verify", True):
+            context.verify_mode = ssl.CERT_REQUIRED
 
         client_certificate = self.bot.config.get("ssl-certificate", None)
         client_key = self.bot.config.get("ssl-key", None)
