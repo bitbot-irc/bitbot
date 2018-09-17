@@ -65,5 +65,5 @@ class Module(object):
         server.capability_done("sasl")
     def sasl_success(self, event):
         self._end_sasl(event["server"])
-    def sasl_success(self, event):
+    def sasl_failure(self, event):
         self._end_sasl(event["server"])
