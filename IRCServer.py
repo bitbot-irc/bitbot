@@ -211,7 +211,7 @@ class Server(object):
         data = b""
         try:
             data = self.read_buffer + self.socket.recv(4096)
-        except ConnectionResetError:
+        except (ConnectionResetError, socket.timeout):
             self.disconnect()
             return []
         self.read_buffer = b""
