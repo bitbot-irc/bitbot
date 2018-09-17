@@ -85,8 +85,15 @@ class Server(object):
         context.options |= ssl.OP_NO_SSLv2
         context.options |= ssl.OP_NO_SSLv3
         context.options |= ssl.OP_NO_TLSv1
+
         context.load_default_certs()
         context.verify_mode = ssl.CERT_REQUIRED
+
+        client_certificate = self.bot.config.get("ssl-certificate", None)
+        client_key = self.bot.config.get("ssl-key", None)
+        if client_certificate and client_key:
+            context.load_cert_chain(client_certificate, keyfile=client_key)
+
         self.socket = context.wrap_socket(self.socket)
 
     def connect(self):

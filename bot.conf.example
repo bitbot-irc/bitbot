@@ -1,4 +1,6 @@
 [bot]
+ssl-certificate          =
+ssl-key                  =
 openweathermap-api-key   =
 wolframalpha-api-key     =
 google-api-key           =
