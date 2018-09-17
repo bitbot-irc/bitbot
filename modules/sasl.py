@@ -30,7 +30,7 @@ class Module(object):
                 do_sasl = our_mechanism in event["capabilities"
                     ]["sasl"].split(",")
             else:
-                do_sasl = False
+                do_sasl = True
 
         if do_sasl:
             event["server"].queue_capability("sasl")
