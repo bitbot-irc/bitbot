@@ -93,7 +93,7 @@ class Module(object):
             ).get_hooks()[0]
 
     def is_highlight(self, server, s):
-        if s[-1] in [":", ","]:
+        if s and s[-1] in [":", ","]:
             s = s[:-1]
         return server.is_own_nickname(s)
 
