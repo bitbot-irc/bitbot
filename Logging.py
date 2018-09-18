@@ -19,7 +19,7 @@ class Log(object):
         self.logger.setLevel(logging.DEBUG)
 
         formatter = BitBotFormatter(
-            "%(asctime)s - %(levelname)s - %(message)s",
+            "%(asctime)s [%(levelname)s] %(message)s",
             "%Y-%m-%dT%H:%M:%S.%f%z")
 
         stdout_handler = logging.StreamHandler(sys.stdout)
