@@ -95,12 +95,19 @@ class Module(object):
             event["stderr"].write("You are already identified")
 
     def register(self, event):
+        identity_mechanism = event["server"].get_setting("identity-mechanism",
+            "internal")
+        if not identity_mechanism == "internal":
+            event["stderr"].write("The 'identify' command isn't available "
+                "on this network")
+            return
+
         hash, salt = self._get_hash(event["server"], event["user"].nickname)
         if not hash and not salt:
             password = event["args_split"][0]
             hash, salt = self._make_hash(password)
             event["user"].set_setting("authentication", [hash, salt])
-            self._identified(event["user"])
+            self._identified(event["user"], event["user"].nickname)
             event["stdout"].write("Nickname registered successfully")
         else:
             event["stderr"].write("This nickname is already registered")
