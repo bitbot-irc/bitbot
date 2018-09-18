@@ -56,7 +56,7 @@ class Module(object):
 
     def _identified(self, server, user, account):
         user.identified_account_override = account
-        user.identified_account_id_override = server.get_user(account).id
+        user.identified_account_id_override = server.get_user(account).get_id()
 
     def _logout(self, user):
         user.identified_account_override = None
