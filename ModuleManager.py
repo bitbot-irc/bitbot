@@ -2,6 +2,10 @@ import glob, imp, inspect, os, sys, uuid
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
 
+class BaseModule(object):
+    def __init__(self, bot, events, exports):
+        pass
+
 class ModuleManager(object):
     def __init__(self, bot, events, exports, directory="modules"):
         self.bot = bot
