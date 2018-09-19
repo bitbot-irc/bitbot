@@ -57,8 +57,7 @@ class Module(object):
         self.bot = bot
         self.events = events
 
-        events.on("received").on("command").on("insult").hook(
-            self.dispense_insult)
+        events.on("received.command.insult").hook(self.dispense_insult)
 
     def dispense_insult(self, event):
         insult = [random.choice(INSULT_INTRO), random.choice(INSULT_PART_1),

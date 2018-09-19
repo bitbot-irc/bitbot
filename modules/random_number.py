@@ -3,11 +3,10 @@ import random, uuid
 class Module(object):
     _name = "Random"
     def __init__(self, bot, events, exports):
-        events.on("received").on("command").on("random",
-            "rand").hook(self.random, help="Get a random number",
-            usage="[start] [end]")
-        events.on("received").on("command").on("guid"
-            ).hook(self.guid, help="Get a random guid")
+        events.on("received.command").on("random", "rand").hook(self.random,
+            help="Get a random number", usage="[start] [end]")
+        events.on("received.command.guid").hook(self.guid,
+            help="Get a random guid")
 
     def random(self, event):
         start, end = "1", "100"

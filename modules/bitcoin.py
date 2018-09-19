@@ -4,9 +4,8 @@ class Module(object):
     _name = "BTC"
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("btc").hook(
-            self.btc, help="Get the exchange rate of bitcoins",
-            usage="[currency]")
+        events.on("received.command.btc").hook(self.btc,
+            help="Get the exchange rate of bitcoins", usage="[currency]")
 
     def btc(self, event):
         currency = (event["args"] or "USD").upper()

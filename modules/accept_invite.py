@@ -2,7 +2,7 @@ import Utils
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        events.on("received").on("invite").hook(self.on_invite)
+        events.on("received.invite").hook(self.on_invite)
         exports.add("serverset", {"setting": "accept-invites",
             "help": "Set whether I accept invites on this server",
             "validate": Utils.bool_or_none})

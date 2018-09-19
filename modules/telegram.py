@@ -24,7 +24,7 @@ class Module(Thread):
         self.dispatcher.add_handler(command_handler)
 
         self.updater.start_polling()
-        events.on("signal").on("interrupt").hook(self.sigint)
+        events.on("signal.interrupt").hook(self.sigint)
 
     def start(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="`Dolphin, but Telegram`", parse_mode="Markdown")
@@ -46,7 +46,7 @@ class Module(Thread):
             "stderr": IOWrapper(bot, message.chat_id, message.message_id),
             "external": True,
             }
-        self.events.on("telegram").on("command").on(command).call(**data)
+        self.events.on("telegram.command").on(command).call(**data)
 
     def sigint(self, event):
         self.updater.stop()

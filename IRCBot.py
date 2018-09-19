@@ -21,8 +21,8 @@ class Bot(object):
         self.log = Logging.Log(self)
         self.line_handler = IRCLineHandler.LineHandler(self, self._events)
         self.timers = []
-        self._events.on("timer").on("reconnect").hook(self.reconnect)
-        self._events.on("boot").on("done").hook(self.setup_timers)
+        self._events.on("timer.reconnect").hook(self.reconnect)
+        self._events.on("boot.done").hook(self.setup_timers)
 
     def add_server(self, id, alias, hostname, port, password, ipv4, tls,
             nickname, username, realname, connect=False):
@@ -31,7 +31,7 @@ class Bot(object):
             realname)
         if not new_server.get_setting("connect", True):
             return
-        self._events.on("new").on("server").call(server=new_server)
+        self._events.on("new.server").call(server=new_server)
         if connect and new_server.get_setting("connect", True):
             self.connect(new_server)
         return new_server

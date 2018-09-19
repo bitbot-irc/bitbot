@@ -8,13 +8,13 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
-        events.on("new").on("user").hook(self.new_user)
-        events.on("received").on("message").on("channel").hook(
+        events.on("new.user").hook(self.new_user)
+        events.on("received.message.channel").hook(
             self.channel_message, priority=EventManager.PRIORITY_MONITOR)
-        events.on("received").on("command").on("karma").hook(
+        events.on("received.command.karma").hook(
             self.karma, help="Get your or someone else's karma",
             usage="[target]")
-        events.on("received").on("command").on("resetkarma").hook(
+        events.on("received.command.resetkarma").hook(
             self.reset_karma, permission="resetkarma",
             min_args=1, help="Reset a specified karma to 0",
             usage="<target>")
@@ -46,7 +46,7 @@ class Module(object):
                     else:
                         event["server"].del_setting(setting)
                     if verbose:
-                        self.events.on("send").on("stdout").call(
+                        self.events.on("send.stdout").call(
                             module_name="Karma", target=event["channel"],
                             message="%s now has %d karma" % (target, karma))
                     event["user"].last_karma = time.time()

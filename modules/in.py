@@ -7,10 +7,9 @@ SECONDS_MAX_DESCRIPTION = "8 weeks"
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("in").hook(
-            self.in_command, min_args=2,
+        events.on("received.command.in").hook(self.in_command, min_args=2,
             help="Set a reminder", usage="<time> <message>")
-        events.on("timer").on("in").hook(self.timer_due)
+        events.on("timer.in").hook(self.timer_due)
 
     def in_command(self, event):
         seconds = Utils.from_pretty_time(event["args_split"][0])

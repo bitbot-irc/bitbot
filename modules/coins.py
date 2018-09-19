@@ -61,7 +61,7 @@ class Module(object):
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        events.on("timer").on("coin-interest").hook(self.interest)
+        events.on("timer.coin-interest").hook(self.interest)
         bot.add_timer("coin-interest", INTEREST_INTERVAL, persist=False,
             next_due=time.time()+until_next_hour)
 

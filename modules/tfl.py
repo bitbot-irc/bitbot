@@ -23,27 +23,27 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.result_map = {}
-        events.on("received").on("command").on("tflbus"
+        events.on("received.command.tflbus"
             ).hook(self.bus, min_args=1,
             help="Get bus due times for a TfL bus stop",
             usage="<stop_id>")
-        events.on("received").on("command").on("tflline"
+        events.on("received.command.tflline"
             ).hook(self.line,
             help="Get line status for TfL underground lines",
             usage="<line_name>")
-        events.on("received").on("command").on("tflsearch"
+        events.on("received.command.tflsearch"
             ).hook(self.search, min_args=1,
             help="Get a list of TfL stop IDs for a given name",
             usage="<name>")
-        events.on("received").on("command").on("tflvehicle"
+        events.on("received.command.tflvehicle"
             ).hook(self.vehicle, min_args=1,
             help="Get information for a given vehicle",
             usage="<ID>")
-        events.on("received").on("command").on("tflstop"
+        events.on("received.command.tflstop"
             ).hook(self.stop, min_args=1,
             help="Get information for a given stop",
             usage="<stop_id>")
-        events.on("received").on("command").on("tflservice"
+        events.on("received.command.tflservice"
             ).hook(self.service, min_args=1,
             help="Get service information and arrival estimates",
             usage="<service index>")

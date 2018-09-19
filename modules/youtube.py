@@ -20,11 +20,9 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
-        events.on("received").on("command").on("yt", "youtube"
-            ).hook(self.yt,
+        events.on("received.command").on("yt", "youtube").hook(self.yt,
             help="Find a video on youtube", usage="[query]")
-        events.on("received").on("message").on("channel").hook(
-            self.channel_message)
+        events.on("received.message.channel").hook(self.channel_message)
 
         exports.add("channelset", {"setting": "auto-youtube",
             "help": "Disable/Enable automatically getting info from "
@@ -101,6 +99,6 @@ class Module(object):
             youtube_id = match.group(1)
             video_details = self.video_details(youtube_id)
             if video_details:
-                self.events.on("send").on("stdout").call(target=event[
-                    "channel"], message=video_details, module_name="Youtube",
+                self.events.on("send.stdout").call(target=event["channel"],
+                    message=video_details, module_name="Youtube",
                     server=event["server"])

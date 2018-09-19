@@ -6,9 +6,8 @@ REGEX_DEFNUMBER = re.compile("-n(\d+) \S+")
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        events.on("received").on("command").on("urbandictionary", "ud"
-            ).hook(self.ud, min_args=1,
-            help="Get the definition of a provided term",
+        events.on("received.command").on("urbandictionary", "ud").hook(
+            self.ud, min_args=1, help="Get the definition of a provided term",
             usage="<term>")
 
     def ud(self, event):

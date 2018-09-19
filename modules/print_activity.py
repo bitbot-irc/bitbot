@@ -5,36 +5,36 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
 
-        events.on("received").on("message").on("channel").hook(
+        events.on("received.message.channel").hook(
             self.channel_message, priority=EventManager.PRIORITY_HIGH)
-        events.on("self").on("message").on("channel").hook(
+        events.on("self.message.channel").hook(
             self.self_channel_message)
 
-        events.on("received").on("notice").on("channel").hook(
+        events.on("received.notice.channel").hook(
             self.channel_notice, priority=EventManager.PRIORITY_HIGH)
-        events.on("received").on("notice").on("private").hook(
+        events.on("received.notice.private").hook(
             self.private_notice, priority=EventManager.PRIORITY_HIGH)
-        events.on("received").on("server-notice").hook(
+        events.on("received.server-notice").hook(
             self.server_notice, priority=EventManager.PRIORITY_HIGH)
 
-        events.on("received").on("join").hook(self.join)
-        events.on("self").on("join").hook(self.self_join)
+        events.on("received.join").hook(self.join)
+        events.on("self.join").hook(self.self_join)
 
-        events.on("received").on("part").hook(self.part)
-        events.on("self").on("part").hook(self.self_part)
+        events.on("received.part").hook(self.part)
+        events.on("self.part").hook(self.self_part)
 
-        events.on("received").on("nick").hook(self.on_nick)
-        events.on("self").on("nick").hook(self.on_nick)
+        events.on("received.nick").hook(self.on_nick)
+        events.on("self.nick").hook(self.on_nick)
 
-        events.on("received").on("quit").hook(self.on_quit)
+        events.on("received.quit").hook(self.on_quit)
 
-        events.on("received").on("kick").hook(self.kick)
-        events.on("self").on("kick").hook(self.self_kick)
+        events.on("received.kick").hook(self.kick)
+        events.on("self.kick").hook(self.self_kick)
 
-        events.on("received").on("topic").hook(self.on_topic)
-        events.on("received").on("numeric").on("333").hook(self.on_333)
+        events.on("received.topic").hook(self.on_topic)
+        events.on("received.numeric.333").hook(self.on_333)
 
-        events.on("received").on("mode").on("channel").hook(self.mode)
+        events.on("received.mode.channel").hook(self.mode)
 
     def print_line(self, event, line, channel=None):
         timestamp = datetime.datetime.now().isoformat()

@@ -10,10 +10,8 @@ class Module(object):
     _name = "IMDb"
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("imdb").hook(
-            self.imdb, min_args=1,
-            help="Search for a given title on IMDb",
-            usage="<movie/tv title>")
+        events.on("received.command.imdb").hook(self.imdb, min_args=1,
+            help="Search for a given title on IMDb", usage="<movie/tv title>")
 
     def imdb(self, event):
         page = Utils.get_url(URL_OMDB, get_params={

@@ -11,9 +11,8 @@ class Module(object):
         exports.add("set", {"setting": "lastfm",
             "help": "Set username on last.fm"})
 
-        events.on("received").on("command").on("np",
-            "listening", "nowplaying").hook(self.np,
-            help="Get the last listened to track from a user",
+        events.on("received.command").on("np", "listening", "nowplaying"
+            ).hook(self.np, help="Get the last listened to track from a user",
             usage="[username]")
 
     def np(self, event):

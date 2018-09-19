@@ -4,10 +4,10 @@ import Utils
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("uptime"
-            ).hook(self.uptime, help="Show my uptime")
-        events.on("received").on("command").on("stats"
-            ).hook(self.stats, help="Show my network/channel/user stats")
+        events.on("received.command.uptime").hook(self.uptime,
+            help="Show my uptime")
+        events.on("received.command.stats").hook(self.stats,
+            help="Show my network/channel/user stats")
 
     def uptime(self, event):
         seconds = int(time.time()-self.bot.start_time)

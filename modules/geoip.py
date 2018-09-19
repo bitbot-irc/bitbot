@@ -5,10 +5,8 @@ URL_GEOIP = "http://ip-api.com/json/%s"
 class Module(object):
     _name = "GeoIP"
     def __init__(self, bot, events, exports):
-        events.on("received").on("command").on("geoip").hook(
-            self.geoip, min_args=1,
-            help="Get geoip data on a given IPv4/IPv6 address",
-            usage="<IP>")
+        events.on("received.command.geoip").hook(self.geoip, min_args=1,
+            help="Get geoip data on a given IPv4/IPv6 address", usage="<IP>")
 
     def geoip(self, event):
         page = Utils.get_url(URL_GEOIP % event["args_split"][0],

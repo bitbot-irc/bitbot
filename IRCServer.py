@@ -70,7 +70,7 @@ class Server(object):
         if self.tls:
             self.tls_wrap()
         self.cached_fileno = self.socket.fileno()
-        self.events.on("timer").on("rejoin").hook(self.try_rejoin)
+        self.events.on("timer.rejoin").hook(self.try_rejoin)
 
     def __repr__(self):
         return "IRCServer.Server(%s)" % self.__str__()
@@ -164,8 +164,7 @@ class Server(object):
         if not self.has_user(nickname):
             user_id = self.get_user_id(nickname)
             new_user = IRCUser.User(nickname, user_id, self, self.bot)
-            self.events.on("new").on("user").call(
-                user=new_user, server=self)
+            self.events.on("new.user").call(user=new_user, server=self)
             self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
         return self.users[Utils.irc_lower(self, nickname)]
@@ -189,8 +188,8 @@ class Server(object):
             channel_id = self.get_channel_id(channel_name)
             new_channel = IRCChannel.Channel(channel_name, channel_id,
                 self, self.bot)
-            self.events.on("new").on("channel").call(
-                channel=new_channel, server=self)
+            self.events.on("new.channel").call(channel=new_channel,
+                server=self)
             self.channels[new_channel.name] = new_channel
         return self.channels[Utils.irc_lower(self, channel_name)]
     def get_channel_id(self, channel_name):
@@ -364,13 +363,13 @@ class Server(object):
         if self.has_channel(target):
             channel = self.get_channel(target)
             channel.buffer.add_line(None, message, action, True)
-            self.events.on("self").on("message").on("channel").call(
+            self.events.on("self.message.channel").call(
                 message=full_message, message_split=full_message_split,
                 channel=channel, action=action, server=self)
         else:
             user = self.get_user(target)
             user.buffer.add_line(None, message, action, True)
-            self.events.on("self").on("message").on("private").call(
+            self.events.on("self.message.private").call(
                 message=full_message, message_split=full_message_split,
                     user=user, action=action, server=self)
 

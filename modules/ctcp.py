@@ -4,8 +4,7 @@ import Utils
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("message").on("private").hook(
-            self.private_message)
+        events.on("received.message.private").hook(self.private_message)
         exports.add("serverset", {"setting": "ctcp-responses",
             "help": "Set whether I respond to CTCPs on this server",
             "validate": Utils.bool_or_none})

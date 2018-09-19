@@ -10,8 +10,7 @@ class Module(object):
 
     def SIGINT(self, signum, frame):
         print()
-        self.events.on("signal").on("interrupt").call(signum=signum,
-            frame=frame)
+        self.events.on("signal.interrupt").call(signum=signum, frame=frame)
 
         for server in self.bot.servers.values():
             reason = "Leaving"

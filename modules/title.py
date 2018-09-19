@@ -5,9 +5,8 @@ REGEX_URL = re.compile("https?://\S+", re.I)
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        events.on("received").on("command").on("title", "t").hook(
-            self.title, help="Get the title of the provided or most "
-            "recent URL.", usage="[URL]")
+        events.on("received.command").on("title", "t").hook(self.title,
+            help="Get the title of a URL", usage="[URL]")
 
     def title(self, event):
         url = None

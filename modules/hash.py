@@ -3,9 +3,8 @@ import hashlib
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("hash"
-            ).hook(self.hash, min_args=2, help="Hash a string",
-            usage="<algo> <string>")
+        events.on("received.command.hash").hook(self.hash, min_args=2,
+            help="Hash a string", usage="<algo> <string>")
 
     def hash(self, event):
         algorithm = event["args_split"][0].lower()

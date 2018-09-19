@@ -3,15 +3,12 @@
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("todo").hook(
-            self.todo, help="Find out what's in your todo list",
-            usage="[item number]")
-        events.on("received").on("command").on("todoadd").hook(
-            self.todo_add, min_args=1, help="Add something to your todo list",
-            usage="<description>")
-        events.on("received").on("command").on("tododel").hook(
-            self.todo_del, min_args=1, help="Remove something from your "
-            "todo list", usage="<item number>")
+        events.on("received.command.todo").hook(self.todo,
+            help="Find out what's in your todo list", usage="[item number]")
+        events.on("received.command.todoadd").hook(self.todo_add, min_args=1,
+            help="Add something to your todo list", usage="<description>")
+        events.on("received.command.tododel").hook(self.todo_del, min_args=1,
+            help="Remove something from your todo list", usage="<item number>")
 
     def todo(self, event):
         todo = event["user"].get_setting("todo", [])

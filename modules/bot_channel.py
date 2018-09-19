@@ -2,7 +2,7 @@
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        events.on("received").on("numeric").on("001").hook(self.do_join)
+        events.on("received.numeric.001").hook(self.do_join)
 
         exports.add("serverset", {"setting": "bot-channel",
             "help": "Set main channel"})

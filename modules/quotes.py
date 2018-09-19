@@ -3,22 +3,18 @@ import random, time
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("quoteadd",
-            "qadd").hook(self.quote_add, min_args=1,
-            help="Added a quote to a category",
+        events.on("received.command").on("quoteadd", "qadd").hook(
+            self.quote_add, min_args=1, help="Added a quote to a category",
             usage="<category> = <quote>")
-        events.on("received").on("command").on("quoteget",
-            "qget").hook(self.quote_get, min_args=1,
-            help="Find a quote within a category",
+        events.on("received.command").on("quoteget", "qget").hook(
+            self.quote_get, min_args=1, help="Find a quote within a category",
             usage="<category> = <search>")
-        events.on("received").on("command").on("quotedel",
-            "qdel").hook(self.quote_del, min_args=1,
-            help="Delete a quote from a category",
+        events.on("received.command").on("quotedel", "qdel").hook(
+            self.quote_del, min_args=1, help="Delete a quote from a category",
             usage="<category> = <quote>")
-        events.on("received").on("command").on("quote",
-            "q").hook(self.quote, min_args=1,
+        events.on("received.command").on("quote", "q").hook(self.quote,
             help="Get a random quote from a category",
-            usage="<category>")
+            usage="<category>", min_args=1)
 
     def category_and_quote(self, s):
         if "=" in s:

@@ -7,10 +7,9 @@ URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("synonym",
-            "antonym").hook(self.thesaurus, min_args=1,
-            help="Get synonyms/antonyms for a provided phrase",
-            usage="<word> [type]")
+        events.on("received.command").on("synonym", "antonym").hook(
+            self.thesaurus, min_args=1, usage="<word> [type]",
+            help="Get synonyms/antonyms for a provided phrase")
 
     def thesaurus(self, event):
         phrase = event["args_split"][0]

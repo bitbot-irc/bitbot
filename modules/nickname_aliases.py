@@ -24,12 +24,10 @@ class Module(object):
     _name = "Aliases"
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("new").on("user").hook(self.new_user)
-        events.on("received").on("nick").hook(self.nickname_change)
-        events.on("received").on("command").on("alias").hook(
-            self.alias)
-        #events.on("received").on("command").on("mainalias").hook(
-        #    self.main_alias)
+        events.on("new.user").hook(self.new_user)
+        events.on("received.nick").hook(self.nickname_change)
+        events.on("received.command.alias").hook(self.alias)
+        #events.on("received.command.mainalias").hook(self.main_alias)
 
     def new_user(self, event):
         method_type = types.MethodType

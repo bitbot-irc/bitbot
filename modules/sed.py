@@ -8,8 +8,7 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
-        events.on("received").on("message").on("channel").hook(
-            self.channel_message)
+        events.on("received.message.channel").hook(self.channel_message)
 
         exports.add("channelset", {"setting": "sed",
             "help": "Disable/Enable sed in a channel",
@@ -48,8 +47,8 @@ class Module(object):
                 pattern = re.compile(sed_split[1], regex_flags)
             except:
                 traceback.print_exc()
-                self.events.on("send").on("stderr").call(target=event[
-                    "channel"], module_name="Sed", server=event["server"],
+                self.events.on("send.stderr").call(target=event["channel"],
+                    module_name="Sed", server=event["server"],
                     message="Invalid regex in pattern")
                 return
             replace = sed_split[2].replace("\\/", "/")
@@ -65,6 +64,6 @@ class Module(object):
                     prefix = "* %s" % line.sender
                 else:
                     prefix = "<%s>" % line.sender
-                self.events.on("send").on("stdout").call(target=event[
+                self.events.on("send.stdout").call(target=event[
                     "channel"], module_name="Sed", server=event["server"],
                     message="%s %s" % (prefix, new_message))

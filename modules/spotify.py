@@ -5,9 +5,8 @@ URL_SPOTIFY = "https://api.spotify.com/v1/search"
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        events.on("received").on("command").on("spotify").hook(
-            self.spotify, help="Search for a track on spotify",
-            min_args=1)
+        events.on("received.command.spotify").hook(self.spotify, min_args=1,
+            help="Search for a track on spotify")
 
     def spotify(self, event):
         page = Utils.get_url(URL_SPOTIFY, get_params={"type": "track",

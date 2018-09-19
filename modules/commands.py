@@ -67,8 +67,8 @@ class Module(object):
             permission="unignore")
 
         events.on("new").on("user", "channel").hook(self.new)
-        events.on("send").on("stdout").hook(self.send_stdout)
-        events.on("send").on("stderr").hook(self.send_stderr)
+        events.on("send.stdout").hook(self.send_stdout)
+        events.on("send.stderr").hook(self.send_stderr)
 
         exports.add("channelset", {"setting": "command-prefix",
             "help": "Set the command prefix used in this channel"})
@@ -89,7 +89,7 @@ class Module(object):
         return command.lower() in self.events.on("received").on(
             "command").get_children()
     def get_hook(self, command):
-        return self.events.on("received").on("command").on(command
+        return self.events.on("received.command").on(command
             ).get_hooks()[0]
 
     def is_highlight(self, server, s):
@@ -122,7 +122,7 @@ class Module(object):
             stdout, stderr = StdOut(module_name, target), StdErr(module_name,
                 target)
 
-            returns = self.events.on("preprocess").on("command"
+            returns = self.events.on("preprocess.command"
                 ).call(hook=hook, user=event["user"], server=event["server"],
                 target=target, is_channel=is_channel, tags=event["tags"])
             for returned in returns:
@@ -143,7 +143,7 @@ class Module(object):
                 args = " ".join(args_split)
                 server = event["server"]
                 user = event["user"]
-                self.events.on("received").on("command").on(command
+                self.events.on("received.command").on(command
                     ).call_limited(1, user=user, server=server,
                     target=target, buffer=buffer, args=args,
                     args_split=args_split, stdout=stdout, stderr=stderr,
@@ -179,7 +179,7 @@ class Module(object):
             command = event["args_split"][0].lower()
             if command in self.events.on("received").on(
                     "command").get_children():
-                hooks = self.events.on("received").on("command").on(command).get_hooks()
+                hooks = self.events.on("received.command").on(command).get_hooks()
                 if hooks and "help" in hooks[0].kwargs:
                     event["stdout"].write("%s: %s" % (command, hooks[0].kwargs["help"]))
                 else:
@@ -188,8 +188,8 @@ class Module(object):
                 event["stderr"].write("Unknown command '%s'" % command)
         else:
             help_available = []
-            for child in self.events.on("received").on("command").get_children():
-                hooks = self.events.on("received").on("command").on(child).get_hooks()
+            for child in self.events.on("received.command").get_children():
+                hooks = self.events.on("received.command").on(child).get_hooks()
                 if hooks and "help" in hooks[0].kwargs:
                     help_available.append(child)
             help_available = sorted(help_available)
@@ -204,7 +204,7 @@ class Module(object):
         command = event["args_split"][0].lower()
         if command in self.events.on("received").on(
                 "command").get_children():
-            hooks = self.events.on("received").on("command").on(command).get_hooks()
+            hooks = self.events.on("received.command").on(command).get_hooks()
             if hooks and "usage" in hooks[0].kwargs:
                 event["stdout"].write("Usage: %s%s %s" % (command_prefix,
                     command, hooks[0].kwargs["usage"]))

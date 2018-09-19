@@ -5,7 +5,7 @@ URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("wiki", "wi"
+        events.on("received.command").on("wiki", "wi"
             ).hook(self.wikipedia, min_args=1)
 
     def wikipedia(self, event):

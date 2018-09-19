@@ -3,12 +3,9 @@ import Utils
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        events.on("received").on("message").on("channel"
-            ).hook(self.channel_message)
-        events.on("received").on("command").on("seen").hook(
-            self.seen, min_args=1,
-            help="Find out when a user was last seen",
-            usage="<username>")
+        events.on("received.message.channel").hook(self.channel_message)
+        events.on("received.command.seen").hook(self.seen, min_args=1,
+            help="Find out when a user was last seen", usage="<username>")
 
     def channel_message(self, event):
         seen_seconds = time.time()

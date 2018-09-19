@@ -12,11 +12,11 @@ class Module(object):
             self.preprocess_command)
         events.on("received.part").hook(self.on_part)
 
-        events.on("received").on("command").on("identify"
-            ).hook(self.identify, private_only=True, min_args=2,
+        events.on("received.command.identify").hook(self.identify,
+            private_only=True, min_args=2,
             usage="<account> <password>", help="Identify yourself")
-        events.on("received").on("command").on("register"
-            ).hook(self.register, private_only=True, min_args=1,
+        events.on("received.command.register").hook(self.register,
+            private_only=True, min_args=1,
             usage="<password>", help="Register your nickname")
         events.on("received.command.logout").hook(self.logout,
              private_only=True, help="Sign out from the bot")

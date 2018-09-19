@@ -5,10 +5,9 @@ URL_HAVEIBEENPWNED = "https://haveibeenpwned.com/"
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        events.on("received").on("command").on("beenpwned").hook(
-            self.beenpwned, min_args=1,
+        events.on("received.command.beenpwned").hook(self.beenpwned,
             help="Find out if a username, email or similar has appeared "
-            "in any hacked databases", usage="<username/email>")
+            "in any hacked databases", usage="<username/email>", min_args=1)
 
     def beenpwned(self, event):
         page = Utils.get_url(URL_HAVEIBEENPWNEDAPI % event["args"], json=True,

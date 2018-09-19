@@ -9,11 +9,11 @@ class Module(object):
     _name = "ISBN"
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("isbn").hook(
-            self.isbn, help="Get book information from a provided ISBN",
+        events.on("received.command.isbn").hook(self.isbn,
+            help="Get book information from a provided ISBN",
             min_args=1, usage="<isbn>")
-        events.on("received").on("command").on("book").hook(
-            self.book, help="Get book information from a provided title",
+        events.on("received.command.book").hook(self.book,
+            help="Get book information from a provided title",
             min_args=1, usage="<book title>")
 
     def get_book(self, query, event):
