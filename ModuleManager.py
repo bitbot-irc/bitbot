@@ -1,5 +1,7 @@
 import glob, imp, inspect, os, sys, uuid
 
+BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
+
 class ModuleManager(object):
     def __init__(self, bot, events, exports, directory="modules"):
         self.bot = bot
@@ -51,10 +53,22 @@ class ModuleManager(object):
             raise ImportError("module '%s' has a Module attribute but it is not a class.")
 
         context = str(uuid.uuid4())
-        module_object = module.Module(self.bot, self.events.new_context(
-            context), self.exports.new_context(context))
+        context_events = self.events.new_context(context)
+        context_exports = self.exports.new_context(context)
+        module_object = module.Module(self.bot, context_events,
+            context_exports)
+
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
+        for attribute_name in dir(module_object):
+            attribute = getattr(module_object, attribute_name)
+            if inspect.ismethod(attribute) and hasattr(attribute,
+                    BITBOT_HOOKS_MAGIC):
+                hooks = getattr(attribute, BITBOT_HOOKS_MAGIC)
+                for hook in hooks:
+                    context_events.on(hook["event"]).hook(attribute,
+                        **hook["kwargs"])
+
         module_object._context = context
         module_object._import_name = name
 

@@ -1,6 +1,7 @@
 import json, re, traceback, urllib.request, urllib.parse, urllib.error, ssl
 import string
 import bs4
+import ModuleManager
 
 USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
@@ -275,3 +276,12 @@ def get_closest_setting(event, setting, default=None):
 
 def prevent_highlight(nickname):
     return nickname[0]+"\u200d"+nickname[1:]
+
+def hook(event, **kwargs):
+    def _hook_func(func):
+        if not hasattr(func, ModuleManager.BITBOT_HOOKS_MAGIC):
+            setattr(func, ModuleManager.BITBOT_HOOKS_MAGIC, [])
+        getattr(func, ModuleManager.BITBOT_HOOKS_MAGIC).append(
+            {"event": event, "kwargs": kwargs})
+        return func
+    return _hook_func
