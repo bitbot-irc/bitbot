@@ -6,10 +6,6 @@ THROTTLE_SECONDS = 1
 READ_TIMEOUT_SECONDS = 120
 PING_INTERVAL_SECONDS = 30
 
-OUR_TLS_PROTOCOL = ssl.PROTOCOL_SSLv23
-if hasattr(ssl, "PROTOCOL_TLS"):
-    OUR_TLS_PROTOCOL = ssl.PROTOCOL_TLS
-
 class Server(object):
     def __init__(self, bot, events, id, alias, hostname, port, password,
             ipv4, tls, nickname, username, realname):
@@ -84,7 +80,7 @@ class Server(object):
         return self.cached_fileno if fileno == -1 else fileno
 
     def tls_wrap(self):
-        context = ssl.SSLContext(OUR_TLS_PROTOCOL)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
         context.options |= ssl.OP_NO_SSLv2
         context.options |= ssl.OP_NO_SSLv3
         context.options |= ssl.OP_NO_TLSv1
