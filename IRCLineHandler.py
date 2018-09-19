@@ -438,7 +438,8 @@ class LineHandler(object):
         target = event["args"][0]
 
         if not event["prefix"] or event["prefix"].hostmask == event["server"
-                ].name or target == "*":
+                ].name or target == "*" or (not event["prefix"].hostname and
+                not event["server"].name):
             event["server"].name = event["prefix"].hostmask
 
             self.events.on("received.server-notice").call(
