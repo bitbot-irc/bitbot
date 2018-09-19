@@ -4,6 +4,7 @@ class Module(object):
     def __init__(self, bot, events, exports):
         events.on("received.numeric.001").hook(self.on_connect)
         events.on("self.join").hook(self.on_join)
+        events.on("self.part").hook(self.on_part)
         events.on("self.kick").hook(self.on_kick)
 
     def on_connect(self, event):
@@ -36,7 +37,7 @@ class Module(object):
             channels.remove(channel_name)
             server.set_setting("autojoin", channels)
 
-    def self_part(self, event):
+    def on_part(self, event):
         self._remove_channel(event["server"], event["channel"].name)
 
     def on_kick(self, event):
