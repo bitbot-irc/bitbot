@@ -11,12 +11,13 @@ if hasattr(ssl, "PROTOCOL_TLS"):
     OUR_TLS_PROTOCOL = ssl.PROTOCOL_TLS
 
 class Server(object):
-    def __init__(self, bot, events, id, hostname, port, password, ipv4,
-            tls, nickname, username, realname):
+    def __init__(self, bot, events, id, alias, hostname, port, password,
+            ipv4, tls, nickname, username, realname):
         self.connected = False
         self.bot = bot
         self.events = events
         self.id = id
+        self.alias = alias
         self.target_hostname = hostname
         self.port = port
         self.tls = tls
@@ -74,6 +75,8 @@ class Server(object):
     def __repr__(self):
         return "IRCServer.Server(%s)" % self.__str__()
     def __str__(self):
+        if self.alias:
+            return self.alias
         return "%s:%s%s" % (self.target_hostname, "+" if self.tls else "",
             self.port)
     def fileno(self):

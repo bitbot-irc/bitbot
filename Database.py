@@ -5,22 +5,22 @@ class Table(object):
         self.database = database
 
 class Servers(Table):
-    def add(self, hostname, port, password, ipv4, tls, nickname,
+    def add(self, alias, hostname, port, password, ipv4, tls, nickname,
             username=None, realname=None):
         username = username or nickname
         realname = realname or nickname
         self.database.execute(
-            """INSERT INTO servers (hostname, port, password, ipv4,
+            """INSERT INTO servers (alias, hostname, port, password, ipv4,
             tls, nickname, username, realname) VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?)""",
             [hostname, port, password, ipv4, tls, nickname, username, realname])
     def get_all(self):
         return self.database.execute_fetchall(
-            """SELECT server_id, hostname, port, password, ipv4,
+            """SELECT server_id, alias, hostname, port, password, ipv4,
             tls, nickname, username, realname FROM servers""")
     def get(self, id):
         return self.database.execute_fetchone(
-            """SELECT server_id, hostname, port, password, ipv4,
+            """SELECT server_id, alias, hostname, port, password, ipv4,
             tls, nickname, username, realname FROM servers WHERE
             server_id=?""",
             [id])
@@ -306,7 +306,7 @@ class Database(object):
     def make_servers_table(self):
         if not self.has_table("servers"):
             self.execute("""CREATE TABLE servers
-                (server_id INTEGER PRIMARY KEY, hostname TEXT,
+                (server_id INTEGER PRIMARY KEY, alias TEXT, hostname TEXT,
                 port INTEGER,password TEXT,ipv4 BOOLEAN, tls BOOLEAN,
                 nickname TEXT, username TEXT, realname TEXT)""")
     def make_channels_table(self):
