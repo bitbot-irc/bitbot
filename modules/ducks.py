@@ -154,6 +154,8 @@ class Module(object):
         channel.games["ducks"]["duck_spawned"] = 1
 
     def channel_message(self, event):
+        if not event["channel"].get_setting("ducks-enabled", False):
+            return
         channel = event["channel"]
 
         if "ducks" not in channel.games.keys():
