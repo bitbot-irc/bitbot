@@ -23,36 +23,27 @@ class Module(object):
         self.events = events
 
         events.on("received.command.bef").hook(self.befriend,
-                                            priority=EventManager.PRIORITY_HIGH,
-                                            help="Befriend a duck!")
+            priority=EventManager.PRIORITY_HIGH, help="Befriend a duck!")
         events.on("received.command.bang").hook(self.shoot,
-                                            priority=EventManager.PRIORITY_HIGH,
-                                            help="Shoot a duck! Meanie." )
-        # events.on("received").on("command").on("decoy").hook(self.set_decoy,
-        #                                                     help="Be a
-        # sneaky fellow
-        #                                                          and make a
-        # decoy duck!")
-        events.on("received.command.friends").hook(
-            self.duck_friends,
-            help="See who the friendliest people to ducks are!")
-        events.on("received.command.killers").hook(
-            self.duck_enemies, help="See who shoots the most smount of ducks!")
-        events.on("received.command.duckstats").hook(
-            self.duck_stats, help="Shows your duck stats!")
+            priority=EventManager.PRIORITY_HIGH, help="Shoot a duck! Meanie.")
 
-        exports.add("channelset",
-                    {"setting": "ducks-enabled", "help": "Toggle ducks!",
-                     "validate": Utils.bool_or_none})
+        events.on("received.command.friends").hook(self.duck_friends,
+            help="See who the friendliest people to ducks are!")
+        events.on("received.command.killers").hook(self.duck_enemies,
+            help="See who shoots the most smount of ducks!")
+        events.on("received.command.duckstats").hook(self.duck_stats,
+            help="Shows your duck stats!")
+
+        exports.add("channelset", {"setting": "ducks-enabled",
+            "help": "Toggle ducks!", "validate": Utils.bool_or_none})
 
         exports.add("channelset", {"setting": "ducks-kick",
-                                   "help": "Should the bot kick if there's no "
-                                           "duck?",
-                                   "validate": Utils.bool_or_none})
+            "help": "Should the bot kick if there's no duck?",
+             "validate": Utils.bool_or_none})
 
         events.on("new.channel").hook(self.new_channel)
 
-        events.on("received").on("message").on("channel").hook(
+        events.on("received.message.channel").hook(
             self.channel_message)
 
         for server in self.bot.servers.values():
