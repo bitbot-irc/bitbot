@@ -38,11 +38,11 @@ class Out(object):
 class StdOut(Out):
     def prefix(self):
         return "%s%s%s" % (Utils.color(Utils.COLOR_GREEN),
-                            self.module_name, Utils.FONT_COLOR)
+            self.module_name, Utils.FONT_RESET)
 class StdErr(Out):
     def prefix(self):
         return "%s!%s%s" % (Utils.color(Utils.COLOR_RED),
-                            self.module_name, Utils.FONT_COLOR)
+            self.module_name, Utils.FONT_RESET)
 
 class Module(object):
     def __init__(self, bot, events, exports):
