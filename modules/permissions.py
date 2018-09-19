@@ -107,7 +107,8 @@ class Module(object):
             password = event["args_split"][0]
             hash, salt = self._make_hash(password)
             event["user"].set_setting("authentication", [hash, salt])
-            self._identified(event["user"], event["user"].nickname)
+            self._identified(event["server"], event["user"],
+                event["user"].nickname)
             event["stdout"].write("Nickname registered successfully")
         else:
             event["stderr"].write("This nickname is already registered")
