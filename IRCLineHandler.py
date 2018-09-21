@@ -417,6 +417,11 @@ class LineHandler(object):
             if message.endswith("\x01"):
                 message = message[:-1]
 
+        if "account" in event["tags"]:
+            user.identified_account = event["tags"]["account"]
+            user.identified_account_id = event["server"].get_user(
+                event["tags"]["account"]).get_id()
+
         kwargs = {"message": message, "message_split": message_split,
             "server": event["server"], "tags": event["tags"],
             "action": action}
