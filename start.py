@@ -29,10 +29,9 @@ whitelist = bot.get_setting("module-whitelist", [])
 blacklist = bot.get_setting("module-blacklist", [])
 bot.modules.load_modules(whitelist=whitelist, blacklist=blacklist)
 
-server_details = database.servers.get_all()
 servers = []
-for server_detail in server_details:
-    server = bot.add_server(*server_detail)
+for server_id, alias in database.servers.get_all():
+    server = bot.add_server(server_id, connect=False)
     if not server == None:
         servers.append(server)
 if len(servers):

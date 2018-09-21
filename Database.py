@@ -16,8 +16,7 @@ class Servers(Table):
             [hostname, port, password, ipv4, tls, nickname, username, realname])
     def get_all(self):
         return self.database.execute_fetchall(
-            """SELECT server_id, alias, hostname, port, password, ipv4,
-            tls, nickname, username, realname FROM servers""")
+            "SELECT server_id, alias FROM servers")
     def get(self, id):
         return self.database.execute_fetchone(
             """SELECT server_id, alias, hostname, port, password, ipv4,
