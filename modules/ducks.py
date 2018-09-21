@@ -145,10 +145,13 @@ class Module(object):
         duck += DUCK_TAIL
         duck += random.choice(DUCK_HEAD)
 
-        duck = str(Utils.color(4) + Utils.bold(
-            duck + random.choice(DUCK_MESSAGE_RARE)) + Utils.color(
-            4)) if 1 == random.randint(1, 20) else duck + random.choice(
-            DUCK_MESSAGE)
+        if random.randint(1, 20) == 1:
+            # rare!
+            message = random.choice(DUCK_MESSAGE_RARE)
+            duck = Utils.color(Utils.bold(duck + message), Utils.COLOR_RED)
+        else:
+            # not rare!
+            duck += random.choice(DUCK_MESSAGE)
 
         channel.send_message(duck)
         channel.games["ducks"]["duck_spawned"] = 1

@@ -195,8 +195,7 @@ class Module(object):
                 query["stationManagerCode"])
         else:
             station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"],
-                ", %s%s severe messages%s" % (Utils.color(Utils.COLOR_RED), nrcc_severe, Utils.color(Utils.FONT_RESET)) if nrcc_severe else ""
-                )
+                ", %s%s severe messages%s" % (Utils.color(nrcc_severe, Utils.COLOR_RED) if nrcc_severe else ""))
 
         if not "trainServices" in query and not "busServices" in query and not "ferryServices" in query:
             return event["stdout"].write("%s: No services for the next %s minutes" % (
@@ -291,7 +290,7 @@ class Module(object):
                 t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"]
                 ) for t in trains_filtered])
         else:
-            trains_string = ", ".join(["%s%s (%s, %s%s%s%s, %s%s%s%s%s)" % (
+            trains_string = ", ".join(["%s%s (%s, %s%s%s%s, %s%s%s)" % (
                 "from " if not filter["type"][0] in "ad" and t["terminating"] else '',
                 t["origin_summary"] if t["terminating"] or filter["type"]=="arrival" else t["dest_summary"],
                 t["uid"],
@@ -300,9 +299,7 @@ class Module(object):
                 "*" if t["platform_hidden"] else '',
                 "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
                 t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
-                Utils.color(colours[t["times"][filter["type"]]["status"]]),
-                t["times"][filter["type"]]["shortest"*filter["st"] or "short"],
-                Utils.color(Utils.FONT_RESET),
+                Utils.color(t["times"][filter["type"]]["shortest"*filter["st"] or "short"], colours[t["times"][filter["type"]]["status"]]),
                 bool(t["activity"])*", " + "+".join(t["activity"]),
                 ) for t in trains_filtered])
         if event.get("external"):
@@ -371,7 +368,7 @@ class Module(object):
         if "delayReason" in query:
             disruptions.append("Delayed (%s%s)" % (query["delayReason"]["value"], " at " + query["delayReason"]["_tiploc"] if query["delayReason"]["_tiploc"] else ""))
         if disruptions and not external:
-            disruptions = Utils.color(Utils.COLOR_RED) + ", ".join(disruptions) + Utils.color(Utils.FONT_RESET) + " "
+            disruptions = Utils.color(", ".join(disruptions), Utils.COLOR_RED) + " "
         elif disruptions and external:
             disruptions = ", ".join(disruptions)
         else: disruptions = ""
@@ -450,16 +447,14 @@ class Module(object):
             elif station["called"]:
                 station["times"]["arrival"]["status"], station["times"]["departure"]["status"] = 0, 0
 
-            station["summary"] = "%s%s (%s%s%s%s%s%s%s)%s" % (
+            station["summary"] = "%s%s (%s%s%s%s%s)%s" % (
                 "*" * station["passing"],
                 station["name"],
                 station["crs"] + ", " if station["name"] != station["crs"] else '',
                 station["length"] + " cars, " if station["length"] and (station["first"] or (station["last"]) or station["associations"]) else '',
                 ("~" if station["times"][filter["type"]]["estimate"] else '') +
                 station["times"][filter["type"]]["prefix"].replace(filter["type"][0], ""),
-                Utils.color(colours[station["times"][filter["type"]]["status"]]),
-                station["times"][filter["type"]]["short"],
-                Utils.color(Utils.FONT_RESET),
+                Utils.color(station["times"][filter["type"]]["short"], colours[station["times"][filter["type"]]["status"]]),
                 ", "*bool(station["activity_p"]) + "+".join(station["activity_p"]),
                 ", ".join([a["summary"] for a in station["associations"]]),
                 )
@@ -498,7 +493,7 @@ class Module(object):
         else:
             event["stdout"].write("%s%s %s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operatorCode"],
                 query["trainid"], query["serviceType"],
-                Utils.color(Utils.COLOR_LIGHTBLUE), done_count, Utils.color(Utils.FONT_RESET),
+                Utils.color(done_count, Utils.COLOR_LIGHTBLUE),
                 len(stations_filtered), total_count,
                 ", ".join([s["summary"] for s in stations_filtered])))
 

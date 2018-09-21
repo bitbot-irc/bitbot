@@ -19,7 +19,7 @@ CHOICES = [
     "It is certain",
     "Naturally",
     "Reply hazy, try again later",
-    Utils.color(4) + Utils.underline("DO NOT WASTE MY TIME"),
+    Utils.underline(Utils.color("DO NOT WASTE MY TIME", Utils.COLOR_RED)),
     "Hmm... Could be!",
     "I'm leaning towards no",
     "Without a doubt",

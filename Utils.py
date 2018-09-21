@@ -156,12 +156,12 @@ FONT_BOLD, FONT_ITALIC, FONT_UNDERLINE, FONT_INVERT = ("\x02", "\x1D",
     "\x1F", "\x16")
 FONT_COLOR, FONT_RESET = "\x03", "\x0F"
 
-def color(foreground, background=None):
+def color(s, foreground, background=None):
     foreground = str(foreground).zfill(2)
     if background:
         background = str(background).zfill(2)
-    return "%s%s%s" % (FONT_COLOR, foreground,
-        "" if not background else ",%s" % background)
+    return "%s%s%s%s%s" % (FONT_COLOR, foreground,
+        "" if not background else ",%s" % background, s, FONT_COLOR)
 
 def bold(s):
     return "%s%s%s" % (FONT_BOLD, s, FONT_BOLD)
