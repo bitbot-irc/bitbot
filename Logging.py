@@ -20,7 +20,8 @@ class Log(object):
 
         formatter = BitBotFormatter(
             "%(asctime)s [%(levelname)s] %(message)s",
-            "%Y-%m-%dT%H:%M:%S.%f%z")
+            "%Y-%m-%dT%H:%M:%S.%fZ")
+        formatter.converter = time.gmtime
 
         stdout_handler = logging.StreamHandler(sys.stdout)
         stdout_handler.setLevel(logging.INFO)
