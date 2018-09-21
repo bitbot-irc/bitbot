@@ -21,7 +21,7 @@ class Module(object):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
         if event["message"].startswith("s/") and len(sed_split) > 2:
             if event["action"] or not Utils.get_closest_setting(
-                    event, "sed", True):
+                    event, "sed", False):
                 return
 
             regex_flags = 0
