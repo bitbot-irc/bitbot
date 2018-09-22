@@ -70,9 +70,6 @@ class Module(object):
     def new_channel(self, event):
         self.bootstrap(event["channel"])
 
-    def has_command(self, command):
-        return command.lower() in self.events.on("received").on("command").get_children()
-
     def bootstrap(self, channel):
         self.init_game_var(channel)
         # getset
