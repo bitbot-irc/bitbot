@@ -97,7 +97,9 @@ class Module(object):
     def clear_ducks(self, channel):
         rand_time = self.generate_next_duck_time()
 
-        del channel.games["ducks"]
+        if hasattr(channel.games, "ducks"):
+            del channel.games["ducks"]
+
         channel.games["ducks"] = {'messages': 0, 'duck_spawned': 0,
                                   'unique_users': [],
                                   'next_duck_time': rand_time,
