@@ -100,6 +100,7 @@ class Module(object):
     def clear_ducks(self, channel):
         rand_time = self.generate_next_duck_time()
 
+        del channel.games["ducks"]
         channel.games["ducks"] = {'messages': 0, 'duck_spawned': 0,
                                   'unique_users': [],
                                   'next_duck_time': rand_time,
@@ -126,10 +127,11 @@ class Module(object):
         rand_time = random.randint(int(time()) + 1, int(time()) + 2)
         return rand_time
 
-    def is_duck_visible(self, event):
+    def is_duck_visible(self, event, decoy=False):
         channel = event["target"]
 
-        visible = channel.games["ducks"]["duck_spawned"]
+        visible = channel.games["ducks"]["decoy_spawned"] if \
+            decoy else channel.games["ducks"]["duck_spawned"]
         return visible
 
     def should_kick(self, event):
@@ -259,11 +261,12 @@ class Module(object):
         if self.is_duck_channel(channel) == False:
             return
 
-        if self.is_duck_visible(event) == False:
+        if self.is_duck_visible(event, False) == False:
             if self.should_kick(event):
                 self.kick_bef(event)
-                self.clear_ducks(channel)
                 event.eat()
+
+            self.clear_ducks(channel)
             return
 
         channel.games["ducks"][
@@ -293,11 +296,12 @@ class Module(object):
         if self.is_duck_channel(channel) == False:
             return
 
-        if self.is_duck_visible(event) == False:
+        if self.is_duck_visible(event, False) == False:
             if self.should_kick(event):
                 self.kick_bang(event)
-                self.clear_ducks(channel)
                 event.eat()
+
+            self.clear_ducks(channel)
             return
 
         channel.games["ducks"][

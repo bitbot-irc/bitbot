@@ -29,7 +29,8 @@ class Out(object):
                     ].decode("utf8").lstrip())
             else:
                 self._text = ""
-            self.target.send_message(text, prefix="[%s] " % self.prefix())
+            self.target.send_message(text, prefix=Utils.FONT_RESET + "[%s] " %
+                                                         self.prefix())
     def set_prefix(self, prefix):
         self.module_name = prefix
     def has_text(self):
