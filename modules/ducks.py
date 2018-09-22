@@ -109,10 +109,8 @@ class Module(object):
         #   channel
         self.clear_ducks(channel)
 
-        min_unique = channel.get_setting("ducks-min-unique",
-                                         0)
-        min_messages = channel.get_setting("ducks-min-messages",
-                                           0)
+        min_unique = channel.get_setting("ducks-min-unique", 0)
+        min_messages = channel.get_setting("ducks-min-messages", 0)
 
         if min_unique == 0:
             channel.set_setting("ducks-min-unique", DUCK_MINIMUM_UNIQUE)
@@ -121,7 +119,7 @@ class Module(object):
             channel.set_setting("ducks-min-messages", DUCK_MINIMUM_MESSAGES)
 
     def generate_next_duck_time(self):
-        rand_time = random.randint(int(time()) + 1, int(time()) + 2)
+        rand_time = random.randint(int(time()) + 360, int(time()) + 1200)
         return rand_time
 
     def is_duck_visible(self, event, decoy=False):
