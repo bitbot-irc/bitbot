@@ -24,6 +24,8 @@ class Module(object):
             help="Find a video on youtube", usage="[query]")
         events.on("received.message.channel").hook(self.channel_message)
 
+        events.on("get.youtubefromlastfm").hook(self.get_yt_from_lastfm)
+
         exports.add("channelset", {"setting": "auto-youtube",
             "help": "Disable/Enable automatically getting info from "
             "youtube URLs", "validate": Utils.bool_or_none})
@@ -62,6 +64,22 @@ class Module(object):
             return "%s (%s) uploaded by %s, %s views%s %s" % (
                 video_title, video_duration, video_uploader, "{:,}".format(
                 int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
+
+    def get_yt_from_lastfm(self, event):
+        search = event["query"]
+        video_id = ""
+
+        search_page = Utils.get_url(URL_YOUTUBESEARCH,
+            get_params={"q": search, "part": "snippet",
+            "maxResults": "1", "type": "video",
+            "key": self.bot.config["google-api-key"]},
+             json=True)
+
+        if search_page:
+            if search_page["pageInfo"]["totalResults"] > 0:
+                video_id = search_page["items"][0]["id"]["videoId"]
+                return "https://youtu.be/%s" % video_id
+
 
     def yt(self, event):
         video_id = None
