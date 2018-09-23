@@ -199,7 +199,7 @@ class Module(object):
             return
 
         if not permission in permissions:
-            event["stderr"].write("%s already has permission '%s'" % (
+            event["stderr"].write("%s doesn't have permission '%s'" % (
                 target.nickname, permission))
         else:
             permissions.remove(permission)
