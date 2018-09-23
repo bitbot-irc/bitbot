@@ -45,6 +45,7 @@ if len(servers):
 else:
     try:
         if bool_input("no servers found, add one?"):
+            alias = input("alias: ")
             hostname = input("hostname: ")
             port = int(input("port: "))
             tls = bool_input("tls?")
@@ -53,7 +54,7 @@ else:
             nickname = input("nickname: ")
             username = input("username: ")
             realname = input("realname: ")
-            database.servers.add(hostname, port, password, ipv4,
+            database.servers.add(alias, hostname, port, password, ipv4,
                 tls, nickname, username, realname)
     except KeyboardInterrupt:
         print()
