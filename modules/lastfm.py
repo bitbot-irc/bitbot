@@ -1,6 +1,7 @@
 #--require-config lastfm-api-key
 
 import Utils
+import time
 
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
@@ -36,6 +37,16 @@ class Module(object):
                 track_name = now_playing["name"]
                 artist = now_playing["artist"]["#text"]
 
+                if '@attr' in now_playing:
+                    np = True
+                else:
+                    played = int(now_playing["date"]["uts"])
+                    timenow = int(time.time())
+                    np = bool(timenow - played > 240)
+
+                time_language = "last listened to" if np == False \
+                                                    else "is now playing"
+
                 ytquery = " - ".join([artist, track_name])
 
                 short_url = self.events.on(
@@ -65,8 +76,10 @@ class Module(object):
                         "s" if play_count > 1 else "")
 
                 event["stdout"].write(
-                    "%s is now playing: %s - %s%s%s%s" % (
-                    shown_username, artist, track_name, play_count, tags,
+                    "%s %s: %s - %s%s%s%s" % (
+                    shown_username, time_language, artist, track_name,
+                    play_count,
+                    tags,
                     short_url))
             else:
                 event["stderr"].write(
