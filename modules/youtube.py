@@ -24,7 +24,7 @@ class Module(object):
             help="Find a video on youtube", usage="[query]")
         events.on("received.message.channel").hook(self.channel_message)
 
-        events.on("get.youtubefromlastfm").hook(self.get_yt_from_lastfm)
+        events.on("get.searchyoutube").hook(self.search_video)
 
         exports.add("channelset", {"setting": "auto-youtube",
             "help": "Disable/Enable automatically getting info from "
@@ -65,7 +65,7 @@ class Module(object):
                 video_title, video_duration, video_uploader, "{:,}".format(
                 int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
 
-    def get_yt_from_lastfm(self, event):
+    def search_video(self, event):
         search = event["query"]
         video_id = ""
 

@@ -50,7 +50,7 @@ class Module(object):
                 ytquery = " - ".join([artist, track_name])
 
                 short_url = self.events.on(
-                    "get.youtubefromlastfm").call_for_result(
+                    "get.searchyoutube").call_for_result(
                     query=ytquery)
 
                 short_url = " -- " + short_url if short_url else ""
