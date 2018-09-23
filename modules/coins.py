@@ -58,11 +58,6 @@ class Module(object):
             self.send, min_args=2, help="Send coins to a user",
             usage="<nickname> <amount>", authenticated=True)
 
-        events.on("received.command.setcoins").hook(
-            self.set_coins, min_args=2,
-            help="Set a users coins. Do not abuse.",
-            usage="<nickname> <amount>", permission="setcoins",
-            authenticated=True)
 
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
@@ -90,18 +85,6 @@ class Module(object):
         else:
             target.del_setting("coins")
             event["stdout"].write("Reset coins for %s" % target.nickname)
-
-    def set_coins(self, event):
-        target = event["server"].get_user(event["args_split"][0])
-        coins = event["args_split"][1]
-
-        if not coins.isdigit():
-            event["stderr"].write("Cannot set coins for %s, coins must be a " \
-                            + "whole number." % target.nickname)
-            return
-
-        target.set_setting("coins", "%s.0" % coins)
-        event["stdout"].write("Set %s's coins to %s" % (target.nickname, coins))
 
     def give_coins(self, event):
         target = event["server"].get_user(event["args_split"][0])
