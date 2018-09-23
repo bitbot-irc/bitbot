@@ -177,7 +177,7 @@ class Module(object):
         target, registered, permissions = self._get_user_details(
             event["server"], event["args_split"][0])
 
-        if not registered:
+        if target.identified_account == None:
             event["stderr"].write("%s isn't registered" % target.nickname)
             return
 
@@ -194,7 +194,7 @@ class Module(object):
         target, registered, permissions = self._get_user_details(
             event["server"], event["args_split"][0])
 
-        if not registered:
+        if target.identified_account == None:
             event["stderr"].write("%s isn't registered" % target.nickname)
             return
 
