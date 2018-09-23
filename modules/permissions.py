@@ -198,7 +198,7 @@ class Module(object):
             event["stderr"].write("%s isn't registered" % target.nickname)
             return
 
-        if not permission in permissions:
+        if permission not in permissions:
             event["stderr"].write("%s doesn't have permission '%s'" % (
                 target.nickname, permission))
         else:
