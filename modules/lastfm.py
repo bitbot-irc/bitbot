@@ -1,7 +1,7 @@
 #--require-config lastfm-api-key
 
 import Utils
-import time
+from datetime import datetime, timezone
 
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
@@ -41,11 +41,11 @@ class Module(object):
                     np = True
                 else:
                     played = int(now_playing["date"]["uts"])
-                    timenow = int(time.time())
-                    np = bool(timenow - played > 240)
+                    dts = int(datetime.now(tz=timezone.utc).timestamp())
+                    np = bool((dts - played) < 120)
 
-                time_language = "last listened to" if np == False \
-                                                    else "is now playing"
+                time_language = "is listening to" if np else "last " \
+                                                               + "listened to"
 
                 ytquery = " - ".join([artist, track_name])
 
