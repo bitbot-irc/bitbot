@@ -68,7 +68,7 @@ class ModuleManager(object):
                                 "waiting for requirement")
                 else:
                     break
-        module = imp.load_source(name, path)
+        module = imp.load_source("bitbot_%s" % name, path)
 
         if not hasattr(module, "Module"):
             raise ModuleLoadException("module '%s' doesn't have a "
