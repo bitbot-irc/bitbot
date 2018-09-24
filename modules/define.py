@@ -11,7 +11,7 @@ RANDOM_DELAY_SECONDS = 3
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        self.last_called = 0
+        self._last_called = 0
         self.events = events
 
         events.on("received.command.define").hook(self.define,
@@ -47,9 +47,9 @@ class Module(object):
             event["stderr"].write("Failed to load results")
 
     def random_word(self, event):
-        if not self.last_called or (time.time()-self.last_called >=
+        if not self._last_called or (time.time()-self._last_called >=
                 RANDOM_DELAY_SECONDS):
-            self.last_called = time.time()
+            self._last_called = time.time()
 
             page = Utils.get_url(URL_WORDNIK_RANDOM, get_params={
                 "api_key":self.bot.config["wordnik-api-key"],
