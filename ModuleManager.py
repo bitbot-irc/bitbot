@@ -2,6 +2,23 @@ import glob, imp, inspect, os, sys, uuid
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
 
+class ModuleException(Exception):
+    pass
+class ModuleWarning(Exception):
+    pass
+
+class ModuleNotFoundException(ModuleException):
+    pass
+class ModuleNameCollisionException(ModuleException):
+    pass
+class ModuleLoadException(ModuleException):
+    pass
+class ModuleUnloadException(ModuleException):
+    pass
+
+class ModuleNotLoadedWarning(ModuleWarning):
+    pass
+
 class BaseModule(object):
     def __init__(self, bot, events, exports):
         pass
@@ -33,28 +50,32 @@ class ModuleManager(object):
                     # this is a hashflag
                     if line == "#--ignore":
                         # nope, ignore this module.
-                        return None
+                        raise ModuleNotLoadedWarning("module ignored")
                     elif line_split[0] == "#--require-config" and len(
                             line_split) > 1:
                         if not line_split[1].lower() in self.bot.config or not self.bot.config[
                                     line_split[1].lower()]:
                             # nope, required config option not present.
-                            return None
+                            raise ModuleNotLoadedWarning(
+                                "required config not present")
                     elif line_split[0] == "#--require-module" and len(
                             line_split) > 1:
                         if not "bitbot_%s" % line_split[1].lower() in sys.modules:
                             if not line_split[1].lower() in self.waiting_requirement:
                                 self.waiting_requirement[line_split[1].lower()] = set([])
                                 self.waiting_requirement[line_split[1].lower()].add(path)
-                            return None
+                            raise ModuleNotLoadedWarning(
+                                "waiting for requirement")
                 else:
                     break
         module = imp.load_source(name, path)
 
         if not hasattr(module, "Module"):
-            raise ImportError("module '%s' doesn't have a Module class.")
+            raise ModuleLoadException("module '%s' doesn't have a "
+                "'Module' class.")
         if not inspect.isclass(module.Module):
-            raise ImportError("module '%s' has a Module attribute but it is not a class.")
+            raise ModuleLoadException("module '%s' has a 'Module' attribute "
+                "but it is not a class.")
 
         context = str(uuid.uuid4())
         context_events = self.events.new_context(context)
@@ -83,26 +104,32 @@ class ModuleManager(object):
     def load_module(self, name):
         try:
             module = self._load_module(name)
-        except ImportError as e:
-            self.bot.log.error("failed to load module \"%s\": %s",
-                [name, e.msg])
-            return
-        if module:
-            self.modules[module._import_name] = module
-            if name in self.waiting_requirement:
-                for requirement_name in self.waiting_requirement:
-                    self.load_module(requirement_name)
-            self.bot.log.info("Module '%s' loaded", [name])
-        else:
+        except ModuleWarning as warning:
             self.bot.log.error("Module '%s' not loaded", [name])
+            raise
+        except Exception as e:
+            self.bot.log.error("Failed to load module \"%s\": %s",
+                [name, e.msg])
+            raise
+
+        self.modules[module._import_name] = module
+        if name in self.waiting_requirement:
+            for requirement_name in self.waiting_requirement:
+                self.load_module(requirement_name)
+        self.bot.log.info("Module '%s' loaded", [name])
 
     def load_modules(self, whitelist=[], blacklist=[]):
         for path in self.list_modules():
             name = self._module_name(path)
             if name in whitelist or (not whitelist and not name in blacklist):
-                self.load_module(name)
+                try:
+                    self.load_module(name)
+                except ModuleWarning:
+                    pass
 
     def unload_module(self, name):
+        if not name in self.modules:
+            raise ModuleNotFoundException()
         module = self.modules[name]
         del self.modules[name]
 

@@ -1,10 +1,8 @@
-
+import ModuleManager
 
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        self.module_name = False
-        self.silent = False
 
         events.on("received.command.loadmodule").hook(self.load,
             min_args=1, permission="load-module", help="Load a module",
@@ -43,36 +41,34 @@ class Module(object):
         self.bot.modules.unload_module(name)
         event["stdout"].write("Unloaded '%s'" % name)
 
-    def reload(self, event):
-        name = self.module_name if self.module_name != False else event[
-            "args_split"][0].lower()
-        if not name in self.bot.modules.modules:
-            if self.silent == False:
-                event["stderr"].write("Module '%s' isn't loaded" % name)
-            return
+    def _reload(self, name):
         self.bot.modules.unload_module(name)
         self.bot.modules.load_module(name)
 
-        if self.silent == False:
-            event["stdout"].write("Reloaded '%s'" % name)
+    def reload(self, event):
+        name = event["args_split"][0].lower()
+        try:
+            self._reload(name)
+        except ModuleManager.ModuleNotFoundException:
+            event["stderr"].write("Module '%s' isn't loaded" % name)
+            return
+        event["stdout"].write("Reloaded '%s'" % name)
 
     def reload_all(self, event):
-        modules_reloaded = []
-        self.silent = True
-
-        for name, value in self.bot.modules.modules.items():
-            if name in modules_reloaded:
-                pass
-
-            self.module_name = name
-            self.reload(event)
-            modules_reloaded.append(name)
+        reloaded = []
+        failed = []
+        for name in self.bot.modules.modules.keys():
+            try:
+                self._reload(name)
+            except ModuleManager.ModuleNotFoundException:
+                failed.append
+            if not self._reload(event):
+                failed.append(name)
+            else:
+                reloaded.append(name)
 
         event["stdout"].write("Reloaded modules: %s" % \
                               " ".join(modules_reloaded))
-
-        self.silent = False
-        self.module_name = False
 
     def enable(self, event):
         name = event["args_split"][0].lower()
