@@ -9,7 +9,6 @@ class Bot(object):
         self.args = None
         self.database = None
         self.config = None
-        self.bot_directory = os.path.dirname(os.path.realpath(__file__))
         self.servers = {}
         self.running = True
         self.poll = select.epoll()
