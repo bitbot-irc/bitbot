@@ -20,14 +20,13 @@ class Module(object):
         events.on("received.command.randomword").hook(self.random_word,
             help="Generate a random word!")
 
-    def get_definition(self, event):
+    def _get_definition(self, word):
         word = event["args"] if "args" in event else event
-
 
         page = Utils.get_url(URL_WORDNIK % word, get_params={
             "useCanonical": "true", "limit": 1,
             "sourceDictionaries": "wiktionary", "api_key": self.bot.config[
-                "wordnik-api-key"]}, json=True)
+            "wordnik-api-key"]}, json=True)
 
         return page
 
@@ -36,7 +35,8 @@ class Module(object):
             word = event["args"]
         else:
             word = event["buffer"].get(from_self=False)
-        page = self.get_definition(event)
+
+        page = self._get_definition(word)
         if page:
             if len(page):
                 event["stdout"].write("%s: %s" % (page[0]["word"],
@@ -48,33 +48,23 @@ class Module(object):
 
     def random_word(self, event):
         if not self.last_called or (time.time()-self.last_called >=
-                                    RANDOM_DELAY_SECONDS):
-
+                RANDOM_DELAY_SECONDS):
             self.last_called = time.time()
 
             page = Utils.get_url(URL_WORDNIK_RANDOM, get_params={
                 "api_key":self.bot.config["wordnik-api-key"],
                 "min_dictionary_count":1},json=True)
-            if page:
-                if len(page):
-                    definition = self.get_definition(page["word"])
-
-                    if len(definition):
-                        definition = definition[0]
-                    else:
-                        self.events.on("send.stderr").call(module_name="Random",
-                                       target=event["target"],
-                                        message="Try again in a couple of seconds")
-                        return
-
-                    event["stdout"].set_prefix("Random")
-                    event["stdout"].write("Random Word: %s - Definition: %s" % (
-                        page["word"], definition["text"]))
+            if page and len(page):
+                definition = self._get_definition(page["word"])
+                if len(definition):
+                    definition = definition[0]
                 else:
-                    event["stderr"].write("Something has gone terribly wrong")
+                    event["stderr"].write("Try again in a couple of "
+                        "seconds")
+                    return
+                event["stdout"].write("Random Word: %s - Definition: %s" % (
+                    page["word"], definition["text"]))
             else:
                 event["stderr"].write("Failed to load results")
         else:
-            self.events.on("send.stderr").call(module_name="Random",
-                          target=event["target"],
-                          message="Try again in a couple of seconds")
+            event["stderr"].write("Try again in a couple of seconds")
