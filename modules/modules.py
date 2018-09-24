@@ -57,18 +57,23 @@ class Module(object):
     def reload_all(self, event):
         reloaded = []
         failed = []
-        for name in self.bot.modules.modules.keys():
+        for name in list(self.bot.modules.modules.keys()):
             try:
                 self._reload(name)
-            except ModuleManager.ModuleNotFoundException:
-                failed.append
-            if not self._reload(event):
+            except ModuleWarning:
+                continue
+            except:
                 failed.append(name)
-            else:
-                reloaded.append(name)
+                continue
+            reloaded.append(name)
 
-        event["stdout"].write("Reloaded modules: %s" % \
-                              " ".join(modules_reloaded))
+        if reloaded and failed:
+            event["stdout"].write("Reloaded %d modules, %d failed" % (
+                len(reloaded), len(failed)))
+        elif failed:
+            event["stdout"].write("Failed to reload all modules")
+        else:
+            event["stdout"].write("Reloaded %d modules" % len(reloaded))
 
     def enable(self, event):
         name = event["args_split"][0].lower()
