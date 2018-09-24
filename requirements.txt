@@ -1,0 +1,5 @@
+beautifulsoup4
+python-telegram-bot
+scrypt
+suds-jurko
+twitter
