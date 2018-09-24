@@ -1,5 +1,5 @@
 import random
-import Utils
+from src import Utils
 
 CHOICES = [
     "Definitely",

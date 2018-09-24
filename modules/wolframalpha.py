@@ -1,6 +1,6 @@
 #--require-config wolframalpha-api-key
 import json
-import Utils
+from src import Utils
 
 URL_WA = "https://api.wolframalpha.com/v1/result"
 

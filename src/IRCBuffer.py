@@ -1,5 +1,5 @@
 import re
-import Utils
+from . import Utils
 
 class BufferLine(object):
     def __init__(self, sender, message, action, from_self):

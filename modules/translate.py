@@ -1,5 +1,5 @@
 import json, re
-import Utils
+from src import Utils
 
 URL_TRANSLATE = "http://translate.googleapis.com/translate_a/single"
 URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"

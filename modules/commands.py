@@ -1,5 +1,5 @@
 import re
-import EventManager, Utils
+from src import EventManager, Utils
 
 STR_MORE = "%s (more...)" % Utils.FONT_RESET
 STR_CONTINUED = "(...continued) "

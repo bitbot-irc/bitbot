@@ -1,7 +1,7 @@
 #--require-config omdbapi-api-key
 
 import json
-import Utils
+from src import Utils
 
 URL_OMDB = "http://www.omdbapi.com/"
 URL_IMDBTITLE = "http://imdb.com/title/%s"

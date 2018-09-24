@@ -1,5 +1,5 @@
 import socket
-import Utils
+from src import Utils
 
 EVAL_URL = "https://eval.appspot.com/eval"
 

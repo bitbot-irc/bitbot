@@ -1,7 +1,7 @@
 #--require-config wordnik-api-key
 
-import Utils
 import time
+from src import Utils
 
 URL_WORDNIK = "https://api.wordnik.com/v4/word.json/%s/definitions"
 URL_WORDNIK_RANDOM = "https://api.wordnik.com/v4/words.json/randomWord"

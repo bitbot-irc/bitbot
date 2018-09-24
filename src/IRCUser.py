@@ -1,5 +1,5 @@
 import uuid
-import IRCBuffer, Utils
+from . import IRCBuffer, Utils
 
 class User(object):
     def __init__(self, nickname, id, server, bot):

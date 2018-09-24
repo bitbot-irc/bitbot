@@ -1,5 +1,5 @@
 import random
-import Utils
+from src import Utils
 
 INSULT_INTRO = ["Thou art a", "Ye", "Thou", "Thy", "Thee"]
 

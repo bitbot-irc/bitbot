@@ -1,5 +1,5 @@
 import re, traceback
-import Utils
+from src import Utils
 
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^s/")

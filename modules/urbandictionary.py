@@ -1,5 +1,5 @@
 import json, re
-import Utils
+from src import Utils
 
 URL_URBANDICTIONARY = "http://api.urbandictionary.com/v0/define"
 REGEX_DEFNUMBER = re.compile("-n(\d+) \S+")

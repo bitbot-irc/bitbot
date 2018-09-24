@@ -239,11 +239,10 @@ class UserChannelSettings(Table):
             [user_id, channel_id, setting.lower()])
 
 class Database(object):
-    def __init__(self, bot, location="bot.db"):
+    def __init__(self, bot, directory, filename="bot.db"):
         self.bot = bot
-        self.location = location
-        self.full_location = os.path.join(bot.bot_directory,
-            self.location)
+        self.filename = filename
+        self.full_location = os.path.join(directory, filename)
         self.database = sqlite3.connect(self.full_location,
             check_same_thread=False, isolation_level=None)
         self.database.execute("PRAGMA foreign_keys = ON")

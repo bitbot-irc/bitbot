@@ -1,7 +1,7 @@
 #--require-config soundcloud-api-key
 
 import json, re, time
-import Utils
+from src import Utils
 
 URL_SOUNDCLOUD_TRACK = "http://api.soundcloud.com/tracks"
 URL_SOUNDCLOUD_RESOLVE = "http://api.soundcloud.com/resolve"

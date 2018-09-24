@@ -1,5 +1,5 @@
 import re
-import Utils
+from src import Utils
 
 REGEX_URL = re.compile("https?://\S+", re.I)
 

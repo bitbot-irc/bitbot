@@ -1,5 +1,5 @@
 import time
-import Utils
+from src import Utils
 
 SECONDS_MAX = Utils.SECONDS_WEEKS*8
 SECONDS_MAX_DESCRIPTION = "8 weeks"

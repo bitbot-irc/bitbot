@@ -1,5 +1,5 @@
 import json
-import Utils
+from src import Utils
 
 URL_SPOTIFY = "https://api.spotify.com/v1/search"
 

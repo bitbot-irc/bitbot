@@ -1,7 +1,7 @@
 #--require-config google-api-key
 
 import re
-import Utils
+from src import Utils
 
 REGEX_YOUTUBE = re.compile(
     "https?://(?:www.)?(?:youtu.be/|youtube.com/watch\?[\S]*v=)([\w\-]{11})",

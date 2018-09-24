@@ -1,6 +1,6 @@
 #--require-config openweathermap-api-key
 
-import Utils
+from src import Utils
 
 URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
 

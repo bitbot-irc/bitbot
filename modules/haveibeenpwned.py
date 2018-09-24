@@ -1,4 +1,4 @@
-import Utils
+from src import Utils
 
 URL_HAVEIBEENPWNEDAPI = "https://haveibeenpwned.com/api/v2/breachedaccount/%s"
 URL_HAVEIBEENPWNED = "https://haveibeenpwned.com/"

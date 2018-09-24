@@ -24,7 +24,7 @@ class BaseModule(object):
         pass
 
 class ModuleManager(object):
-    def __init__(self, bot, events, exports, directory="modules"):
+    def __init__(self, bot, events, exports, directory):
         self.bot = bot
         self.events = events
         self.exports = exports
@@ -109,7 +109,7 @@ class ModuleManager(object):
             raise
         except Exception as e:
             self.bot.log.error("Failed to load module \"%s\": %s",
-                [name, e.msg])
+                [name, str(e)])
             raise
 
         self.modules[module._import_name] = module

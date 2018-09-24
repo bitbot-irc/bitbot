@@ -1,4 +1,4 @@
-import ModuleManager
+from src import ModuleManager
 
 class Module(object):
     def __init__(self, bot, events, exports):

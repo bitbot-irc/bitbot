@@ -5,7 +5,7 @@
 
 import datetime, re, time, traceback
 import twitter
-import Utils
+from src import Utils
 
 REGEX_TWITTERURL = re.compile(
     "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)

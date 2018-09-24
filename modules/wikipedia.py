@@ -1,4 +1,4 @@
-import Utils
+from src import Utils
 
 URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 

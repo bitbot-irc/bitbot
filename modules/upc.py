@@ -1,4 +1,4 @@
-import Utils
+from src import Utils
 
 UPCITEMDB_URL = "https://api.upcitemdb.com/prod/trial/lookup"
 

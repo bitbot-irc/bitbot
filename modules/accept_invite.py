@@ -1,4 +1,4 @@
-import Utils
+from src import Utils
 
 class Module(object):
     def __init__(self, bot, events, exports):

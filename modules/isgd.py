@@ -1,5 +1,5 @@
 import re
-import Utils
+from src import Utils
 
 ISGD_API_URL = "https://is.gd/create.php"
 REGEX_URL = re.compile("https?://", re.I)

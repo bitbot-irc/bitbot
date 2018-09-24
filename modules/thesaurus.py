@@ -1,6 +1,6 @@
 #--require-config bighugethesaurus-api-key
 
-import Utils
+from src import Utils
 
 URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 

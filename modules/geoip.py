@@ -1,4 +1,4 @@
-import Utils
+from src import Utils
 
 URL_GEOIP = "http://ip-api.com/json/%s"
 

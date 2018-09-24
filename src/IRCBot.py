@@ -1,7 +1,6 @@
 import os, select, sys, threading, time, traceback, uuid
-
-import EventManager, Exports, IRCLineHandler, IRCServer, Logging
-import ModuleManager, Timer
+from . import EventManager, Exports, IRCLineHandler, IRCServer, Logging
+from . import ModuleManager, Timer
 
 class Bot(object):
     def __init__(self):
@@ -14,15 +13,13 @@ class Bot(object):
         self.servers = {}
         self.running = True
         self.poll = select.epoll()
-        self._events = EventManager.EventHook(self)
-        self._exports = Exports.Exports()
-        self.modules = ModuleManager.ModuleManager(self, self._events,
-            self._exports)
-        self.log = Logging.Log(self)
-        self.line_handler = IRCLineHandler.LineHandler(self, self._events)
         self.timers = []
-        self._events.on("timer.reconnect").hook(self.reconnect)
-        self._events.on("boot.done").hook(self.setup_timers)
+
+        self._events = None
+        self._exports = None
+        self.modules = None
+        self.log = None
+        self.line_handler = None
 
     def add_server(self, server_id, connect=True):
         (_, alias, hostname, port, password, ipv4, tls, nickname,

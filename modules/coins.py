@@ -1,5 +1,5 @@
 import datetime, decimal, math, random, re, time
-import Utils
+from src import Utils
 
 SIDES = {"heads": 0, "tails": 1}
 DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes

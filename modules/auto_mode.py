@@ -1,4 +1,4 @@
-import Utils
+from src import Utils
 
 class Module(object):
     _name = "AutoMode"

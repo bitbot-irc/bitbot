@@ -1,5 +1,5 @@
 import uuid
-import IRCBuffer, Utils
+from . import IRCBuffer, Utils
 
 class Channel(object):
     def __init__(self, name, id, server, bot):

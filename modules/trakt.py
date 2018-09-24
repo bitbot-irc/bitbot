@@ -1,6 +1,6 @@
 #--require-config trakt-api-key
 
-import Utils
+from src import Utils
 
 URL_TRAKT = "https://api-v2launch.trakt.tv/users/%s/watching"
 URL_TRAKTSLUG = "https://trakt.tv/%s/%s"

@@ -1,5 +1,5 @@
 import collections, datetime, re
-import Utils
+from src import Utils
 
 URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
 URL_BUS_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"

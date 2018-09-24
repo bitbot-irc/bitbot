@@ -1,7 +1,7 @@
 #--require-config virustotal-api-key
 
 import re
-import Utils
+from src import Utils
 
 URL_VIRUSTOTAL = "https://www.virustotal.com/vtapi/v2/url/report"
 RE_URL = re.compile(r"https?://\S+", re.I)

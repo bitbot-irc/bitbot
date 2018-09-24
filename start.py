@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import argparse, sys, time
-import IRCBot, Config, Database
+import argparse, os, sys, time
+from src import Config, Database, EventManager, Exports, IRCBot
+from src import IRCLineHandler, Logging, ModuleManager
 
 def bool_input(s):
     result = input("%s (Y/n): " % s)
@@ -17,20 +18,29 @@ arg_parser.add_argument("--verbose", "-v", action="store_true")
 
 args = arg_parser.parse_args()
 
-bot = IRCBot.Bot()
-database = Database.Database(bot, args.database)
-config = Config.Config(bot, args.config)
+directory = os.path.dirname(os.path.realpath(__file__))
 
-bot.database = database
-bot.config = config.load_config()
+bot = IRCBot.Bot()
+
+bot._events = events = EventManager.EventHook(bot)
+bot._exports = exports = Exports.Exports()
+bot.modules = modules = ModuleManager.ModuleManager(bot, events, exports,
+    os.path.join(directory, "modules"))
+bot.line_handler = IRCLineHandler.LineHandler(bot, bot._events)
+bot.log = Logging.Log(bot, directory, "bot.log")
+bot.database = Database.Database(bot, directory, args.database)
+bot.config = Config.Config(bot, directory, args.config).load_config()
 bot.args = args
+
+bot._events.on("timer.reconnect").hook(bot.reconnect)
+bot._events.on("boot.done").hook(bot.setup_timers)
 
 whitelist = bot.get_setting("module-whitelist", [])
 blacklist = bot.get_setting("module-blacklist", [])
 bot.modules.load_modules(whitelist=whitelist, blacklist=blacklist)
 
 servers = []
-for server_id, alias in database.servers.get_all():
+for server_id, alias in bot.database.servers.get_all():
     server = bot.add_server(server_id, connect=False)
     if not server == None:
         servers.append(server)
@@ -54,7 +64,7 @@ else:
             nickname = input("nickname: ")
             username = input("username: ")
             realname = input("realname: ")
-            database.servers.add(alias, hostname, port, password, ipv4,
+            bot.database.servers.add(alias, hostname, port, password, ipv4,
                 tls, nickname, username, realname)
     except KeyboardInterrupt:
         print()

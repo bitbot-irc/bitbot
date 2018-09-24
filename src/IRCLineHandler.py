@@ -1,5 +1,5 @@
 import re, threading
-import Utils
+from . import Utils
 
 RE_PREFIXES = re.compile(r"\bPREFIX=\((\w+)\)(\W+)(?:\b|$)")
 RE_CHANMODES = re.compile(

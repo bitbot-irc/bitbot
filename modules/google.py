@@ -1,7 +1,7 @@
 #--require-config google-api-key
 #--require-config google-search-id
 
-import Utils
+from src import Utils
 
 URL_GOOGLESEARCH = "https://www.googleapis.com/customsearch/v1"
 

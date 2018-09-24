@@ -1,5 +1,5 @@
 import collections, socket, ssl, sys, time
-import IRCChannel, IRCUser, Utils
+from . import IRCChannel, IRCUser, Utils
 
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1

@@ -1,11 +1,10 @@
 import configparser, os
 
 class Config(object):
-    def __init__(self, bot, location="bot.conf"):
+    def __init__(self, bot, directory, filename="bot.conf"):
         self.bot = bot
-        self.location = location
-        self.full_location = os.path.join(bot.bot_directory,
-            self.location)
+        self.filename = filename
+        self.full_location = os.path.join(directory, filename)
         self.bot.config = {}
         self.load_config()
 

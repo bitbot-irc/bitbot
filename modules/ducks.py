@@ -1,9 +1,7 @@
 import random
 from operator import itemgetter
 from time import time
-import EventManager
-
-import Utils
+from src import EventManager, Utils
 
 DUCK_TAIL = "・゜゜・。。・゜゜"
 DUCK_HEAD = ["\_o< ", "\_O< ", "\_0< ", "\_\u00f6< ", "\_\u00f8< ",
