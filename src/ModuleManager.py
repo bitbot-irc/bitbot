@@ -38,6 +38,8 @@ class ModuleManager(object):
         return os.path.basename(path).rsplit(".py", 1)[0].lower()
     def _module_path(self, name):
         return os.path.join(self.directory, "%s.py" % name)
+    def _import_name(self, name):
+        return "bitbot_%s" % name
 
     def _load_module(self, name):
         path = self._module_path(name)
@@ -68,7 +70,7 @@ class ModuleManager(object):
                                 "waiting for requirement")
                 else:
                     break
-        module = imp.load_source("bitbot_%s" % name, path)
+        module = imp.load_source(self._import_name(name), path)
 
         if not hasattr(module, "Module"):
             raise ModuleLoadException("module '%s' doesn't have a "
@@ -137,7 +139,7 @@ class ModuleManager(object):
         self.events.purge_context(context)
         self.exports.purge_context(context)
 
-        del sys.modules[name]
+        del sys.modules[self._import_name(name)]
         references = sys.getrefcount(module)
         del module
         references -= 1 # 'del module' removes one reference
