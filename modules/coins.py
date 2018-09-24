@@ -26,7 +26,6 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
 class Module(object):
-
     def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received.command.coins").hook(self.coins,
@@ -57,7 +56,6 @@ class Module(object):
         events.on("received.command.sendcoins").hook(
             self.send, min_args=2, help="Send coins to a user",
             usage="<nickname> <amount>", authenticated=True)
-
 
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
