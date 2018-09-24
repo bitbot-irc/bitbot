@@ -26,6 +26,7 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
 class Module(object):
+
     def __init__(self, bot, events, exports):
         self.bot = bot
         events.on("received.command.coins").hook(self.coins,
@@ -56,6 +57,7 @@ class Module(object):
         events.on("received.command.sendcoins").hook(
             self.send, min_args=2, help="Send coins to a user",
             usage="<nickname> <amount>", authenticated=True)
+
 
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
@@ -107,8 +109,8 @@ class Module(object):
 
         top_10 = sorted(all_coins.keys())
         top_10 = sorted(top_10, key=all_coins.get, reverse=True)[:10]
-        top_10 = ", ".join("%s (%s)" % (Utils.prevent_highlight(event[
-            "server"].get_user(nickname).nickname), "{0:.2f}".format(
+        top_10 = ", ".join("%s (%s)" % (Utils.prevent_highlight(
+            event["server"].get_user(nickname).nickname), "{0:.2f}".format(
             all_coins[nickname])) for nickname in top_10)
         event["stdout"].write("Richest users: %s" % top_10)
 

@@ -23,9 +23,16 @@ class Module(object):
         self.events = events
 
         events.on("received.command.bef").hook(self.befriend,
-            priority=EventManager.PRIORITY_HIGH, help="Befriend a duck!")
+            priority=EventManager.PRIORITY_HIGH,
+            help="Befriend a duck!")
         events.on("received.command.bang").hook(self.shoot,
-            priority=EventManager.PRIORITY_HIGH, help="Shoot a duck! Meanie.")
+            priority=EventManager.PRIORITY_HIGH,
+            help="Shoot a duck! Meanie.")
+        events.on("received.command.decoy").hook(
+            self.duck_decoy,
+            priority=EventManager.PRIORITY_HIGH,
+            help="Lay out a sneaky decoy!")
+
 
         events.on("received.command.friends").hook(self.duck_friends,
             help="See who the friendliest people to ducks are!")
@@ -41,10 +48,20 @@ class Module(object):
             "help": "Should the bot kick if there's no duck?",
              "validate": Utils.bool_or_none})
 
+        exports.add("channelset", {"setting": "ducks-min-unique",
+                                   "help": "Minimum unique users required to "
+                                           "talk before a duck spawns.",
+                                   "validate": Utils.int_or_none})
+
+        exports.add("channelset", {"setting": "ducks-min-messages",
+                                   "help": "Minimum messages between ducks "
+                                           "spawning.",
+                                   "validate": Utils.int_or_none})
+
         events.on("new.channel").hook(self.new_channel)
 
         events.on("received.message.channel").hook(
-            self.channel_message)
+            self.channel_message, EventManager.PRIORITY_LOW)
 
         for server in self.bot.servers.values():
             for channel in server.channels.values():
@@ -80,27 +97,43 @@ class Module(object):
     def clear_ducks(self, channel):
         rand_time = self.generate_next_duck_time()
 
+        if hasattr(channel.games, "ducks"):
+            del channel.games["ducks"]
+
         channel.games["ducks"] = {'messages': 0, 'duck_spawned': 0,
                                   'unique_users': [],
-                                  'next_duck_time': rand_time}
+                                  'next_duck_time': rand_time,
+                                  'decoy_spawned': 0, 'decoy_requested': 0,
+                                  'next_decoy_time': rand_time}
 
     def start_game(self, channel):
         #   event is immediately the IRCChannel.Channel() event for the current
         #   channel
         self.clear_ducks(channel)
 
+        min_unique = channel.get_setting("ducks-min-unique", 0)
+        min_messages = channel.get_setting("ducks-min-messages", 0)
+
+        if min_unique == 0:
+            channel.set_setting("ducks-min-unique", DUCK_MINIMUM_UNIQUE)
+
+        if min_messages == 0:
+            channel.set_setting("ducks-min-messages", DUCK_MINIMUM_MESSAGES)
+
     def generate_next_duck_time(self):
         rand_time = random.randint(int(time()) + 360, int(time()) + 1200)
         return rand_time
 
-    def is_duck_visible(self, event):
+    def is_duck_visible(self, event, decoy=False):
         channel = event["target"]
 
-        visible = bool(channel.games["ducks"]["duck_spawned"])
+        visible = channel.games["ducks"]["decoy_spawned"] if \
+            decoy else channel.games["ducks"]["duck_spawned"]
         return visible
 
     def should_kick(self, event):
         channel = event["target"]
+
         return channel.get_setting("ducks-kick", False)
 
     def kick_bef(self, event):
@@ -117,29 +150,53 @@ class Module(object):
         channel.send_kick(target,
                           "You tried shooting a non-existent duck. Creepy!")
 
+    def duck_decoy(self, event):
+        channel = event["target"]
+        if self.is_duck_channel(channel) == False:
+            return
+
+        if self.is_duck_visible(event):
+            return
+
+        game = channel.games["ducks"]
+        game["decoy_requested"] = 1
+
+        event.eat()
+
+
     def should_generate_duck(self, event):
         channel = event["channel"]
         game = channel.games["ducks"]
 
-        spawned = game["duck_spawned"]
+        spawned = int(game["decoy_spawned"] or game["duck_spawned"])
+        decoy = bool(game["decoy_requested"])
         unique = len(game["unique_users"])
         messages = game["messages"]
-        next_duck = game["next_duck_time"]
+        next_duck = game["next_decoy_time"] if decoy else game["next_duck_time"]
+
+        min_unique = 1 if decoy else channel.get_setting("ducks-min-unique",
+                                          DUCK_MINIMUM_UNIQUE)
+        min_messages = channel.get_setting("ducks-min-messages", DUCK_MINIMUM_MESSAGES)
+
+        requirement = (unique >= min_unique and messages >= min_messages)
 
         # DUCK_MINIMUM_MESSAGES = 10
         # DUCK_MINIMUM_UNIQUE = 3
 
-        if spawned == 0 and next_duck < time() and unique >= \
-                DUCK_MINIMUM_UNIQUE and messages >= DUCK_MINIMUM_MESSAGES:
-            return True
+        if spawned == 0 and next_duck < time():
+            if requirement:
+                return True
+            else:
+                return False
         else:
             return False
 
     def show_duck(self, event):
         channel = event["channel"]
+        game = channel.games["ducks"]
         duck = ""
 
-        if channel.games["ducks"]["duck_spawned"] == 1:
+        if game["duck_spawned"] == 1 or game["decoy_spawned"] == 1:
             return
 
         duck += DUCK_TAIL
@@ -154,7 +211,15 @@ class Module(object):
             duck += random.choice(DUCK_MESSAGE)
 
         channel.send_message(duck)
-        channel.games["ducks"]["duck_spawned"] = 1
+
+        # Decoys take priority over regular ducks.
+        if game["decoy_requested"] == 1:
+            game["decoy_spawned"] = 1
+            game["decoy_requested"] = 0
+
+            game["next_duck_time"] = self.generate_next_duck_time()
+        else:
+            game["duck_spawned"] = 1
 
     def channel_message(self, event):
         if not event["channel"].get_setting("ducks-enabled", False):
@@ -167,8 +232,8 @@ class Module(object):
         user = event["user"]
         game = channel.games["ducks"]
 
-        if game["duck_spawned"] == 1 or channel.has_user(
-                event["user"]) == False:
+        if game["decoy_spawned"] == 1 or game["duck_spawned"] == 1 or \
+                channel.has_user(event["user"]) == False:
             return
 
         unique = game["unique_users"]
@@ -193,9 +258,12 @@ class Module(object):
         if self.is_duck_channel(channel) == False:
             return
 
-        if self.is_duck_visible(event) == False:
+        if self.is_duck_visible(event, False) == False:
             if self.should_kick(event):
                 self.kick_bef(event)
+                event.eat()
+
+            self.clear_ducks(channel)
             return
 
         channel.games["ducks"][
@@ -214,6 +282,7 @@ class Module(object):
         event["stdout"].write(msg)
 
         self.clear_ducks(channel)
+        event.eat()
 
     def shoot(self, event):
         channel = event["target"]
@@ -224,9 +293,12 @@ class Module(object):
         if self.is_duck_channel(channel) == False:
             return
 
-        if self.is_duck_visible(event) == False:
+        if self.is_duck_visible(event, False) == False:
             if self.should_kick(event):
                 self.kick_bang(event)
+                event.eat()
+
+            self.clear_ducks(channel)
             return
 
         channel.games["ducks"][
@@ -245,6 +317,7 @@ class Module(object):
         event["stdout"].write(msg)
 
         self.clear_ducks(channel)
+        event.eat()
 
     def duck_stats(self, event):
         user = event["user"]
@@ -285,6 +358,7 @@ class Module(object):
                  Utils.bold(tf), Utils.bold(cf), Utils.bold(channel))
 
         event["stdout"].write(Utils.bold(nick) + ": " + msg)
+        event.eat()
 
     def duck_enemies(self, event):
         the_enemy = event["server"].find_all_user_channel_settings("ducks-shot")
@@ -318,6 +392,7 @@ class Module(object):
         sentence += ", ".join(build)
 
         event["stdout"].write(sentence)
+        event.eat()
 
     def duck_friends(self, event):
         friends = event["server"].find_all_user_channel_settings(
@@ -353,3 +428,4 @@ class Module(object):
         sentence += ", ".join(build)
 
         event["stdout"].write(sentence)
+        event.eat()

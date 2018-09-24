@@ -1,12 +1,15 @@
 #--require-config lastfm-api-key
 
 import Utils
+from datetime import datetime, timezone
 
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
 class Module(object):
+    _name = "last.fm"
     def __init__(self, bot, events, exports):
         self.bot = bot
+        self.events = events
 
         exports.add("set", {"setting": "lastfm",
             "help": "Set username on last.fm"})
@@ -34,6 +37,24 @@ class Module(object):
                 track_name = now_playing["name"]
                 artist = now_playing["artist"]["#text"]
 
+                if '@attr' in now_playing:
+                    np = True
+                else:
+                    played = int(now_playing["date"]["uts"])
+                    dts = int(datetime.now(tz=timezone.utc).timestamp())
+                    np = bool((dts - played) < 120)
+
+                time_language = "is listening to" if np else "last " \
+                                                               + "listened to"
+
+                ytquery = " - ".join([artist, track_name])
+
+                short_url = self.events.on(
+                    "get.searchyoutube").call_for_result(
+                    query=ytquery)
+
+                short_url = " -- " + short_url if short_url else ""
+
                 info_page = Utils.get_url(URL_SCROBBLER, get_params={
                     "method": "track.getInfo", "artist": artist,
                     "track": track_name, "autocorrect": "1",
@@ -55,8 +76,11 @@ class Module(object):
                         "s" if play_count > 1 else "")
 
                 event["stdout"].write(
-                    "%s is now playing: %s - %s%s%s" % (
-                    shown_username, artist, track_name, play_count, tags))
+                    "%s %s: %s - %s%s%s%s" % (
+                    shown_username, time_language, artist, track_name,
+                    play_count,
+                    tags,
+                    short_url))
             else:
                 event["stderr"].write(
                     "The user '%s' has never scrobbled before" % (
