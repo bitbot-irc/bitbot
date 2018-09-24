@@ -52,6 +52,14 @@ class Module(object):
         except ModuleManager.ModuleNotFoundException:
             event["stderr"].write("Module '%s' isn't loaded" % name)
             return
+        except ModuleManager.ModuleWarning as warning:
+            event["stderr"].write("Module '%s' not loaded: %s" % (
+                name, str(e)))
+            return
+        except Exception as e:
+            event["stderr"].write("Failed to reload module '%s': %s" % (
+                name, str(e)))
+            return
         event["stdout"].write("Reloaded '%s'" % name)
 
     def reload_all(self, event):
