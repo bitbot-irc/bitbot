@@ -15,14 +15,15 @@ class Module(object):
             next_due=time.time()+until_next_hour)
 
     def backup(self, event):
-        files = glob.glob("%s.*" % self.bot.args.database)
+        full_location =  self.bot.database.full_location
+        files = glob.glob("%s.*" % full_location)
         files = sorted(files)
 
         if len(files) == 5:
             os.remove(files[0])
 
         suffix = datetime.datetime.now().strftime("%y-%m-%d.%H:%M:%S")
-        backup_file = "%s.%s" % (self.bot.args.database, suffix)
-        shutil.copy2(self.bot.args.database, backup_file)
+        backup_file = "%s.%s" % (full_location, suffix)
+        shutil.copy2(fulllocation, backup_file)
 
         event["timer"].redo()

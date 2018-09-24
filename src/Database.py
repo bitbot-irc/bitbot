@@ -239,7 +239,7 @@ class UserChannelSettings(Table):
             [user_id, channel_id, setting.lower()])
 
 class Database(object):
-    def __init__(self, bot, directory, filename="bot.db"):
+    def __init__(self, bot, directory, filename):
         self.bot = bot
         self.filename = filename
         self.full_location = os.path.join(directory, filename)

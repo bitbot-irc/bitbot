@@ -12,8 +12,10 @@ arg_parser = argparse.ArgumentParser(
     description="Python3 event-driven asynchronous modular IRC bot")
 arg_parser.add_argument("--config", "-c", default="bot.conf",
     help="Location of the JSON config file")
-arg_parser.add_argument("--database", "-d", default="bot.db",
+arg_parser.add_argument("--database", "-d", default="databases/bot.db",
     help="Location of the sqlite3 database file")
+arg_parser.add_argument("--log", "-l", default="logs/bot.log",
+    help="Location of the main log file")
 arg_parser.add_argument("--verbose", "-v", action="store_true")
 
 args = arg_parser.parse_args()
@@ -27,7 +29,7 @@ bot._exports = exports = Exports.Exports()
 bot.modules = modules = ModuleManager.ModuleManager(bot, events, exports,
     os.path.join(directory, "modules"))
 bot.line_handler = IRCLineHandler.LineHandler(bot, bot._events)
-bot.log = Logging.Log(bot, directory, "bot.log")
+bot.log = Logging.Log(bot, directory, args.log)
 bot.database = Database.Database(bot, directory, args.database)
 bot.config = Config.Config(bot, directory, args.config).load_config()
 bot.args = args
