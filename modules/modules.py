@@ -54,7 +54,7 @@ class Module(object):
             return
         except ModuleManager.ModuleWarning as warning:
             event["stderr"].write("Module '%s' not loaded: %s" % (
-                name, str(e)))
+                name, str(warning)))
             return
         except Exception as e:
             event["stderr"].write("Failed to reload module '%s': %s" % (
