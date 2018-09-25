@@ -24,6 +24,6 @@ class Module(object):
 
         suffix = datetime.datetime.now().strftime("%y-%m-%d.%H:%M:%S")
         backup_file = "%s.%s" % (full_location, suffix)
-        shutil.copy2(fulllocation, backup_file)
+        shutil.copy2(full_location, backup_file)
 
         event["timer"].redo()
