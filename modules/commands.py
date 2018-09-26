@@ -173,15 +173,16 @@ class Module(object):
             command = event["message_split"][0].lower()
             self.message(event, command)
 
+    def _get_help(self, hook):
+        return hook.kwargs.get("help", None) or hook.function.__doc__
+
     def help(self, event):
         if event["args"]:
             command = event["args_split"][0].lower()
             if command in self.events.on("received").on(
                     "command").get_children():
                 hooks = self.events.on("received.command").on(command).get_hooks()
-                kwargs = hooks[0].kwargs
-                help = hooks[0].kwargs.get("help", None
-                    ) or hooks[0].function.__doc__
+                help = self._get_help(hooks[0])
 
                 if help:
                     event["stdout"].write("%s: %s" % (command, help.strip()))
@@ -193,7 +194,8 @@ class Module(object):
             help_available = []
             for child in self.events.on("received.command").get_children():
                 hooks = self.events.on("received.command").on(child).get_hooks()
-                if hooks and "help" in hooks[0].kwargs:
+
+                if hooks and self._get_help(hooks[0]):
                     help_available.append(child)
             help_available = sorted(help_available)
             event["stdout"].write("Commands: %s" % ", ".join(help_available))

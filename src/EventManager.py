@@ -7,7 +7,8 @@ PRIORITY_LOW = 3
 PRIORITY_MONITOR = 4
 
 DEFAULT_PRIORITY = PRIORITY_MEDIUM
-DEFAULT_DELIMITER = "."
+DEFAULT_EVENT_DELIMITER = "."
+DEFAULT_MULTI_DELIMITER = "|"
 
 class Event(object):
     def __init__(self, bot, name, **kwargs):
@@ -62,7 +63,8 @@ class EventHookContext(object):
             **kwargs):
         self._parent._context_hook(self.context, function, priority, replay,
             kwargs)
-    def on(self, subevent, *extra_subevents, delimiter=DEFAULT_DELIMITER):
+    def on(self, subevent, *extra_subevents,
+            delimiter=DEFAULT_EVENT_DELIMITER):
         return self._parent._context_on(self.context, subevent,
             extra_subevents, delimiter)
     def call_for_result(self, default=None, **kwargs):
@@ -97,7 +99,7 @@ class EventHook(object):
         while not parent == None and not parent.name == None:
             path.append(parent.name)
             parent = parent.parent
-        return DEFAULT_DELIMITER.join(path[::-1])
+        return DEFAULT_EVENT_DELIMITER.join(path[::-1])
 
     def new_context(self, context):
         return EventHookContext(self, context)
@@ -122,29 +124,38 @@ class EventHook(object):
                 self._call(kwargs)
         self._stored_events = None
 
-    def on(self, subevent, *extra_subevents, delimiter=DEFAULT_DELIMITER):
+    def _make_multiple_hook(self, source, context, events):
+        multiple_event_hook = MultipleEventHook()
+        for event in events:
+            event_hook = source.get_child(event)
+            if not context == None:
+                event_hook = event_hook.new_context(context)
+            multiple_event_hook._add(event_hook)
+        return multiple_event_hook
+
+    def on(self, subevent, *extra_subevents,
+            delimiter=DEFAULT_EVENT_DELIMITER):
         return self._on(subevent, extra_subevents, None, delimiter)
     def _context_on(self, context, subevent, extra_subevents,
-            delimiter=DEFAULT_DELIMITER):
+            delimiter=DEFAULT_EVENT_DELIMITER):
         return self._on(subevent, extra_subevents, context, delimiter)
     def _on(self, subevent, extra_subevents, context, delimiter):
         if delimiter in subevent:
             event_chain = subevent.split(delimiter)
             event_obj = self
             for event_name in event_chain:
+                if DEFAULT_MULTI_DELIMITER in event_name:
+                    return self._make_multiple_hook(self, context,
+                        event_name.split(DEFAULT_MULTI_DELIMITER))
+
                 event_obj = event_obj.get_child(event_name)
             if not context == None:
                 return event_obj.new_context(context)
             return event_obj
 
         if extra_subevents:
-            multiple_event_hook = MultipleEventHook()
-            for extra_subevent in (subevent,)+extra_subevents:
-                child = self.get_child(extra_subevent)
-                if not context == None:
-                    child = child.new_context(context)
-                multiple_event_hook._add(child)
-            return multiple_event_hook
+            return self._make_multiple_hook(self, context,
+                (subevent,)+extra_subevents)
 
         child = self.get_child(subevent)
         if not context == None:
