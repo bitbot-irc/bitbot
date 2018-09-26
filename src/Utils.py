@@ -285,3 +285,6 @@ def hook(event, **kwargs):
             {"event": event, "kwargs": kwargs})
         return func
     return _hook_func
+
+def strip_html(s):
+    return bs4.BeautifulSoup(s, "lxml").get_text()
