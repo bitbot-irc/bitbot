@@ -145,7 +145,7 @@ class EventHook(object):
             event_obj = self
             for event_name in event_chain:
                 if DEFAULT_MULTI_DELIMITER in event_name:
-                    return self._make_multiple_hook(self, context,
+                    return self._make_multiple_hook(event_obj, context,
                         event_name.split(DEFAULT_MULTI_DELIMITER))
 
                 event_obj = event_obj.get_child(event_name)
