@@ -94,7 +94,7 @@ class ModuleManager(object):
                 hooks = getattr(attribute, BITBOT_HOOKS_MAGIC)
                 for hook in hooks:
                     context_events.on(hook["event"]).hook(attribute,
-                        **hook["kwargs"])
+                        docstring=attribute.__doc__, **hook["kwargs"])
 
         module_object._context = context
         module_object._import_name = name

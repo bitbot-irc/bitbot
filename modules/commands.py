@@ -179,8 +179,12 @@ class Module(object):
             if command in self.events.on("received").on(
                     "command").get_children():
                 hooks = self.events.on("received.command").on(command).get_hooks()
-                if hooks and "help" in hooks[0].kwargs:
-                    event["stdout"].write("%s: %s" % (command, hooks[0].kwargs["help"]))
+                kwargs = hooks[0].kwargs
+                help = hooks[0].kwargs.get("help", None
+                    ) or hooks[0].function.__doc__
+
+                if help:
+                    event["stdout"].write("%s: %s" % (command, help.strip()))
                 else:
                     event["stderr"].write("No help available for %s" % command)
             else:
