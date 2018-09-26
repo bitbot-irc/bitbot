@@ -20,6 +20,3 @@ BitBot's National Rail module can optionally include output from Network Rail's 
 Just run `./start.py`
 
 On first boot, he'll ask for a first server to connect to then exit. do `./start.py` again and he'll connect to that server and join #bitbot (to get him to join other channels, simply invite him to them.)
-
-## Data storage
-The main data storage for Bitbot is done in his sqlite3 database, `databases/bot.db`.
