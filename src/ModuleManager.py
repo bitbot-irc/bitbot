@@ -74,10 +74,10 @@ class ModuleManager(object):
 
         if not hasattr(module, "Module"):
             raise ModuleLoadException("module '%s' doesn't have a "
-                "'Module' class.")
+                "'Module' class." % name)
         if not inspect.isclass(module.Module):
             raise ModuleLoadException("module '%s' has a 'Module' attribute "
-                "but it is not a class.")
+                "but it is not a class." % name)
 
         context = str(uuid.uuid4())
         context_events = self.events.new_context(context)
