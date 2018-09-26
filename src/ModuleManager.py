@@ -99,8 +99,9 @@ class ModuleManager(object):
         module_object._context = context
         module_object._import_name = name
 
-        assert not module_object._name in self.modules, (
-            "module name '%s' attempted to be used twice.")
+        if name in self.modules:
+            raise ModuleNameCollisionException("Module name '%s' "
+                "attempted to be used twice")
         return module_object
 
     def load_module(self, name):
