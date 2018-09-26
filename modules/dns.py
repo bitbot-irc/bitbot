@@ -1,13 +1,14 @@
 import socket
+from src import ModuleManager, Utils
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "DNS"
-    def __init__(self, bot, events, exports):
-        events.on("received.command.dns").hook(self.dns, min_args=1,
-            help="Get all addresses for a given hostname (IPv4/IPv6)",
-            usage="<hostname>")
 
+    @Utils.hook("received.command.dns", min_args=1, usage="<hostname>")
     def dns(self, event):
+        """
+        Get all addresses for a given hostname (IPv4/IPv6)
+        """
         hostname = event["args_split"][0]
         try:
             address_info = socket.getaddrinfo(hostname, 1, 0,

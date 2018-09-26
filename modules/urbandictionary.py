@@ -1,16 +1,16 @@
 import json, re
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_URBANDICTIONARY = "http://api.urbandictionary.com/v0/define"
 REGEX_DEFNUMBER = re.compile("-n(\d+) \S+")
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.command").on("urbandictionary", "ud").hook(
-            self.ud, min_args=1, help="Get the definition of a provided term",
-            usage="<term>")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.urbandictionary|ud", min_args=1,
+        usage="<term>")
     def ud(self, event):
+        """
+        Get the definition of a provided term from Urban Dictionary
+        """
         term = event["args"]
         number = 1
         match = re.match(REGEX_DEFNUMBER, term)

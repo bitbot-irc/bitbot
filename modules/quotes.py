@@ -1,27 +1,18 @@
 import random, time
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("received.command").on("quoteadd", "qadd").hook(
-            self.quote_add, min_args=1, help="Added a quote to a category",
-            usage="<category> = <quote>")
-        events.on("received.command").on("quoteget", "qget").hook(
-            self.quote_get, min_args=1, help="Find a quote within a category",
-            usage="<category> = <search>")
-        events.on("received.command").on("quotedel", "qdel").hook(
-            self.quote_del, min_args=1, help="Delete a quote from a category",
-            usage="<category> = <quote>")
-        events.on("received.command").on("quote", "q").hook(self.quote,
-            help="Get a random quote from a category",
-            usage="<category>", min_args=1)
-
+class Module(ModuleManager.BaseModule):
     def category_and_quote(self, s):
         if "=" in s:
             return [part.strip() for part in s.split("=", 1)]
         return None, None
 
+    @Utils.hook("received.command.quoteadd|qadd", min_args=1,
+        usage="<category> = <quote>")
     def quote_add(self, event):
+        """
+        Add a quote to a category
+        """
         category, quote = self.category_and_quote(event["args"])
         if category and quote:
             setting = "quotes-%s" % category
@@ -32,7 +23,12 @@ class Module(object):
         else:
             event["stderr"].write("Please provide a category AND quote")
 
+    @Utils.hook("received.command.quoteget|qget", min_args=1,
+        usage="<category> = <search>")
     def quote_get(self, event):
+        """
+        Get a quote from a ccategory
+        """
         category, to_find = self.category_and_quote(event["args"])
         if category and to_find:
             to_find = to_find.lower()
@@ -50,7 +46,12 @@ class Module(object):
             event["stderr"].write("Please provide a category and a "
                 "part of a quote to find")
 
+    @Utils.hook("received.command.quotedel|qdel", min_args=1,
+        usage="<category> = <quote>")
     def quote_del(self, event):
+        """
+        Delete a quote from a category
+        """
         category, remove_quote = self.category_and_quote(event["args"])
         remove_quote_lower = remove_quote.lower()
         if category and remove_quote:
@@ -70,7 +71,11 @@ class Module(object):
             event["stderr"].write("Please provide a category and a quote "
                 "to remove")
 
+    @Utils.hook("received.command.quote|q", usage="<category>", min_args=1)
     def quote(self, event):
+        """
+        Get a random quote from a category
+        """
         category = event["args"].strip().lower()
         quotes = event["server"].get_setting("quotes-%s" % category, [])
         if quotes:

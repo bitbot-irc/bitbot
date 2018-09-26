@@ -1,40 +1,16 @@
 import base64, os
 import scrypt
+from src import ModuleManager, Utils
 
 REQUIRES_IDENTIFY = ("You need to be identified to use that command "
  "(/msg %s register | /msg %s identify)")
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("new.user").hook(self.new_user)
-        events.on("preprocess.command").hook(
-            self.preprocess_command)
-        events.on("received.part").hook(self.on_part)
-
-        events.on("received.command.identify").hook(self.identify,
-            private_only=True, min_args=2,
-            usage="<account> <password>", help="Identify yourself")
-        events.on("received.command.register").hook(self.register,
-            private_only=True, min_args=1,
-            usage="<password>", help="Register your nickname")
-        events.on("received.command.logout").hook(self.logout,
-             private_only=True, help="Sign out from the bot")
-        events.on("received.command.resetpassword").hook(
-            self.reset_password, private_only=True,
-            help="Reset a user's password", min_args=2,
-            usage="<nickname> <password>", permission="resetpassword")
-
-        events.on("received.command.mypermissions").hook(
-            self.my_permissions, authenticated=True)
-        events.on("received.command.givepermission").hook(
-            self.give_permission, min_args=2, permission="givepermission")
-        events.on("received.command.removepermission").hook(
-            self.remove_permission, min_args=2, permission="removepermission")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("new.user")
     def new_user(self, event):
         self._logout(event["user"])
 
+    @Utils.hook("received.part")
     def on_part(self, event):
         if len(event["user"].channels) == 1 and event["user"
                 ].identified_account_override:
@@ -62,7 +38,12 @@ class Module(object):
         user.identified_account_override = None
         user.identified_account_id_override = None
 
+    @Utils.hook("received.command.identify", private_only=True, min_args=2,
+        usage="<account> <password>")
     def identify(self, event):
+        """
+        Identify yourself
+        """
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
         if not identity_mechanism == "internal":
@@ -94,7 +75,12 @@ class Module(object):
         else:
             event["stderr"].write("You are already identified")
 
+    @Utils.hook("received.command.register", private_only=True, min_args=1,
+        usage="<password>")
     def register(self, event):
+        """
+        Register yourself
+        """
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
         if not identity_mechanism == "internal":
@@ -113,14 +99,23 @@ class Module(object):
         else:
             event["stderr"].write("This nickname is already registered")
 
+    @Utils.hook("received.command.logout", private_only=True)
     def logout(self, event):
+        """
+        Logout from your identified account
+        """
         if event["user"].identified_account_override:
             self._logout(event["user"])
             event["stdout"].write("You have been logged out")
         else:
             event["stderr"].write("You are not logged in")
 
+    @Utils.hook("received.command.resetpassword", private_only=True,
+        min_args=2, usage="<nickname> <password>", permission="resetpassword")
     def reset_password(self, event):
+        """
+        Reset a given user's password
+        """
         target = event["server"].get_user(event["args_split"][0])
         password = " ".join(event["args_split"][1:])
         registered = target.get_setting("authentication", None)
@@ -133,6 +128,7 @@ class Module(object):
             event["stdout"].write("Reset password for '%s'" %
                 target.nickname)
 
+    @Utils.hook("preprocess.command")
     def preprocess_command(self, event):
         permission = event["hook"].kwargs.get("permission", None)
         authenticated = event["hook"].kwargs.get("authenticated", False)
@@ -162,7 +158,11 @@ class Module(object):
                 return REQUIRES_IDENTIFY % (event["server"].nickname,
                     event["server"].nickname)
 
+    @Utils.hook("received.command.mypermissions", authenticated=True)
     def my_permissions(self, event):
+        """
+        Show your permissions
+        """
         permissions = event["user"].get_setting("permissions", [])
         event["stdout"].write("Your permissions: %s" % ", ".join(permissions))
 
@@ -172,7 +172,12 @@ class Module(object):
         permissions = target.get_setting("permissions", [])
         return [target, registered, permissions]
 
+    @Utils.hook("received.command.givepermission", min_args=2,
+        permission="givepermission")
     def give_permission(self, event):
+        """
+        Give a given permission to a given user
+        """
         permission = event["args_split"][1].lower()
         target, registered, permissions = self._get_user_details(
             event["server"], event["args_split"][0])
@@ -189,7 +194,12 @@ class Module(object):
             target.set_setting("permissions", permissions)
             event["stdout"].write("Gave permission '%s' to %s" % (
                 permission, target.nickname))
+    @Utils.hook("received.command.removepermission", min_args=2,
+        permission="removepermission")
     def remove_permission(self, event):
+        """
+        Remove a given permission from a given user
+        """
         permission = event["args_split"][1].lower()
         target, registered, permissions = self._get_user_details(
             event["server"], event["args_split"][0])

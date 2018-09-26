@@ -1,12 +1,13 @@
 import random
+from src import ModuleManager, Utils
 
-
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.command.strax").hook(
-            self.strax, help="Suggests a glorious method of battle for the glory of the Sontaran Empire, through IRC!")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.strax")
     def strax(self, event):
+        """
+        Suggests a glorious method of battle for the glory of the Sontaran
+        Empire, through IRC!
+        """
         suggestion_greeting = ["Might I suggest", "Can I suggest", "Should we attack immediately with"]
         command_greeting = ["We should attack now with", "We must attack now with", "I suggest attacking with",
                             "We should coordinate an attack with"]

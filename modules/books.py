@@ -1,20 +1,12 @@
 import json, re
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_GOOGLEBOOKS = "https://www.googleapis.com/books/v1/volumes"
 URL_BOOKINFO = "https://books.google.co.uk/books?id=%s"
 REGEX_BOOKID = re.compile("id=([\w\-]+)")
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "ISBN"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("received.command.isbn").hook(self.isbn,
-            help="Get book information from a provided ISBN",
-            min_args=1, usage="<isbn>")
-        events.on("received.command.book").hook(self.book,
-            help="Get book information from a provided title",
-            min_args=1, usage="<book title>")
 
     def get_book(self, query, event):
         page = Utils.get_url(URL_GOOGLEBOOKS, get_params={
@@ -44,12 +36,20 @@ class Module(object):
         else:
             event["stderr"].write("Failed to load results")
 
+    @Utils.hook("received.command.isbn", min_args=1, usage="<isbn>")
     def isbn(self, event):
+        """
+        Get book information from a provided ISBN
+        """
         isbn = event["args_split"][0]
         if len(isbn) == 10:
             isbn = "978%s" % isbn
         isbn = isbn.replace("-", "")
         self.get_book("isbn:%s" % isbn, event)
 
+    @Utils.hook("received.command.book", min_args=1, usage="<book title>")
     def book(self, event):
+        """
+        Get book information from a provided title
+        """
         self.get_book(event["args"], event)

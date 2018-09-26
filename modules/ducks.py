@@ -15,30 +15,8 @@ DUCK_MINIMUM_UNIQUE = 3
 
 
 class Module(object):
-
     def __init__(self, bot, events, exports):
         self.bot = bot
-        self.events = events
-
-        events.on("received.command.bef").hook(self.befriend,
-            priority=EventManager.PRIORITY_HIGH,
-            help="Befriend a duck!")
-        events.on("received.command.bang").hook(self.shoot,
-            priority=EventManager.PRIORITY_HIGH,
-            help="Shoot a duck! Meanie.")
-        events.on("received.command.decoy").hook(
-            self.duck_decoy,
-            priority=EventManager.PRIORITY_HIGH,
-            help="Lay out a sneaky decoy!")
-
-
-        events.on("received.command.friends").hook(self.duck_friends,
-            help="See who the friendliest people to ducks are!")
-        events.on("received.command.killers").hook(self.duck_enemies,
-            help="See who shoots the most smount of ducks!")
-        events.on("received.command.duckstats").hook(self.duck_stats,
-            help="Shows your duck stats!")
-
         exports.add("channelset", {"setting": "ducks-enabled",
             "help": "Toggle ducks!", "validate": Utils.bool_or_none})
 
@@ -47,24 +25,18 @@ class Module(object):
              "validate": Utils.bool_or_none})
 
         exports.add("channelset", {"setting": "ducks-min-unique",
-                                   "help": "Minimum unique users required to "
-                                           "talk before a duck spawns.",
-                                   "validate": Utils.int_or_none})
+            "help": "Minimum unique users required to talk before a "
+            "duck spawns.", "validate": Utils.int_or_none})
 
         exports.add("channelset", {"setting": "ducks-min-messages",
-                                   "help": "Minimum messages between ducks "
-                                           "spawning.",
-                                   "validate": Utils.int_or_none})
-
-        events.on("new.channel").hook(self.new_channel)
-
-        events.on("received.message.channel").hook(
-            self.channel_message, EventManager.PRIORITY_LOW)
+            "help": "Minimum messages between ducks spawning.",
+            "validate": Utils.int_or_none})
 
         for server in self.bot.servers.values():
             for channel in server.channels.values():
                 self.bootstrap(channel)
 
+    @Utils.hook("new.channel")
     def new_channel(self, event):
         self.bootstrap(event["channel"])
 
@@ -148,7 +120,11 @@ class Module(object):
         channel.send_kick(target,
                           "You tried shooting a non-existent duck. Creepy!")
 
+    @Utils.hook("received.command.decoy")
     def duck_decoy(self, event):
+        """
+        Prepare a decoy duck
+        """
         channel = event["target"]
         if self.is_duck_channel(channel) == False:
             return
@@ -219,6 +195,8 @@ class Module(object):
         else:
             game["duck_spawned"] = 1
 
+    @Utils.hook("received.message.channel",
+        priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         if not event["channel"].get_setting("ducks-enabled", False):
             return
@@ -248,7 +226,11 @@ class Module(object):
         if self.should_generate_duck(event) == True:
             self.show_duck(event)
 
+    @Utils.hook("received.command.bef")
     def befriend(self, event):
+        """
+        Befriend a duck
+        """
         channel = event["target"]
         user = event["user"]
         nick = user.nickname
@@ -282,7 +264,11 @@ class Module(object):
         self.clear_ducks(channel)
         event.eat()
 
+    @Utils.hook("received.command.bang")
     def shoot(self, event):
+        """
+        Shoot a duck
+        """
         channel = event["target"]
         user = event["user"]
         nick = user.nickname
@@ -317,7 +303,11 @@ class Module(object):
         self.clear_ducks(channel)
         event.eat()
 
+    @Utils.hook("received.command.duckstats")
     def duck_stats(self, event):
+        """
+        Show your duck stats
+        """
         user = event["user"]
         channel = event["target"].name
         nick = user.nickname
@@ -358,7 +348,11 @@ class Module(object):
         event["stdout"].write(Utils.bold(nick) + ": " + msg)
         event.eat()
 
+    @Utils.hook("received.command.killers")
     def duck_enemies(self, event):
+        """
+        Show the top duck shooters
+        """
         the_enemy = event["server"].find_all_user_channel_settings("ducks-shot")
 
         notorious = {}
@@ -392,7 +386,11 @@ class Module(object):
         event["stdout"].write(sentence)
         event.eat()
 
+    @Utils.hook("received.command.friends")
     def duck_friends(self, event):
+        """
+        Show the top duck friends
+        """
         friends = event["server"].find_all_user_channel_settings(
             "ducks-befriended")
 

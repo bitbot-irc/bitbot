@@ -8,14 +8,14 @@ URL_TRAKTSLUG = "https://trakt.tv/%s/%s"
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.command").on("nowwatching", "nw").hook(
-            self.now_watching, usage="[username]",
-            help="Get what you or another user is now watching on trakt.tv")
-
         exports.add("set", {"setting": "trakt",
             "help": "Set username on trakt.tv"})
 
+    @Utils.hook("received.command.nowwatching|nw", usage="[username]")
     def now_watching(self, event):
+        """
+        Get what you or another user is now watching on trakt.tv
+        """
         if event["args"]:
             username = event["args_split"][0]
         else:

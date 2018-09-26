@@ -1,13 +1,13 @@
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "BTC"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("received.command.btc").hook(self.btc,
-            help="Get the exchange rate of bitcoins", usage="[currency]")
 
+    @Utils.hook("received.command.btc", usage="[currency]")
     def btc(self, event):
+        """
+        Get the exchange rate of bitcoins
+        """
         currency = (event["args"] or "USD").upper()
         page = Utils.get_url("https://blockchain.info/ticker",
             json=True)

@@ -1,5 +1,5 @@
-import telegram
-from telegram.ext import CommandHandler, MessageHandler, Updater, Filters
+#--ignore
+import telegram, telegram.ext
 
 import json
 from datetime import datetime
@@ -15,16 +15,16 @@ class Module(Thread):
         self.bot = bot
         self.events = events
 
-        self.updater = Updater(key)
+        self.updater = telegram.ext.Updater(key)
         self.dispatcher = self.updater.dispatcher
 
-        start_handler = CommandHandler("start", self.start)
-        command_handler = MessageHandler(Filters.command, self.handle)
+        start_handler = telegram.ext.CommandHandler("start", self.start)
+        command_handler = telegram.ext.MessageHandler(
+            telegram.ext.Filters.command, self.handle)
         self.dispatcher.add_handler(start_handler)
         self.dispatcher.add_handler(command_handler)
 
         self.updater.start_polling()
-        events.on("signal.interrupt").hook(self.sigint)
 
     def start(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="`Dolphin, but Telegram`", parse_mode="Markdown")
@@ -48,6 +48,7 @@ class Module(Thread):
             }
         self.events.on("telegram.command").on(command).call(**data)
 
+    @Utils.hook("signal.interrupt")
     def sigint(self, event):
         self.updater.stop()
 

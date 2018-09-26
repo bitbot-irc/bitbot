@@ -3,26 +3,6 @@ from src import Utils
 class Module(object):
     _name = "AutoMode"
     def __init__(self, bot, events, exports):
-        self.bot = bot
-
-        events.on("received.join").hook(self.on_join)
-
-        events.on("received.command.addop").hook(self.add_op,
-            require_mode="o", min_args=1, channel_only=True,
-            usage="<nickname>", help="Add a user to the automode op list")
-        events.on("received.command.removeop").hook(self.remove_op,
-            require_mode="o", min_args=1, channel_only=True,
-            usage="<nickname>", help="Remove a user from the automode "
-            "op list")
-
-        events.on("received.command.addvoice").hook(self.add_voice,
-            require_mode="o", min_args=1, channel_only=True,
-            usage="<nickname>", help="Add a user to the automode voice list")
-        events.on("received.command.removevoice").hook(self.remove_voice,
-            require_mode="o", min_args=1, channel_only=True,
-            usage="<nickname>", help="Remove a user from the automode "
-            "voice list")
-
         exports.add("channelset", {"setting": "automode",
             "help": "Disable/Enable automode",
             "validate": Utils.bool_or_none})
@@ -34,8 +14,11 @@ class Module(object):
             if modes:
                 channel.send_mode("+%s" % "".join(modes),
                     " ".join([user.nickname for mode in modes]))
+
+    @Utils.hook("received.join")
     def on_join(self, event):
         self._check_modes(event["channel"], event["user"])
+    @Utils.hook("received.account")
     def on_account(self, event):
         for channel in event["user"].channels:
             self._check_modes(channel, event["user"])
@@ -70,12 +53,32 @@ class Module(object):
             event["stdout"].write("Removed automode %s from '%s'" % (
                 mode_name, target_user.nickname))
 
+    @Utils.hook("received.command.addop", require_mode="o", min_args=1,
+        channel_only=True, usage="<nickname>")
     def add_op(self, event):
+        """
+        Add a user to the auto-mode list as an op
+        """
         self._add_mode(event, "o", "op")
+    @Utils.hook("received.command.removeop", require_mode="o", min_args=1,
+        channel_only=True, usage="<nickname>")
     def remove_op(self, event):
+        """
+        Remove a user from the auto-mode list as an op
+        """
         self._remove_mode(event, "o", "op")
 
+    @Utils.hook("received.command.addvoice", require_mode="o", min_args=1,
+        channel_only=True, usage="<nickname>")
     def add_voice(self, event):
+        """
+        Add a user to the auto-mode list as a voice
+        """
         self._add_mode(event, "v", "voice")
+    @Utils.hook("received.command.removevoice", require_mode="o", min_args=1,
+        channel_only=True, usage="<nickname>")
     def remove_voice(self, event):
+        """
+        Remove a user from the auto-mode list as anvoice
+        """
         self._remove_mode(event, "v", "voice")

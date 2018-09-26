@@ -6,26 +6,17 @@ KARMA_DELAY_SECONDS = 3
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        self.bot = bot
         self.events = events
-        events.on("new.user").hook(self.new_user)
-        events.on("received.message.channel").hook(
-            self.channel_message, priority=EventManager.PRIORITY_MONITOR)
-        events.on("received.command.karma").hook(
-            self.karma, help="Get your or someone else's karma",
-            usage="[target]")
-        events.on("received.command.resetkarma").hook(
-            self.reset_karma, permission="resetkarma",
-            min_args=1, help="Reset a specified karma to 0",
-            usage="<target>")
-
         exports.add("channelset", {"setting": "karma-verbose",
             "help": "Disable/Enable automatically responding to "
             "karma changes", "validate": Utils.bool_or_none})
 
+    @Utils.hook("new.user")
     def new_user(self, event):
         event["user"].last_karma = None
 
+    @Utils.hook("received.message.channel",
+        priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         match = re.match(REGEX_KARMA, event["message"].strip())
         if match and not event["action"]:
@@ -60,7 +51,11 @@ class Module(object):
                     target=event["channel"],
                     message="Try again in a couple of seconds")
 
+    @Utils.hook("received.command.karma", usage="[target]")
     def karma(self, event):
+        """
+        Get your or someone else's karma
+        """
         if event["args"]:
             target = event["args"]
         else:
@@ -68,7 +63,12 @@ class Module(object):
         karma = event["server"].get_setting("karma-%s" % target, 0)
         event["stdout"].write("%s has %s karma" % (target, karma))
 
+    @Utils.hook("received.command.resetkarma", permission="resetkarma",
+        min_args=1, usage="<target>")
     def reset_karma(self, event):
+        """
+        Reset a specified karma to 0
+        """
         setting = "karma-%s" % event["args_split"][0]
         karma = event["server"].get_setting(setting, 0)
         if karma == 0:

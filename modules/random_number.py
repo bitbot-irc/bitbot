@@ -1,14 +1,14 @@
 import random, uuid
+from src import ModuleManager, Utils
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "Random"
-    def __init__(self, bot, events, exports):
-        events.on("received.command").on("random", "rand").hook(self.random,
-            help="Get a random number", usage="[start] [end]")
-        events.on("received.command.guid").hook(self.guid,
-            help="Get a random guid")
 
+    @Utils.hook("received.command.random|rand", usage="[start] [end]")
     def random(self, event):
+        """
+        Get a random number
+        """
         start, end = "1", "100"
         if len(event["args_split"]) > 1:
             start, end = event["args_split"][:2]
@@ -27,5 +27,9 @@ class Module(object):
             event["stderr"].write(
                 "Both start and end must be valid integers")
 
+    @Utils.hook("received.command.guid")
     def guid(self, event):
+        """
+        Get a random guid
+        """
         event["stdout"].write(str(uuid.uuid4()))

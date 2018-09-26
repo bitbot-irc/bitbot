@@ -45,29 +45,7 @@ class StdErr(Out):
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        self.bot = bot
         self.events = events
-        events.on("received.message.channel").hook(self.channel_message,
-            priority=EventManager.PRIORITY_LOW)
-        events.on("received.message.private").hook(self.private_message,
-            priority=EventManager.PRIORITY_LOW)
-
-        events.on("received.command.help").hook(self.help,
-            help="Show help for commands", usage="<command>")
-        events.on("received.command.usage").hook(self.usage, min_args=1,
-            help="Show usage help for commands", usage="<command>")
-        events.on("received.command.more").hook(self.more, skip_out=True,
-            help="Get more output from the last command")
-        events.on("received.command.ignore").hook(self.ignore, min_args=1,
-            help="Ignore commands from a given user", usage="<nickname>",
-            permission="ignore")
-        events.on("received.command.unignore").hook(self.unignore, min_args=1,
-            help="Unignore commands from a given user", usage="<nickname>",
-            permission="unignore")
-
-        events.on("new").on("user", "channel").hook(self.new)
-        events.on("send.stdout").hook(self.send_stdout)
-        events.on("send.stderr").hook(self.send_stderr)
 
         exports.add("channelset", {"setting": "command-prefix",
             "help": "Set the command prefix used in this channel"})
@@ -76,6 +54,7 @@ class Module(object):
         exports.add("serverset", {"setting": "identity-mechanism",
             "help": "Set the identity mechanism for this server"})
 
+    @Utils.hook("new.user|channel")
     def new(self, event):
         if "user" in event:
             target = event["user"]
@@ -156,6 +135,7 @@ class Module(object):
             buffer.skip_next()
         event.eat()
 
+    @Utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
         command_prefix = event["channel"].get_setting("command-prefix",
             event["server"].get_setting("command-prefix", "!"))
@@ -168,6 +148,7 @@ class Module(object):
             command = event["message_split"][1].lower()
             self.message(event, command, 2)
 
+    @Utils.hook("received.message.private", priority=EventManager.PRIORITY_LOW)
     def private_message(self, event):
         if event["message_split"]:
             command = event["message_split"][0].lower()
@@ -176,7 +157,11 @@ class Module(object):
     def _get_help(self, hook):
         return hook.kwargs.get("help", None) or hook.function.__doc__
 
+    @Utils.hook("received.command.help", usage="<command>")
     def help(self, event):
+        """
+        Show help for a given command
+        """
         if event["args"]:
             command = event["args_split"][0].lower()
             if command in self.events.on("received").on(
@@ -185,7 +170,8 @@ class Module(object):
                 help = self._get_help(hooks[0])
 
                 if help:
-                    event["stdout"].write("%s: %s" % (command, help.strip()))
+                    event["stdout"].write("%s: %s" % (command, " ".join(
+                        [line.strip() for line in help.split("\n")])))
                 else:
                     event["stderr"].write("No help available for %s" % command)
             else:
@@ -200,7 +186,11 @@ class Module(object):
             help_available = sorted(help_available)
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 
+    @Utils.hook("received.command.usage", min_args=1, usage="<command>")
     def usage(self, event):
+        """
+        Show the usage for a given command
+        """
         command_prefix = ""
         if event["is_channel"]:
             command_prefix = event["target"].get_setting("command-prefix",
@@ -218,11 +208,20 @@ class Module(object):
         else:
             event["stderr"].write("Unknown command '%s'" % command)
 
+    @Utils.hook("received.command.more", skip_out=True)
     def more(self, event):
+        """
+        Show more output from the last command
+        """
         if event["target"].last_stdout and event["target"].last_stdout.has_text():
             event["target"].last_stdout.send()
 
+    @Utils.hook("received.command.ignore", min_args=1, usage="<nickname>",
+        permission="ignore")
     def ignore(self, event):
+        """
+        Ignore commands from a given user
+        """
         user = event["server"].get_user(event["args_split"][0])
         if user.get_setting("ignore", False):
             event["stderr"].write("I'm already ignoring '%s'" %
@@ -231,7 +230,12 @@ class Module(object):
             user.set_setting("ignore", True)
             event["stdout"].write("Now ignoring '%s'" % user.nickname)
 
+    @Utils.hook("received.command.unignore", min_args=1, usage="<nickname>",
+        permission="unignore")
     def unignore(self, event):
+        """
+        Unignore commands from a given user
+        """
         user = event["server"].get_user(event["args_split"][0])
         if not user.get_setting("ignore", False):
             event["stderr"].write("I'm not ignoring '%s'" % user.nickname)
@@ -239,11 +243,13 @@ class Module(object):
             user.set_setting("ignore", False)
             event["stdout"].write("Removed ignore for '%s'" % user.nickname)
 
+    @Utils.hook("send.stdout")
     def send_stdout(self, event):
         stdout = StdOut(event["module_name"], event["target"])
         stdout.write(event["message"]).send()
         if stdout.has_text():
             event["target"].last_stdout = stdout
+    @Utils.hook("send.stderr")
     def send_stderr(self, event):
         stderr = StdErr(event["module_name"], event["target"])
         stderr.write(event["message"]).send()

@@ -23,30 +23,6 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.result_map = {}
-        events.on("received.command.tflbus"
-            ).hook(self.bus, min_args=1,
-            help="Get bus due times for a TfL bus stop",
-            usage="<stop_id>")
-        events.on("received.command.tflline"
-            ).hook(self.line,
-            help="Get line status for TfL underground lines",
-            usage="<line_name>")
-        events.on("received.command.tflsearch"
-            ).hook(self.search, min_args=1,
-            help="Get a list of TfL stop IDs for a given name",
-            usage="<name>")
-        events.on("received.command.tflvehicle"
-            ).hook(self.vehicle, min_args=1,
-            help="Get information for a given vehicle",
-            usage="<ID>")
-        events.on("received.command.tflstop"
-            ).hook(self.stop, min_args=1,
-            help="Get information for a given stop",
-            usage="<stop_id>")
-        events.on("received.command.tflservice"
-            ).hook(self.service, min_args=1,
-            help="Get service information and arrival estimates",
-            usage="<service index>")
 
     def vehicle_span(self, arrival_time, human=True):
         vehicle_due_iso8601 = arrival_time
@@ -72,7 +48,11 @@ class Module(object):
                 platform = m.group(2)
         return platform
 
+    @Utils.hook("received.command.tflbus", min_args=1, usage="<stop_id>")
     def bus(self, event):
+        """
+        Get bus due times for a TfL bus stop
+        """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
         stop_id = event["args_split"][0]
@@ -144,7 +124,11 @@ class Module(object):
         else:
            event["stderr"].write("Bus ID '%s' unknown" % stop_id)
 
+    @Utils.hook("received.command.tflline", usage="<line_name>")
     def line(self, event):
+        """
+        Get line status for TfL underground lines
+        """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
 
@@ -183,7 +167,11 @@ class Module(object):
         else:
             event["stderr"].write("No results")
 
+    @Utils.hook("received.command.tflsearch", min_args=1, usage="<name>")
     def search(self, event):
+        """
+        Get a list of TfL stop IDs for a given name
+        """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
 
@@ -200,7 +188,11 @@ class Module(object):
         else:
             event["stderr"].write("No results")
 
+    @Utils.hook("received.command.tflvehicle", min_args=1, usage="<ID>")
     def vehicle(self, event):
+        """
+        Get information for a given vehicle
+        """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
 
@@ -208,7 +200,7 @@ class Module(object):
 
         vehicle = Utils.get_url(URL_VEHICLE % vehicle_id, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)[0]
-        
+
         arrival_time = self.vehicle_span(vehicle["expectedArrival"], human=False)
         platform = self.platform(vehicle["platformName"])
 
@@ -216,7 +208,12 @@ class Module(object):
             vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
                 vehicle["stationName"], vehicle["naptanId"], arrival_time, platform))
 
+    @Utils.hook("received.command.tflservice", min_args=1,
+        usage="<service index>")
     def service(self, event):
+        """
+        Get service information and arrival estimates
+        """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
 
@@ -244,7 +241,11 @@ class Module(object):
             a["expectedArrival"][11:16]
             ) for a in arrivals]))
 
+    @Utils.hook("received.command.tflstop", min_args=1, usage="<stop_id>")
     def stop(self, event):
+        """
+        Get information for a given stop
+        """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
 

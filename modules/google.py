@@ -10,12 +10,12 @@ URL_GOOGLESUGGEST = "http://google.com/complete/search"
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.command").on("google", "g").hook(self.google,
-            help="Google feeling lucky", usage="[search term]")
-        events.on("received.command.suggest").hook(self.suggest,
-            help="Get suggested phrases from Google", usage="[phrase]")
 
+    @Utils.hook("received.command.google|g", usage="[search term]")
     def google(self, event):
+        """
+        Get first Google result for a given search term
+        """
         phrase = event["args"] or event["buffer"].get()
         if phrase:
             page = Utils.get_url(URL_GOOGLESEARCH, get_params={
@@ -34,7 +34,11 @@ class Module(object):
         else:
             event["stderr"].write("No phrase provided")
 
+    @Utils.hook("received.command.suggest", usage="[phrase]")
     def suggest(self, event):
+        """
+        Get suggested phrases from Google
+        """
         phrase = event["args"] or event["buffer"].get()
         if phrase:
             page = Utils.get_url(URL_GOOGLESUGGEST, get_params={

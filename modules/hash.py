@@ -1,12 +1,12 @@
 import hashlib
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("received.command.hash").hook(self.hash, min_args=2,
-            help="Hash a string", usage="<algo> <string>")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.hash", min_args=2, usage="<algo> <string>")
     def hash(self, event):
+        """
+        Hash a given string with a given algorithm
+        """
         algorithm = event["args_split"][0].lower()
         if algorithm in hashlib.algorithms_available:
             phrase = " ".join(event["args_split"][1:])

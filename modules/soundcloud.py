@@ -11,10 +11,12 @@ class Module(object):
     _name = "SoundCloud"
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received").on("command").on("soundcloud", "sc"
-            ).hook(self.soundcloud, help="Search SoundCloud")
 
+    @Utils.hook("received.command.soundcloud|sc")
     def soundcloud(self, event):
+        """
+        Search SoundCloud
+        """
         query = None
         url = None
 

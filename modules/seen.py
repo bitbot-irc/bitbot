@@ -1,17 +1,17 @@
 import time
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.message.channel").hook(self.channel_message)
-        events.on("received.command.seen").hook(self.seen, min_args=1,
-            help="Find out when a user was last seen", usage="<username>")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.message.channel")
     def channel_message(self, event):
         seen_seconds = time.time()
         event["user"].set_setting("seen", seen_seconds)
 
+    @Utils.hook("received.command.seen", min_args=1, usage="<username>")
     def seen(self, event):
+        """
+        Find out when a user was last seen
+        """
         seen_seconds = event["server"].get_user(event["args_split"][0]
             ).get_setting("seen")
         if seen_seconds:

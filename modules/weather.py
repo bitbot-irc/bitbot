@@ -7,11 +7,12 @@ URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.command.weather").hook(self.weather, min_args=1,
-            help="Get current weather data for a provided location",
-            usage="<location>")
 
+    @Utils.hook("received.command.weather", min_args=1, usage="<location>")
     def weather(self, event):
+        """
+        Get current weather data for a provided location
+        """
         api_key = self.bot.config["openweathermap-api-key"]
         page = Utils.get_url(URL_WEATHER, get_params={
             "q": event["args"], "units": "metric",

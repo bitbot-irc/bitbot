@@ -3,46 +3,6 @@ from src import Utils
 class Module(object):
     _name = "Channel Op"
     def __init__(self, bot, events, exports):
-        self.bot = bot
-
-        events.on("received.command").on("kick", "k").hook(self.kick,
-            channel_only=True, require_mode="o", usage="<nickname> [reason]",
-            min_args=1, help="Kick a user from the channel")
-        events.on("received.command.ban").hook(self.ban, channel_only=True,
-            require_mode="o", min_args=1, usage="<nickname/hostmask>",
-            help="Ban a user/hostmask from the channel")
-        events.on("received.command.unban").hook(self.unban,
-            channel_only=True, require_mode="o", usage="<nickname/hostmask>",
-            min_args=1, help="Unban a user/hostmask from the channel")
-
-        events.on("received.command").on("kickban", "kb"
-            ).hook(self.kickban, channel_only=True, require_mode="o",
-            min_args=1, help="Kickban a user from the channel",
-            usage="<nickanme> [reason]")
-
-        events.on("received.command.op"
-            ).hook(self.op, channel_only=True, require_mode="o",
-            help="Give +o to a user", usage="[nickname]")
-        events.on("received.command.deop"
-            ).hook(self.deop, channel_only=True, require_mode="o",
-            help="Take +o from a user", usage="[nickname]")
-
-        events.on("received.command.voice").hook(self.voice,
-            channel_only=True, require_mode="o", usage="[nickname]",
-             help="Give +v to a user")
-        events.on("received.command.devoice").hook(self.devoice,
-            channel_only=True, require_mode="o", usage="[nickname]",
-            help="Take +v from a user")
-
-        events.on("received.command.topic").hook(self.topic, min_args=1,
-            require_mode="o", channel_only=True, usage="<topic>",
-            help="Set the topic of the current channel")
-        events.on("received.command").on("topicappend", "tappend").hook(
-            self.tappend, min_args=1, require_mode="o", channel_only=True,
-            usage="<topic>", help="Set the topic of the current channel")
-
-        events.on("received.message.channel").hook(self.highlight_spam)
-
         exports.add("channelset", {"setting": "highlight-spam-threshold",
             "help": "Set the number of nicknames in a message that "
             "qualifies as spam", "validate": Utils.int_or_none})
@@ -56,7 +16,12 @@ class Module(object):
             "help": "Set ban format ($n = nick, $u = username, "
             "$h = hostname)"})
 
+    @Utils.hook("received.command.kick|k", channel_only=True,
+        require_mode="o", usage="<nickname> [reason]", min_args=1)
     def kick(self, event):
+        """
+        Kick a user from the current channel
+        """
         target = event["args_split"][0]
         target_user = event["server"].get_user(target)
         if event["args_split"][1:]:
@@ -84,48 +49,96 @@ class Module(object):
             channel.send_ban(hostmask)
         else:
             channel.send_unban(hostmask)
+
+    @Utils.hook("received.command.ban", channel_only=True, min_args=1,
+        require_mode="o", usage="<nickname/hostmask>")
     def ban(self, event):
+        """
+        Ban a user/hostmask from the current channel
+        """
         target_user = event["server"].get_user(event["args_split"][0])
         if event["target"].has_user(target_user):
             self._ban(event["target"], True, target_user)
         else:
             event["target"].send_ban(event["args_split"][0])
+    @Utils.hook("received.command.unban", channel_only=True, min_args=1,
+        require_mode="o", usage="<nickname/hostmask>")
     def unban(self, event):
+        """
+        Unban a user/hostmask from the current channel
+        """
         target_user = event["server"].get_user(event["args_split"][0])
         if event["target"].has_user(target_user):
             self._ban(event["target"], False, target_user)
         else:
             event["target"].send_unban(event["args_split"][0])
 
+    @Utils.hook("received.command.kickban|kb", channel_only=True,
+        require_mode="o", usage="<nickname> [reason]", min_args=1)
     def kickban(self, event):
+        """
+        Kick and ban a user from the current channel
+        """
         if event["server"].has_user(event["args_split"][0]):
             self.ban(event)
             self.kick(event)
         else:
             event["stderr"].write("That user is not in this channel")
 
+    @Utils.hook("received.command.op", channel_only=True,
+        require_mode="o", usage="[nickname]")
     def op(self, event):
+        """
+        Op a user in the current channel
+        """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("+o", target)
+    @Utils.hook("received.command.deop", channel_only=True,
+        require_mode="o", usage="[nickname]")
     def deop(self, event):
+        """
+        Remove op from a user in the current channel
+        """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("-o", target)
+
+    @Utils.hook("received.command.voice", channel_only=True,
+        require_mode="o", usage="[nickname]")
     def voice(self, event):
+        """
+        Voice a user in the current channel
+        """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("+v", target)
+    @Utils.hook("received.command.devoice", channel_only=True,
+        require_mode="o", usage="[nickname]")
     def devoice(self, event):
+        """
+        Remove voice from a user in the current channel
+        """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("-v", target)
 
+    @Utils.hook("received.command.topic", min_args=1, require_mode="o",
+        channel_only=True, usage="<topic>")
     def topic(self, event):
+        """
+        Set the topic in the current channel
+        """
         event["target"].send_topic(event["args"])
+    @Utils.hook("received.command.tappend", min_args=1, require_mode="o",
+        channel_only=True, usage="<topic>")
     def tappend(self, event):
+        """
+        Append to the topic in the current channel
+        """
         event["target"].send_topic(event["target"].topic + event["args"])
 
+    @Utils.hook("received.message.channel")
     def highlight_spam(self, event):
         if event["channel"].get_setting("highlight-spam-protection", False):
             nicknames = list(map(lambda user: user.nickname,

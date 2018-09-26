@@ -4,11 +4,11 @@ from src import Utils
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.message.private").hook(self.private_message)
         exports.add("serverset", {"setting": "ctcp-responses",
             "help": "Set whether I respond to CTCPs on this server",
             "validate": Utils.bool_or_none})
 
+    @Utils.hook("received.message.private")
     def private_message(self, event):
         if event["message"][0] == "\x01" and event["message"][-1] == "\x01":
             if event["server"].get_setting("ctcp-responses", True):

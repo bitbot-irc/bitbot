@@ -1,33 +1,8 @@
-
+from src import Utils
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        self.bot = bot
         self.exports = exports
-
-        events.on("received.command.set").hook(self.set,
-            usage="<setting> <value>", help="Set a specified user setting")
-        events.on("received.command.get").hook(self.get, min_args=1,
-            usage="<setting>", help="Get a specified user setting")
-
-        events.on("received.command.channelset").hook(self.channel_set,
-            channel_only=True, usage="<setting> <value>", require_mode="o",
-            help="Set a specified setting for the current channel")
-        events.on("received.command.channelsetoverride").hook(
-            self.channel_set, channel_only=True, usage="<setting> <value>",
-            permission="channelsetoverride",
-            help="Set a specified setting for the current channel")
-        events.on("received.command.channelget").hook(self.channel_get,
-            channel_only=True, usage="<setting>", min_args=1,
-            require_mode="o", help="Get a specified setting for the current "
-            "channel")
-
-        events.on("received.command.serverset").hook(self.server_set,
-            usage="<setting> <value>", permission="serverset",
-            help="Set a specified setting for the current server")
-        events.on("received.command.serverget").hook(self.server_get,
-            usage="<setting>", min_args=1, permission="serverget",
-            help="Get a specified setting for the current server")
 
     def _set(self, settings, event, target):
         settings_dict = dict([(setting["setting"], setting
@@ -50,13 +25,29 @@ class Module(object):
         else:
             event["stdout"].write("Available settings: %s" % (
                 ", ".join(settings_dict.keys())))
+    @Utils.hook("received.command.set", usage="<setting> <value>")
     def set(self, event):
+        """
+        Set a specified user setting
+        """
         self._set(self.exports.get_all("set"), event, event["user"])
 
+    @Utils.hook("received.command.channelset", channel_only=True,
+        usage="<setting> <value>", require_mode="o")
+    @Utils.hook("received.command.channelsetoverride", channel_only=True,
+        usage="<setting> <value>", permission="channelsetoverride")
     def channel_set(self, event):
+        """
+        Get a specified channel setting for the current channel
+        """
         self._set(self.exports.get_all("channelset"), event, event["target"])
 
+    @Utils.hook("received.command.serverset", usage="<setting> <value>",
+        permission="serverset")
     def server_set(self, event):
+        """
+        Set a specified server setting for the current server
+        """
         self._set(self.exports.get_all("serverset"), event, event["server"])
 
     def _get(self, event, setting, qualifier, value):
@@ -66,17 +57,31 @@ class Module(object):
         else:
             event["stdout"].write("'%s' has no value set" % setting)
 
+    @Utils.hook("received.command.get", min_args=1, usage="<setting>")
     def get(self, event):
+        """
+        Get a specified user setting
+        """
         setting = event["args_split"][0]
         self._get(event, setting, "", event["user"].get_setting(
             setting, None))
 
+    @Utils.hook("received.command.channelget", channel_only=True,
+        usage="<setting>", min_args=1, require_mode="o")
     def channel_get(self, event):
+        """
+        Get a specified channel setting for the current channel
+        """
         setting = event["args_split"][0]
         self._get(event, setting, " for %s" % event["target"].name,
             event["target"].get_setting(setting, None))
 
+    @Utils.hook("received.command.serverget", usage="<setting>", min_args=1,
+        permission="serverget")
     def server_get(self, event):
+        """
+        Get a specified server setting for the current server
+        """
         setting = event["args_split"][0]
         self._get(event, setting, "", event["server"].get_setting(
             setting, None))

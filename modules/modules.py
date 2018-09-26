@@ -1,31 +1,15 @@
-from src import ModuleManager
+from src import ModuleManager, Utils
 
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
 
-        events.on("received.command.loadmodule").hook(self.load,
-            min_args=1, permission="load-module", help="Load a module",
-            usage="<module-name>")
-        events.on("received.command.unloadmodule").hook(self.unload,
-            min_args=1, permission="unload-module", help="Unload a module",
-            usage="<module-name>")
-
-        events.on("received.command.reloadmodule").hook(self.reload,
-            min_args=1, permission="reload-module", help="Reoad a module",
-            usage="<module-name>")
-
-        events.on("received.command.reloadallmodules").hook(self.reload_all,
-            permission="reload-module", help="Reload all modules")
-
-        events.on("received.command.enablemodule").hook(self.enable,
-            min_args=1, permission="enable-module", help="Enable a module",
-            usage="<module-name>")
-        events.on("received.command.disablemodule").hook(self.disable,
-            min_args=1, permission="disable-module", help="Disable a module",
-            usage="<module-name>")
-
+    @Utils.hook("received.command.loadmodule", min_args=1,
+        permission="load-module", usage="<module-name>")
     def load(self, event):
+        """
+        Load a module
+        """
         name = event["args_split"][0].lower()
         if name in self.bot.modules.modules:
             event["stderr"].write("Module '%s' is already loaded" % name)
@@ -33,7 +17,12 @@ class Module(object):
         self.bot.modules.load_module(name)
         event["stdout"].write("Loaded '%s'" % name)
 
+    @Utils.hook("received.command.unloadmodule", min_args=1,
+        permission="unload-module", usage="<module-name>")
     def unload(self, event):
+        """
+        Unload a module
+        """
         name = event["args_split"][0].lower()
         if not name in self.bot.modules.modules:
             event["stderr"].write("Module '%s' isn't loaded" % name)
@@ -45,7 +34,12 @@ class Module(object):
         self.bot.modules.unload_module(name)
         self.bot.modules.load_module(name)
 
+    @Utils.hook("received.command.reloadmodule", min_args=1,
+        permission="reload-module", usage="<module-name>")
     def reload(self, event):
+        """
+        Reload a module
+        """
         name = event["args_split"][0].lower()
         try:
             self._reload(name)
@@ -62,7 +56,11 @@ class Module(object):
             return
         event["stdout"].write("Reloaded '%s'" % name)
 
+    @Utils.hook("received.command.reloadallmodules", permission="reload-module")
     def reload_all(self, event):
+        """
+        Reload all modules
+        """
         reloaded = []
         failed = []
         for name in list(self.bot.modules.modules.keys()):
@@ -83,7 +81,12 @@ class Module(object):
         else:
             event["stdout"].write("Reloaded %d modules" % len(reloaded))
 
+    @Utils.hook("received.command.enablemodule", min_args=1,
+        permission="enable-module",  usage="<module-name>")
     def enable(self, event):
+        """
+        Remove a module from the module blacklist
+        """
         name = event["args_split"][0].lower()
         blacklist = self.bot.get_setting("module-blacklist", [])
         if not name in blacklist:
@@ -94,7 +97,12 @@ class Module(object):
         event["stdout"].write("Module '%s' has been enabled and can now "
             "be loaded" % name)
 
+    @Utils.hook("received.command.disablemodule", min_args=1,
+        permission="disable-module", usage="<module-name>")
     def disable(self, event):
+        """
+        Add a module to the module blacklist
+        """
         name = event["args_split"][0].lower()
         and_unloaded = ""
         if name in self.bot.modules.modules:

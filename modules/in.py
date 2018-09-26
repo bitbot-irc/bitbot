@@ -7,11 +7,12 @@ SECONDS_MAX_DESCRIPTION = "8 weeks"
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.command.in").hook(self.in_command, min_args=2,
-            help="Set a reminder", usage="<time> <message>")
-        events.on("timer.in").hook(self.timer_due)
 
+    @Utils.hook("received.command.in", min_args=2, usage="<time> <message>")
     def in_command(self, event):
+        """
+        Set a reminder
+        """
         seconds = Utils.from_pretty_time(event["args_split"][0])
         message = " ".join(event["args_split"][1:])
         if seconds:
@@ -31,6 +32,7 @@ class Module(object):
             event["stderr"].write(
                 "Please provided a valid time above 0 seconds")
 
+    @Utils.hook("timer.in")
     def timer_due(self, event):
         for server in self.bot.servers.values():
             if event["server_id"] == server.id:

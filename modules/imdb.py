@@ -10,10 +10,12 @@ class Module(object):
     _name = "IMDb"
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.command.imdb").hook(self.imdb, min_args=1,
-            help="Search for a given title on IMDb", usage="<movie/tv title>")
 
+    @Utils.hook("received.command.imdb", min_args=1, usage="<movie/tv title>")
     def imdb(self, event):
+        """
+        Search for a given title on IMDb
+        """
         page = Utils.get_url(URL_OMDB, get_params={
             "t": event["args"],
             "apikey": self.bot.config["omdbapi-api-key"]},

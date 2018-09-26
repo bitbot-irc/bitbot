@@ -12,13 +12,6 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self._last_called = 0
-        self.events = events
-
-        events.on("received.command.define").hook(self.define,
-            help="Define a provided term", usage="<phrase>")
-
-        events.on("received.command.randomword").hook(self.random_word,
-            help="Generate a random word!")
 
     def _get_definition(self, word):
         word = event["args"] if "args" in event else event
@@ -30,7 +23,11 @@ class Module(object):
 
         return page
 
+    @Utils.hook("received.command.define", usage="<phrase>")
     def define(self, event):
+        """
+        Define a provided term
+        """
         if event["args"]:
             word = event["args"]
         else:
@@ -46,7 +43,11 @@ class Module(object):
         else:
             event["stderr"].write("Failed to load results")
 
+    @Utils.hook("received.command.randomword")
     def random_word(self, event):
+        """
+        Define a random word
+        """
         if not self._last_called or (time.time()-self._last_called >=
                 RANDOM_DELAY_SECONDS):
             self._last_called = time.time()

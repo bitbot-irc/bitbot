@@ -1,28 +1,24 @@
 import random
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.command.roll").hook(
-            self.roll_dice,
-            min_args=1,
-            help="Roll some dice, DND style!",
-            usage="[1-5]d[1-20]"
-        )
+ERROR_FORMAT = "Incorrect format! Format must be [number]d[number], e.g. 1d20"
 
-        self.err_msg = "Incorrectly formatted dice! Format must be [number]d[number], for example, 1d20"
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.roll", min_args=1, usage="[1-5]d[1-20]")
     def roll_dice(self, event):
+        """
+        Roll some dice, DND style!
+        """
         raw_input = event["args_split"][0]
         roll = raw_input.split("d")
         results = []
 
         if len(roll) is not 2:
-            event["stderr"].write(self.err_msg)
+            event["stderr"].write(ERROR_FORMAT)
             return
 
         if roll[0].isdigit() is False or roll[1].isdigit() is False:
-            event["stderr"].write(self.err_msg)
+            event["stderr"].write(ERROR_FORMAT)
             return
 
         roll = [int(roll[0]), int(roll[1])]

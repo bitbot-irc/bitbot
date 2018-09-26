@@ -10,8 +10,6 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
-        events.on("received.message.channel").hook(self.message)
-
         exports.add("channelset", {"setting": "check-urls",
             "help": "Enable/Disable automatically checking for "
             "malicious URLs", "validate": Utils.bool_or_none})
@@ -22,6 +20,7 @@ class Module(object):
             "help": "Enable/Disable automatically kicking users that "
             "send malicious URLs", "validate": Utils.bool_or_none})
 
+    @Utils.hook("received.message.channel")
     def message(self, event):
         match = RE_URL.search(event["message"])
         if match and event["channel"].get_setting("check-urls",

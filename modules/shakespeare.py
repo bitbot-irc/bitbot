@@ -1,5 +1,5 @@
 import random
-from src import Utils
+from src import ModuleManager, Utils
 
 INSULT_INTRO = ["Thou art a", "Ye", "Thou", "Thy", "Thee"]
 
@@ -51,14 +51,8 @@ INSULT_PART_3 = ["apple-john", "baggage", "barnacle", "bladder", "boar-pig",
                  "vassal", "whey-face", "wagtail"]
 
 
-class Module(object):
-
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self.events = events
-
-        events.on("received.command.insult").hook(self.dispense_insult)
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.insult")
     def dispense_insult(self, event):
         insult = [random.choice(INSULT_INTRO), random.choice(INSULT_PART_1),
                   random.choice(INSULT_PART_2), random.choice(INSULT_PART_3)]

@@ -1,14 +1,14 @@
 import socket
-from src import Utils
+from src import ModuleManager, Utils
 
 EVAL_URL = "https://eval.appspot.com/eval"
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.command.eval").hook(self.eval, min_args=1,
-            help="Evaluate a python statement", usage="<statement>")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.eval", min_args=1, usage="<statement>")
     def eval(self, event):
+        """
+        Evaluate a python statement
+        """
         try:
             code, page = Utils.get_url(EVAL_URL, get_params={
                 "statement": event["args"]}, code=True)

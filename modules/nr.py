@@ -23,26 +23,6 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self._client = None
-        events.on("received.command.nrtrains"
-            ).hook(self.trains, min_args=1,
-            help="Get train/bus services for a station (Powered by NRE)",
-            usage="<crs_id>")
-        events.on("received.command.nrservice"
-            ).hook(self.service, min_args=1,
-            help="Get train service information for a UID, headcode or RID (Powered by NRE)",
-            usage="<service_id>")
-        events.on("received.command.nrhead"
-            ).hook(self.head, min_args=1,
-            help="Get information for a given headcode/UID/RID (Powered by NRE)",
-            usage="<headcode>")
-        events.on("received.command.nrcode"
-            ).hook(self.service_code, min_args=1,
-            help="Get the text for a given delay/cancellation code (Powered by NRE)",
-            usage="<code>")
-        events.on("telegram.command.nrtrains").hook(self.trains)
-        events.on("telegram.command.nrcode").hook(self.service_code)
-        events.on("telegram.command.nrhead").hook(self.head)
-        events.on("telegram.command.nrservice").hook(self.service)
 
     @property
     def client(self):
@@ -134,7 +114,13 @@ class Module(object):
 
     def reduced_activities(self, string): return [a for a in self.activities(string) if a in self.PASSENGER_ACTIVITIES]
 
+    @Utils.hook("telegram.command.nrtrains")
+    @Utils.hook("received.command.nrtrains", min_args=1, usage="<crs_id>")
     def trains(self, event):
+        """
+        Get train/bus services for a station (Powered by NRE)
+        """
+
         client = self.client
         colours = self.COLOURS
 
@@ -308,7 +294,13 @@ class Module(object):
         else:
             event["stdout"].write("%s%s: %s" % (station_summary, " departures calling at %s" % filter["inter"] if filter["inter"] else '', trains_string))
 
+    @Utils.hook("telegram.command.nrservice")
+    @Utils.hook("received.command.nrservice", min_args=1, usage="<service_id>")
     def service(self, event):
+        """
+        Get train service information for a UID, headcode or RID
+        (Powered by NRE)
+        """
         client = self.client
         colours = self.COLOURS
         external = event.get("external", False)
@@ -497,7 +489,12 @@ class Module(object):
                 len(stations_filtered), total_count,
                 ", ".join([s["summary"] for s in stations_filtered])))
 
+    @Utils.hook("telegram.command.nrhead")
+    @Utils.hook("received.command.nrhead", min_args=1, usage="<headcode>")
     def head(self, event):
+        """
+        Get information for a given headcode/UID/RID (Powered by NRE)
+        """
         client = self.client
         service_id = event["args_split"][0]
 
@@ -513,7 +510,13 @@ class Module(object):
         else:
             event["stdout"].write(", ".join(["h/%s r/%s u/%s rs/%s %s (%s) -> %s (%s)" % (a["trainid"], a["rid"], a["uid"], a["rsid"], a["originName"], a["originCrs"], a["destinationName"], a["destinationCrs"]) for a in services]))
 
+    @Utils.hook("telegram.command.nrcode")
+    @Utils.hook("received.command.nrcode", min_args=1, usage="<code>")
     def service_code(self, event):
+        """
+        Get the text for a given delay/cancellation code (Powered by NRE)
+        """
+
         client = self.client
 
         if not event["args"].isnumeric():

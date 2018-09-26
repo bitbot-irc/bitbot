@@ -1,14 +1,14 @@
 import json
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_SPOTIFY = "https://api.spotify.com/v1/search"
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.command.spotify").hook(self.spotify, min_args=1,
-            help="Search for a track on spotify")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.spotify", min_args=1)
     def spotify(self, event):
+        """
+        Search for a track on spotify
+        """
         page = Utils.get_url(URL_SPOTIFY, get_params={"type": "track",
             "limit": 1, "q": event["args"]}, json=True)
         if page:

@@ -6,9 +6,7 @@ REGEX_SED = re.compile("^s/")
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        self.bot = bot
         self.events = events
-        events.on("received.message.channel").hook(self.channel_message)
 
         exports.add("channelset", {"setting": "sed",
             "help": "Disable/Enable sed in a channel",
@@ -17,6 +15,7 @@ class Module(object):
             "help": "Disable/Enable sed only looking at the messages "
             "sent by the user", "validate": Utils.bool_or_none})
 
+    @Utils.hook("received.message.channel")
     def channel_message(self, event):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
         if event["message"].startswith("s/") and len(sed_split) > 2:

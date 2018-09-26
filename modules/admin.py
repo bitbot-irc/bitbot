@@ -1,29 +1,39 @@
+from src import ModuleManager, Utils
 
-
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("received.command.changenickname").hook(
-            self.change_nickname, permission="changenickname",
-            min_args=1, help="Change my nickname", usage="<nickname>")
-        events.on("received.command.raw").hook(self.raw,
-            permission="raw", min_args=1, usage="<raw line>",
-            help="Send a raw IRC line through the bot")
-        events.on("received.command.part").hook(self.part,
-            permission="part", min_args=1, help="Part from a channel",
-            usage="<#channel>")
-        events.on("received.command.reconnect").hook(self.reconnect,
-            permission="reconnect", help="Reconnect from this network")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.changenickname",
+        permission="changenickname", min_args=1, usage="<nickname>")
     def change_nickname(self, event):
+        """
+        Change my nickname
+        """
         nickname = event["args_split"][0]
         event["server"].send_nick(nickname)
 
+    @Utils.hook("received.command.raw", permission="raw", min_args=1,
+        usage="<raw line>")
     def raw(self, event):
+        """
+        Send a line of raw IRC data
+        """
         event["server"].send(event["args"])
 
+    @Utils.hook("received.command.part", permission="part", usage="[#channel]")
     def part(self, event):
-        event["server"].send_part(event["args_split"][0])
+        """
+        Part from the current or given channel
+        """
+        if event["args"]:
+            target = event["args_split"][0]
+        elif event["is_channel"]:
+            target = event["target"].name
+        else:
+            event["stderr"].write("No channel provided")
+        event["server"].send_part(target)
 
+    @Utils.hook("received.command.reconnect", permission="reconnect")
     def reconnect(self, event):
+        """
+        Reconnect to the current network
+        """
         event["server"].send_quit("Reconnecting")

@@ -1,10 +1,7 @@
-from src import EventManager
+from src import EventManager, ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.numeric.001").hook(self.on_connect,
-            priority=EventManager.PRIORITY_URGENT)
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.numeric.001", priority=EventManager.PRIORITY_URGENT)
     def on_connect(self, event):
         commands = event["server"].get_setting("perform", [])
         for i, command in enumerate(commands):

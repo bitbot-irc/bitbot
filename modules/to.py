@@ -1,14 +1,7 @@
-from src import EventManager
+from src import EventManager, ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.message.channel").hook(self.channel_message,
-            priority=EventManager.PRIORITY_HIGH)
-        events.on("received.command.to").hook(self.to, min_args=2,
-            help=("Relay a message to a user the next time they talk "
-            "in this channel"), channel_only=True,
-            usage="<username> <message>")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.message.channel", priority=EventManager.PRIORITY_HIGH)
     def channel_message(self, event):
         messages = event["channel"].get_user_setting(event["user"].get_id(),
             "to", [])
@@ -18,7 +11,12 @@ class Module(object):
         if messages:
             event["channel"].del_user_setting(event["user"].get_id(), "to")
 
+    @Utils.hook("received.command.to", min_args=2, channel_only=True,
+        usage="<username> <message>")
     def to(self, event):
+        """
+        Relay a message to a user the next time they talk in this channel"
+        """
         target_user = event["server"].get_user(event["args_split"][0])
         messages = event["target"].get_user_setting(target_user.get_id(),
             "to", [])

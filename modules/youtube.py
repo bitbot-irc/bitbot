@@ -20,11 +20,6 @@ class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
         self.events = events
-        events.on("received.command").on("yt", "youtube").hook(self.yt,
-            help="Find a video on youtube", usage="[query]")
-        events.on("received.message.channel").hook(self.channel_message)
-
-        events.on("get.searchyoutube").hook(self.search_video)
 
         exports.add("channelset", {"setting": "auto-youtube",
             "help": "Disable/Enable automatically getting info from "
@@ -65,6 +60,7 @@ class Module(object):
                 video_title, video_duration, video_uploader, "{:,}".format(
                 int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
 
+    @Utils.hook("get.searchyoutube")
     def search_video(self, event):
         search = event["query"]
         video_id = ""
@@ -80,8 +76,11 @@ class Module(object):
                 video_id = search_page["items"][0]["id"]["videoId"]
                 return "https://youtu.be/%s" % video_id
 
-
+    @Utils.hook("received.command.yt|youtube", usage="[query]")
     def yt(self, event):
+        """
+        Find a video on youtube
+        """
         video_id = None
         search = None
         if event["args"]:
@@ -111,6 +110,7 @@ class Module(object):
         else:
            event["stderr"].write("No search phrase provided")
 
+    @Utils.hook("received.message.channel")
     def channel_message(self, event):
         match = re.search(REGEX_YOUTUBE, event["message"])
         if match and event["channel"].get_setting("auto-youtube", False):

@@ -6,12 +6,9 @@ REGEX_URL = re.compile("https?://", re.I)
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        self.bot = bot
         self.events = events
-        events.on("get.shortlink").hook(self.shortlink)
-        events.on("received.command.shorten").hook(self.shorten, min_args=1,
-            help="Shorten a URL using the is.gd service.", usage="<url>")
 
+    @Utils.hook("get.shortlink")
     def shortlink(self, event):
         url = event["url"]
         if not re.match(REGEX_URL, url):
@@ -24,7 +21,11 @@ class Module(object):
         if data and data["shorturl"]:
             return data["shorturl"]
 
+    @Utils.hook("received.command.shorten", min_args=1, usage="<url>")
     def shorten(self, event):
+        """
+        Shorten a given URL using the is.gd service
+        """
         link = self.events.on("get.shortlink").call_for_result(
             url=event["args"])
         if link:

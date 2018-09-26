@@ -1,14 +1,14 @@
 import re
-from src import Utils
+from src import ModuleManager, Utils
 
 REGEX_URL = re.compile("https?://\S+", re.I)
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.command").on("title", "t").hook(self.title,
-            help="Get the title of a URL", usage="[URL]")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.title|t", usage="[URL]")
     def title(self, event):
+        """
+        Get the title of a URL
+        """
         url = None
         if len(event["args"]) > 0:
             url = event["args_split"][0]

@@ -1,12 +1,7 @@
+from src import ModuleManager, Utils
 
-
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.numeric.001").hook(self.on_connect)
-        events.on("self.join").hook(self.on_join)
-        events.on("self.part").hook(self.on_part)
-        events.on("self.kick").hook(self.on_kick)
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.numeric.001")
     def on_connect(self, event):
         channels =  event["server"].get_setting("autojoin", [])
         chan_keys = event["server"].get_setting("channel_keys", {})
@@ -25,6 +20,7 @@ class Module(object):
         event["server"].send_join(
             ",".join(channels_sorted), ",".join(keys_sorted))
 
+    @Utils.hook("self.join")
     def on_join(self, event):
         channels = event["server"].get_setting("autojoin", [])
         if not event["channel"].name in channels:
@@ -37,8 +33,10 @@ class Module(object):
             channels.remove(channel_name)
             server.set_setting("autojoin", channels)
 
+    @Utils.hook("self.part")
     def on_part(self, event):
         self._remove_channel(event["server"], event["channel"].name)
 
+    @Utils.hook("self.kick")
     def on_kick(self, event):
         self._remove_channel(event["server"], event["channel"].name)

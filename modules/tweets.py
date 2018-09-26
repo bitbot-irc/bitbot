@@ -16,16 +16,17 @@ class Module(object):
         self.bot = bot
         self.events = events
 
-        events.on("received.command").on("tweet", "tw").hook(self.tweet,
-            help="Find a tweet", usage="[@username/URL/ID]")
-
     def make_timestamp(self, s):
         seconds_since = time.time() - datetime.datetime.strptime(s,
             "%a %b %d %H:%M:%S %z %Y").timestamp()
         since, unit = Utils.time_unit(seconds_since)
         return "%s %s ago" % (since, unit)
 
+    @Utils.hook("received.command.tweet|tw", usage="[@username/URL/ID]")
     def tweet(self, event):
+        """
+        Get/find a tweet
+        """
         api_key = self.bot.config["twitter-api-key"]
         api_secret = self.bot.config["twitter-api-secret"]
         access_token = self.bot.config["twitter-access-token"]

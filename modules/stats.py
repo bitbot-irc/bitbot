@@ -4,17 +4,21 @@ from src import Utils
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.command.uptime").hook(self.uptime,
-            help="Show my uptime")
-        events.on("received.command.stats").hook(self.stats,
-            help="Show my network/channel/user stats")
 
+    @Utils.hook("received.command.uptime")
     def uptime(self, event):
+        """
+        Show my uptime
+        """
         seconds = int(time.time()-self.bot.start_time)
         event["stdout"].write("Uptime: %s" % Utils.to_pretty_time(
             seconds))
 
+    @Utils.hook("received.command.stats")
     def stats(self, event):
+        """
+        Show my network/channel/user stats
+        """
         networks = len(self.bot.servers)
         channels = 0
         users = 0

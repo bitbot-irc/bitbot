@@ -1,14 +1,13 @@
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("received.command").on("wiki", "wi"
-            ).hook(self.wikipedia, min_args=1)
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.wiki|wi", min_args=1)
     def wikipedia(self, event):
+        """
+        Get information from wikipedia
+        """
         page = Utils.get_url(URL_WIKIPEDIA, get_params={
             "action": "query", "prop": "extracts",
             "titles": event["args"], "exintro": "",

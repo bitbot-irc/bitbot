@@ -7,11 +7,13 @@ URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.command").on("synonym", "antonym").hook(
-            self.thesaurus, min_args=1, usage="<word> [type]",
-            help="Get synonyms/antonyms for a provided phrase")
 
+    @Utils.hook("received.command.synonym|antonym", min_args=1,
+        usage="<word> [type]")
     def thesaurus(self, event):
+        """
+        Get synonyms/antonyms for a provided phrase
+        """
         phrase = event["args_split"][0]
         page = Utils.get_url(URL_THESAURUS % (self.bot.config[
             "bighugethesaurus-api-key"], phrase), json=True)

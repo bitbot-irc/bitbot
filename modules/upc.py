@@ -1,16 +1,15 @@
-from src import Utils
+from src import ModuleManager, Utils
 
 UPCITEMDB_URL = "https://api.upcitemdb.com/prod/trial/lookup"
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "UPC"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("received.command").on("upc", "ean", "gtin").hook(
-            self.upc, min_args=1, usage="<UPC|EAN>",
-            help="Look up a product by UPC or EAN")
 
+    @Utils.hook("received.command.upc|ean|gtin", min_args=1, usage="<UPC|EAN>")
     def upc(self, event):
+        """
+        Look up a product by UPC, EAN or GTIN
+        """
         arg_len = len(event["args_split"][0])
         if not arg_len == 12 and not arg_len == 13:
             event["stderr"].write("Invalid UPC/EAN provided")

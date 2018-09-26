@@ -1,14 +1,15 @@
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_GEOIP = "http://ip-api.com/json/%s"
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "GeoIP"
-    def __init__(self, bot, events, exports):
-        events.on("received.command.geoip").hook(self.geoip, min_args=1,
-            help="Get geoip data on a given IPv4/IPv6 address", usage="<IP>")
 
+    @Utils.hook("received.command.geoip", min_args=1, usage="<IP>")
     def geoip(self, event):
+        """
+        Get geoip data on a given IPv4/IPv6 address
+        """
         page = Utils.get_url(URL_GEOIP % event["args_split"][0],
             json=True)
         if page:

@@ -1,5 +1,6 @@
 #--ignore
 import types, json
+from src import Utils
 
 def get_target(user):
     return user.alias or user.nickname
@@ -24,11 +25,8 @@ class Module(object):
     _name = "Aliases"
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("new.user").hook(self.new_user)
-        events.on("received.nick").hook(self.nickname_change)
-        events.on("received.command.alias").hook(self.alias)
-        #events.on("received.command.mainalias").hook(self.main_alias)
 
+    @Utils.hook("new.user")
     def new_user(self, event):
         method_type = types.MethodType
         user = event["user"]
@@ -40,6 +38,7 @@ class Module(object):
         event["user"].find_settings = method_type(find_settings, user)
         event["user"].del_setting = method_type(del_setting, user)
 
+    @Utils.hook("received.nick")
     def nickname_change(self, event):
         old_nickname = event["old_nickname"]
         new_nickname = event["new_nickname"]
@@ -63,6 +62,7 @@ class Module(object):
             SET nickname=? WHERE nickname=?""", [new_nickname.lower(),
             old_nickname.lower()])
 
+    @Utils.hook("received.command.alias")
     def alias(self, event):
         if event["args"]:
             target = event["args_split"][0]

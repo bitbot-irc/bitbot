@@ -28,34 +28,6 @@ REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        events.on("received.command.coins").hook(self.coins,
-            help="Show how many coins you have")
-
-        events.on("received.command.richest").hook(
-            self.richest, help="Show the top 10 richest users")
-        events.on("received.command.redeemcoins").hook(
-            self.redeem_coins, help="Redeem free coins")
-
-        events.on("received.command.resetcoins").hook(
-            self.reset_coins, permission="resetcoins",
-            min_args=1, help=
-            "Reset a specified user's coins to %s" % str(DECIMAL_ZERO),
-            usage="<target>")
-        events.on("received.command.givecoins").hook(self.give_coins,
-            min_args=1, help="Give coins to a user",
-            usage="<nickname> <coins>", permission="givecoins")
-
-
-        events.on("received.command.flip").hook(self.flip,
-            help="Bet coins on a coin flip", usage=
-            "heads|tails <coin amount>", min_args=2, authenticated=True)
-        events.on("received.command.roulette").hook(
-            self.roulette, min_args=2, help="Spin the roulette wheel",
-            usage="<type> <amount>", authenticated=True)
-
-        events.on("received.command.sendcoins").hook(
-            self.send, min_args=2, help="Send coins to a user",
-            usage="<nickname> <amount>", authenticated=True)
 
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
@@ -65,7 +37,11 @@ class Module(object):
         bot.add_timer("coin-interest", INTEREST_INTERVAL, persist=False,
             next_due=time.time()+until_next_hour)
 
+    @Utils.hook("received.command.coins")
     def coins(self, event):
+        """
+        Show how many coins you have
+        """
         if event["args_split"]:
             target = event["server"].get_user(event["args_split"][0])
         else:
@@ -74,7 +50,12 @@ class Module(object):
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             "{0:.2f}".format(coins), "" if coins == 1 else "s"))
 
+    @Utils.hook("received.command.resetcoins", permission="resetcoins",
+        min_args=1, usage="<target>")
     def reset_coins(self, event):
+        """
+        Reset a user's coins to 0
+        """
         target = event["server"].get_user(event["args_split"][0])
         coins = decimal.Decimal(target.get_setting("coins", "0.0"))
         if coins == DECIMAL_ZERO:
@@ -84,7 +65,12 @@ class Module(object):
             target.del_setting("coins")
             event["stdout"].write("Reset coins for %s" % target.nickname)
 
+    @Utils.hook("received.command.givecoins", min_args=1,
+        usage="<nickname> <coins>", permission="givecoins")
     def give_coins(self, event):
+        """
+        Give coins to a user
+        """
         target = event["server"].get_user(event["args_split"][0])
         coins = event["args_split"][1]
         match = REGEX_FLOAT.match(coins)
@@ -98,7 +84,11 @@ class Module(object):
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
             str(coins)))
 
+    @Utils.hook("received.command.richest")
     def richest(self, event):
+        """
+        Show the top 10 richest users
+        """
         all_coins = event["server"].get_all_user_settings("coins", [])
         all_coins = list(filter(lambda coin: decimal.Decimal(coin[1]),
             all_coins))
@@ -112,7 +102,11 @@ class Module(object):
             all_coins[nickname])) for nickname in top_10)
         event["stdout"].write("Richest users: %s" % top_10)
 
+    @Utils.hook("received.command.redeemcoins")
     def redeem_coins(self, event):
+        """
+        Redeem your free coins
+        """
         user_coins = decimal.Decimal(event["user"].get_setting(
             "coins", "0.0"))
         if user_coins == DECIMAL_ZERO:
@@ -137,7 +131,12 @@ class Module(object):
             event["stderr"].write(
                 "You can only redeem coins when you have none")
 
+    @Utils.hook("received.command.flip", usage="heads|tails <coin amount>",
+        min_args=2, authenticated=True)
     def flip(self, event):
+        """
+        Bet on a coin flip
+        """
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1].lower()
         if coin_bet == "all":
@@ -176,7 +175,12 @@ class Module(object):
                 event["user"].nickname, side_name, coin_bet_str,
                 "" if coin_bet == 1 else "s"))
 
+    @Utils.hook("received.command.sendcoins", min_args=2,
+        usage="<nickname> <amount>", authenticated=True)
     def send(self, event):
+        """
+        Send coins to another user
+        """
         if event["user"].get_id() == event["server"].get_user(event[
                 "args_split"][0]).get_id():
             event["stderr"].write("You can't send coins to yourself")
@@ -239,7 +243,12 @@ class Module(object):
                         str(coins))
         event["timer"].redo()
 
+    @Utils.hook("received.command.roulette", min_args=2,
+        usage="<type> <amount>", authenticated=True)
     def roulette(self, event):
+        """
+        Spin a roulette wheel
+        """
         bets = event["args_split"][0].lower().split(",")
         if "0" in bets:
             event["stderr"].write("You can't bet on 0")

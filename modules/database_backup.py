@@ -1,4 +1,5 @@
 import datetime, glob, os, shutil, time
+from src import Utils
 
 BACKUP_INTERVAL = 60*60 # 1 hour
 BACKUP_COUNT = 5
@@ -10,10 +11,10 @@ class Module(object):
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        events.on("timer.database-backup").hook(self.backup)
         bot.add_timer("database-backup", BACKUP_INTERVAL, persist=False,
             next_due=time.time()+until_next_hour)
 
+    @Utils.hook("timer.database-backup")
     def backup(self, event):
         full_location =  self.bot.database.full_location
         files = glob.glob("%s.*" % full_location)

@@ -1,26 +1,7 @@
 import time
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        events.on("received.message.channel"
-            ).hook(self.channel_message)
-        events.on("self.message.channel"
-            ).hook(self.self_channel_message)
-        events.on("received.command.words"
-            ).hook(self.words, channel_only=True,
-            usage="<nickname>", help=
-            "See how many words you or the given nickname have used")
-        events.on("received.command.trackword"
-            ).hook(self.track_word, min_args=1,
-            help="Start tracking a word", usage="<word>",
-            permission="track-word")
-        events.on("received.command.wordusers"
-            ).hook(self.word_users, min_args=1,
-            help="Show who has used a tracked word the most",
-            usage="<word>")
-
+class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
         words = list(filter(None, event["message_split"]))
         word_count = len(words)
@@ -42,13 +23,19 @@ class Module(object):
                 word_count = user.get_setting(setting, 0)
                 word_count += 1
                 user.set_setting(setting, word_count)
+    @Utils.hook("received.message.channel")
     def channel_message(self, event):
         self._channel_message(event["user"], event)
+    @Utils.hook("self.message.channel")
     def self_channel_message(self, event):
         self._channel_message(event["server"].get_user(
             event["server"].nickname), event)
 
+    @Utils.hook("received.command.words", channel_only=True, usage="<nickname>")
     def words(self, event):
+        """
+        See how many words you or the given nickname have used
+        """
         if event["args_split"]:
             target = event["server"].get_user(event["args_split"
                 ][0])
@@ -64,7 +51,12 @@ class Module(object):
         event["stdout"].write("%s has used %d words (%d in %s)" % (
             target.nickname, total, this_channel, event["target"].name))
 
+    @Utils.hook("received.command.trackword", min_args=1,
+        permission="track-word")
     def track_word(self, event):
+        """
+        Start tracking a word
+        """
         word = event["args_split"][0].lower()
         tracked_words = event["server"].get_setting("tracked-words", [])
         if not word in tracked_words:
@@ -74,7 +66,11 @@ class Module(object):
         else:
             event["stderr"].write("Already tracking '%s'" % word)
 
+    @Utils.hook("received.command.wordusers", min_args=1, usage="<word>")
     def word_users(self, event):
+        """
+        Show who has used a tracked word the most
+        """
         word = event["args_split"][0].lower()
         if word in event["server"].get_setting("tracked-words", []):
             word_users = event["server"].get_all_user_settings(

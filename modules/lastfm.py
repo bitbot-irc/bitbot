@@ -14,11 +14,11 @@ class Module(object):
         exports.add("set", {"setting": "lastfm",
             "help": "Set username on last.fm"})
 
-        events.on("received.command").on("np", "listening", "nowplaying"
-            ).hook(self.np, help="Get the last listened to track from a user",
-            usage="[username]")
-
+    @Utils.hook("received.command.np|listening|nowplaying", usage="[username]")
     def np(self, event):
+        """
+        Get the last listened to track from a user
+        """
         if event["args_split"]:
             lastfm_username = event["args_split"][0]
             shown_username = lastfm_username

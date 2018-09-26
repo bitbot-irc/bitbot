@@ -1,17 +1,16 @@
 import json, re
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_TRANSLATE = "http://translate.googleapis.com/translate_a/single"
 URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
 REGEX_LANGUAGES = re.compile("(\w+)?:(\w+)? ")
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        events.on("received.command").on("translate", "tr").hook(
-            self.translate, help="Translate the provided phrase or the "
-            "last line seen.", usage="[phrase]")
-
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("received.command.translate|tr", usage="[phrase]")
     def translate(self, event):
+        """
+        Translate the provided phrase or the last line in thie current channel
+        """
         phrase = event["args"]
         if not phrase:
             phrase = event["buffer"].get()

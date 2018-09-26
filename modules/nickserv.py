@@ -1,14 +1,12 @@
 import base64
-from src import EventManager
+from src import EventManager, Utils
 
 class Module(object):
     def __init__(self, bot, events, exports):
-        events.on("received.numeric.001").hook(self.on_connect,
-            priority=EventManager.PRIORITY_URGENT)
-
         exports.add("serverset", {"setting": "nickserv-password",
             "help": "Set the nickserv password for this server"})
 
+    @Utils.hook("received.numeric.001", priority=EventManager.PRIORITY_URGENT)
     def on_connect(self, event):
         nickserv_password = event["server"].get_setting(
             "nickserv-password")
