@@ -22,7 +22,9 @@ class ModuleNotLoadedWarning(ModuleWarning):
 
 class BaseModule(object):
     def __init__(self, bot, events, exports):
-        pass
+        self.bot = bot
+        self.events = events
+        self.exports = exports
 
 class ModuleManager(object):
     def __init__(self, bot, events, exports, directory):

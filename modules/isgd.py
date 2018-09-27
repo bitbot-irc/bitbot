@@ -1,13 +1,10 @@
 import re
-from src import Utils
+from src import ModuleManager, Utils
 
 ISGD_API_URL = "https://is.gd/create.php"
 REGEX_URL = re.compile("https?://", re.I)
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.events = events
-
+class Module(ModuleManager.BaseModule):
     @Utils.hook("get.shortlink")
     def shortlink(self, event):
         url = event["url"]

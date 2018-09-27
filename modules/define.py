@@ -1,17 +1,15 @@
 #--require-config wordnik-api-key
 
 import time
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_WORDNIK = "https://api.wordnik.com/v4/word.json/%s/definitions"
 URL_WORDNIK_RANDOM = "https://api.wordnik.com/v4/words.json/randomWord"
 
 RANDOM_DELAY_SECONDS = 3
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self._last_called = 0
+class Module(ModuleManager.BaseModule):
+    _last_called = 0
 
     def _get_definition(self, word):
         word = event["args"] if "args" in event else event

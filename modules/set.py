@@ -1,9 +1,6 @@
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.exports = exports
-
+class Module(ModuleManager.BaseModule):
     def _set(self, settings, event, target):
         settings_dict = dict([(setting["setting"], setting
             ) for setting in settings])

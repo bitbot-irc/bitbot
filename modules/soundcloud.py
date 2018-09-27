@@ -1,16 +1,14 @@
 #--require-config soundcloud-api-key
 
 import json, re, time
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_SOUNDCLOUD_TRACK = "http://api.soundcloud.com/tracks"
 URL_SOUNDCLOUD_RESOLVE = "http://api.soundcloud.com/resolve"
 REGEX_SOUNDCLOUD = "https?://soundcloud.com/([^/]+)/([^/]+)"
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "SoundCloud"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
 
     @Utils.hook("received.command.soundcloud|sc")
     def soundcloud(self, event):

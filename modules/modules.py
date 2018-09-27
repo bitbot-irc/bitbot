@@ -1,9 +1,6 @@
 from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.loadmodule", min_args=1,
         permission="load-module", usage="<module-name>")
     def load(self, event):

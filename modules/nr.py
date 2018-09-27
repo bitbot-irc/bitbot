@@ -2,7 +2,7 @@ import collections, re, time
 from datetime import datetime, date
 from collections import Counter
 
-from src import Utils
+from src import ModuleManager, Utils
 
 from suds.client import Client
 from suds import WebFault
@@ -14,15 +14,12 @@ from suds import WebFault
 
 URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/wsdl.aspx?ver=2016-02-16'
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "NR"
+    _client = None
 
     PASSENGER_ACTIVITIES = ["U", "P", "R"]
     COLOURS = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY, Utils.COLOR_ORANGE]
-
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self._client = None
 
     @property
     def client(self):

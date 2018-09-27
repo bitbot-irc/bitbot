@@ -1,13 +1,10 @@
 #--require-config bighugethesaurus-api-key
 
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.synonym|antonym", min_args=1,
         usage="<word> [type]")
     def thesaurus(self, event):

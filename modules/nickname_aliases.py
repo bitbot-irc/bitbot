@@ -1,6 +1,6 @@
 #--ignore
 import types, json
-from src import Utils
+from src import ModuleManager, Utils
 
 def get_target(user):
     return user.alias or user.nickname
@@ -21,10 +21,8 @@ def del_setting(user, setting):
     user.bot.database.del_user_setting(user.server.id, target,
         setting)
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "Aliases"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
 
     @Utils.hook("new.user")
     def new_user(self, event):

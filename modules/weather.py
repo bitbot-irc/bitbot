@@ -1,13 +1,10 @@
 #--require-config openweathermap-api-key
 
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.weather", min_args=1, usage="<location>")
     def weather(self, event):
         """

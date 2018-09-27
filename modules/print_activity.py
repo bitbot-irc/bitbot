@@ -1,10 +1,7 @@
 import datetime
-from src import EventManager, Utils
+from src import EventManager, ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-
+class Module(ModuleManager.BaseModule):
     def print_line(self, event, line, channel=None):
         timestamp = datetime.datetime.now().isoformat()
         target = str(event["server"])

@@ -5,16 +5,13 @@
 
 import datetime, re, time, traceback
 import twitter
-from src import Utils
+from src import ModuleManager, Utils
 
 REGEX_TWITTERURL = re.compile(
     "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "Twitter"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self.events = events
 
     def make_timestamp(self, s):
         seconds_since = time.time() - datetime.datetime.strptime(s,

@@ -1,5 +1,5 @@
 import collections, datetime, re
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
 URL_BUS_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
@@ -18,11 +18,9 @@ URL_ROUTE = "https://api.tfl.gov.uk/Line/%s/Route/Sequence/all?excludeCrowding=T
 
 PLATFORM_TYPES = ["Northbound", "Southbound", "Eastbound", "Westbound", "Inner Rail", "Outer Rail"]
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "TFL"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self.result_map = {}
+    result_map = {}
 
     def vehicle_span(self, arrival_time, human=True):
         vehicle_due_iso8601 = arrival_time

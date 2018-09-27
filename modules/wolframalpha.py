@@ -1,13 +1,11 @@
 #--require-config wolframalpha-api-key
 import json
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_WA = "https://api.wolframalpha.com/v1/result"
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "Wolfram|Alpha"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
 
     @Utils.hook("received.command.wolframalpha|wa", min_args=1, usage="<query>")
     def wa(self, event):

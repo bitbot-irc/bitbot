@@ -1,10 +1,7 @@
 import time
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.uptime")
     def uptime(self, event):
         """

@@ -2,15 +2,12 @@
 #--require-config google-search-id
 
 import json
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_GOOGLESEARCH = "https://www.googleapis.com/customsearch/v1"
 URL_GOOGLESUGGEST = "http://google.com/complete/search"
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.google|g", usage="[search term]")
     def google(self, event):
         """

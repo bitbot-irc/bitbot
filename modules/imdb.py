@@ -1,15 +1,13 @@
 #--require-config omdbapi-api-key
 
 import json
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_OMDB = "http://www.omdbapi.com/"
 URL_IMDBTITLE = "http://imdb.com/title/%s"
 
-class Module(object):
+class Module(ModuleManager.BaseModule):
     _name = "IMDb"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
 
     @Utils.hook("received.command.imdb", min_args=1, usage="<movie/tv title>")
     def imdb(self, event):

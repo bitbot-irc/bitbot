@@ -1,13 +1,10 @@
 import time
-from src import Utils
+from src import ModuleManager, Utils
 
 SECONDS_MAX = Utils.SECONDS_WEEKS*8
 SECONDS_MAX_DESCRIPTION = "8 weeks"
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.in", min_args=2, usage="<time> <message>")
     def in_command(self, event):
         """
