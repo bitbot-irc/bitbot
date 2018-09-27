@@ -202,7 +202,7 @@ class EventHook(object):
         child_name_lower = child_name.lower()
         if not child_name_lower in self._children:
             self._children[child_name_lower] = EventHook(self.log,
-                child_name_lower)
+                child_name_lower, self)
         return self._children[child_name_lower]
     def remove_child(self, child_name):
         child_name_lower = child_name.lower()
