@@ -33,7 +33,6 @@ class Module(object):
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        events.on("timer.coin-interest").hook(self.interest)
         bot.add_timer("coin-interest", INTEREST_INTERVAL, persist=False,
             next_due=time.time()+until_next_hour)
 
@@ -227,6 +226,7 @@ class Module(object):
             event["user"].nickname, "{0:.2f}".format(send_amount),
             target_user.nickname))
 
+    @Utils.hook("timer.coin-interest")
     def interest(self, event):
         for server in self.bot.servers.values():
             all_coins = server.get_all_user_settings(
