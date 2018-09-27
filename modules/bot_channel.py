@@ -1,10 +1,8 @@
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        exports.add("serverset", {"setting": "bot-channel",
-            "help": "Set main channel"})
-
+@Utils.export("serverset", {"setting":
+    "bot-channel", "help": "Set main channel"})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.numeric.001")
     def do_join(self, event):
         event["server"].send_join(event["server"].get_setting("bot-channel",

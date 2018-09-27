@@ -277,14 +277,22 @@ def get_closest_setting(event, setting, default=None):
 def prevent_highlight(nickname):
     return nickname[0]+"\u200d"+nickname[1:]
 
+def _set_get_append(obj, setting, item):
+    if not hasattr(obj, setting):
+        setattr(obj, setting, [])
+    getattr(obj, setting).append(item)
 def hook(event, **kwargs):
     def _hook_func(func):
-        if not hasattr(func, ModuleManager.BITBOT_HOOKS_MAGIC):
-            setattr(func, ModuleManager.BITBOT_HOOKS_MAGIC, [])
-        getattr(func, ModuleManager.BITBOT_HOOKS_MAGIC).append(
+        _set_get_append(func, ModuleManager.BITBOT_HOOKS_MAGIC,
             {"event": event, "kwargs": kwargs})
         return func
     return _hook_func
+def export(setting, value):
+    def _export_func(module):
+        _set_get_append(module, ModuleManager.BITBOT_EXPORTS_MAGIC,
+            {"setting": setting, "value": value})
+        return module
+    return _export_func
 
 def strip_html(s):
     return bs4.BeautifulSoup(s, "lxml").get_text()

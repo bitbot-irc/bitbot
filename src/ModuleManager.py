@@ -1,6 +1,7 @@
 import glob, imp, inspect, os, sys, uuid
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
+BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
 
 class ModuleException(Exception):
     pass
@@ -40,6 +41,9 @@ class ModuleManager(object):
         return os.path.join(self.directory, "%s.py" % name)
     def _import_name(self, name):
         return "bitbot_%s" % name
+
+    def _get_magic(self, obj, magic, default):
+        return getattr(obj, magic) if hasattr(obj, magic) else default
 
     def _load_module(self, name):
         path = self._module_path(name)
@@ -89,12 +93,11 @@ class ModuleManager(object):
             module_object._name = name.title()
         for attribute_name in dir(module_object):
             attribute = getattr(module_object, attribute_name)
-            if inspect.ismethod(attribute) and hasattr(attribute,
-                    BITBOT_HOOKS_MAGIC):
-                hooks = getattr(attribute, BITBOT_HOOKS_MAGIC)
-                for hook in hooks:
-                    context_events.on(hook["event"]).hook(attribute,
-                        docstring=attribute.__doc__, **hook["kwargs"])
+            for hook in self._get_magic(attribute, BITBOT_HOOKS_MAGIC, []):
+                context_events.on(hook["event"]).hook(attribute,
+                    docstring=attribute.__doc__, **hook["kwargs"])
+        for export in self._get_magic(module_object, BITBOT_EXPORTS_MAGIC, []):
+            context_exports.add(export["setting"], export["value"])
 
         module_object._context = context
         module_object._import_name = name
