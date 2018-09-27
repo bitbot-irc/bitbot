@@ -1,20 +1,18 @@
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
+@Utils.export("channelset", {"setting": "highlight-spam-threshold",
+    "help": "Set the number of nicknames in a message that qualifies as spam",
+     "validate": Utils.int_or_none})
+@Utils.export("channelset", {"setting": "highlight-spam-protection",
+    "help": "Enable/Disable highlight spam protection",
+    "validate": Utils.bool_or_none})
+@Utils.export("channelset", {"setting": "highlight-spam-ban",
+    "help": "Enable/Disable banning highlight spammers "
+    "instead of just kicking", "validate": Utils.bool_or_none})
+@Utils.export("channelset", {"setting": "ban-format",
+    "help": "Set ban format ($n = nick, $u = username, $h = hostname)"})
+class Module(ModuleManager.BaseModule):
     _name = "Channel Op"
-    def __init__(self, bot, events, exports):
-        exports.add("channelset", {"setting": "highlight-spam-threshold",
-            "help": "Set the number of nicknames in a message that "
-            "qualifies as spam", "validate": Utils.int_or_none})
-        exports.add("channelset", {"setting": "highlight-spam-protection",
-            "help": "Enable/Disable highlight spam protection",
-            "validate": Utils.bool_or_none})
-        exports.add("channelset", {"setting": "highlight-spam-ban",
-            "help": "Enable/Disable banning highlight spammers "
-            "instead of just kicking", "validate": Utils.bool_or_none})
-        exports.add("channelset", {"setting": "ban-format",
-            "help": "Set ban format ($n = nick, $u = username, "
-            "$h = hostname)"})
 
     @Utils.hook("received.command.kick|k", channel_only=True,
         require_mode="o", usage="<nickname> [reason]", min_args=1)

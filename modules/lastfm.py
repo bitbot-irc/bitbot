@@ -1,18 +1,13 @@
 #--require-config lastfm-api-key
 
 from datetime import datetime, timezone
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
-class Module(object):
+@Utils.export("set", {"setting": "lastfm", "help": "Set last.fm username"})
+class Module(ModuleManager.BaseModule):
     _name = "last.fm"
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self.events = events
-
-        exports.add("set", {"setting": "lastfm",
-            "help": "Set username on last.fm"})
 
     @Utils.hook("received.command.np|listening|nowplaying", usage="[username]")
     def np(self, event):

@@ -1,11 +1,9 @@
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
+@Utils.export("channelset", {"setting": "automode",
+    "help": "Disable/Enable automode", "validate": Utils.bool_or_none})
+class Module(ModuleManager.BaseModule):
     _name = "AutoMode"
-    def __init__(self, bot, events, exports):
-        exports.add("channelset", {"setting": "automode",
-            "help": "Disable/Enable automode",
-            "validate": Utils.bool_or_none})
 
     def _check_modes(self, channel, user):
         identified_account = user.get_identified_account()

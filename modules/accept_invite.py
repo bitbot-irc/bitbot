@@ -1,11 +1,9 @@
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        exports.add("serverset", {"setting": "accept-invites",
-            "help": "Set whether I accept invites on this server",
-            "validate": Utils.bool_or_none})
-
+@Utils.export("serverset", {"setting": "accept-invites",
+    "help": "Set whether I accept invites on this server",
+    "validate": Utils.bool_or_none})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.invite")
     def on_invite(self, event):
         if event["server"].is_own_nickname(event["target_user"].nickname):

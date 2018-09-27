@@ -1,5 +1,5 @@
 import re
-from src import EventManager, Utils
+from src import EventManager, ModuleManager, Utils
 
 STR_MORE = "%s (more...)" % Utils.FONT_RESET
 STR_CONTINUED = "(...continued) "
@@ -43,17 +43,13 @@ class StdErr(Out):
     def prefix(self):
         return Utils.color(Utils.bold(self.module_name), Utils.COLOR_RED)
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.events = events
-
-        exports.add("channelset", {"setting": "command-prefix",
-            "help": "Set the command prefix used in this channel"})
-        exports.add("serverset", {"setting": "command-prefix",
-            "help": "Set the command prefix used on this server"})
-        exports.add("serverset", {"setting": "identity-mechanism",
-            "help": "Set the identity mechanism for this server"})
-
+@Utils.export("channelset", {"setting": "command-prefix",
+    "help": "Set the command prefix used in this channel"})
+@Utils.export("serverset", {"setting": "command-prefix",
+    "help": "Set the command prefix used on this server"})
+@Utils.export("serverset", {"setting": "identity-mechanism",
+    "help": "Set the identity mechanism for this server"})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("new.user|channel")
     def new(self, event):
         if "user" in event:

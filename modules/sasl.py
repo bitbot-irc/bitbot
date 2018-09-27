@@ -1,18 +1,16 @@
 import base64
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        exports.add("serverset", {"setting": "sasl",
-            "help": "Set the sasl username/password for this server",
-            "validate": self._validate})
+def _validate(self, s):
+    mechanism = s
+    if " " in s:
+        mechanism, arguments = s.split(" ", 1)
+    return {"mechanism": mechanism, "args": arguments}
 
-    def _validate(self, s):
-        mechanism = s
-        if " " in s:
-            mechanism, arguments = s.split(" ", 1)
-        return {"mechanism": mechanism, "args": arguments}
-
+@Utils.export("serverset", {"setting": "sasl",
+    "help": "Set the sasl username/password for this server",
+    "validate": _validate})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.cap.ls")
     def on_cap(self, event):
         has_sasl = "sasl" in event["capabilities"]

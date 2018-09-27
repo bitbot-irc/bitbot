@@ -13,24 +13,20 @@ DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!", "HONK!",
 DUCK_MINIMUM_MESSAGES = 10
 DUCK_MINIMUM_UNIQUE = 3
 
-
+@Utils.export("channelset", {"setting": "ducks-enabled",
+    "help": "Toggle ducks!", "validate": Utils.bool_or_none})
+@Utils.export("channelset", {"setting": "ducks-kick",
+    "help": "Should the bot kick if there's no duck?",
+    "validate": Utils.bool_or_none})
+@Utils.export("channelset", {"setting": "ducks-min-unique",
+    "help": "Minimum unique users required to talk before a duck spawns.",
+     "validate": Utils.int_or_none})
+@Utils.export("channelset", {"setting": "ducks-min-messages",
+    "help": "Minimum messages between ducks spawning.",
+    "validate": Utils.int_or_none})
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-        exports.add("channelset", {"setting": "ducks-enabled",
-            "help": "Toggle ducks!", "validate": Utils.bool_or_none})
-
-        exports.add("channelset", {"setting": "ducks-kick",
-            "help": "Should the bot kick if there's no duck?",
-             "validate": Utils.bool_or_none})
-
-        exports.add("channelset", {"setting": "ducks-min-unique",
-            "help": "Minimum unique users required to talk before a "
-            "duck spawns.", "validate": Utils.int_or_none})
-
-        exports.add("channelset", {"setting": "ducks-min-messages",
-            "help": "Minimum messages between ducks spawning.",
-            "validate": Utils.int_or_none})
 
         for server in self.bot.servers.values():
             for channel in server.channels.values():

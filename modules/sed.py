@@ -1,20 +1,16 @@
 import re, traceback
-from src import Utils
+from src import ModuleManager, Utils
 
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^s/")
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.events = events
-
-        exports.add("channelset", {"setting": "sed",
-            "help": "Disable/Enable sed in a channel",
-            "validate": Utils.bool_or_none})
-        exports.add("channelset", {"setting": "sed-sender-only",
-            "help": "Disable/Enable sed only looking at the messages "
-            "sent by the user", "validate": Utils.bool_or_none})
-
+@Utils.export("channelset", {"setting": "sed",
+    "help": "Disable/Enable sed in a channel",
+    "validate": Utils.bool_or_none})
+@Utils.export("channelset", {"setting": "sed-sender-only",
+    "help": "Disable/Enable sed only looking at the messages sent by the user",
+    "validate": Utils.bool_or_none})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.message.channel")
     def channel_message(self, event):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)

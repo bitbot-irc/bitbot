@@ -1,16 +1,13 @@
 import re, time
-from src import EventManager, Utils
+from src import EventManager, ModuleManager, Utils
 
 REGEX_KARMA = re.compile("^(.*[^-+])[-+]*(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.events = events
-        exports.add("channelset", {"setting": "karma-verbose",
-            "help": "Disable/Enable automatically responding to "
-            "karma changes", "validate": Utils.bool_or_none})
-
+@Utils.export("channelset", {"setting": "karma-verbose",
+    "help": "Disable/Enable automatically responding to karma changes",
+    "validate": Utils.bool_or_none})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("new.user")
     def new_user(self, event):
         event["user"].last_karma = None

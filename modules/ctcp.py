@@ -1,13 +1,10 @@
 import datetime
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        exports.add("serverset", {"setting": "ctcp-responses",
-            "help": "Set whether I respond to CTCPs on this server",
-            "validate": Utils.bool_or_none})
-
+@Utils.export("serverset", {"setting": "ctcp-responses",
+    "help": "Set whether I respond to CTCPs on this server",
+    "validate": Utils.bool_or_none})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.message.private")
     def private_message(self, event):
         if event["message"][0] == "\x01" and event["message"][-1] == "\x01":

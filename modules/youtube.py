@@ -1,7 +1,7 @@
 #--require-config google-api-key
 
 import re
-from src import Utils
+from src import ModuleManager, Utils
 
 REGEX_YOUTUBE = re.compile(
     "https?://(?:www.)?(?:youtu.be/|youtube.com/watch\?[\S]*v=)([\w\-]{11})",
@@ -16,15 +16,10 @@ URL_YOUTUBESHORT = "https://youtu.be/%s"
 ARROW_UP = "▲"
 ARROW_DOWN = "▼"
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self.events = events
-
-        exports.add("channelset", {"setting": "auto-youtube",
-            "help": "Disable/Enable automatically getting info from "
-            "youtube URLs", "validate": Utils.bool_or_none})
-
+@Utils.export("channelset", {"setting": "auto-youtube",
+    "help": "Disable/Enable automatically getting info from youtube URLs",
+    "validate": Utils.bool_or_none})
+class Module(ModuleManager.BaseModule):
     def get_video_page(self, video_id, part):
         return Utils.get_url(URL_YOUTUBEVIDEO, get_params={"part": part,
             "id": video_id, "key": self.bot.config["google-api-key"]},

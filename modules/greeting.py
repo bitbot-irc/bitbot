@@ -1,10 +1,8 @@
-from src import Utils
+from src import ModuleManager, Utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        exports.add("channelset", {"setting": "greeting",
-            "help": "Set a greeting to send to users when they join"})
-
+@Utils.export("channelset", {"setting": "greeting",
+    "help": "Set a greeting to send to users when they join"})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.join")
     def join(self, event):
         greeting = event["channel"].get_setting("greeting", None)

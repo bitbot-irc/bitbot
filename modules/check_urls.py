@@ -1,25 +1,21 @@
 #--require-config virustotal-api-key
 
 import re
-from src import Utils
+from src import ModuleManager, Utils
 
 URL_VIRUSTOTAL = "https://www.virustotal.com/vtapi/v2/url/report"
 RE_URL = re.compile(r"https?://\S+", re.I)
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self.events = events
-        exports.add("channelset", {"setting": "check-urls",
-            "help": "Enable/Disable automatically checking for "
-            "malicious URLs", "validate": Utils.bool_or_none})
-        exports.add("serverset", {"setting": "check-urls",
-            "help": "Enable/Disable automatically checking for "
-            "malicious URLs", "validate": Utils.bool_or_none})
-        exports.add("channelset", {"setting": "check-urls-kick",
-            "help": "Enable/Disable automatically kicking users that "
-            "send malicious URLs", "validate": Utils.bool_or_none})
-
+@Utils.export("channelset", {"setting": "check-urls",
+    "help": "Enable/Disable automatically checking for malicious URLs",
+     "validate": Utils.bool_or_none})
+@Utils.export("serverset", {"setting": "check-urls",
+    "help": "Enable/Disable automatically checking for malicious URLs",
+    "validate": Utils.bool_or_none})
+@Utils.export("channelset", {"setting": "check-urls-kick",
+    "help": "Enable/Disable automatically kicking users that "
+    "send malicious URLs", "validate": Utils.bool_or_none})
+class Module(ModuleManager.BaseModule):
     @Utils.hook("received.message.channel")
     def message(self, event):
         match = RE_URL.search(event["message"])
