@@ -132,8 +132,7 @@ class Bot(object):
         del self.servers[server.fileno()]
 
     def reconnect(self, event):
-        server_details = self.database.servers.get(event["server_id"])
-        server = self.add_server(*(server_details + (False,)))
+        server = self.add_server(event["server_id"], False)
         if self.connect(server):
             self.servers[server.fileno()] = server
         else:
