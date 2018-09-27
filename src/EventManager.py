@@ -11,8 +11,7 @@ DEFAULT_EVENT_DELIMITER = "."
 DEFAULT_MULTI_DELIMITER = "|"
 
 class Event(object):
-    def __init__(self, bot, name, **kwargs):
-        self.bot = bot
+    def __init__(self, name, **kwargs):
         self.name = name
         self.kwargs = kwargs
         self.eaten = False
@@ -26,9 +25,8 @@ class Event(object):
         self.eaten = True
 
 class EventCallback(object):
-    def __init__(self, function, bot, priority, kwargs):
+    def __init__(self, function, priority, kwargs):
         self.function = function
-        self.bot = bot
         self.priority = priority
         self.kwargs = kwargs
     def call(self, event):
@@ -81,8 +79,8 @@ class EventHookContext(object):
         return self._parent.get_children()
 
 class EventHook(object):
-    def __init__(self, bot, name=None, parent=None):
-        self.bot = bot
+    def __init__(self, log, name=None, parent=None):
+        self.log = log
         self.name = name
         self.parent = parent
         self._children = {}
@@ -91,7 +89,7 @@ class EventHook(object):
         self._context_hooks = {}
 
     def _make_event(self, kwargs):
-        return Event(self.bot, self.name, **kwargs)
+        return Event(self.name, **kwargs)
 
     def _get_path(self):
         path = []
@@ -110,7 +108,7 @@ class EventHook(object):
     def _context_hook(self, context, function, priority, replay, kwargs):
         self._hook(function, context, priority, replay, kwargs)
     def _hook(self, function, context, priority, replay, kwargs):
-        callback = EventCallback(function, self.bot, priority, kwargs)
+        callback = EventCallback(function, priority, kwargs)
 
         if context == None:
             self._hooks.append(callback)
@@ -176,7 +174,7 @@ class EventHook(object):
         return self._call(kwargs, maximum=maximum)
     def _call(self, kwargs, maximum=None):
         event_path = self._get_path()
-        self.bot.log.debug("calling event: \"%s\" (params: %s)",
+        self.log.debug("calling event: \"%s\" (params: %s)",
             [event_path, kwargs])
         start = time.monotonic()
 
@@ -189,11 +187,11 @@ class EventHook(object):
                 returns.append(hook.call(event))
             except Exception as e:
                 traceback.print_exc()
-                self.bot.log.error("failed to call event \"%s\"", [
+                self.log.error("failed to call event \"%s\"", [
                     event_path], exc_info=True)
 
         total_milliseconds = (time.monotonic() - start) * 1000
-        self.bot.log.debug("event \"%s\" called in %fms", [
+        self.log.debug("event \"%s\" called in %fms", [
             event_path, total_milliseconds])
 
         self.check_purge()
@@ -203,8 +201,8 @@ class EventHook(object):
     def get_child(self, child_name):
         child_name_lower = child_name.lower()
         if not child_name_lower in self._children:
-            self._children[child_name_lower] = EventHook(self.bot,
-                child_name_lower, self)
+            self._children[child_name_lower] = EventHook(self.log,
+                child_name_lower)
         return self._children[child_name_lower]
     def remove_child(self, child_name):
         child_name_lower = child_name.lower()

@@ -8,30 +8,44 @@ def bool_input(s):
     result = input("%s (Y/n): " % s)
     return not result or result[0].lower() in ["", "y"]
 
+directory = os.path.dirname(os.path.realpath(__file__))
+
 arg_parser = argparse.ArgumentParser(
-    description="Python3 event-driven asynchronous modular IRC bot")
-arg_parser.add_argument("--config", "-c", default="bot.conf",
-    help="Location of the JSON config file")
-arg_parser.add_argument("--database", "-d", default="databases/bot.db",
-    help="Location of the sqlite3 database file")
-arg_parser.add_argument("--log", "-l", default="logs/bot.log",
-    help="Location of the main log file")
+    description="Python3 event-driven modular IRC bot")
+
+arg_parser.add_argument("--config", "-c",
+    help="Location of the JSON config file",
+    default=os.path.join(directory, "bot.conf"))
+
+arg_parser.add_argument("--database", "-d",
+    help="Location of the sqlite3 database file",
+    default=os.path.join(directory, "databases", "bot.db"))
+
+arg_parser.add_argument("--log", "-l",
+    help="Location of the main log file",
+    default=os.path.join(directory, "logs", "bot.log"))
+
 arg_parser.add_argument("--verbose", "-v", action="store_true")
 
 args = arg_parser.parse_args()
 
-directory = os.path.dirname(os.path.realpath(__file__))
+log = Logging.Log(args.log)
+config = Config.Config(args.config).load_config()
+database = Database.Database(log, args.database)
+events = events = EventManager.EventHook(log)
+exports = exports = Exports.Exports()
 
 bot = IRCBot.Bot()
 
-bot._events = events = EventManager.EventHook(bot)
-bot._exports = exports = Exports.Exports()
 bot.modules = modules = ModuleManager.ModuleManager(bot, events, exports,
     os.path.join(directory, "modules"))
-bot.line_handler = IRCLineHandler.LineHandler(bot, bot._events)
-bot.log = Logging.Log(bot, directory, args.log)
-bot.database = Database.Database(bot, directory, args.database)
-bot.config = Config.Config(bot, directory, args.config).load_config()
+bot.line_handler = IRCLineHandler.LineHandler(bot, events)
+
+bot.log = log
+bot.config = config
+bot.database = database
+bot._events = events
+bot._exports = exports
 bot.args = args
 
 bot._events.on("timer.reconnect").hook(bot.reconnect)

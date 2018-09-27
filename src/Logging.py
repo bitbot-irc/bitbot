@@ -14,7 +14,7 @@ class BitBotFormatter(logging.Formatter):
         return s
 
 class Log(object):
-    def __init__(self, bot, directory, filename):
+    def __init__(self, location):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
@@ -29,7 +29,7 @@ class Log(object):
         self.logger.addHandler(stdout_handler)
 
         file_handler = logging.handlers.TimedRotatingFileHandler(
-            os.path.join(directory, filename), when="midnight", backupCount=5)
+            location, when="midnight", backupCount=5)
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)

@@ -239,11 +239,10 @@ class UserChannelSettings(Table):
             [user_id, channel_id, setting.lower()])
 
 class Database(object):
-    def __init__(self, bot, directory, filename):
-        self.bot = bot
-        self.filename = filename
-        self.full_location = os.path.join(directory, filename)
-        self.database = sqlite3.connect(self.full_location,
+    def __init__(self, log, location):
+        self.log = log
+        self.location = location
+        self.database = sqlite3.connect(self.location,
             check_same_thread=False, isolation_level=None)
         self.database.execute("PRAGMA foreign_keys = ON")
         self._cursor = None
@@ -273,7 +272,7 @@ class Database(object):
 
     def _execute_fetch(self, query, fetch_func, params=[]):
         printable_query = " ".join(query.split())
-        self.bot.log.debug("executing query: \"%s\" (params: %s)",
+        self.log.debug("executing query: \"%s\" (params: %s)",
             [printable_query, params])
         start = time.monotonic()
 
@@ -283,7 +282,7 @@ class Database(object):
 
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
-        self.bot.log.debug("executed in %fms", [total_milliseconds])
+        self.log.debug("executed in %fms", [total_milliseconds])
 
         return value
     def execute_fetchall(self, query, params=[]):
