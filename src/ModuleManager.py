@@ -1,4 +1,4 @@
-import glob, imp, inspect, os, sys, uuid
+import glob, imp, io, inspect, os, sys, uuid
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
 BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
@@ -50,7 +50,7 @@ class ModuleManager(object):
     def _load_module(self, name):
         path = self._module_path(name)
 
-        with open(path) as module_file:
+        with io.open(path, mode="r", encoding="utf8") as module_file:
             while True:
                 line = module_file.readline().strip()
                 line_split = line.split(" ")
