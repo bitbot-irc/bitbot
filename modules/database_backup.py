@@ -17,7 +17,7 @@ class Module(object):
     @Utils.hook("timer.database-backup")
     def backup(self, event):
         location =  self.bot.database.location
-        files = glob.glob("%s.*" % ocation)
+        files = glob.glob("%s.*" % location)
         files = sorted(files)
 
         if len(files) == 5:
