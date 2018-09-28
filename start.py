@@ -35,7 +35,7 @@ config = Config.Config(args.config)
 database = Database.Database(log, args.database)
 events = events = EventManager.EventHook(log)
 exports = exports = Exports.Exports()
-timers = Timers.Timers(events, log)
+timers = Timers.Timers(database, events, log)
 line_handler = IRCLineHandler.LineHandler(events, timers)
 modules = modules = ModuleManager.ModuleManager(events, exports, config, log,
     os.path.join(directory, "modules"))

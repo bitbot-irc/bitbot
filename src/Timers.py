@@ -28,7 +28,8 @@ class Timer(object):
         return self._done
 
 class Timers(object):
-    def __init__(self, events, log):
+    def __init__(self, database, events, log):
+        self.database = database
         self.events = events
         self.log = log
         self.timers = []
@@ -40,12 +41,12 @@ class Timers(object):
                 "next-due"], id, False, timer["kwargs"])
 
     def _persist(self, timer):
-        self.set_setting("timer-%s" % timer.id, {
+        self.database.bot_settings.set("timer-%s" % timer.id, {
             "name": timer.name, "delay": timer.delay,
             "next-due": timer.next_due, "kwargs": timer.kwargs})
     def _remove(self, timer):
         self.timers.remove(timer)
-        self.del_setting("timer-%s" % timer.id)
+        self.database.bot_settings.delete("timer-%s" % timer.id)
 
     def add(self, name, delay, next_due=None, **kwargs):
         self._add(name, delay, next_due, None, False, kwargs)
