@@ -69,6 +69,7 @@ class Timers(object):
         for timer in self.timers[:]:
             if timer.due():
                 timer.finish()
-                self.events.on("timer.%s" % timer.name, timer=timer)
+                self.events.on("timer.%s" % timer.name).call(timer=timer,
+                    **timer.kwargs)
                 if timer.done():
                     self._remove(timer)
