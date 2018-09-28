@@ -22,7 +22,7 @@ class Timer(object):
     def redo(self):
         self._done = False
         self.set_next_due()
-    def finish():
+    def finish(self):
         self._done = True
     def done(self):
         return self._done
