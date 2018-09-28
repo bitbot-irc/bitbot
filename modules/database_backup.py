@@ -11,8 +11,8 @@ class Module(object):
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        bot.add_timer("database-backup", BACKUP_INTERVAL, persist=False,
-            next_due=time.time()+until_next_hour)
+        bot.timers.add("database-backup", BACKUP_INTERVAL,
+            time.time()+until_next_hour)
 
     @Utils.hook("timer.database-backup")
     def backup(self, event):

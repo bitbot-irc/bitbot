@@ -33,8 +33,8 @@ class Module(object):
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        bot.add_timer("coin-interest", INTEREST_INTERVAL, persist=False,
-            next_due=time.time()+until_next_hour)
+        bot.timers.add("coin-interest", INTEREST_INTERVAL,
+            time.time()+until_next_hour)
 
     @Utils.hook("received.command.coins")
     def coins(self, event):

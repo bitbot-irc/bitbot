@@ -14,9 +14,9 @@ CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "batch", "draft/labeled-response"}
 
 class LineHandler(object):
-    def __init__(self, bot, events):
-        self.bot = bot
+    def __init__(self, events, timers):
         self.events = events
+        self.timers = timers
         events.on("raw.PING").hook(self.ping)
 
         events.on("raw.001").hook(self.handle_001, default_event=True)
@@ -570,10 +570,9 @@ class LineHandler(object):
     # we need a registered nickname for this channel
     def handle_477(self, event):
         channel_name = Utils.irc_lower(event["server"], event["args"][1])
-        if channel_name in event["server"].attempted_join:
-            self.bot.add_timer("rejoin", 5,
-                channel_name=event["args"][1],
-                key=event["server"].attempted_join[channel_name],
+        if channel_name in event["server"]:
+            key = event["server"].attempted_join[channel_name]
+            self.timers.add("rejoin", 5, channel_name=channe_name, key=key,
                 server_id=event["server"].id)
 
     # someone's been kicked from a channel

@@ -27,13 +27,16 @@ class BaseModule(object):
         self.exports = exports
 
 class ModuleManager(object):
-    def __init__(self, bot, events, exports, directory):
-        self.bot = bot
+    def __init__(self, events, exports, config, log, directory):
         self.events = events
         self.exports = exports
+        self.config = config
+        self.log = log
         self.directory = directory
+
         self.modules = {}
         self.waiting_requirement = {}
+
     def list_modules(self):
         return sorted(glob.glob(os.path.join(self.directory, "*.py")))
 
@@ -47,7 +50,7 @@ class ModuleManager(object):
     def _get_magic(self, obj, magic, default):
         return getattr(obj, magic) if hasattr(obj, magic) else default
 
-    def _load_module(self, name):
+    def _load_module(self, bot, name):
         path = self._module_path(name)
 
         with io.open(path, mode="r", encoding="utf8") as module_file:
@@ -61,8 +64,7 @@ class ModuleManager(object):
                         raise ModuleNotLoadedWarning("module ignored")
                     elif line_split[0] == "#--require-config" and len(
                             line_split) > 1:
-                        if not line_split[1].lower() in self.bot.config or not self.bot.config[
-                                    line_split[1].lower()]:
+                        if not self.config.get(line_split[1].lower(), None):
                             # nope, required config option not present.
                             raise ModuleNotLoadedWarning(
                                 "required config not present")
@@ -88,8 +90,7 @@ class ModuleManager(object):
         context = str(uuid.uuid4())
         context_events = self.events.new_context(context)
         context_exports = self.exports.new_context(context)
-        module_object = module.Module(self.bot, context_events,
-            context_exports)
+        module_object = module.Module(bot, context_events, context_exports)
 
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
@@ -109,29 +110,29 @@ class ModuleManager(object):
                 "attempted to be used twice")
         return module_object
 
-    def load_module(self, name):
+    def load_module(self, bot, name):
         try:
-            module = self._load_module(name)
+            module = self._load_module(bot, name)
         except ModuleWarning as warning:
-            self.bot.log.error("Module '%s' not loaded", [name])
+            self.log.error("Module '%s' not loaded", [name])
             raise
         except Exception as e:
-            self.bot.log.error("Failed to load module \"%s\": %s",
+            self.log.error("Failed to load module \"%s\": %s",
                 [name, str(e)])
             raise
 
         self.modules[module._import_name] = module
         if name in self.waiting_requirement:
             for requirement_name in self.waiting_requirement:
-                self.load_module(requirement_name)
-        self.bot.log.info("Module '%s' loaded", [name])
+                self.load_module(bot, requirement_name)
+        self.log.info("Module '%s' loaded", [name])
 
-    def load_modules(self, whitelist=[], blacklist=[]):
+    def load_modules(self, bot, whitelist=[], blacklist=[]):
         for path in self.list_modules():
             name = self._module_name(path)
             if name in whitelist or (not whitelist and not name in blacklist):
                 try:
-                    self.load_module(name)
+                    self.load_module(bot, name)
                 except ModuleWarning:
                     pass
 
@@ -151,5 +152,5 @@ class ModuleManager(object):
         references -= 1 # 'del module' removes one reference
         references -= 1 # one of the refs is from getrefcount
 
-        self.bot.log.info("Module '%s' unloaded (%d reference%s)",
+        self.log.info("Module '%s' unloaded (%d reference%s)",
             [name, references, "" if references == 1 else "s"])

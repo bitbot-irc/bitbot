@@ -1,24 +1,27 @@
 import os, select, sys, threading, time, traceback, uuid
 from . import EventManager, Exports, IRCLineHandler, IRCServer, Logging
-from . import ModuleManager, Timer
+from . import ModuleManager
+
 
 class Bot(object):
-    def __init__(self):
+    def __init__(self, args, config, database, events, exports, line_handler,
+            log, modules, timers):
+        self.args = args
+        self.config = config
+        self.database = database
+        self._events = events
+        self._exports = exports
+        self.line_handler = line_handler
+        self.log = log
+        self.modules = modules
+        self.timers = timers
+
+        events.on("timer.reconnect").hook(self.reconnect)
         self.start_time = time.time()
         self.lock = threading.Lock()
-        self.args = None
-        self.database = None
-        self.config = None
         self.servers = {}
         self.running = True
         self.poll = select.epoll()
-        self.timers = []
-
-        self._events = None
-        self._exports = None
-        self.modules = None
-        self.log = None
-        self.line_handler = None
 
     def add_server(self, server_id, connect=True):
         (_, alias, hostname, port, password, ipv4, tls, nickname,
@@ -43,46 +46,7 @@ class Bot(object):
         self.servers[server.fileno()] = server
         self.poll.register(server.fileno(), select.EPOLLOUT)
         return True
-    def setup_timers(self, event):
-        for setting, value in self.find_settings("timer-%"):
-            id = setting.split("timer-", 1)[1]
-            self.add_timer(value["event-name"], value["delay"], value[
-                "next-due"], id, **value["kwargs"])
-    def timer_setting(self, timer):
-        self.set_setting("timer-%s" % timer.id, {
-            "event-name": timer.event_name, "delay": timer.delay,
-            "next-due": timer.next_due, "kwargs": timer.kwargs})
-    def timer_setting_remove(self, timer):
-        self.timers.remove(timer)
-        self.del_setting("timer-%s" % timer.id)
-    def add_timer(self, event_name, delay, next_due=None, id=None, persist=True,
-            **kwargs):
-        id = id or uuid.uuid4().hex
-        timer = Timer.Timer(id, self, self._events, event_name, delay,
-            next_due, **kwargs)
-        if id:
-            timer.id = id
-        elif persist:
-            self.timer_setting(timer)
-        self.timers.append(timer)
-    def next_timer(self):
-        next = None
-        for timer in self.timers:
-            time_left = timer.time_left()
-            if next == None or time_left < next:
-                next = time_left
 
-        if next == None:
-            return None
-        if next < 0:
-            return 0
-        return next
-    def call_timers(self):
-        for timer in self.timers[:]:
-            if timer.due():
-                timer.call()
-                if timer.done():
-                    self.timer_setting_remove(timer)
     def next_send(self):
         next = None
         for server in self.servers.values():
@@ -110,7 +74,7 @@ class Bot(object):
 
     def get_poll_timeout(self):
         timeouts = []
-        timeouts.append(self.next_timer())
+        timeouts.append(self.timers.next())
         timeouts.append(self.next_send())
         timeouts.append(self.next_ping())
         timeouts.append(self.next_read_timeout())
@@ -154,7 +118,8 @@ class Bot(object):
         while self.running:
             self.lock.acquire()
             events = self.poll.poll(self.get_poll_timeout())
-            self.call_timers()
+            self.timers.call()
+
             for fd, event in events:
                 if fd in self.servers:
                     server = self.servers[fd]
@@ -185,7 +150,7 @@ class Bot(object):
                     self.disconnect(server)
 
                     reconnect_delay = self.config.get("reconnect-delay", 10)
-                    self.add_timer("reconnect", reconnect_delay, None, None, False,
+                    self.timers.add("reconnect", reconnect_delay,
                         server_id=server.id)
 
                     print("disconnected from %s, reconnecting in %d seconds" % (
