@@ -74,7 +74,7 @@ class BotSettings(Table):
             return values
         return default
     def find_prefix(self, prefix, default=[]):
-        return self.find_bot_settings("%s%" % prefix, default)
+        return self.find("%s%%" % prefix, default)
     def delete(self, setting):
         self.database.execute(
             "DELETE FROM bot_settings WHERE setting=?",
@@ -104,7 +104,7 @@ class ServerSettings(Table):
             return values
         return default
     def find_prefix(self, server_id, prefix, default=[]):
-        return self.find_server_settings(server_id, "%s%" % prefix, default)
+        return self.find_server_settings(server_id, "%s%%" % prefix, default)
     def delete(self, server_id, setting):
         self.database.execute(
             "DELETE FROM server_settings WHERE server_id=? AND setting=?",
@@ -132,7 +132,7 @@ class ChannelSettings(Table):
             return values
         return default
     def find_prefix(self, channel_id, prefix, default=[]):
-        return self.find_channel_settings(channel_id, "%s%" % prefix,
+        return self.find_channel_settings(channel_id, "%s%%" % prefix,
             default)
     def delete(self, channel_id, setting):
         self.database.execute(
@@ -173,7 +173,7 @@ class UserSettings(Table):
             return values
         return default
     def find_prefix(self, user_id, prefix, default=[]):
-        return self.find_user_settings(user_id, "%s%" % prefix, default)
+        return self.find_user_settings(user_id, "%s%%" % prefix, default)
     def delete(self, user_id, setting):
         self.database.execute(
             """DELETE FROM user_settings WHERE
@@ -204,7 +204,7 @@ class UserChannelSettings(Table):
             return values
         return default
     def find_prefix(self, user_id, channel_id, prefix, default=[]):
-        return self.find_user_settings(user_id, channel_id, "%s%" % prefix,
+        return self.find_user_settings(user_id, channel_id, "%s%%" % prefix,
             default)
     def find_by_setting(self, user_id, setting, default=[]):
         values = self.database.execute_fetchall(
