@@ -275,7 +275,7 @@ def get_closest_setting(event, setting, default=None):
     return closest.get_setting(setting, server.get_setting(setting, default))
 
 def prevent_highlight(nickname):
-    return nickname[0]+"\u200d"+nickname[1:]
+    return nickname[0]+"\u200c"+nickname[1:]
 
 def _set_get_append(obj, setting, item):
     if not hasattr(obj, setting):
