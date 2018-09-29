@@ -89,7 +89,7 @@ class EventHook(object):
         self._context_hooks = {}
 
     def _make_event(self, kwargs):
-        return Event(self.name, **kwargs)
+        return Event(self._get_path(), **kwargs)
 
     def _get_path(self):
         path = []
