@@ -4,8 +4,9 @@ from . import ModuleManager
 
 
 class Bot(object):
-    def __init__(self, args, config, database, events, exports, line_handler,
-            log, modules, timers):
+    def __init__(self, directory, args, config, database, events, exports,
+            line_handler, log, modules, timers):
+        self.directory = directory
         self.args = args
         self.config = config
         self.database = database

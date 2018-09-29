@@ -40,8 +40,8 @@ line_handler = IRCLineHandler.LineHandler(events, timers)
 modules = modules = ModuleManager.ModuleManager(events, exports, config, log,
     os.path.join(directory, "modules"))
 
-bot = IRCBot.Bot(args, config, database, events, exports, line_handler, log,
-    modules, timers)
+bot = IRCBot.Bot(directory, args, config, database, events, exports,
+    line_handler, log, modules, timers)
 
 whitelist = bot.get_setting("module-whitelist", [])
 blacklist = bot.get_setting("module-blacklist", [])
