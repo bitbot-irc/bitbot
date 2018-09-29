@@ -1,5 +1,5 @@
-import json, re, traceback, urllib.request, urllib.parse, urllib.error, ssl
-import string
+import io, json, re, traceback, urllib.request, urllib.parse, urllib.error
+import ssl, string
 import bs4
 from . import ModuleManager
 
@@ -296,3 +296,20 @@ def export(setting, value):
 
 def strip_html(s):
     return bs4.BeautifulSoup(s, "lxml").get_text()
+
+def get_hashflags(filename):
+    hashflags = {}
+    with io.open(filename, mode="r", encoding="utf8") as f:
+        for line in f:
+            line = line.strip("\n")
+            if not line.startswith("#"):
+                break
+            elif line.startswith("#--"):
+                line_split = line.split(" ", 1)
+                hashflag = line_split[0][3:]
+                value = None
+
+                if len(line_split) > 1:
+                    value = line_split[1]
+                hashflags[hashflag] = value
+    return hashflags.items()

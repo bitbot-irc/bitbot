@@ -1,4 +1,5 @@
 import glob, imp, io, inspect, os, sys, uuid
+from src import Utils
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
 BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
@@ -53,31 +54,24 @@ class ModuleManager(object):
     def _load_module(self, bot, name):
         path = self._module_path(name)
 
-        with io.open(path, mode="r", encoding="utf8") as module_file:
-            while True:
-                line = module_file.readline().strip()
-                line_split = line.split(" ")
-                if line and line.startswith("#--"):
-                    # this is a hashflag
-                    if line == "#--ignore":
-                        # nope, ignore this module.
-                        raise ModuleNotLoadedWarning("module ignored")
-                    elif line_split[0] == "#--require-config" and len(
-                            line_split) > 1:
-                        if not self.config.get(line_split[1].lower(), None):
-                            # nope, required config option not present.
-                            raise ModuleNotLoadedWarning(
-                                "required config not present")
-                    elif line_split[0] == "#--require-module" and len(
-                            line_split) > 1:
-                        if not "bitbot_%s" % line_split[1].lower() in sys.modules:
-                            if not line_split[1].lower() in self.waiting_requirement:
-                                self.waiting_requirement[line_split[1].lower()] = set([])
-                                self.waiting_requirement[line_split[1].lower()].add(path)
-                            raise ModuleNotLoadedWarning(
-                                "waiting for requirement")
-                else:
-                    break
+        for hashflag, value in Utils.get_hashflags(path):
+            if hashflag == "ignore":
+               # nope, ignore this module.
+               raise ModuleNotLoadedWarning("module ignored")
+
+            elif hashflag == "require-config" and value:
+                if not self.config.get(value.lower(), None):
+                    # nope, required config option not present.
+                    raise ModuleNotLoadedWarning("required config not present")
+
+            elif hashflag == "require-module" and value:
+                requirement = value.lower()
+                if not requirement in self.modules:
+                    if not requirement in self.waiting_requirement:
+                        self.waiting_requirement[requirement] = set([])
+                        self.waiting_requirement[requirement].add(path)
+                    raise ModuleNotLoadedWarning("waiting for requirement")
+
         module = imp.load_source(self._import_name(name), path)
 
         if not hasattr(module, "Module"):
