@@ -168,8 +168,12 @@ class Module(ModuleManager.BaseModule):
                 help = self._get_help(hooks[0])
 
                 if help:
-                    event["stdout"].write("%s: %s" % (command, " ".join(
-                        [line.strip() for line in help.split("\n")])))
+                    help = [line.strip() for line in help.split("\n")]
+                    help = [line.strip() for line in help]
+                    help = filter(None, help)
+                    help = " ".join(help)
+
+                    event["stdout"].write("%s: %s" % (command, help))
                 else:
                     event["stderr"].write("No help available for %s" % command)
             else:
