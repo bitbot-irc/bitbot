@@ -59,12 +59,16 @@ class EventHookContext(object):
         self.context = context
     def hook(self, function, priority=DEFAULT_PRIORITY, replay=False,
             **kwargs):
-        self._parent._context_hook(self.context, function, priority, replay,
-            kwargs)
+        return self._parent._context_hook(self.context, function, priority,
+            replay, kwargs)
+    def unhook(self, callback):
+        self._parent.unhook(callback)
+
     def on(self, subevent, *extra_subevents,
             delimiter=DEFAULT_EVENT_DELIMITER):
         return self._parent._context_on(self.context, subevent,
             extra_subevents, delimiter)
+
     def call_for_result(self, default=None, **kwargs):
         return self._parent.call_for_result(default, **kwargs)
     def assure_call(self, **kwargs):
@@ -73,6 +77,7 @@ class EventHookContext(object):
         return self._parent.call(**kwargs)
     def call_limited(self, maximum, **kwargs):
         return self._parent.call_limited(maximum, **kwargs)
+
     def get_hooks(self):
         return self._parent.get_hooks()
     def get_children(self):
@@ -104,9 +109,9 @@ class EventHook(object):
 
     def hook(self, function, priority=DEFAULT_PRIORITY, replay=False,
             **kwargs):
-        self._hook(function, None, priority, replay, kwargs)
+        return self._hook(function, None, priority, replay, kwargs)
     def _context_hook(self, context, function, priority, replay, kwargs):
-        self._hook(function, context, priority, replay, kwargs)
+        return self._hook(function, context, priority, replay, kwargs)
     def _hook(self, function, context, priority, replay, kwargs):
         callback = EventCallback(function, priority, kwargs)
 
@@ -121,6 +126,20 @@ class EventHook(object):
             for kwargs in self._stored_events:
                 self._call(kwargs)
         self._stored_events = None
+        return callback
+
+    def unhook(self, callback):
+        if callback in self._hooks:
+            self._hooks.remove(callback)
+
+        empty = []
+        for context, hooks in self._context_hooks.items():
+            if callback in hooks:
+                hooks.remove(callback)
+                if not hooks:
+                    empty.append(context)
+        for context in empty:
+            del self._context_hooks[context]
 
     def _make_multiple_hook(self, source, context, events):
         multiple_event_hook = MultipleEventHook()
