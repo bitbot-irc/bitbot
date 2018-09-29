@@ -2,12 +2,12 @@ import os, select, sys, threading, time, traceback, uuid
 from . import EventManager, Exports, IRCLineHandler, IRCServer, Logging
 from . import ModuleManager
 
-
 class Bot(object):
-    def __init__(self, directory, args, config, database, events, exports,
-            line_handler, log, modules, timers):
+    def __init__(self, directory, args, cache, config, database, events,
+            exports, line_handler, log, modules, timers):
         self.directory = directory
         self.args = args
+        self.cache = cache
         self.config = config
         self.database = database
         self._events = events
@@ -79,6 +79,7 @@ class Bot(object):
         timeouts.append(self.next_send())
         timeouts.append(self.next_ping())
         timeouts.append(self.next_read_timeout())
+        timeouts.append(self.cache.next_expiration())
         return min([timeout for timeout in timeouts if not timeout == None])
 
     def register_read(self, server):
@@ -120,6 +121,7 @@ class Bot(object):
             self.lock.acquire()
             events = self.poll.poll(self.get_poll_timeout())
             self.timers.call()
+            self.cache.expire()
 
             for fd, event in events:
                 if fd in self.servers:

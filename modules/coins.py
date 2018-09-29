@@ -101,6 +101,9 @@ class Module(object):
             all_coins[nickname])) for nickname in top_10)
         event["stdout"].write("Richest users: %s" % top_10)
 
+    def _redeem_cache(self, server, user):
+        return "redeem|%s|%s@%s" % (server.id, user.username, user.hostname)
+
     @Utils.hook("received.command.redeemcoins")
     def redeem_coins(self, event):
         """
@@ -109,21 +112,20 @@ class Module(object):
         user_coins = decimal.Decimal(event["user"].get_setting(
             "coins", "0.0"))
         if user_coins == DECIMAL_ZERO:
-            last_redeem = event["user"].get_setting("last-redeem", None)
-            redeem_delay = event["server"].get_setting("redeem-delay",
-                DEFAULT_REDEEM_DELAY)
-
-            if last_redeem == None or (time.time()-last_redeem
-                    ) >= redeem_delay:
+            cache = self._redeem_cache(event["server"], event["user"])
+            if not self.bot.cache.has_item(cache):
                 redeem_amount = decimal.Decimal(event["server"
                     ].get_setting("redeem-amount", DEFAULT_REDEEM_AMOUNT))
                 event["user"].set_setting("coins", str(
                     user_coins+redeem_amount))
                 event["stdout"].write("Redeemed %s coins" % "{0:.2f}".format(
                     redeem_amount))
-                event["user"].set_setting("last-redeem", time.time())
+
+                redeem_delay = event["server"].get_setting("redeem-delay",
+                    DEFAULT_REDEEM_DELAY)
+                self.bot.cache.temporary_cache(cache, redeem_delay)
             else:
-                time_left = (last_redeem+redeem_delay)-time.time()
+                time_left = self.bot.cache.until_expiration(cache)
                 event["stderr"].write("Please wait %s before redeeming" %
                     Utils.to_pretty_time(math.ceil(time_left)))
         else:
