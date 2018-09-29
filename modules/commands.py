@@ -92,7 +92,9 @@ class Module(ModuleManager.BaseModule):
 
             buffer = target.buffer
 
-            module_name = hook.function.__self__._name
+            module_name = ""
+            if hasattr(hook.function, "__self__"):
+                module_name = hook.function.__self__._name
             stdout, stderr = StdOut(module_name, target), StdErr(module_name,
                 target)
 
