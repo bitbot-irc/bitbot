@@ -31,7 +31,7 @@ class Module(object):
             # execution of script expired
             return
 
-        out = proc.stdout.read().decode("utf8")
+        out = proc.stdout.read().decode("utf8").strip("\n")
         if out:
             if proc.returncode == 0:
                 if "stdout" in event:
