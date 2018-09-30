@@ -7,5 +7,5 @@ class Module(ModuleManager.BaseModule):
         require_mode = event["hook"].get_kwarg("require_mode")
         if event["is_channel"] and require_mode:
             if not event["target"].mode_or_above(event["user"],
-                    required_mode):
+                    require_mode):
                 return "You do not have permission to do this"
