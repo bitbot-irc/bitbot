@@ -250,12 +250,16 @@ class Server(object):
         return self.until_read_timeout == 0
 
     def send(self, data):
-        encoded = data.split("\n")[0].strip("\r").encode("utf8")
+        returned = self.events.on("preprocess.send").call_for_result(
+            server=self, line=data)
+        line = returned or data
+
+        encoded = line.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
             encoded = encoded[:450]
         self.buffered_lines.append(encoded + b"\r\n")
-        if self.bot.args.verbose:
-            self.bot.log.info(">%s | %s", [str(self), encoded.decode("utf8")])
+
+        self.bot.log.debug(">%s | %s", [str(self), encoded.decode("utf8")])
     def _send(self):
         if not len(self.write_buffer):
             self.write_buffer = self.buffered_lines.pop(0)
