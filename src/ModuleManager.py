@@ -1,4 +1,4 @@
-import glob, imp, io, inspect, os, sys, uuid
+import gc, glob, imp, io, inspect, os, sys, uuid
 from src import Utils
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
@@ -142,9 +142,13 @@ class ModuleManager(object):
 
         del sys.modules[self._import_name(name)]
         references = sys.getrefcount(module)
+        referrers = gc.get_referrers(module)
         del module
         references -= 1 # 'del module' removes one reference
         references -= 1 # one of the refs is from getrefcount
 
         self.log.info("Module '%s' unloaded (%d reference%s)",
             [name, references, "" if references == 1 else "s"])
+        if references > 0:
+            self.log.info("References left for '%s': %s",
+                [name, ", ".join([str(referrer) for referrer in referrers])])
