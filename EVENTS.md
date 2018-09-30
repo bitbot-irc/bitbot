@@ -1,3 +1,6 @@
+# Events
+Below is a list of each event that is propagated through BitBot and the keyword arguments (and their types!) that come with them.
+
 ## Newly created objects
 ### new.user
 > user (IRCUser), server (IRCServer)
