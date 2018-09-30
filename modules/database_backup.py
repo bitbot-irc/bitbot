@@ -11,20 +11,20 @@ class Module(object):
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        bot.add_timer("database-backup", BACKUP_INTERVAL, persist=False,
-            next_due=time.time()+until_next_hour)
+        bot.timers.add("database-backup", BACKUP_INTERVAL,
+            time.time()+until_next_hour)
 
     @Utils.hook("timer.database-backup")
     def backup(self, event):
-        full_location =  self.bot.database.full_location
-        files = glob.glob("%s.*" % full_location)
+        location =  self.bot.database.location
+        files = glob.glob("%s.*" % location)
         files = sorted(files)
 
         if len(files) == 5:
             os.remove(files[0])
 
         suffix = datetime.datetime.now().strftime("%y-%m-%d.%H:%M:%S")
-        backup_file = "%s.%s" % (full_location, suffix)
-        shutil.copy2(full_location, backup_file)
+        backup_file = "%s.%s" % (location, suffix)
+        shutil.copy2(location, backup_file)
 
         event["timer"].redo()

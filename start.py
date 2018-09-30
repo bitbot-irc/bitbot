@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse, os, sys, time
-from src import Config, Database, EventManager, Exports, IRCBot
-from src import IRCLineHandler, Logging, ModuleManager
+from src import Cache, Config, Database, EventManager, Exports, IRCBot
+from src import IRCLineHandler, Logging, ModuleManager, Timers
 
 def bool_input(s):
     result = input("%s (Y/n): " % s)
@@ -29,31 +29,24 @@ arg_parser.add_argument("--verbose", "-v", action="store_true")
 
 args = arg_parser.parse_args()
 
+
 log = Logging.Log(args.log)
-config = Config.Config(args.config).load_config()
+cache = Cache.Cache()
+config = Config.Config(args.config)
 database = Database.Database(log, args.database)
 events = events = EventManager.EventHook(log)
 exports = exports = Exports.Exports()
-
-bot = IRCBot.Bot()
-
-bot.modules = modules = ModuleManager.ModuleManager(bot, events, exports,
+timers = Timers.Timers(database, events, log)
+line_handler = IRCLineHandler.LineHandler(events, timers)
+modules = modules = ModuleManager.ModuleManager(events, exports, config, log,
     os.path.join(directory, "modules"))
-bot.line_handler = IRCLineHandler.LineHandler(bot, events)
 
-bot.log = log
-bot.config = config
-bot.database = database
-bot._events = events
-bot._exports = exports
-bot.args = args
-
-bot._events.on("timer.reconnect").hook(bot.reconnect)
-bot._events.on("boot.done").hook(bot.setup_timers)
+bot = IRCBot.Bot(directory, args, cache, config, database, events,
+    exports, line_handler, log, modules, timers)
 
 whitelist = bot.get_setting("module-whitelist", [])
 blacklist = bot.get_setting("module-blacklist", [])
-bot.modules.load_modules(whitelist=whitelist, blacklist=blacklist)
+modules.load_modules(bot, whitelist=whitelist, blacklist=blacklist)
 
 servers = []
 for server_id, alias in bot.database.servers.get_all():
@@ -62,6 +55,9 @@ for server_id, alias in bot.database.servers.get_all():
         servers.append(server)
 if len(servers):
     bot._events.on("boot.done").call()
+
+    bot.timers.setup(bot.find_settings_prefix("timer-"))
+
     for server in servers:
         if not bot.connect(server):
             sys.stderr.write("failed to connect to '%s', exiting\r\n" % (

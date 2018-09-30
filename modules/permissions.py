@@ -38,8 +38,8 @@ class Module(ModuleManager.BaseModule):
         user.identified_account_override = None
         user.identified_account_id_override = None
 
-    @Utils.hook("received.command.identify", private_only=True, min_args=2,
-        usage="<account> <password>")
+    @Utils.hook("received.command.identify", private_only=True, min_args=1,
+        usage="[account] <password>")
     def identify(self, event):
         """
         Identify yourself
@@ -57,8 +57,13 @@ class Module(ModuleManager.BaseModule):
             return
 
         if not event["user"].identified_account_override:
-            account = event["args_split"][0]
-            password = " ".join(event["args_split"][1:])
+            if len(event["args_split"]) > 1:
+                account = event["args_split"][0]
+                password = " ".join(event["args_split"][1:])
+            else:
+                account = event["user"].nickname
+                password = event["args"]
+
             hash, salt = self._get_hash(event["server"], account)
             if hash and salt:
                 attempt, _ = self._make_hash(password, salt)

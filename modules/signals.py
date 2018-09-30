@@ -24,6 +24,5 @@ class Module(object):
 
     def SIGUSR1(self, signum, frame):
         self.bot.log.info("Reloading config file", [])
-        config = Config.Config(self.bot, self.bot.args.config)
-        self.bot.config = config.load_config()
+        self.bot.config.load()
         self.bot.log.info("Reloaded config file", [])

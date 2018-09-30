@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
         if name in self.bot.modules.modules:
             event["stderr"].write("Module '%s' is already loaded" % name)
             return
-        self.bot.modules.load_module(name)
+        self.bot.modules.load_module(self.bot, name)
         event["stdout"].write("Loaded '%s'" % name)
 
     @Utils.hook("received.command.unloadmodule", min_args=1,
@@ -29,7 +29,7 @@ class Module(ModuleManager.BaseModule):
 
     def _reload(self, name):
         self.bot.modules.unload_module(name)
-        self.bot.modules.load_module(name)
+        self.bot.modules.load_module(self.bot, name)
 
     @Utils.hook("received.command.reloadmodule", min_args=1,
         permission="reload-module", usage="<module-name>")
