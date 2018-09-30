@@ -37,6 +37,12 @@ class Bot(object):
         if connect and new_server.get_setting("connect", True):
             self.connect(new_server)
         return new_server
+
+    def get_server(self, id):
+        for server in self.servers.values():
+            if server.id == id:
+                return server
+
     def connect(self, server):
         try:
             server.connect()
