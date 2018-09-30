@@ -104,6 +104,16 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("This nickname is already registered")
 
+    @Utils.hook("received.command.setpassword", authenticated=True, min_args=1)
+    def set_password(self, event):
+        """
+        :help: Change your password
+        :usage: <password>
+        """
+        hash, salt = self._make_hash(event["args"])
+        event["user"].set_setting("authentication", [hash, salt])
+        event["stdout"].write("Set your password")
+
     @Utils.hook("received.command.logout", private_only=True)
     def logout(self, event):
         """
