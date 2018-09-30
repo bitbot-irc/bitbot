@@ -4,10 +4,11 @@ from src import ModuleManager, Utils
 class Module(ModuleManager.BaseModule):
     _name = "DNS"
 
-    @Utils.hook("received.command.dns", min_args=1, usage="<hostname>")
+    @Utils.hook("received.command.dns", min_args=1)
     def dns(self, event):
         """
-        Get all addresses for a given hostname (IPv4/IPv6)
+        :help: Get all addresses for a given hostname (IPv4/IPv6)
+        :usage: <hostname>
         """
         hostname = event["args_split"][0]
         try:

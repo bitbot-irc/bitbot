@@ -7,7 +7,8 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.title|t", usage="[URL]")
     def title(self, event):
         """
-        Get the title of a URL
+        :help: Get the title of a URL
+        :usage: [URL]
         """
         url = None
         if len(event["args"]) > 0:

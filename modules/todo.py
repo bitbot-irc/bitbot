@@ -1,10 +1,11 @@
 from src import ModuleManager, Utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.todo", usage="[item number]")
+    @Utils.hook("received.command.todo")
     def todo(self, event):
         """
-        Find out what's in your todo list
+        :help: Find out what's in your todo list
+        :usage: [item number]
         """
         todo = event["user"].get_setting("todo", [])
         if event["args"]:
@@ -20,10 +21,11 @@ class Module(ModuleManager.BaseModule):
             todo_count = len(todo)
             event["stdout"].write("There are %d items in your todo" % todo_count)
 
-    @Utils.hook("received.command.todoadd", min_args=1, usage="<description>")
+    @Utils.hook("received.command.todoadd", min_args=1)
     def todo_add(self, event):
         """
-        Add something to your todo list
+        :help: Add something to your todo list
+        :usage: <description>
         """
         arg_lower = event["args"].lower()
         todo = event["user"].get_setting("todo", [])
@@ -36,10 +38,11 @@ class Module(ModuleManager.BaseModule):
         event["user"].set_setting("todo", todo)
         event["stdout"].write("Saved")
 
-    @Utils.hook("received.command.tododel", min_args=1, usage="<item number>")
+    @Utils.hook("received.command.tododel", min_args=1)
     def todo_del(self, event):
         """
-        Remove something from your todo list
+        :help: Remove something from your todo list
+        :usage: <item number>
         """
         todo = event["user"].get_setting("todo", [])
         if event["args_split"][0].isdigit() and int(event["args_split"][0]) > 0:

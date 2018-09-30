@@ -8,7 +8,8 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.weather", min_args=1, usage="<location>")
     def weather(self, event):
         """
-        Get current weather data for a provided location
+        :help: Get current weather data for a provided location
+        :usage: <location>
         """
         api_key = self.bot.config["openweathermap-api-key"]
         page = Utils.get_url(URL_WEATHER, get_params={

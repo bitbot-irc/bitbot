@@ -13,7 +13,8 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.soundcloud|sc")
     def soundcloud(self, event):
         """
-        Search SoundCloud
+        :help: Search SoundCloud
+        :usage: <term>
         """
         query = None
         url = None

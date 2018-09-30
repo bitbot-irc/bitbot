@@ -4,10 +4,11 @@ from src import ModuleManager, Utils
 EVAL_URL = "https://eval.appspot.com/eval"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.eval", min_args=1, usage="<statement>")
+    @Utils.hook("received.command.eval", min_args=1)
     def eval(self, event):
         """
-        Evaluate a python statement
+        :help: Evaluate a python statement
+        :usage: <statement>
         """
         try:
             code, page = Utils.get_url(EVAL_URL, get_params={

@@ -33,11 +33,12 @@ class Module(ModuleManager.BaseModule):
         else:
             raise UserNotFoundException("That user is not in this channel")
 
-    @Utils.hook("received.command.kick|k", channel_only=True,
-        require_mode="o", usage="<nickname> [reason]", min_args=1)
+    @Utils.hook("received.command.kick|k", channel_only=True, min_args=1)
     def kick(self, event):
         """
-        Kick a user from the current channel
+        :help: Kick a user from the current channel
+        :usage: <nickname> [reason]
+        :require_mode: o
         """
         target = event["args_split"][0]
         reason = " ".join(event["args_split"][1:]) or None
@@ -76,11 +77,12 @@ class Module(ModuleManager.BaseModule):
                 event["target"].send_unban(target)
             return target
 
-    @Utils.hook("received.command.ban", channel_only=True, min_args=1,
-        require_mode="o", usage="<nickname/hostmask>")
+    @Utils.hook("received.command.ban", channel_only=True, min_args=1)
     def ban(self, event):
         """
-        Ban a user/hostmask from the current channel
+        :help: Ban a user/hostmask from the current channel
+        :usage: <nickname/hostmask>
+        :require_mode: o
         """
         self._ban(event["server"], event["target"], True,
             event["args_split"][0])
@@ -101,17 +103,26 @@ class Module(ModuleManager.BaseModule):
         self.bot.timers.add_persistent("unban", timeout,
             server_id=event["server"].id,
             channel_name=event["target"].name, hostmask=hostmask)
-    @Utils.hook("received.command.tempban|tban|tb", channel_only=True,
-        min_args=2, require_mode="o", usage="<nickname/hostmask>")
+    @Utils.hook("received.command.tempban|tb", channel_only=True, min_args=2)
     def temp_ban(self, event):
+        """
+        :help: Temporarily ban someone from the current channel
+        :usage: <nickname/hostmask>
+        :require_mode: o
+        """
         try:
             self._temp_ban(event, True)
         except InvalidTimeoutException as e:
             event["stderr"].set_prefix("Tempban")
             event["stderr"].write(str(e))
-    @Utils.hook("received.command.tempkickban|tkban|tkb", channel_only=True,
-        min_args=2, require_mode="o", usage="<nickname/hostmask>")
+    @Utils.hook("received.command.tempkickban|tkb", channel_only=True,
+        min_args=2)
     def temp_kick_ban(self, event):
+        """
+        :help: Temporarily kick and ban someone from the current channel
+        :usage: <nickname>
+        :require_mode: o
+        """
         reason = " ".join(event["args_split"][2:]) or None
         event["stderr"].set_prefix("TKB")
         try:
@@ -123,20 +134,22 @@ class Module(ModuleManager.BaseModule):
         except UserNotFoundException as e:
             event["stderr"].write(str(e))
 
-    @Utils.hook("received.command.unban", channel_only=True, min_args=1,
-        require_mode="o", usage="<nickname/hostmask>")
+    @Utils.hook("received.command.unban", channel_only=True, min_args=1)
     def unban(self, event):
         """
-        Unban a user/hostmask from the current channel
+        :help: Unban a user/hostmask from the current channel
+        :usage: <nickname/hostmask>
+        :require_mode: o
         """
         self._ban(event["server"], event["target"], False,
             event["args_split"][0])
 
-    @Utils.hook("received.command.kickban|kb", channel_only=True,
-        require_mode="o", usage="<nickname> [reason]", min_args=1)
+    @Utils.hook("received.command.kickban|kb", channel_only=True, min_args=1)
     def kickban(self, event):
         """
-        Kick and ban a user from the current channel
+        :help: Kick and ban a user from the current channel
+        :usage: <nickname> [reason]
+        :require_mode: o
         """
         target = event["args_split"][0]
         reason = " ".join(event["args_split"][1:]) or None
@@ -147,56 +160,62 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].set_prefix("Kickban")
             event["stderr"].write(str(e))
 
-    @Utils.hook("received.command.op", channel_only=True,
-        require_mode="o", usage="[nickname]")
+    @Utils.hook("received.command.op", channel_only=True)
     def op(self, event):
         """
-        Op a user in the current channel
+        :help: Op a user in the current channel
+        :usage: [nickname]
+        :require_mode: o
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("+o", target)
-    @Utils.hook("received.command.deop", channel_only=True,
-        require_mode="o", usage="[nickname]")
+    @Utils.hook("received.command.deop", channel_only=True)
     def deop(self, event):
         """
-        Remove op from a user in the current channel
+        :help: Remove op from a user in the current channel
+        :usage: [nickname]
+        :require_mode: o
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("-o", target)
 
-    @Utils.hook("received.command.voice", channel_only=True,
-        require_mode="o", usage="[nickname]")
+    @Utils.hook("received.command.voice", channel_only=True)
     def voice(self, event):
         """
-        Voice a user in the current channel
+        :help: Voice a user in the current channel
+        :usage: [nickname]
+        :require_mode: o
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("+v", target)
-    @Utils.hook("received.command.devoice", channel_only=True,
-        require_mode="o", usage="[nickname]")
+    @Utils.hook("received.command.devoice", channel_only=True)
     def devoice(self, event):
         """
-        Remove voice from a user in the current channel
+        :help: Remove voice from a user in the current channel
+        :usage: [nickname]
+        :require_mode: o
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("-v", target)
 
-    @Utils.hook("received.command.topic", min_args=1, require_mode="o",
-        channel_only=True, usage="<topic>")
+    @Utils.hook("received.command.topic", min_args=1, channel_only=True)
     def topic(self, event):
         """
-        Set the topic in the current channel
+        :help: Set the topic in the current channel
+        :usage: <topic>
+        :require_mode: o
         """
         event["target"].send_topic(event["args"])
-    @Utils.hook("received.command.tappend", min_args=1, require_mode="o",
-        channel_only=True, usage="<topic>")
+    @Utils.hook("received.command.tappend", min_args=1, channel_only=True)
     def tappend(self, event):
         """
-        Append to the topic in the current channel
+        :help: Append to the topic in the current channel
+        :usage: <topic>
+        :require_mode: o
         """
         event["target"].send_topic(event["target"].topic + event["args"])
 

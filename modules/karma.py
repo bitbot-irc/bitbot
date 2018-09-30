@@ -48,10 +48,11 @@ class Module(ModuleManager.BaseModule):
                     target=event["channel"],
                     message="Try again in a couple of seconds")
 
-    @Utils.hook("received.command.karma", usage="[target]")
+    @Utils.hook("received.command.karma")
     def karma(self, event):
         """
-        Get your or someone else's karma
+        :help: Get your or someone else's karma
+        :usage: [target]
         """
         if event["args"]:
             target = event["args"]
@@ -60,11 +61,12 @@ class Module(ModuleManager.BaseModule):
         karma = event["server"].get_setting("karma-%s" % target, 0)
         event["stdout"].write("%s has %s karma" % (target, karma))
 
-    @Utils.hook("received.command.resetkarma", permission="resetkarma",
-        min_args=1, usage="<target>")
+    @Utils.hook("received.command.resetkarma", min_args=1)
     def reset_karma(self, event):
         """
-        Reset a specified karma to 0
+        :help: Reset a specified karma to 0
+        :usage: <target>
+        :permission: resetkarme
         """
         setting = "karma-%s" % event["args_split"][0]
         karma = event["server"].get_setting(setting, 0)

@@ -22,28 +22,31 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("Available settings: %s" % (
                 ", ".join(settings_dict.keys())))
-    @Utils.hook("received.command.set", usage="<setting> <value>")
+    @Utils.hook("received.command.set")
     def set(self, event):
         """
-        Set a specified user setting
+        :help: Set a specified user setting
+        :usage: <setting> <value>
         """
         self._set(self.exports.get_all("set"), event, event["user"])
 
     @Utils.hook("received.command.channelset", channel_only=True,
-        usage="<setting> <value>", require_mode="o")
+        require_mode="o")
     @Utils.hook("received.command.channelsetoverride", channel_only=True,
-        usage="<setting> <value>", permission="channelsetoverride")
+        permission="channelsetoverride")
     def channel_set(self, event):
         """
-        Get a specified channel setting for the current channel
+        :help: Get a specified channel setting for the current channel
+        :usage: <setting> <value>
         """
         self._set(self.exports.get_all("channelset"), event, event["target"])
 
-    @Utils.hook("received.command.serverset", usage="<setting> <value>",
-        permission="serverset")
+    @Utils.hook("received.command.serverset")
     def server_set(self, event):
         """
-        Set a specified server setting for the current server
+        :help: Set a specified server setting for the current server
+        :usage: <setting> <value>
+        :permission: serverset
         """
         self._set(self.exports.get_all("serverset"), event, event["server"])
 
@@ -54,30 +57,33 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("'%s' has no value set" % setting)
 
-    @Utils.hook("received.command.get", min_args=1, usage="<setting>")
+    @Utils.hook("received.command.get", min_args=1)
     def get(self, event):
         """
-        Get a specified user setting
+        :help: Get a specified user setting
+        :usage: <setting>
         """
         setting = event["args_split"][0]
         self._get(event, setting, "", event["user"].get_setting(
             setting, None))
 
-    @Utils.hook("received.command.channelget", channel_only=True,
-        usage="<setting>", min_args=1, require_mode="o")
+    @Utils.hook("received.command.channelget", channel_only=True, min_args=1)
     def channel_get(self, event):
         """
-        Get a specified channel setting for the current channel
+        :help: Get a specified channel setting for the current channel
+        :usage: <setting>
+        :require_mode: o
         """
         setting = event["args_split"][0]
         self._get(event, setting, " for %s" % event["target"].name,
             event["target"].get_setting(setting, None))
 
-    @Utils.hook("received.command.serverget", usage="<setting>", min_args=1,
-        permission="serverget")
+    @Utils.hook("received.command.serverget", min_args=1)
     def server_get(self, event):
         """
-        Get a specified server setting for the current server
+        :help: Get a specified server setting for the current server
+        :usage: <setting>
+        :permission: serverget
         """
         setting = event["args_split"][0]
         self._get(event, setting, "", event["server"].get_setting(

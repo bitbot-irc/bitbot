@@ -6,7 +6,8 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.wiki|wi", min_args=1)
     def wikipedia(self, event):
         """
-        Get information from wikipedia
+        :help: Get information from wikipedia
+        :usage: <term>
         """
         page = Utils.get_url(URL_WIKIPEDIA, get_params={
             "action": "query", "prop": "extracts",

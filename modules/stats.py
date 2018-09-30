@@ -5,7 +5,7 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.uptime")
     def uptime(self, event):
         """
-        Show my uptime
+        :help: Show my uptime
         """
         seconds = int(time.time()-self.bot.start_time)
         event["stdout"].write("Uptime: %s" % Utils.to_pretty_time(
@@ -14,7 +14,7 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.stats")
     def stats(self, event):
         """
-        Show my network/channel/user stats
+        :help: Show my network/channel/user stats
         """
         networks = len(self.bot.servers)
         channels = 0

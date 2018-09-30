@@ -7,10 +7,11 @@ URL_WA = "https://api.wolframalpha.com/v1/result"
 class Module(ModuleManager.BaseModule):
     _name = "Wolfram|Alpha"
 
-    @Utils.hook("received.command.wolframalpha|wa", min_args=1, usage="<query>")
+    @Utils.hook("received.command.wolframalpha|wa", min_args=1)
     def wa(self, event):
         """
-        Evauate a given string on Wolfram|Alpha
+        :help: Evauate a given string on Wolfram|Alpha
+        :usage: <query>
         """
         code, result = Utils.get_url(URL_WA, get_params={"i": event["args"],
             "appid": self.bot.config["wolframalpha-api-key"],

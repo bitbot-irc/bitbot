@@ -151,12 +151,15 @@ class Module(ModuleManager.BaseModule):
             self.message(event, command)
 
     def _get_help(self, hook):
-        return hook.kwargs.get("help", None) or hook.function.__doc__
+        return hook.get_kwarg("help", None) or hook.docstring.description
+    def _get_usage(self, hook):
+        return hook.get_kwarg("usage", None)
 
-    @Utils.hook("received.command.help", usage="<command>")
+    @Utils.hook("received.command.help")
     def help(self, event):
         """
-        Show help for a given command
+        :help: Show help for a given command
+        :usage: [command]
         """
         if event["args"]:
             command = event["args_split"][0].lower()
@@ -166,11 +169,6 @@ class Module(ModuleManager.BaseModule):
                 help = self._get_help(hooks[0])
 
                 if help:
-                    help = [line.strip() for line in help.split("\n")]
-                    help = [line.strip() for line in help]
-                    help = filter(None, help)
-                    help = " ".join(help)
-
                     event["stdout"].write("%s: %s" % (command, help))
                 else:
                     event["stderr"].write("No help available for %s" % command)
@@ -186,10 +184,11 @@ class Module(ModuleManager.BaseModule):
             help_available = sorted(help_available)
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 
-    @Utils.hook("received.command.usage", min_args=1, usage="<command>")
+    @Utils.hook("received.command.usage", min_args=1)
     def usage(self, event):
         """
-        Show the usage for a given command
+        :help: Show the usage for a given command
+        :usage: <command>
         """
         command_prefix = ""
         if event["is_channel"]:
@@ -200,9 +199,11 @@ class Module(ModuleManager.BaseModule):
         if command in self.events.on("received").on(
                 "command").get_children():
             hooks = self.events.on("received.command").on(command).get_hooks()
-            if hooks and "usage" in hooks[0].kwargs:
+            usage = self._get_usage(hooks[0])
+
+            if usage:
                 event["stdout"].write("Usage: %s%s %s" % (command_prefix,
-                    command, hooks[0].kwargs["usage"]))
+                    command, usage))
             else:
                 event["stderr"].write("No usage help available for %s" % command)
         else:
@@ -211,16 +212,17 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.more", skip_out=True)
     def more(self, event):
         """
-        Show more output from the last command
+        :help: Show more output from the last command
         """
         if event["target"].last_stdout and event["target"].last_stdout.has_text():
             event["target"].last_stdout.send()
 
-    @Utils.hook("received.command.ignore", min_args=1, usage="<nickname>",
-        permission="ignore")
+    @Utils.hook("received.command.ignore", min_args=1)
     def ignore(self, event):
         """
-        Ignore commands from a given user
+        :help: Ignore commands from a given user
+        :usage: <nickname>
+        :permission: ignore
         """
         user = event["server"].get_user(event["args_split"][0])
         if user.get_setting("ignore", False):
@@ -230,11 +232,12 @@ class Module(ModuleManager.BaseModule):
             user.set_setting("ignore", True)
             event["stdout"].write("Now ignoring '%s'" % user.nickname)
 
-    @Utils.hook("received.command.unignore", min_args=1, usage="<nickname>",
-        permission="unignore")
+    @Utils.hook("received.command.unignore", min_args=1)
     def unignore(self, event):
         """
-        Unignore commands from a given user
+        :help: Unignore commands from a given user
+        :usage: <nickname>
+        :permission: unignore
         """
         user = event["server"].get_user(event["args_split"][0])
         if not user.get_setting("ignore", False):

@@ -7,11 +7,11 @@ class Module(ModuleManager.BaseModule):
             return [part.strip() for part in s.split("=", 1)]
         return None, None
 
-    @Utils.hook("received.command.quoteadd|qadd", min_args=1,
-        usage="<category> = <quote>")
+    @Utils.hook("received.command.quoteadd|qadd", min_args=1)
     def quote_add(self, event):
         """
-        Add a quote to a category
+        :help: Add a quote to a category
+        :usage: <category> = <quote>
         """
         category, quote = self.category_and_quote(event["args"])
         if category and quote:
@@ -23,11 +23,11 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Please provide a category AND quote")
 
-    @Utils.hook("received.command.quoteget|qget", min_args=1,
-        usage="<category> = <search>")
+    @Utils.hook("received.command.quoteget|qget", min_args=1)
     def quote_get(self, event):
         """
-        Get a quote from a ccategory
+        :help: Get a quote from a ccategory
+        :usage: <category> = <search>
         """
         category, to_find = self.category_and_quote(event["args"])
         if category and to_find:
@@ -46,11 +46,11 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Please provide a category and a "
                 "part of a quote to find")
 
-    @Utils.hook("received.command.quotedel|qdel", min_args=1,
-        usage="<category> = <quote>")
+    @Utils.hook("received.command.quotedel|qdel", min_args=1)
     def quote_del(self, event):
         """
-        Delete a quote from a category
+        :help: Delete a quote from a category
+        :usage: <category> = <quote>
         """
         category, remove_quote = self.category_and_quote(event["args"])
         remove_quote_lower = remove_quote.lower()
@@ -71,10 +71,11 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Please provide a category and a quote "
                 "to remove")
 
-    @Utils.hook("received.command.quote|q", usage="<category>", min_args=1)
+    @Utils.hook("received.command.quote|q", min_args=1)
     def quote(self, event):
         """
-        Get a random quote from a category
+        :help: Get a random quote from a category
+        :usage: <category>
         """
         category = event["args"].strip().lower()
         quotes = event["server"].get_setting("quotes-%s" % category, [])

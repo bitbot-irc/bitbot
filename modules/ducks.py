@@ -119,7 +119,7 @@ class Module(object):
     @Utils.hook("received.command.decoy")
     def duck_decoy(self, event):
         """
-        Prepare a decoy duck
+        :help: Prepare a decoy duck
         """
         channel = event["target"]
         if self.is_duck_channel(channel) == False:
@@ -225,7 +225,7 @@ class Module(object):
     @Utils.hook("received.command.bef")
     def befriend(self, event):
         """
-        Befriend a duck
+        :help: Befriend a duck
         """
         channel = event["target"]
         user = event["user"]
@@ -263,7 +263,7 @@ class Module(object):
     @Utils.hook("received.command.bang")
     def shoot(self, event):
         """
-        Shoot a duck
+        :help: Shoot a duck
         """
         channel = event["target"]
         user = event["user"]
@@ -302,7 +302,7 @@ class Module(object):
     @Utils.hook("received.command.duckstats")
     def duck_stats(self, event):
         """
-        Show your duck stats
+        :help: Show your duck stats
         """
         user = event["user"]
         channel = event["target"].name
@@ -347,7 +347,7 @@ class Module(object):
     @Utils.hook("received.command.killers")
     def duck_enemies(self, event):
         """
-        Show the top duck shooters
+        :help: Show the top duck shooters
         """
         the_enemy = event["server"].find_all_user_channel_settings("ducks-shot")
 
@@ -385,7 +385,7 @@ class Module(object):
     @Utils.hook("received.command.friends")
     def duck_friends(self, event):
         """
-        Show the top duck friends
+        :help: Show the top duck friends
         """
         friends = event["server"].find_all_user_channel_settings(
             "ducks-befriended")

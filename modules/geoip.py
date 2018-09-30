@@ -5,10 +5,11 @@ URL_GEOIP = "http://ip-api.com/json/%s"
 class Module(ModuleManager.BaseModule):
     _name = "GeoIP"
 
-    @Utils.hook("received.command.geoip", min_args=1, usage="<IP>")
+    @Utils.hook("received.command.geoip", min_args=1)
     def geoip(self, event):
         """
-        Get geoip data on a given IPv4/IPv6 address
+        :help: Get geoip data on a given IPv4/IPv6 address
+        :usage: <IP>
         """
         page = Utils.get_url(URL_GEOIP % event["args_split"][0],
             json=True)

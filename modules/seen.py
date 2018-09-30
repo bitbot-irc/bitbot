@@ -7,10 +7,11 @@ class Module(ModuleManager.BaseModule):
         seen_seconds = time.time()
         event["user"].set_setting("seen", seen_seconds)
 
-    @Utils.hook("received.command.seen", min_args=1, usage="<username>")
+    @Utils.hook("received.command.seen", min_args=1)
     def seen(self, event):
         """
-        Find out when a user was last seen
+        :help: Find out when a user was last seen
+        :usage: <nickname>
         """
         seen_seconds = event["server"].get_user(event["args_split"][0]
             ).get_setting("seen")

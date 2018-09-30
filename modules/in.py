@@ -5,10 +5,11 @@ SECONDS_MAX = Utils.SECONDS_WEEKS*8
 SECONDS_MAX_DESCRIPTION = "8 weeks"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.in", min_args=2, usage="<time> <message>")
+    @Utils.hook("received.command.in", min_args=2)
     def in_command(self, event):
         """
-        Set a reminder
+        :help: Set a reminder
+        :usage: <time> <message>
         """
         seconds = Utils.from_pretty_time(event["args_split"][0])
         message = " ".join(event["args_split"][1:])

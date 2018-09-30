@@ -18,10 +18,11 @@ class Module(ModuleManager.BaseModule):
         if data and data["shorturl"]:
             return data["shorturl"]
 
-    @Utils.hook("received.command.shorten", min_args=1, usage="<url>")
+    @Utils.hook("received.command.shorten", min_args=1)
     def shorten(self, event):
         """
-        Shorten a given URL using the is.gd service
+        :help: Shorten a given URL using the is.gd service
+        :usage: <url>
         """
         link = self.events.on("get.shortlink").call_for_result(
             url=event["args"])

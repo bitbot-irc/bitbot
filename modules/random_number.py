@@ -4,10 +4,11 @@ from src import ModuleManager, Utils
 class Module(ModuleManager.BaseModule):
     _name = "Random"
 
-    @Utils.hook("received.command.random|rand", usage="[start] [end]")
+    @Utils.hook("received.command.random|rand")
     def random(self, event):
         """
-        Get a random number
+        :help: Get a random number
+        :usage: [start] [end]
         """
         start, end = "1", "100"
         if len(event["args_split"]) > 1:
@@ -30,6 +31,6 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.guid")
     def guid(self, event):
         """
-        Get a random guid
+        :help: Get a random guid
         """
         event["stdout"].write(str(uuid.uuid4()))

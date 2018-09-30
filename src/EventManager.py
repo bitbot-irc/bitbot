@@ -1,4 +1,5 @@
 import itertools, time, traceback
+from src import Utils
 
 PRIORITY_URGENT = 0
 PRIORITY_HIGH = 1
@@ -29,8 +30,14 @@ class EventCallback(object):
         self.function = function
         self.priority = priority
         self.kwargs = kwargs
+        self.docstring = Utils.parse_docstring(function.__doc__)
+
     def call(self, event):
         return self.function(event)
+
+    def get_kwarg(self, name, default=None):
+        item = self.kwargs.get(name, default)
+        return item or self.docstring.items.get(name, default)
 
 class MultipleEventHook(object):
     def __init__(self):

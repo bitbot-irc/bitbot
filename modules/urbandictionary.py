@@ -5,11 +5,11 @@ URL_URBANDICTIONARY = "http://api.urbandictionary.com/v0/define"
 REGEX_DEFNUMBER = re.compile("-n(\d+) \S+")
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.urbandictionary|ud", min_args=1,
-        usage="<term>")
+    @Utils.hook("received.command.urbandictionary|ud", min_args=1)
     def ud(self, event):
         """
-        Get the definition of a provided term from Urban Dictionary
+        :help: Get the definition of a provided term from Urban Dictionary
+        :usage: <term>
         """
         term = event["args"]
         number = 1

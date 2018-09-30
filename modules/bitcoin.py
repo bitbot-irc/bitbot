@@ -3,10 +3,11 @@ from src import ModuleManager, Utils
 class Module(ModuleManager.BaseModule):
     _name = "BTC"
 
-    @Utils.hook("received.command.btc", usage="[currency]")
+    @Utils.hook("received.command.btc")
     def btc(self, event):
         """
-        Get the exchange rate of bitcoins
+        :help: Get the exchange rate of bitcoins
+        :usage: [currency]
         """
         currency = (event["args"] or "USD").upper()
         page = Utils.get_url("https://blockchain.info/ticker",

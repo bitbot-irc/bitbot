@@ -11,11 +11,12 @@ class Module(ModuleManager.BaseModule):
         if messages:
             event["channel"].del_user_setting(event["user"].get_id(), "to")
 
-    @Utils.hook("received.command.to", min_args=2, channel_only=True,
-        usage="<username> <message>")
+    @Utils.hook("received.command.to", min_args=2, channel_only=True)
     def to(self, event):
         """
-        Relay a message to a user the next time they talk in this channel"
+        :help: Relay a message to a user the next time they talk in this
+            channel
+        :usage: <nickname> <message>
         """
         target_user = event["server"].get_user(event["args_split"][0])
         messages = event["target"].get_user_setting(target_user.get_id(),

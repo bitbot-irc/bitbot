@@ -19,10 +19,11 @@ class Module(ModuleManager.BaseModule):
 
         return page
 
-    @Utils.hook("received.command.define", usage="<phrase>")
+    @Utils.hook("received.command.define")
     def define(self, event):
         """
-        Define a provided term
+        :help: Define a provided term
+        :usage: <phrase>
         """
         if event["args"]:
             word = event["args"]
@@ -42,7 +43,7 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.randomword")
     def random_word(self, event):
         """
-        Define a random word
+        :help: Define a random word
         """
         if not self._last_called or (time.time()-self._last_called >=
                 RANDOM_DELAY_SECONDS):
