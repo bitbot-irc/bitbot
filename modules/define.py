@@ -12,8 +12,6 @@ class Module(ModuleManager.BaseModule):
     _last_called = 0
 
     def _get_definition(self, word):
-        word = event["args"] if "args" in event else event
-
         page = Utils.get_url(URL_WORDNIK % word, get_params={
             "useCanonical": "true", "limit": 1,
             "sourceDictionaries": "wiktionary", "api_key": self.bot.config[
