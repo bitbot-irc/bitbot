@@ -102,7 +102,7 @@ class Module(ModuleManager.BaseModule):
             for returned in returns:
                 if returned:
                     stderr.write(returned).send()
-                    buffer.skip_next()
+                    target.buffer.skip_next()
                     return
             args_split = event["message_split"][args_index:]
             min_args = hook.kwargs.get("min_args")
