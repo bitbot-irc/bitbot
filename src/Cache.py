@@ -31,7 +31,7 @@ class Cache(object):
             if expiration and expiration <= now:
                 expired.append(id)
         for id in expired:
-            item = self._items[id]
+            item, expiration = self._items[id]
             del self._items[id]
             del self._item_to_id[item]
 
