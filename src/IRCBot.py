@@ -1,10 +1,9 @@
 import os, select, sys, threading, time, traceback, uuid
-from . import EventManager, Exports, IRCLineHandler, IRCServer, Logging
-from . import ModuleManager
+from . import EventManager, Exports, IRCServer, Logging, ModuleManager
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
-            exports, line_handler, log, modules, timers):
+            exports, log, modules, timers):
         self.directory = directory
         self.args = args
         self.cache = cache
@@ -12,7 +11,6 @@ class Bot(object):
         self.database = database
         self._events = events
         self._exports = exports
-        self.line_handler = line_handler
         self.log = log
         self.modules = modules
         self.timers = timers

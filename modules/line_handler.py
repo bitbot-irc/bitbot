@@ -1,5 +1,5 @@
 import re, threading
-from . import Utils
+from src import Utils
 
 RE_PREFIXES = re.compile(r"\bPREFIX=\((\w+)\)(\W+)(?:\b|$)")
 RE_CHANMODES = re.compile(
@@ -13,11 +13,12 @@ CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "draft/message-tags-0.2", "server-time", "cap-notify",
     "batch", "draft/labeled-response"}
 
-class LineHandler(object):
-    def __init__(self, events, timers):
+class Module(object):
+    def __init__(self, bot, events, exports):
+        self.bot = bot
         self.events = events
-        self.timers = timers
-        events.on("raw.PING").hook(self.ping)
+
+        events.on("raw").hook(self.handle)
 
         events.on("raw.001").hook(self.handle_001, default_event=True)
         events.on("raw.005").hook(self.handle_005)
@@ -34,6 +35,7 @@ class LineHandler(object):
         events.on("raw.433").hook(self.handle_433, default_event=True)
         events.on("raw.477").hook(self.handle_477, default_event=True)
 
+        events.on("raw.PING").hook(self.ping)
         events.on("raw.JOIN").hook(self.join)
         events.on("raw.PART").hook(self.part)
         events.on("raw.QUIT").hook(self.quit)
@@ -53,8 +55,8 @@ class LineHandler(object):
         events.on("raw.AWAY").hook(self.away)
         events.on("raw.BATCH").hook(self.batch)
 
-    def handle(self, server, line):
-        original_line = line
+    def handle(self, event):
+        line = original_line = event["line"]
         tags = {}
         prefix = None
         command = None
@@ -65,7 +67,7 @@ class LineHandler(object):
                 if tag:
                     tag_split = tag.split("=", 1)
                     tags[tag_split[0]] = "".join(tag_split[1:])
-        if "batch" in tags and tags["batch"] in server.batches:
+        if "batch" in tags and tags["batch"] in event["server"].batches:
             server.batches[tag["batch"]].append(line)
             return
 
@@ -96,17 +98,20 @@ class LineHandler(object):
         last = arbitrary or args[-1]
 
         #server, prefix, command, args, arbitrary
-        self.events.on("raw").on(command).call(server=server, last=last,
-            prefix=prefix, args=args, arbitrary=arbitrary, tags=tags)
+        self.events.on("raw").on(command).call(server=event["server"],
+            last=last, prefix=prefix, args=args, arbitrary=arbitrary,
+            tags=tags)
         if default_event or not hooks:
             if command.isdigit():
                 self.events.on("received.numeric").on(command).call(
-                    line=original_line, server=server, tags=tags, last=last,
-                    line_split=original_line.split(" "), number=command)
+                    line=original_line, server=event["server"], tags=tags,
+                    last=last, line_split=original_line.split(" "),
+                    number=command)
             else:
                 self.events.on("received").on(command).call(
                     line=original_line, line_split=original_line.split(" "),
-                    command=command, server=server, tags=tags, last=last)
+                    command=command, server=event["server"], tags=tags,
+                    last=last)
 
     # ping from the server
     def ping(self, event):
