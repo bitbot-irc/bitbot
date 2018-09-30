@@ -27,7 +27,7 @@ class Module(ModuleManager.BaseModule):
         if event["args"]:
             word = event["args"]
         else:
-            word = event["buffer"].get(from_self=False)
+            word = event["target"].buffer.get(from_self=False)
 
         page = self._get_definition(word)
         if page:

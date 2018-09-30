@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
         """
         Get first Google result for a given search term
         """
-        phrase = event["args"] or event["buffer"].get()
+        phrase = event["args"] or event["target"].buffer.get()
         if phrase:
             page = Utils.get_url(URL_GOOGLESEARCH, get_params={
                 "q": phrase, "key": self.bot.config[
@@ -36,7 +36,7 @@ class Module(ModuleManager.BaseModule):
         """
         Get suggested phrases from Google
         """
-        phrase = event["args"] or event["buffer"].get()
+        phrase = event["args"] or event["target"].buffer.get()
         if phrase:
             page = Utils.get_url(URL_GOOGLESUGGEST, get_params={
                 "output": "json", "client": "hp", "q": phrase})

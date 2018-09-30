@@ -90,8 +90,6 @@ class Module(ModuleManager.BaseModule):
             if is_channel and hook.kwargs.get("private_only"):
                 return
 
-            buffer = target.buffer
-
             module_name = ""
             if hasattr(hook.function, "__self__"):
                 module_name = hook.function.__self__._name
@@ -121,7 +119,7 @@ class Module(ModuleManager.BaseModule):
                 user = event["user"]
                 self.events.on("received.command").on(command
                     ).call_limited(1, user=user, server=server,
-                    target=target, buffer=buffer, args=args,
+                    target=target, args=args,
                     args_split=args_split, stdout=stdout, stderr=stderr,
                     command=command.lower(), is_channel=is_channel,
                     tags=event["tags"])
@@ -130,7 +128,7 @@ class Module(ModuleManager.BaseModule):
                     stderr.send()
                     target.last_stdout = stdout
                     target.last_stderr = stderr
-            buffer.skip_next()
+            target.buffer.skip_next()
         event.eat()
 
     @Utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)

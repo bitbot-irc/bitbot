@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
         """
         phrase = event["args"]
         if not phrase:
-            phrase = event["buffer"].get()
+            phrase = event["target"].buffer.get()
             if phrase:
                 phrase = phrase.message
         if not phrase:

@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
         if len(event["args"]) > 0:
             url = event["args_split"][0]
         else:
-            url = event["buffer"].find(REGEX_URL)
+            url = event["target"].buffer.find(REGEX_URL)
             if url:
                 url = re.search(REGEX_URL, url.message).group(0)
         if not url:
