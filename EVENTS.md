@@ -105,5 +105,5 @@ Below is a list of each event that is propagated through BitBot and the keyword 
 ## !commands
 #### preprocess.command
 > hook (EventCallback), user (IRCUser), server (IRCServer), target (IRCUser|IRCChannel), is_channel (bool), tags (dict)
-#### received.command
+#### received.command.[command]
 > user (IRCUser), server (IRCServer), target (IRCUser|IRCChannel), args (string), args_split (string[]), stdout, stderr, command (string), is_channel (bool), tags (dict)
