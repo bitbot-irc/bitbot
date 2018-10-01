@@ -1,7 +1,7 @@
 import logging, logging.handlers, os, sys, time
 
 LEVELS = {
-    "trace": 5,
+    "trace": logging.DEBUG-1,
     "debug": logging.DEBUG,
     "info": logging.INFO,
     "warn": logging.WARN,
