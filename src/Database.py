@@ -272,7 +272,7 @@ class Database(object):
 
     def _execute_fetch(self, query, fetch_func, params=[]):
         printable_query = " ".join(query.split())
-        self.log.debug("executing query: \"%s\" (params: %s)",
+        self.log.trace("executing query: \"%s\" (params: %s)",
             [printable_query, params])
         start = time.monotonic()
 
@@ -282,7 +282,7 @@ class Database(object):
 
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
-        self.log.debug("executed in %fms", [total_milliseconds])
+        self.log.trace("executed in %fms", [total_milliseconds])
 
         return value
     def execute_fetchall(self, query, params=[]):

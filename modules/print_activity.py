@@ -10,15 +10,12 @@ class Module(ModuleManager.BaseModule):
         self.bot.log.info("%s | %s", [target, line])
 
     def _on_message(self, event, nickname):
-        if not self.bot.args.verbose:
-            if event["action"]:
-                self.print_line(event, "* %s %s" % (
-                    nickname, event["message"]),
-                    channel=event["channel"].name)
-            else:
-                self.print_line(event, "<%s> %s" % (
-                    nickname, event["message"]),
-                    channel=event["channel"].name)
+        if event["action"]:
+            self.print_line(event, "* %s %s" % (nickname, event["message"]),
+                channel=event["channel"].name)
+        else:
+            self.print_line(event, "<%s> %s" % (nickname, event["message"]),
+                channel=event["channel"].name)
     @Utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_HIGH)
     def channel_message(self, event):
@@ -42,9 +39,8 @@ class Module(ModuleManager.BaseModule):
         self.print_line(event, "(server notice) %s" % event["message"])
 
     def _on_join(self, event, nickname):
-        if not self.bot.args.verbose:
-            self.print_line(event, "%s joined %s" % (nickname,
-                event["channel"].name))
+        self.print_line(event, "%s joined %s" % (nickname,
+            event["channel"].name))
     @Utils.hook("received.join")
     def join(self, event):
         self._on_join(event, event["user"].nickname)
@@ -53,10 +49,10 @@ class Module(ModuleManager.BaseModule):
         self._on_join(event, event["server"].nickname)
 
     def _on_part(self, event, nickname):
-        if not self.bot.args.verbose:
-            self.print_line(event, "%s left %s%s" % (nickname,
-                event["channel"].name, "" if not event[
-                "reason"] else " (%s)" % event["reason"]))
+        self.print_line(event, "%s left %s%s" % (
+            nickname,
+            event["channel"].name,
+            "" if not event["reason"] else " (%s)" % event["reason"]))
     @Utils.hook("received.part")
     def part(self, event):
         self._on_part(event, event["user"].nickname)
@@ -67,21 +63,18 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.nick")
     @Utils.hook("self.nick")
     def on_nick(self, event):
-        if not self.bot.args.verbose:
-            self.print_line(event, "%s changed nickname to %s" % (
-                event["old_nickname"], event["new_nickname"]))
+        self.print_line(event, "%s changed nickname to %s" % (
+            event["old_nickname"], event["new_nickname"]))
 
     @Utils.hook("received.quit")
     def on_quit(self, event):
-        if not self.bot.args.verbose:
-            self.print_line(event, "%s quit%s" % (event["user"].nickname,
-                "" if not event["reason"] else " (%s)" % event["reason"]))
+        self.print_line(event, "%s quit%s" % (event["user"].nickname,
+            "" if not event["reason"] else " (%s)" % event["reason"]))
 
     def _on_kick(self, event, nickname):
-        if not self.bot.args.verbose:
-            self.print_line(event, "%s kicked %s from %s%s" % (
-                event["user"].nickname, nickname, event["channel"].name,
-                "" if not event["reason"] else " (%s)" % event["reason"]))
+        self.print_line(event, "%s kicked %s from %s%s" % (
+            event["user"].nickname, nickname, event["channel"].name,
+            "" if not event["reason"] else " (%s)" % event["reason"]))
     @Utils.hook("received.kick")
     def kick(self, event):
         self._on_kick(event, event["target_user"].nickname)

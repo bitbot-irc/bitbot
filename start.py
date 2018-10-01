@@ -29,8 +29,8 @@ arg_parser.add_argument("--verbose", "-v", action="store_true")
 
 args = arg_parser.parse_args()
 
-
-log = Logging.Log(args.log)
+log_level = "debug" if args.verbose else "info"
+log = Logging.Log(log_level, args.log)
 cache = Cache.Cache()
 config = Config.Config(args.config)
 database = Database.Database(log, args.database)

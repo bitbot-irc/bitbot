@@ -200,7 +200,7 @@ class EventHook(object):
         return self._call(kwargs, maximum=maximum)
     def _call(self, kwargs, maximum=None):
         event_path = self._get_path()
-        self.log.debug("calling event: \"%s\" (params: %s)",
+        self.log.trace("calling event: \"%s\" (params: %s)",
             [event_path, kwargs])
         start = time.monotonic()
 
@@ -217,7 +217,7 @@ class EventHook(object):
                     event_path], exc_info=True)
 
         total_milliseconds = (time.monotonic() - start) * 1000
-        self.log.debug("event \"%s\" called in %fms", [
+        self.log.trace("event \"%s\" called in %fms", [
             event_path, total_milliseconds])
 
         self.check_purge()
