@@ -96,8 +96,8 @@ class Module(ModuleManager.BaseModule):
             stdout, stderr = StdOut(module_name, target), StdErr(module_name,
                 target)
 
-            returns = self.events.on("preprocess.command"
-                ).call(hook=hook, user=event["user"], server=event["server"],
+            returns = self.events.on("preprocess.command").unsafe_call(
+                hook=hook, user=event["user"], server=event["server"],
                 target=target, is_channel=is_channel, tags=event["tags"])
             for returned in returns:
                 if returned:

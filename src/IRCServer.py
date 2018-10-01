@@ -252,7 +252,7 @@ class Server(IRCObject.Object):
         return self.until_read_timeout == 0
 
     def send(self, data):
-        returned = self.events.on("preprocess.send").call_for_result(
+        returned = self.events.on("preprocess.send").call_unsafe_for_result(
             server=self, line=data)
         line = returned or data
 

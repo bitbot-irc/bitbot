@@ -85,6 +85,13 @@ class EventHookContext(object):
     def call_limited(self, maximum, **kwargs):
         return self._parent.call_limited(maximum, **kwargs)
 
+    def call_unsafe_for_result(self, default=None, **kwargs):
+        return self._parent.call_unsafe_for_result(default, **kwargs)
+    def call_unsafe(self, **kwargs):
+        return self._parent.call_unsafe(**kwargs)
+    def call_unsafe_limited(self, maximum, **kwargs):
+        return self._parent.call_unsafe_limited(maximum, **kwargs)
+
     def get_hooks(self):
         return self._parent.get_hooks()
     def get_children(self):
@@ -187,18 +194,25 @@ class EventHook(object):
         return child
 
     def call_for_result(self, default=None, **kwargs):
-        results = self.call_limited(1, **kwargs)
-        return default if not len(results) else results[0]
+        return (self.call_limited(1, **kwargs) or [default])[0]
     def assure_call(self, **kwargs):
         if not self._stored_events == None:
             self._stored_events.append(kwargs)
         else:
-            self._call(kwargs)
+            self._call(kwargs, True, None)
     def call(self, **kwargs):
-        return self._call(kwargs)
+        return self._call(kwargs, True, None)
     def call_limited(self, maximum, **kwargs):
-        return self._call(kwargs, maximum=maximum)
-    def _call(self, kwargs, maximum=None):
+        return self._call(kwargs, True, None)
+
+    def call_unsafe_for_result(self, default=None, **kwargs):
+        return (self.call_unsafe_limited(1, **kwargs) or [default])[0]
+    def call_unsafe(self, **kwargs):
+        return self._call(kwargs, False)
+    def call_unsafe_limited(self, maximum, **kwargs):
+        return self._call(kwargs, False, maximum)
+
+    def _call(self, kwargs, safe, maximum):
         event_path = self._get_path()
         self.log.trace("calling event: \"%s\" (params: %s)",
             [event_path, kwargs])
@@ -212,9 +226,10 @@ class EventHook(object):
             try:
                 returns.append(hook.call(event))
             except Exception as e:
-                traceback.print_exc()
-                self.log.error("failed to call event \"%s\"", [
-                    event_path], exc_info=True)
+                self.log.error("failed to call event \"%s\"",
+                    [self._get_path()], exc_info=True)
+                if not safe:
+                    raise
 
         total_milliseconds = (time.monotonic() - start) * 1000
         self.log.trace("event \"%s\" called in %fms", [
