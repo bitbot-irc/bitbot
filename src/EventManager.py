@@ -138,7 +138,7 @@ class EventHook(object):
 
         if replay and not self._stored_events == None:
             for kwargs in self._stored_events:
-                self._call(kwargs)
+                self._call(kwargs, True, None)
         self._stored_events = None
         return callback
 
@@ -208,7 +208,7 @@ class EventHook(object):
     def call_unsafe_for_result(self, default=None, **kwargs):
         return (self.call_unsafe_limited(1, **kwargs) or [default])[0]
     def call_unsafe(self, **kwargs):
-        return self._call(kwargs, False)
+        return self._call(kwargs, False, None)
     def call_unsafe_limited(self, maximum, **kwargs):
         return self._call(kwargs, False, maximum)
 
