@@ -8,7 +8,7 @@ PING_INTERVAL_SECONDS = 30
 
 class Server(IRCObject.Object):
     def __init__(self, bot, events, id, alias, hostname, port, password,
-            ipv4, tls, nickname, username, realname):
+            ipv4, tls, bindhost, nickname, username, realname):
         self.connected = False
         self.bot = bot
         self.events = events
@@ -59,6 +59,8 @@ class Server(IRCObject.Object):
             self.socket = socket.socket(socket.AF_INET6,
                 socket.SOCK_STREAM)
 
+        if bindhost:
+            self.socket.bind((bindhost, 0))
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.socket.settimeout(5.0)

@@ -23,11 +23,11 @@ class Bot(object):
         self.poll = select.epoll()
 
     def add_server(self, server_id, connect=True):
-        (_, alias, hostname, port, password, ipv4, tls, nickname,
+        (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
             username, realname) = self.database.servers.get(server_id)
 
         new_server = IRCServer.Server(self, self._events, server_id, alias,
-            hostname, port, password, ipv4, tls, nickname, username,
+            hostname, port, password, ipv4, tls, bindhost, nickname, username,
             realname)
         if not new_server.get_setting("connect", True):
             return
