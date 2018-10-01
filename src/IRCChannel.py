@@ -105,8 +105,8 @@ class Channel(IRCObject.Object):
         return self.bot.database.user_channel_settings.find_all_by_setting(
             self.id, setting, default)
 
-    def send_message(self, text, prefix=None):
-        self.server.send_message(self.name, text, prefix=prefix)
+    def send_message(self, text, prefix=None, tags={}):
+        self.server.send_message(self.name, text, prefix=prefix, tags=tags)
     def send_mode(self, mode=None, target=None):
         self.server.send_mode(self.name, mode, target)
     def send_kick(self, target, reason=None):

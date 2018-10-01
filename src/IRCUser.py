@@ -56,8 +56,9 @@ class User(IRCObject.Object):
         return self.bot.database.user_channel_settings.find_by_setting(
             self.get_id(), setting, default)
 
-    def send_message(self, message, prefix=None):
-        self.server.send_message(self.nickname, message, prefix=prefix)
+    def send_message(self, message, prefix=None, tags={}):
+        self.server.send_message(self.nickname, message, prefix=prefix,
+            tags=tags)
     def send_notice(self, message):
         self.server.send_notice(self.nickname, message)
     def send_ctcp_response(self, command, args):

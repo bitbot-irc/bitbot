@@ -351,9 +351,19 @@ class Server(IRCObject.Object):
     def send_quit(self, reason="Leaving"):
         self.send("QUIT :%s" % reason)
 
-    def send_message(self, target, message, prefix=None):
+    def send_message(self, target, message, prefix=None, tags={}):
+        tag_str = ""
+        for tag, value in tags.items():
+            if tag_str:
+                tag_str += ","
+            tag_str += tag
+            if value:
+                tag_str += "=%s" % value
+        if tag_str:
+            tag_str = "@%s " % tag_str
+
         full_message = message if not prefix else prefix+message
-        self.send("PRIVMSG %s :%s" % (target, full_message))
+        self.send("%sPRIVMSG %s :%s" % (tag_str, target, full_message))
 
         action = full_message.startswith("\01ACTION "
             ) and full_message.endswith("\01")
@@ -364,13 +374,13 @@ class Server(IRCObject.Object):
         full_message_split = full_message.split()
         if self.has_channel(target):
             channel = self.get_channel(target)
-            channel.buffer.add_line(None, message, action, True)
+            channel.buffer.add_line(None, message, action, tags, True)
             self.events.on("self.message.channel").call(
                 message=full_message, message_split=full_message_split,
                 channel=channel, action=action, server=self)
         else:
             user = self.get_user(target)
-            user.buffer.add_line(None, message, action, True)
+            user.buffer.add_line(None, message, action, tags, True)
             self.events.on("self.message.private").call(
                 message=full_message, message_split=full_message_split,
                     user=user, action=action, server=self)

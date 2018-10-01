@@ -414,11 +414,12 @@ class Module(ModuleManager.BaseModule):
             channel = event["server"].get_channel(event["args"][0])
             self.events.on("received.message.channel").call(
                 user=user, channel=channel, **kwargs)
-            channel.buffer.add_line(user.nickname, message, action)
+            channel.buffer.add_line(user.nickname, message, action,
+                event["tags"])
         elif event["server"].is_own_nickname(target):
             self.events.on("received.message.private").call(
                 user=user, **kwargs)
-            user.buffer.add_line(user.nickname, message, action)
+            user.buffer.add_line(user.nickname, message, action, event["tags"])
 
     # we've received a notice
     @Utils.hook("raw.notice")

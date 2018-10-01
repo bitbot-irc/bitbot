@@ -9,15 +9,18 @@ OUT_CUTOFF = 400
 REGEX_CUTOFF = re.compile("^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
 
 class Out(object):
-    def __init__(self, module_name, target):
+    def __init__(self, module_name, target, msgid):
         self.module_name = module_name
         self.target = target
         self._text = ""
         self.written = False
+        self._msgid = None
+
     def write(self, text):
         self._text += text
         self.written = True
         return self
+
     def send(self):
         if self.has_text():
             text = self._text
@@ -29,10 +32,17 @@ class Out(object):
                     ].decode("utf8").lstrip())
             else:
                 self._text = ""
-            self.target.send_message(text, prefix=Utils.FONT_RESET + "[%s] " %
-                                                         self.prefix())
+
+            tags = {}
+            if self._msgid:
+                tags["reply"] = self._msgid
+
+            self.target.send_message(text,
+                prefix=Utils.FONT_RESET + "[%s] " % self.prefix(), tags=tags)
+
     def set_prefix(self, prefix):
         self.module_name = prefix
+
     def has_text(self):
         return bool(self._text)
 
@@ -93,8 +103,10 @@ class Module(ModuleManager.BaseModule):
             module_name = ""
             if hasattr(hook.function, "__self__"):
                 module_name = hook.function.__self__._name
-            stdout, stderr = StdOut(module_name, target), StdErr(module_name,
-                target)
+
+            msgid = event["tags"].get("msgid", None)
+            stdout = StdOut(module_name, target, msgid)
+            stderr = StdErr(module_name, target, msgid)
 
             returns = self.events.on("preprocess.command").call_unsafe(
                 hook=hook, user=event["user"], server=event["server"],
