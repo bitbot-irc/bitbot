@@ -1,12 +1,12 @@
 import collections, socket, ssl, sys, time
-from . import IRCChannel, IRCUser, Utils
+from . import IRCChannel, IRCObject, IRCUser, Utils
 
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
 READ_TIMEOUT_SECONDS = 120
 PING_INTERVAL_SECONDS = 30
 
-class Server(object):
+class Server(IRCObject.Object):
     def __init__(self, bot, events, id, alias, hostname, port, password,
             ipv4, tls, nickname, username, realname):
         self.connected = False

@@ -1,7 +1,7 @@
 import uuid
-from . import IRCBuffer, Utils
+from . import IRCBuffer, IRCObject, Utils
 
-class User(object):
+class User(IRCObject.Object):
     def __init__(self, nickname, id, server, bot):
         self.server = server
         self.set_nickname(nickname)
@@ -22,6 +22,8 @@ class User(object):
 
     def __repr__(self):
         return "IRCUser.User(%s|%s)" % (self.server.name, self.name)
+    def __str__(self):
+        return self.nickname
 
     def get_id(self):
         return (self.identified_account_id_override or
