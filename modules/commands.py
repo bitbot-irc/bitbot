@@ -14,7 +14,7 @@ class Out(object):
         self.target = target
         self._text = ""
         self.written = False
-        self._msgid = None
+        self._msgid = msgid
 
     def write(self, text):
         self._text += text
@@ -104,7 +104,7 @@ class Module(ModuleManager.BaseModule):
             if hasattr(hook.function, "__self__"):
                 module_name = hook.function.__self__._name
 
-            msgid = event["tags"].get("msgid", None)
+            msgid = event["tags"].get("draft/msgid", None)
             stdout = StdOut(module_name, target, msgid)
             stderr = StdErr(module_name, target, msgid)
 
