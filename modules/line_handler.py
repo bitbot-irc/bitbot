@@ -328,7 +328,7 @@ class Module(ModuleManager.BaseModule):
     # someone has changed their nickname
     @Utils.hook("raw.nick")
     def nick(self, event):
-        new_nickname = event["arbitrary"]
+        new_nickname = event["last"]
         if not event["server"].is_own_nickname(event["prefix"].nickname):
             user = event["server"].get_user(event["prefix"].nickname)
             old_nickname = user.nickname
