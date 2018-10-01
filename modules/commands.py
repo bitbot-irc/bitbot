@@ -35,7 +35,7 @@ class Out(object):
 
             tags = {}
             if self._msgid:
-                tags["reply"] = self._msgid
+                tags["+draft/reply"] = self._msgid
 
             self.target.send_message(text,
                 prefix=Utils.FONT_RESET + "[%s] " % self.prefix(), tags=tags)
