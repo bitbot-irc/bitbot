@@ -73,6 +73,7 @@ class Module(ModuleManager.BaseModule):
             target = event["args"]
         else:
             target = event["user"].nickname
+        target = target.strip()
 
         if event["server"].get_setting("karma-nickname-only", False):
             karma = event["server"].get_user(target).get_setting("karma", 0)
