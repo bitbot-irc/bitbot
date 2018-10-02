@@ -1,14 +1,14 @@
 import collections, socket, ssl, sys, time
-from . import IRCChannel, IRCUser, Utils
+from . import IRCChannel, IRCObject, IRCUser, Utils
 
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
 READ_TIMEOUT_SECONDS = 120
 PING_INTERVAL_SECONDS = 30
 
-class Server(object):
+class Server(IRCObject.Object):
     def __init__(self, bot, events, id, alias, hostname, port, password,
-            ipv4, tls, nickname, username, realname):
+            ipv4, tls, bindhost, nickname, username, realname):
         self.connected = False
         self.bot = bot
         self.events = events
@@ -59,6 +59,8 @@ class Server(object):
             self.socket = socket.socket(socket.AF_INET6,
                 socket.SOCK_STREAM)
 
+        if bindhost:
+            self.socket.bind((bindhost, 0))
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.socket.settimeout(5.0)
@@ -198,7 +200,7 @@ class Server(object):
     def parse_line(self, line):
         if not line:
             return
-        self.bot.line_handler.handle(self, line)
+        self.events.on("raw").call(server=self, line=line)
         self.check_users()
     def check_users(self):
         for user in self.new_users:
@@ -250,12 +252,16 @@ class Server(object):
         return self.until_read_timeout == 0
 
     def send(self, data):
-        encoded = data.split("\n")[0].strip("\r").encode("utf8")
+        returned = self.events.on("preprocess.send").call_unsafe_for_result(
+            server=self, line=data)
+        line = returned or data
+
+        encoded = line.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
             encoded = encoded[:450]
         self.buffered_lines.append(encoded + b"\r\n")
-        if self.bot.args.verbose:
-            self.bot.log.info(">%s | %s", [str(self), encoded.decode("utf8")])
+
+        self.bot.log.debug(">%s | %s", [str(self), encoded.decode("utf8")])
     def _send(self):
         if not len(self.write_buffer):
             self.write_buffer = self.buffered_lines.pop(0)
@@ -345,9 +351,19 @@ class Server(object):
     def send_quit(self, reason="Leaving"):
         self.send("QUIT :%s" % reason)
 
-    def send_message(self, target, message, prefix=None):
+    def send_message(self, target, message, prefix=None, tags={}):
+        tag_str = ""
+        for tag, value in tags.items():
+            if tag_str:
+                tag_str += ","
+            tag_str += tag
+            if value:
+                tag_str += "=%s" % value
+        if tag_str:
+            tag_str = "@%s " % tag_str
+
         full_message = message if not prefix else prefix+message
-        self.send("PRIVMSG %s :%s" % (target, full_message))
+        self.send("%sPRIVMSG %s :%s" % (tag_str, target, full_message))
 
         action = full_message.startswith("\01ACTION "
             ) and full_message.endswith("\01")
@@ -358,13 +374,13 @@ class Server(object):
         full_message_split = full_message.split()
         if self.has_channel(target):
             channel = self.get_channel(target)
-            channel.buffer.add_line(None, message, action, True)
+            channel.buffer.add_line(None, message, action, tags, True)
             self.events.on("self.message.channel").call(
                 message=full_message, message_split=full_message_split,
                 channel=channel, action=action, server=self)
         else:
             user = self.get_user(target)
-            user.buffer.add_line(None, message, action, True)
+            user.buffer.add_line(None, message, action, tags, True)
             self.events.on("self.message.private").call(
                 message=full_message, message_split=full_message_split,
                     user=user, action=action, server=self)

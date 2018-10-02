@@ -1,6 +1,6 @@
 
 import glob, json, os, subprocess
-from src import Utils
+from src import IRCObject, Utils
 
 class Module(object):
     def __init__(self, bot, events, exports):
@@ -37,6 +37,8 @@ class Module(object):
                 env[key.upper()] = str(int(value))
             elif isinstance(value, (list, dict)):
                 env[key.upper()] = json.dumps(value)
+            elif isinstance(value, (IRCObject.Object,)):
+                env[key.upper()] = str(value)
 
         proc = subprocess.Popen([filename], stdout=subprocess.PIPE, env=env)
         try:

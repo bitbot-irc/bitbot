@@ -2,7 +2,7 @@
 
 import argparse, os, sys, time
 from src import Cache, Config, Database, EventManager, Exports, IRCBot
-from src import IRCLineHandler, Logging, ModuleManager, Timers
+from src import Logging, ModuleManager, Timers
 
 def bool_input(s):
     result = input("%s (Y/n): " % s)
@@ -29,20 +29,19 @@ arg_parser.add_argument("--verbose", "-v", action="store_true")
 
 args = arg_parser.parse_args()
 
-
-log = Logging.Log(args.log)
+log_level = "debug" if args.verbose else "info"
+log = Logging.Log(log_level, args.log)
 cache = Cache.Cache()
 config = Config.Config(args.config)
 database = Database.Database(log, args.database)
 events = events = EventManager.EventHook(log)
 exports = exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
-line_handler = IRCLineHandler.LineHandler(events, timers)
 modules = modules = ModuleManager.ModuleManager(events, exports, config, log,
     os.path.join(directory, "modules"))
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
-    exports, line_handler, log, modules, timers)
+    exports, log, modules, timers)
 
 whitelist = bot.get_setting("module-whitelist", [])
 blacklist = bot.get_setting("module-blacklist", [])

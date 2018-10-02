@@ -5,22 +5,23 @@ class Table(object):
         self.database = database
 
 class Servers(Table):
-    def add(self, alias, hostname, port, password, ipv4, tls, nickname,
-            username=None, realname=None):
+    def add(self, alias, hostname, port, password, ipv4, tls, bindhost,
+            nickname, username=None, realname=None):
         username = username or nickname
         realname = realname or nickname
         self.database.execute(
             """INSERT INTO servers (alias, hostname, port, password, ipv4,
-            tls, nickname, username, realname) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [hostname, port, password, ipv4, tls, nickname, username, realname])
+            tls, bindhost, nickname, username, realname) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            [hostname, port, password, ipv4, tls, bindhost, nickname, username,
+            realname])
     def get_all(self):
         return self.database.execute_fetchall(
             "SELECT server_id, alias FROM servers")
     def get(self, id):
         return self.database.execute_fetchone(
             """SELECT server_id, alias, hostname, port, password, ipv4,
-            tls, nickname, username, realname FROM servers WHERE
+            tls, bindhost, nickname, username, realname FROM servers WHERE
             server_id=?""",
             [id])
 
@@ -272,7 +273,7 @@ class Database(object):
 
     def _execute_fetch(self, query, fetch_func, params=[]):
         printable_query = " ".join(query.split())
-        self.log.debug("executing query: \"%s\" (params: %s)",
+        self.log.trace("executing query: \"%s\" (params: %s)",
             [printable_query, params])
         start = time.monotonic()
 
@@ -282,7 +283,7 @@ class Database(object):
 
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
-        self.log.debug("executed in %fms", [total_milliseconds])
+        self.log.trace("executed in %fms", [total_milliseconds])
 
         return value
     def execute_fetchall(self, query, params=[]):
@@ -304,8 +305,8 @@ class Database(object):
         if not self.has_table("servers"):
             self.execute("""CREATE TABLE servers
                 (server_id INTEGER PRIMARY KEY, alias TEXT, hostname TEXT,
-                port INTEGER,password TEXT,ipv4 BOOLEAN, tls BOOLEAN,
-                nickname TEXT, username TEXT, realname TEXT)""")
+                port INTEGER, password TEXT, ipv4 BOOLEAN, tls BOOLEAN,
+                bindhost TEXT, nickname TEXT, username TEXT, realname TEXT)""")
     def make_channels_table(self):
         if not self.has_table("channels"):
             self.execute("""CREATE TABLE channels

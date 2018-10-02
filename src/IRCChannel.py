@@ -1,7 +1,7 @@
 import uuid
-from . import IRCBuffer, Utils
+from . import IRCBuffer, IRCObject, Utils
 
-class Channel(object):
+class Channel(IRCObject.Object):
     def __init__(self, name, id, server, bot):
         self.name = Utils.irc_lower(server, name)
         self.id = id
@@ -19,6 +19,8 @@ class Channel(object):
 
     def __repr__(self):
         return "IRCChannel.Channel(%s|%s)" % (self.server.name, self.name)
+    def __str__(self):
+        return self.name
 
     def set_topic(self, topic):
         self.topic = topic
@@ -103,8 +105,8 @@ class Channel(object):
         return self.bot.database.user_channel_settings.find_all_by_setting(
             self.id, setting, default)
 
-    def send_message(self, text, prefix=None):
-        self.server.send_message(self.name, text, prefix=prefix)
+    def send_message(self, text, prefix=None, tags={}):
+        self.server.send_message(self.name, text, prefix=prefix, tags=tags)
     def send_mode(self, mode=None, target=None):
         self.server.send_mode(self.name, mode, target)
     def send_kick(self, target, reason=None):

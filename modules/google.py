@@ -8,12 +8,13 @@ URL_GOOGLESEARCH = "https://www.googleapis.com/customsearch/v1"
 URL_GOOGLESUGGEST = "http://google.com/complete/search"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.google|g", usage="[search term]")
+    @Utils.hook("received.command.google|g")
     def google(self, event):
         """
-        Get first Google result for a given search term
+        :help: Get first Google result for a given search term
+        :usage: [search term]
         """
-        phrase = event["args"] or event["buffer"].get()
+        phrase = event["args"] or event["target"].buffer.get()
         if phrase:
             page = Utils.get_url(URL_GOOGLESEARCH, get_params={
                 "q": phrase, "key": self.bot.config[
@@ -36,7 +37,7 @@ class Module(ModuleManager.BaseModule):
         """
         Get suggested phrases from Google
         """
-        phrase = event["args"] or event["buffer"].get()
+        phrase = event["args"] or event["target"].buffer.get()
         if phrase:
             page = Utils.get_url(URL_GOOGLESUGGEST, get_params={
                 "output": "json", "client": "hp", "q": phrase})

@@ -155,6 +155,7 @@ COLOR_LIGHTBLUE, COLOR_PINK, COLOR_GREY, COLOR_LIGHTGREY = (12, 13,
 FONT_BOLD, FONT_ITALIC, FONT_UNDERLINE, FONT_INVERT = ("\x02", "\x1D",
     "\x1F", "\x16")
 FONT_COLOR, FONT_RESET = "\x03", "\x0F"
+REGEX_COLOR = re.compile("%s\d\d(?:,\d\d)?" % FONT_COLOR)
 
 def color(s, foreground, background=None):
     foreground = str(foreground).zfill(2)
@@ -168,6 +169,13 @@ def bold(s):
 
 def underline(s):
     return "%s%s%s" % (FONT_UNDERLINE, s, FONT_UNDERLINE)
+
+def strip_font(s):
+    s = s.replace(FONT_BOLD, "")
+    s = s.replace(FONT_ITALIC, "")
+    s = REGEX_COLOR.sub("", s)
+    s = s.replace(FONT_COLOR, "")
+    return s
 
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60
@@ -313,3 +321,35 @@ def get_hashflags(filename):
                     value = line_split[1]
                 hashflags[hashflag] = value
     return hashflags.items()
+
+class Docstring(object):
+    def __init__(self, description, items):
+        self.description = description
+        self.items = items
+
+def parse_docstring(s):
+    description = ""
+    last_item = None
+    items = {}
+    if s:
+        for line in s.split("\n"):
+            line = line.strip()
+
+            if line:
+                if line[0] == ":":
+                    line_split = line.split(": ", 1)
+
+                    value = None
+                    if len(line_split) > 1:
+                        value = line_split[1]
+
+                    last_item = line_split[0][1:].lower()
+                    items[last_item] = value
+                else:
+                    if last_item:
+                        items[last_item] += " %s" % line
+                    else:
+                        if description:
+                            description += " "
+                        description += line
+    return Docstring(description, items)

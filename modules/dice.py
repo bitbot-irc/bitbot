@@ -4,10 +4,11 @@ from src import ModuleManager, Utils
 ERROR_FORMAT = "Incorrect format! Format must be [number]d[number], e.g. 1d20"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.roll", min_args=1, usage="[1-5]d[1-20]")
+    @Utils.hook("received.command.roll", min_args=1)
     def roll_dice(self, event):
         """
-        Roll some dice, DND style!
+        :help: Roll some dice, DND style!
+        :usage: [1-5]d[1-20]
         """
         raw_input = event["args_split"][0]
         roll = raw_input.split("d")

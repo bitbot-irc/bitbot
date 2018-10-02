@@ -2,10 +2,11 @@ import hashlib
 from src import ModuleManager, Utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.hash", min_args=2, usage="<algo> <string>")
+    @Utils.hook("received.command.hash", min_args=2)
     def hash(self, event):
         """
-        Hash a given string with a given algorithm
+        :help: Hash a given string with a given algorithm
+        :usage: <algo> <string>
         """
         algorithm = event["args_split"][0].lower()
         if algorithm in hashlib.algorithms_available:

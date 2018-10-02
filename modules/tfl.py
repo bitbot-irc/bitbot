@@ -46,10 +46,11 @@ class Module(ModuleManager.BaseModule):
                 platform = m.group(2)
         return platform
 
-    @Utils.hook("received.command.tflbus", min_args=1, usage="<stop_id>")
+    @Utils.hook("received.command.tflbus", min_args=1)
     def bus(self, event):
         """
-        Get bus due times for a TfL bus stop
+        :help: Get bus due times for a TfL bus stop
+        :usage: <stop_id>
         """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
@@ -122,10 +123,11 @@ class Module(ModuleManager.BaseModule):
         else:
            event["stderr"].write("Bus ID '%s' unknown" % stop_id)
 
-    @Utils.hook("received.command.tflline", usage="<line_name>")
+    @Utils.hook("received.command.tflline")
     def line(self, event):
         """
-        Get line status for TfL underground lines
+        :help: Get line status for TfL underground lines
+        :usage: <line_name>
         """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
@@ -165,10 +167,11 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("No results")
 
-    @Utils.hook("received.command.tflsearch", min_args=1, usage="<name>")
+    @Utils.hook("received.command.tflsearch", min_args=1)
     def search(self, event):
         """
-        Get a list of TfL stop IDs for a given name
+        :help: Get a list of TfL stop IDs for a given name
+        :usage: <name>
         """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
@@ -186,10 +189,11 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("No results")
 
-    @Utils.hook("received.command.tflvehicle", min_args=1, usage="<ID>")
+    @Utils.hook("received.command.tflvehicle", min_args=1)
     def vehicle(self, event):
         """
-        Get information for a given vehicle
+        :help: Get information for a given vehicle
+        :usage: <ID>
         """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
@@ -206,11 +210,11 @@ class Module(ModuleManager.BaseModule):
             vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
                 vehicle["stationName"], vehicle["naptanId"], arrival_time, platform))
 
-    @Utils.hook("received.command.tflservice", min_args=1,
-        usage="<service index>")
+    @Utils.hook("received.command.tflservice", min_args=1)
     def service(self, event):
         """
-        Get service information and arrival estimates
+        :help: Get service information and arrival estimates
+        :usage: <service index>
         """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
@@ -239,10 +243,11 @@ class Module(ModuleManager.BaseModule):
             a["expectedArrival"][11:16]
             ) for a in arrivals]))
 
-    @Utils.hook("received.command.tflstop", min_args=1, usage="<stop_id>")
+    @Utils.hook("received.command.tflstop", min_args=1)
     def stop(self, event):
         """
-        Get information for a given stop
+        :help: Get information for a given stop
+        :usage: <stop_id>
         """
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]

@@ -9,10 +9,11 @@ URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 class Module(ModuleManager.BaseModule):
     _name = "last.fm"
 
-    @Utils.hook("received.command.np|listening|nowplaying", usage="[username]")
+    @Utils.hook("received.command.np|listening|nowplaying")
     def np(self, event):
         """
-        Get the last listened to track from a user
+        :help: Get the last listened to track from a user
+        :usage: [username]
         """
         if event["args_split"]:
             lastfm_username = event["args_split"][0]

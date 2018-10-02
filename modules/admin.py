@@ -1,27 +1,31 @@
 from src import ModuleManager, Utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.changenickname",
-        permission="changenickname", min_args=1, usage="<nickname>")
+    @Utils.hook("received.command.changenickname", min_args=1)
     def change_nickname(self, event):
         """
-        Change my nickname
+        :help: Change my nickname
+        :usage: <nickname>
+        :permission: changenickname
         """
         nickname = event["args_split"][0]
         event["server"].send_nick(nickname)
 
-    @Utils.hook("received.command.raw", permission="raw", min_args=1,
-        usage="<raw line>")
+    @Utils.hook("received.command.raw", min_args=1)
     def raw(self, event):
         """
-        Send a line of raw IRC data
+        :help: Send a line of raw IRC data
+        :usage: <raw line>
+        :permission: raw
         """
         event["server"].send(event["args"])
 
-    @Utils.hook("received.command.part", permission="part", usage="[#channel]")
+    @Utils.hook("received.command.part")
     def part(self, event):
         """
-        Part from the current or given channel
+        :help: Part from the current or given channel
+        :usage: [channel]
+        :permission: part
         """
         if event["args"]:
             target = event["args_split"][0]
@@ -31,9 +35,10 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("No channel provided")
         event["server"].send_part(target)
 
-    @Utils.hook("received.command.reconnect", permission="reconnect")
+    @Utils.hook("received.command.reconnect")
     def reconnect(self, event):
         """
-        Reconnect to the current network
+        :help: Reconnect to the current network
+        :permission: reconnect
         """
         event["server"].send_quit("Reconnecting")

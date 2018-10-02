@@ -12,8 +12,6 @@ class Module(ModuleManager.BaseModule):
     _last_called = 0
 
     def _get_definition(self, word):
-        word = event["args"] if "args" in event else event
-
         page = Utils.get_url(URL_WORDNIK % word, get_params={
             "useCanonical": "true", "limit": 1,
             "sourceDictionaries": "wiktionary", "api_key": self.bot.config[
@@ -21,15 +19,16 @@ class Module(ModuleManager.BaseModule):
 
         return page
 
-    @Utils.hook("received.command.define", usage="<phrase>")
+    @Utils.hook("received.command.define")
     def define(self, event):
         """
-        Define a provided term
+        :help: Define a provided term
+        :usage: <phrase>
         """
         if event["args"]:
             word = event["args"]
         else:
-            word = event["buffer"].get(from_self=False)
+            word = event["target"].buffer.get(from_self=False)
 
         page = self._get_definition(word)
         if page:
@@ -44,7 +43,7 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.randomword")
     def random_word(self, event):
         """
-        Define a random word
+        :help: Define a random word
         """
         if not self._last_called or (time.time()-self._last_called >=
                 RANDOM_DELAY_SECONDS):

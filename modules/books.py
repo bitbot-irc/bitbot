@@ -36,10 +36,11 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Failed to load results")
 
-    @Utils.hook("received.command.isbn", min_args=1, usage="<isbn>")
+    @Utils.hook("received.command.isbn", min_args=1)
     def isbn(self, event):
         """
-        Get book information from a provided ISBN
+        :help: Get book information from a provided ISBN
+        :usage: <isbn>
         """
         isbn = event["args_split"][0]
         if len(isbn) == 10:
@@ -47,9 +48,10 @@ class Module(ModuleManager.BaseModule):
         isbn = isbn.replace("-", "")
         self.get_book("isbn:%s" % isbn, event)
 
-    @Utils.hook("received.command.book", min_args=1, usage="<book title>")
+    @Utils.hook("received.command.book", min_args=1)
     def book(self, event):
         """
-        Get book information from a provided title
+        :help: Get book information from a provided title
+        :usage: <book title>
         """
         self.get_book(event["args"], event)

@@ -2,10 +2,11 @@ import re
 from . import Utils
 
 class BufferLine(object):
-    def __init__(self, sender, message, action, from_self):
+    def __init__(self, sender, message, action, tags, from_self):
         self.sender = sender
         self.message = message
         self.action = action
+        self.tags = tags
         self.from_self = from_self
 
 class Buffer(object):
@@ -15,9 +16,9 @@ class Buffer(object):
         self.lines = []
         self.max_lines = 64
         self._skip_next = False
-    def add_line(self, sender, message, action, from_self=False):
+    def add_line(self, sender, message, action, tags, from_self=False):
         if not self._skip_next:
-            line = BufferLine(sender, message, action, from_self)
+            line = BufferLine(sender, message, action, tags, from_self)
             self.lines.insert(0, line)
             if len(self.lines) > self.max_lines:
                 self.lines.pop()

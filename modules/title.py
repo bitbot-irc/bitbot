@@ -7,13 +7,14 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.title|t", usage="[URL]")
     def title(self, event):
         """
-        Get the title of a URL
+        :help: Get the title of a URL
+        :usage: [URL]
         """
         url = None
         if len(event["args"]) > 0:
             url = event["args_split"][0]
         else:
-            url = event["buffer"].find(REGEX_URL)
+            url = event["target"].buffer.find(REGEX_URL)
             if url:
                 url = re.search(REGEX_URL, url.message).group(0)
         if not url:

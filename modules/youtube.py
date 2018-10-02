@@ -71,17 +71,18 @@ class Module(ModuleManager.BaseModule):
                 video_id = search_page["items"][0]["id"]["videoId"]
                 return "https://youtu.be/%s" % video_id
 
-    @Utils.hook("received.command.yt|youtube", usage="[query]")
+    @Utils.hook("received.command.yt|youtube")
     def yt(self, event):
         """
-        Find a video on youtube
+        :help: Find a video on youtube
+        :usage: [query/URL]
         """
         video_id = None
         search = None
         if event["args"]:
             search = event["args"]
         else:
-            last_youtube = event["buffer"].find(REGEX_YOUTUBE)
+            last_youtube = event["target"].buffer.find(REGEX_YOUTUBE)
             if last_youtube:
                 video_id = re.search(REGEX_YOUTUBE, last_youtube.message).group(1)
         if search or video_id:

@@ -51,32 +51,36 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Removed automode %s from '%s'" % (
                 mode_name, target_user.nickname))
 
-    @Utils.hook("received.command.addop", require_mode="o", min_args=1,
-        channel_only=True, usage="<nickname>")
+    @Utils.hook("received.command.addop", min_args=1, channel_only=True)
     def add_op(self, event):
         """
-        Add a user to the auto-mode list as an op
+        :help: Add a user to the auto-mode list as an op
+        :usage: <nickname>
+        :require_mode: o
         """
         self._add_mode(event, "o", "op")
-    @Utils.hook("received.command.removeop", require_mode="o", min_args=1,
-        channel_only=True, usage="<nickname>")
+    @Utils.hook("received.command.removeop", min_args=1, channel_only=True)
     def remove_op(self, event):
         """
-        Remove a user from the auto-mode list as an op
+        :help: Remove a user from the auto-mode list as an op
+        :usage: <nickname>
+        :require_mode: o
         """
         self._remove_mode(event, "o", "op")
 
-    @Utils.hook("received.command.addvoice", require_mode="o", min_args=1,
-        channel_only=True, usage="<nickname>")
+    @Utils.hook("received.command.addvoice", min_args=1, channel_only=True)
     def add_voice(self, event):
         """
-        Add a user to the auto-mode list as a voice
+        :help: Add a user to the auto-mode list as a voice
+        :usage: <nickname>
+        :require_mode: o
         """
         self._add_mode(event, "v", "voice")
-    @Utils.hook("received.command.removevoice", require_mode="o", min_args=1,
-        channel_only=True, usage="<nickname>")
+    @Utils.hook("received.command.removevoice", min_args=1, channel_only=True)
     def remove_voice(self, event):
         """
-        Remove a user from the auto-mode list as anvoice
+        :help: Remove a user from the auto-mode list as a voice
+        :usage: <nickname>
+        :require_mode: o
         """
         self._remove_mode(event, "v", "voice")

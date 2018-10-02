@@ -7,7 +7,8 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.spotify", min_args=1)
     def spotify(self, event):
         """
-        Search for a track on spotify
+        :help: Search for a track on spotify
+        :usage: <term>
         """
         page = Utils.get_url(URL_SPOTIFY, get_params={"type": "track",
             "limit": 1, "q": event["args"]}, json=True)

@@ -19,10 +19,11 @@ class Module(ModuleManager.BaseModule):
         since, unit = Utils.time_unit(seconds_since)
         return "%s %s ago" % (since, unit)
 
-    @Utils.hook("received.command.tweet|tw", usage="[@username/URL/ID]")
+    @Utils.hook("received.command.tweet|tw")
     def tweet(self, event):
         """
-        Get/find a tweet
+        :help: Get/find a tweet
+        :usage: [@username/URL/ID]
         """
         api_key = self.bot.config["twitter-api-key"]
         api_secret = self.bot.config["twitter-api-secret"]
@@ -32,7 +33,7 @@ class Module(ModuleManager.BaseModule):
         if event["args"]:
             target = event["args"]
         else:
-            target = event["buffer"].find(REGEX_TWITTERURL)
+            target = event["target"].buffer.find(REGEX_TWITTERURL)
             if target:
                 target = target.message
         if target:

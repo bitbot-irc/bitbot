@@ -1,5 +1,5 @@
 import re, threading
-from . import Utils
+from src import ModuleManager, Utils
 
 RE_PREFIXES = re.compile(r"\bPREFIX=\((\w+)\)(\W+)(?:\b|$)")
 RE_CHANMODES = re.compile(
@@ -13,48 +13,10 @@ CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "draft/message-tags-0.2", "server-time", "cap-notify",
     "batch", "draft/labeled-response"}
 
-class LineHandler(object):
-    def __init__(self, events, timers):
-        self.events = events
-        self.timers = timers
-        events.on("raw.PING").hook(self.ping)
-
-        events.on("raw.001").hook(self.handle_001, default_event=True)
-        events.on("raw.005").hook(self.handle_005)
-        events.on("raw.311").hook(self.handle_311, default_event=True)
-        events.on("raw.332").hook(self.handle_332)
-        events.on("raw.333").hook(self.handle_333)
-        events.on("raw.353").hook(self.handle_353, default_event=True)
-        events.on("raw.366").hook(self.handle_366, default_event=True)
-        events.on("raw.421").hook(self.handle_421, default_event=True)
-        events.on("raw.352").hook(self.handle_352, default_event=True)
-        events.on("raw.354").hook(self.handle_354, default_event=True)
-        events.on("raw.324").hook(self.handle_324, default_event=True)
-        events.on("raw.329").hook(self.handle_329, default_event=True)
-        events.on("raw.433").hook(self.handle_433, default_event=True)
-        events.on("raw.477").hook(self.handle_477, default_event=True)
-
-        events.on("raw.JOIN").hook(self.join)
-        events.on("raw.PART").hook(self.part)
-        events.on("raw.QUIT").hook(self.quit)
-        events.on("raw.NICK").hook(self.nick)
-        events.on("raw.MODE").hook(self.mode)
-        events.on("raw.KICK").hook(self.kick)
-        events.on("raw.INVITE").hook(self.invite)
-        events.on("raw.TOPIC").hook(self.topic)
-        events.on("raw.PRIVMSG").hook(self.privmsg)
-        events.on("raw.NOTICE").hook(self.notice)
-
-        events.on("raw.CAP").hook(self.cap)
-        events.on("raw.AUTHENTICATE").hook(self.authenticate)
-        events.on("raw.CHGHOST").hook(self.chghost)
-        events.on("raw.ACCOUNT").hook(self.account)
-        events.on("raw.TAGMSG").hook(self.tagmsg)
-        events.on("raw.AWAY").hook(self.away)
-        events.on("raw.BATCH").hook(self.batch)
-
-    def handle(self, server, line):
-        original_line = line
+class Module(ModuleManager.BaseModule):
+    @Utils.hook("raw")
+    def handle(self, event):
+        line = original_line = event["line"]
         tags = {}
         prefix = None
         command = None
@@ -65,7 +27,7 @@ class LineHandler(object):
                 if tag:
                     tag_split = tag.split("=", 1)
                     tags[tag_split[0]] = "".join(tag_split[1:])
-        if "batch" in tags and tags["batch"] in server.batches:
+        if "batch" in tags and tags["batch"] in event["server"].batches:
             server.batches[tag["batch"]].append(line)
             return
 
@@ -96,29 +58,35 @@ class LineHandler(object):
         last = arbitrary or args[-1]
 
         #server, prefix, command, args, arbitrary
-        self.events.on("raw").on(command).call(server=server, last=last,
-            prefix=prefix, args=args, arbitrary=arbitrary, tags=tags)
+        self.events.on("raw").on(command).call(server=event["server"],
+            last=last, prefix=prefix, args=args, arbitrary=arbitrary,
+            tags=tags)
         if default_event or not hooks:
             if command.isdigit():
                 self.events.on("received.numeric").on(command).call(
-                    line=original_line, server=server, tags=tags, last=last,
-                    line_split=original_line.split(" "), number=command)
+                    line=original_line, server=event["server"], tags=tags,
+                    last=last, line_split=original_line.split(" "),
+                    number=command)
             else:
                 self.events.on("received").on(command).call(
                     line=original_line, line_split=original_line.split(" "),
-                    command=command, server=server, tags=tags, last=last)
+                    command=command, server=event["server"], tags=tags,
+                    last=last)
 
     # ping from the server
+    @Utils.hook("raw.ping")
     def ping(self, event):
         event["server"].send_pong(event["last"])
 
     # first numeric line the server sends
+    @Utils.hook("raw.001", default_event=True)
     def handle_001(self, event):
         event["server"].name = event["prefix"].nickname
         event["server"].set_own_nickname(event["args"][0])
         event["server"].send_whois(event["server"].nickname)
 
     # server telling us what it supports
+    @Utils.hook("raw.005")
     def handle_005(self, event):
         isupport_line = " ".join(event["args"][1:])
 
@@ -148,6 +116,7 @@ class LineHandler(object):
             isupport=isupport_line, server=event["server"])
 
     # whois respose (nickname, username, realname, hostname)
+    @Utils.hook("raw.311", default_event=True)
     def handle_311(self, event):
         nickname = event["args"][1]
         if event["server"].is_own_nickname(nickname):
@@ -159,6 +128,7 @@ class LineHandler(object):
         target.realname = event["arbitrary"]
 
     # on-join channel topic line
+    @Utils.hook("raw.332")
     def handle_332(self, event):
         channel = event["server"].get_channel(event["args"][1])
 
@@ -167,6 +137,7 @@ class LineHandler(object):
             server=event["server"], topic=event["arbitrary"])
 
     # channel topic changed
+    @Utils.hook("raw.topic")
     def topic(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         channel = event["server"].get_channel(event["args"][0])
@@ -175,6 +146,7 @@ class LineHandler(object):
             server=event["server"], topic=event["arbitrary"], user=user)
 
     # on-join channel topic set by/at
+    @Utils.hook("raw.333")
     def handle_333(self, event):
         channel = event["server"].get_channel(event["args"][1])
 
@@ -191,6 +163,7 @@ class LineHandler(object):
             server=event["server"])
 
     # /names response, also on-join user list
+    @Utils.hook("raw.353", default_event=True)
     def handle_353(self, event):
         channel = event["server"].get_channel(event["args"][2])
         nicknames = event["arbitrary"].split()
@@ -216,10 +189,12 @@ class LineHandler(object):
                 channel.add_mode(mode, nickname)
 
     # on-join user list has finished
+    @Utils.hook("raw.366", default_event=True)
     def handle_366(self, event):
         event["server"].send_whox(event["args"][1], "n", "ahnrtu", "111")
 
     # on user joining channel
+    @Utils.hook("raw.join")
     def join(self, event):
         account = None
         realname = None
@@ -257,6 +232,7 @@ class LineHandler(object):
             channel.send_mode()
 
     # on user parting channel
+    @Utils.hook("raw.part")
     def part(self, event):
         channel = event["server"].get_channel(event["args"][0])
         reason = event["arbitrary"] or ""
@@ -275,10 +251,12 @@ class LineHandler(object):
             event["server"].remove_channel(channel)
 
     # unknown command sent by us, oops!
+    @Utils.hook("raw.421", default_event=True)
     def handle_421(self, event):
         print("warning: unknown command '%s'." % event["args"][1])
 
     # a user has disconnected!
+    @Utils.hook("raw.quit")
     def quit(self, event):
         reason = event["arbitrary"] or ""
 
@@ -291,6 +269,7 @@ class LineHandler(object):
             event["server"].disconnect()
 
     # the server is telling us about its capabilities!
+    @Utils.hook("raw.cap")
     def cap(self, event):
         capabilities_list = (event["arbitrary"] or "").split(" ")
         capabilities = {}
@@ -341,13 +320,15 @@ class LineHandler(object):
             event["server"].send_capability_end()
 
     # the server is asking for authentication
+    @Utils.hook("raw.authenticate")
     def authenticate(self, event):
         self.events.on("received.authenticate").call(
             message=event["args"][0], server=event["server"])
 
     # someone has changed their nickname
+    @Utils.hook("raw.nick")
     def nick(self, event):
-        new_nickname = event["arbitrary"]
+        new_nickname = event["last"]
         if not event["server"].is_own_nickname(event["prefix"].nickname):
             user = event["server"].get_user(event["prefix"].nickname)
             old_nickname = user.nickname
@@ -364,6 +345,7 @@ class LineHandler(object):
                 new_nickname=new_nickname, old_nickname=old_nickname)
 
     # something's mode has changed
+    @Utils.hook("raw.mode")
     def mode(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][0]
@@ -397,6 +379,7 @@ class LineHandler(object):
                 server=event["server"])
 
     # someone (maybe me!) has been invited somewhere
+    @Utils.hook("raw.invite")
     def invite(self, event):
         target_channel = event["last"]
         user = event["server"].get_user(event["prefix"].nickname)
@@ -406,6 +389,7 @@ class LineHandler(object):
             target_user=target_user)
 
     # we've received a message
+    @Utils.hook("raw.privmsg")
     def privmsg(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         message = event["arbitrary"] or ""
@@ -430,13 +414,15 @@ class LineHandler(object):
             channel = event["server"].get_channel(event["args"][0])
             self.events.on("received.message.channel").call(
                 user=user, channel=channel, **kwargs)
-            channel.buffer.add_line(user.nickname, message, action)
+            channel.buffer.add_line(user.nickname, message, action,
+                event["tags"])
         elif event["server"].is_own_nickname(target):
             self.events.on("received.message.private").call(
                 user=user, **kwargs)
-            user.buffer.add_line(user.nickname, message, action)
+            user.buffer.add_line(user.nickname, message, action, event["tags"])
 
     # we've received a notice
+    @Utils.hook("raw.notice")
     def notice(self, event):
         message = event["arbitrary"] or ""
         message_split = message.split(" ")
@@ -465,6 +451,7 @@ class LineHandler(object):
                     server=event["server"], tags=event["tags"])
 
     # IRCv3 TAGMSG, used to send tags without any other information
+    @Utils.hook("raw.tagmsg")
     def tagmsg(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][0]
@@ -478,6 +465,7 @@ class LineHandler(object):
                 user=user, tags=event["tags"], server=event["server"])
 
     # IRCv3 AWAY, used to notify us that a client we can see has changed /away
+    @Utils.hook("raw.away")
     def away(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         message = event["arbitrary"]
@@ -490,6 +478,7 @@ class LineHandler(object):
             self.events.on("received.away.off").call(user=user,
                 server=event["server"])
 
+    @Utils.hook("raw.batch")
     def batch(self, event):
         identifier = event["args"][0]
         modifier, identifier = identifier[0], identifier[1:]
@@ -502,6 +491,7 @@ class LineHandler(object):
                 self.handle(event["server"], line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
+    @Utils.hook("raw.chghost")
     def chghost(self, event):
         username = event["args"][0]
         hostname = event["args"][1]
@@ -513,6 +503,7 @@ class LineHandler(object):
         target.username = username
         target.hostname = hostname
 
+    @Utils.hook("raw.account")
     def account(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
 
@@ -529,11 +520,13 @@ class LineHandler(object):
                 server=event["server"])
 
     # response to a WHO command for user information
+    @Utils.hook("raw.352", default_event=True)
     def handle_352(self, event):
         user = event["server"].get_user(event["args"][5])
         user.username = event["args"][2]
         user.hostname = event["args"][3]
     # response to a WHOX command for user information, including account name
+    @Utils.hook("raw.354", default_event=True)
     def handle_354(self, event):
         if event["args"][1] == "111":
             username = event["args"][2]
@@ -550,6 +543,7 @@ class LineHandler(object):
                 user.identified_account = account
 
     # response to an empty mode command
+    @Utils.hook("raw.324", default_event=True)
     def handle_324(self, event):
         channel = event["server"].get_channel(event["args"][1])
         modes = event["args"][2]
@@ -559,15 +553,18 @@ class LineHandler(object):
                     channel.add_mode(mode)
 
     # channel creation unix timestamp
+    @Utils.hook("raw.329", default_event=True)
     def handle_329(self, event):
         channel = event["server"].get_channel(event["args"][1])
         channel.creation_timestamp = int(event["args"][2])
 
     # nickname already in use
+    @Utils.hook("raw.433", default_event=True)
     def handle_433(self, event):
         pass
 
     # we need a registered nickname for this channel
+    @Utils.hook("raw.477", default_event=True)
     def handle_477(self, event):
         channel_name = Utils.irc_lower(event["server"], event["args"][1])
         if channel_name in event["server"]:
@@ -576,6 +573,7 @@ class LineHandler(object):
                 server_id=event["server"].id)
 
     # someone's been kicked from a channel
+    @Utils.hook("raw.kick")
     def kick(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][1]

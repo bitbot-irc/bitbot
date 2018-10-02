@@ -1,10 +1,9 @@
 import os, select, sys, threading, time, traceback, uuid
-from . import EventManager, Exports, IRCLineHandler, IRCServer, Logging
-from . import ModuleManager
+from . import EventManager, Exports, IRCServer, Logging, ModuleManager
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
-            exports, line_handler, log, modules, timers):
+            exports, log, modules, timers):
         self.directory = directory
         self.args = args
         self.cache = cache
@@ -12,7 +11,6 @@ class Bot(object):
         self.database = database
         self._events = events
         self._exports = exports
-        self.line_handler = line_handler
         self.log = log
         self.modules = modules
         self.timers = timers
@@ -25,11 +23,11 @@ class Bot(object):
         self.poll = select.epoll()
 
     def add_server(self, server_id, connect=True):
-        (_, alias, hostname, port, password, ipv4, tls, nickname,
+        (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
             username, realname) = self.database.servers.get(server_id)
 
         new_server = IRCServer.Server(self, self._events, server_id, alias,
-            hostname, port, password, ipv4, tls, nickname, username,
+            hostname, port, password, ipv4, tls, bindhost, nickname, username,
             realname)
         if not new_server.get_setting("connect", True):
             return
@@ -37,6 +35,12 @@ class Bot(object):
         if connect and new_server.get_setting("connect", True):
             self.connect(new_server)
         return new_server
+
+    def get_server(self, id):
+        for server in self.servers.values():
+            if server.id == id:
+                return server
+
     def connect(self, server):
         try:
             server.connect()
@@ -129,11 +133,7 @@ class Bot(object):
                     if event & select.EPOLLIN:
                         lines = server.read()
                         for line in lines:
-                            if self.args.verbose:
-                                self.log.info("<%s | %s", [str(server), line])
-                            else:
-                                self.log.debug("%s (raw) | %s", [str(server),
-                                    line])
+                            self.log.debug("%s (raw) | %s", [str(server), line])
                             server.parse_line(line)
                     elif event & select.EPOLLOUT:
                         server._send()

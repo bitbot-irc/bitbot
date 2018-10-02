@@ -38,11 +38,11 @@ class Module(ModuleManager.BaseModule):
         user.identified_account_override = None
         user.identified_account_id_override = None
 
-    @Utils.hook("received.command.identify", private_only=True, min_args=1,
-        usage="[account] <password>")
+    @Utils.hook("received.command.identify", private_only=True, min_args=1)
     def identify(self, event):
         """
-        Identify yourself
+        :help: Identify yourself
+        :usage: [account] <password>
         """
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
@@ -80,11 +80,11 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("You are already identified")
 
-    @Utils.hook("received.command.register", private_only=True, min_args=1,
-        usage="<password>")
+    @Utils.hook("received.command.register", private_only=True, min_args=1)
     def register(self, event):
         """
-        Register yourself
+        :help: Register yourself
+        :usage: <password>
         """
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
@@ -104,10 +104,20 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("This nickname is already registered")
 
+    @Utils.hook("received.command.setpassword", authenticated=True, min_args=1)
+    def set_password(self, event):
+        """
+        :help: Change your password
+        :usage: <password>
+        """
+        hash, salt = self._make_hash(event["args"])
+        event["user"].set_setting("authentication", [hash, salt])
+        event["stdout"].write("Set your password")
+
     @Utils.hook("received.command.logout", private_only=True)
     def logout(self, event):
         """
-        Logout from your identified account
+        :help: Logout from your identified account
         """
         if event["user"].identified_account_override:
             self._logout(event["user"])
@@ -116,10 +126,12 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("You are not logged in")
 
     @Utils.hook("received.command.resetpassword", private_only=True,
-        min_args=2, usage="<nickname> <password>", permission="resetpassword")
+        min_args=2)
     def reset_password(self, event):
         """
-        Reset a given user's password
+        :help: Reset a given user's password
+        :usage: <nickname> <password>
+        :permission: resetpassword
         """
         target = event["server"].get_user(event["args_split"][0])
         password = " ".join(event["args_split"][1:])
@@ -135,7 +147,7 @@ class Module(ModuleManager.BaseModule):
 
     @Utils.hook("preprocess.command")
     def preprocess_command(self, event):
-        permission = event["hook"].kwargs.get("permission", None)
+        permission = event["hook"].get_kwarg("permission", None)
         authenticated = event["hook"].kwargs.get("authenticated", False)
 
         identity_mechanism = event["server"].get_setting("identity-mechanism",
@@ -166,7 +178,7 @@ class Module(ModuleManager.BaseModule):
     @Utils.hook("received.command.mypermissions", authenticated=True)
     def my_permissions(self, event):
         """
-        Show your permissions
+        :help: Show your permissions
         """
         permissions = event["user"].get_setting("permissions", [])
         event["stdout"].write("Your permissions: %s" % ", ".join(permissions))
@@ -177,11 +189,12 @@ class Module(ModuleManager.BaseModule):
         permissions = target.get_setting("permissions", [])
         return [target, registered, permissions]
 
-    @Utils.hook("received.command.givepermission", min_args=2,
-        permission="givepermission")
+    @Utils.hook("received.command.givepermission", min_args=2)
     def give_permission(self, event):
         """
-        Give a given permission to a given user
+        :help: Give a given permission to a given user
+        :usage: <nickname> <permission>
+        :permission: givepermission
         """
         permission = event["args_split"][1].lower()
         target, registered, permissions = self._get_user_details(
@@ -199,11 +212,12 @@ class Module(ModuleManager.BaseModule):
             target.set_setting("permissions", permissions)
             event["stdout"].write("Gave permission '%s' to %s" % (
                 permission, target.nickname))
-    @Utils.hook("received.command.removepermission", min_args=2,
-        permission="removepermission")
+    @Utils.hook("received.command.removepermission", min_args=2)
     def remove_permission(self, event):
         """
-        Remove a given permission from a given user
+        :help: Remove a given permission from a given user
+        :usage: <nickname> <permission>
+        :permission: removepermission
         """
         permission = event["args_split"][1].lower()
         target, registered, permissions = self._get_user_details(

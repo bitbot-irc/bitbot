@@ -1,7 +1,7 @@
 import uuid
-from . import IRCBuffer, Utils
+from . import IRCBuffer, IRCObject, Utils
 
-class User(object):
+class User(IRCObject.Object):
     def __init__(self, nickname, id, server, bot):
         self.server = server
         self.set_nickname(nickname)
@@ -22,6 +22,8 @@ class User(object):
 
     def __repr__(self):
         return "IRCUser.User(%s|%s)" % (self.server.name, self.name)
+    def __str__(self):
+        return self.nickname
 
     def get_id(self):
         return (self.identified_account_id_override or
@@ -54,8 +56,9 @@ class User(object):
         return self.bot.database.user_channel_settings.find_by_setting(
             self.get_id(), setting, default)
 
-    def send_message(self, message, prefix=None):
-        self.server.send_message(self.nickname, message, prefix=prefix)
+    def send_message(self, message, prefix=None, tags={}):
+        self.server.send_message(self.nickname, message, prefix=prefix,
+            tags=tags)
     def send_notice(self, message):
         self.server.send_notice(self.nickname, message)
     def send_ctcp_response(self, command, args):

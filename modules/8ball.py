@@ -29,10 +29,11 @@ CHOICES = [
 ]
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.8ball", min_args=1, usage="<question>")
+    @Utils.hook("received.command.8ball", min_args=1)
     def decide(selfs, event):
         """
-        Ask the mystic 8ball a question!
+        :help: Ask the mystic 8ball a question!
+        :usage: <question>
         """
         event["stdout"].write("You shake the magic ball... it "
                               "says " + Utils.bold(random.choice(CHOICES)))

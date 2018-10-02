@@ -112,10 +112,11 @@ class Module(ModuleManager.BaseModule):
     def reduced_activities(self, string): return [a for a in self.activities(string) if a in self.PASSENGER_ACTIVITIES]
 
     @Utils.hook("telegram.command.nrtrains")
-    @Utils.hook("received.command.nrtrains", min_args=1, usage="<crs_id>")
+    @Utils.hook("received.command.nrtrains", min_args=1)
     def trains(self, event):
         """
-        Get train/bus services for a station (Powered by NRE)
+        :help: Get train/bus services for a station (Powered by NRE)
+        :usage: <crs_id>
         """
 
         client = self.client
@@ -292,11 +293,12 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("%s%s: %s" % (station_summary, " departures calling at %s" % filter["inter"] if filter["inter"] else '', trains_string))
 
     @Utils.hook("telegram.command.nrservice")
-    @Utils.hook("received.command.nrservice", min_args=1, usage="<service_id>")
+    @Utils.hook("received.command.nrservice", min_args=1)
     def service(self, event):
         """
-        Get train service information for a UID, headcode or RID
-        (Powered by NRE)
+        :help: Get train service information for a UID, headcode or RID
+            (Powered by NRE)
+        :usage: <service_id>
         """
         client = self.client
         colours = self.COLOURS
@@ -487,10 +489,11 @@ class Module(ModuleManager.BaseModule):
                 ", ".join([s["summary"] for s in stations_filtered])))
 
     @Utils.hook("telegram.command.nrhead")
-    @Utils.hook("received.command.nrhead", min_args=1, usage="<headcode>")
+    @Utils.hook("received.command.nrhead", min_args=1)
     def head(self, event):
         """
-        Get information for a given headcode/UID/RID (Powered by NRE)
+        :help: Get information for a given headcode/UID/RID (Powered by NRE)
+        :usage: <headcode>
         """
         client = self.client
         service_id = event["args_split"][0]
@@ -508,10 +511,11 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write(", ".join(["h/%s r/%s u/%s rs/%s %s (%s) -> %s (%s)" % (a["trainid"], a["rid"], a["uid"], a["rsid"], a["originName"], a["originCrs"], a["destinationName"], a["destinationCrs"]) for a in services]))
 
     @Utils.hook("telegram.command.nrcode")
-    @Utils.hook("received.command.nrcode", min_args=1, usage="<code>")
+    @Utils.hook("received.command.nrcode", min_args=1)
     def service_code(self, event):
         """
-        Get the text for a given delay/cancellation code (Powered by NRE)
+        :help: Get the text for a given delay/cancellation code (Powered by NRE)
+        :usage: <code>
         """
 
         client = self.client

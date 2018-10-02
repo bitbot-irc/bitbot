@@ -39,7 +39,7 @@ class Module(object):
     @Utils.hook("received.command.coins")
     def coins(self, event):
         """
-        Show how many coins you have
+        :help: Show how many coins you have
         """
         if event["args_split"]:
             target = event["server"].get_user(event["args_split"][0])
@@ -49,11 +49,12 @@ class Module(object):
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             "{0:.2f}".format(coins), "" if coins == 1 else "s"))
 
-    @Utils.hook("received.command.resetcoins", permission="resetcoins",
-        min_args=1, usage="<target>")
+    @Utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
         """
-        Reset a user's coins to 0
+        :help: Reset a user's coins to 0
+        :usage: <target>
+        :permission: resetcoins
         """
         target = event["server"].get_user(event["args_split"][0])
         coins = decimal.Decimal(target.get_setting("coins", "0.0"))
@@ -64,11 +65,12 @@ class Module(object):
             target.del_setting("coins")
             event["stdout"].write("Reset coins for %s" % target.nickname)
 
-    @Utils.hook("received.command.givecoins", min_args=1,
-        usage="<nickname> <coins>", permission="givecoins")
+    @Utils.hook("received.command.givecoins", min_args=1)
     def give_coins(self, event):
         """
-        Give coins to a user
+        :help: Give coins to a user
+        :usage: <nickname> <coins>
+        :permission: givecoins
         """
         target = event["server"].get_user(event["args_split"][0])
         coins = event["args_split"][1]
@@ -86,7 +88,7 @@ class Module(object):
     @Utils.hook("received.command.richest")
     def richest(self, event):
         """
-        Show the top 10 richest users
+        :help: Show the top 10 richest users
         """
         all_coins = event["server"].get_all_user_settings("coins", [])
         all_coins = list(filter(lambda coin: decimal.Decimal(coin[1]),
@@ -107,7 +109,7 @@ class Module(object):
     @Utils.hook("received.command.redeemcoins")
     def redeem_coins(self, event):
         """
-        Redeem your free coins
+        :help: Redeem your free coins
         """
         user_coins = decimal.Decimal(event["user"].get_setting(
             "coins", "0.0"))
@@ -132,11 +134,11 @@ class Module(object):
             event["stderr"].write(
                 "You can only redeem coins when you have none")
 
-    @Utils.hook("received.command.flip", usage="heads|tails <coin amount>",
-        min_args=2, authenticated=True)
+    @Utils.hook("received.command.flip", min_args=2, authenticated=True)
     def flip(self, event):
         """
-        Bet on a coin flip
+        :help: Bet on a coin flip
+        :usage: heads|tails <coin amount>
         """
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1].lower()
@@ -176,11 +178,11 @@ class Module(object):
                 event["user"].nickname, side_name, coin_bet_str,
                 "" if coin_bet == 1 else "s"))
 
-    @Utils.hook("received.command.sendcoins", min_args=2,
-        usage="<nickname> <amount>", authenticated=True)
+    @Utils.hook("received.command.sendcoins", min_args=2, authenticated=True)
     def send(self, event):
         """
-        Send coins to another user
+        :help: Send coins to another user
+        :usage: <nickname> <amount>
         """
         if event["user"].get_id() == event["server"].get_user(event[
                 "args_split"][0]).get_id():
@@ -245,11 +247,11 @@ class Module(object):
                         str(coins))
         event["timer"].redo()
 
-    @Utils.hook("received.command.roulette", min_args=2,
-        usage="<type> <amount>", authenticated=True)
+    @Utils.hook("received.command.roulette", min_args=2, authenticated=True)
     def roulette(self, event):
         """
-        Spin a roulette wheel
+        :help: Spin a roulette wheel
+        :usage: <type> <amount>
         """
         bets = event["args_split"][0].lower().split(",")
         if "0" in bets:

@@ -5,11 +5,11 @@ from src import ModuleManager, Utils
 URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.synonym|antonym", min_args=1,
-        usage="<word> [type]")
+    @Utils.hook("received.command.synonym|antonym", min_args=1)
     def thesaurus(self, event):
         """
-        Get synonyms/antonyms for a provided phrase
+        :help: Get synonyms/antonyms for a provided phrase
+        :usage: <word> [type]
         """
         phrase = event["args_split"][0]
         page = Utils.get_url(URL_THESAURUS % (self.bot.config[

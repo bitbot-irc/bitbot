@@ -5,10 +5,11 @@ UPCITEMDB_URL = "https://api.upcitemdb.com/prod/trial/lookup"
 class Module(ModuleManager.BaseModule):
     _name = "UPC"
 
-    @Utils.hook("received.command.upc|ean|gtin", min_args=1, usage="<UPC|EAN>")
+    @Utils.hook("received.command.upc|ean|gtin", min_args=1)
     def upc(self, event):
         """
-        Look up a product by UPC, EAN or GTIN
+        :help: Look up a product by UPC, EAN or GTIN
+        :usage: <UPC|EAN|GTIN>
         """
         arg_len = len(event["args_split"][0])
         if not arg_len == 12 and not arg_len == 13:

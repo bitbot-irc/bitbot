@@ -1,11 +1,12 @@
 from src import ModuleManager, Utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.loadmodule", min_args=1,
-        permission="load-module", usage="<module-name>")
+    @Utils.hook("received.command.loadmodule", min_args=1)
     def load(self, event):
         """
-        Load a module
+        :help: Load a module
+        :usage: <module name>
+        :permission: load-module
         """
         name = event["args_split"][0].lower()
         if name in self.bot.modules.modules:
@@ -14,11 +15,12 @@ class Module(ModuleManager.BaseModule):
         self.bot.modules.load_module(self.bot, name)
         event["stdout"].write("Loaded '%s'" % name)
 
-    @Utils.hook("received.command.unloadmodule", min_args=1,
-        permission="unload-module", usage="<module-name>")
+    @Utils.hook("received.command.unloadmodule", min_args=1)
     def unload(self, event):
         """
-        Unload a module
+        :help: Unload a module
+        :usage: <module name>
+        :permission: unload-module
         """
         name = event["args_split"][0].lower()
         if not name in self.bot.modules.modules:
@@ -31,11 +33,12 @@ class Module(ModuleManager.BaseModule):
         self.bot.modules.unload_module(name)
         self.bot.modules.load_module(self.bot, name)
 
-    @Utils.hook("received.command.reloadmodule", min_args=1,
-        permission="reload-module", usage="<module-name>")
+    @Utils.hook("received.command.reloadmodule", min_args=1)
     def reload(self, event):
         """
-        Reload a module
+        :help: Reload a module
+        :usage: <module name>
+        :permission: reload-module
         """
         name = event["args_split"][0].lower()
         try:
@@ -53,10 +56,11 @@ class Module(ModuleManager.BaseModule):
             return
         event["stdout"].write("Reloaded '%s'" % name)
 
-    @Utils.hook("received.command.reloadallmodules", permission="reload-module")
+    @Utils.hook("received.command.reloadallmodules")
     def reload_all(self, event):
         """
-        Reload all modules
+        :help: Reload all modules
+        :permission: reload-all-modules
         """
         reloaded = []
         failed = []
@@ -78,11 +82,12 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("Reloaded %d modules" % len(reloaded))
 
-    @Utils.hook("received.command.enablemodule", min_args=1,
-        permission="enable-module",  usage="<module-name>")
+    @Utils.hook("received.command.enablemodule", min_args=1)
     def enable(self, event):
         """
-        Remove a module from the module blacklist
+        :help: Remove a module from the module blacklist
+        :usage: <module name>
+        :permission: enable-module
         """
         name = event["args_split"][0].lower()
         blacklist = self.bot.get_setting("module-blacklist", [])
@@ -94,11 +99,12 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("Module '%s' has been enabled and can now "
             "be loaded" % name)
 
-    @Utils.hook("received.command.disablemodule", min_args=1,
-        permission="disable-module", usage="<module-name>")
+    @Utils.hook("received.command.disablemodule", min_args=1)
     def disable(self, event):
         """
-        Add a module to the module blacklist
+        :help: Add a module to the module blacklist
+        :usage: <module name>
+        :permission: disable-module
         """
         name = event["args_split"][0].lower()
         and_unloaded = ""
