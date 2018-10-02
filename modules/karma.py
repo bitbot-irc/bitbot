@@ -39,19 +39,19 @@ class Module(ModuleManager.BaseModule):
                 setting_target = event["server"]
                 if nickname_only:
                     user = event["server"].get_user(target)
-                    setting = target
+                    setting = "karma"
                     setting_target = user
                     if not event["channel"].has_user(user):
                         return
 
                 positive = match.group(2)[0] == "+"
-                karma = event["server"].get_setting(setting, 0)
+                karma = setting_target.get_setting(setting, 0)
                 karma += 1 if positive else -1
 
                 if karma:
-                    event["server"].set_setting(setting, karma)
+                    setting_target.set_setting(setting, karma)
                 else:
-                    event["server"].del_setting(setting)
+                    setting_target.del_setting(setting)
 
                 if verbose:
                     self.events.on("send.stdout").call(
