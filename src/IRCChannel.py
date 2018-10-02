@@ -117,6 +117,8 @@ class Channel(IRCObject.Object):
         self.server.send_mode(self.name, "-b", hostmask)
     def send_topic(self, topic):
         self.server.send_topic(self.name, topic)
+    def send_part(reason=None):
+        self.server.send_part(self.name, reason)
 
     def mode_or_above(self, user, mode):
         mode_orders = list(self.server.mode_prefixes.values())

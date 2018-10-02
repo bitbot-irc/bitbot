@@ -237,3 +237,11 @@ class Module(ModuleManager.BaseModule):
                             event["user"].username, event["user"].hostname))
                     event["channel"].send_kick(event["user"].nickname,
                         "highlight spam detected")
+
+    @Utils.hook("received.command.leave", channel_only=True)
+    def leave(self, event):
+        """
+        :help: Part me from the current channel
+        :require_mode: o
+        """
+        event["target"].send_part()
