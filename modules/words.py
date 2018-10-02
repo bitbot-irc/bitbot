@@ -1,5 +1,5 @@
 import time
-from src import ModuleManager, Utils
+from src import EventManager, ModuleManager, Utils
 
 class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
@@ -23,10 +23,12 @@ class Module(ModuleManager.BaseModule):
                 word_count = user.get_setting(setting, 0)
                 word_count += 1
                 user.set_setting(setting, word_count)
-    @Utils.hook("received.message.channel")
+    @Utils.hook("received.message.channel",
+        priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         self._channel_message(event["user"], event)
-    @Utils.hook("self.message.channel")
+    @Utils.hook("self.message.channel",
+        priority=EventManager.PRIORITY_MONITOR)
     def self_channel_message(self, event):
         self._channel_message(event["server"].get_user(
             event["server"].nickname), event)
