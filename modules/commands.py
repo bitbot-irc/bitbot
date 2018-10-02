@@ -260,13 +260,15 @@ class Module(ModuleManager.BaseModule):
 
     @Utils.hook("send.stdout")
     def send_stdout(self, event):
-        stdout = StdOut(event["module_name"], event["target"])
+        stdout = StdOut(event["module_name"], event["target"],
+            event.get("msgid", None))
         stdout.write(event["message"]).send()
         if stdout.has_text():
             event["target"].last_stdout = stdout
     @Utils.hook("send.stderr")
     def send_stderr(self, event):
-        stderr = StdErr(event["module_name"], event["target"])
+        stderr = StdErr(event["module_name"], event["target"],
+            event.get("msgid", None))
         stderr.write(event["message"]).send()
         if stderr.has_text():
             event["target"].last_stderr = stderr
