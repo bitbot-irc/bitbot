@@ -337,14 +337,9 @@ def parse_docstring(s):
 
             if line:
                 if line[0] == ":":
-                    line_split = line.split(": ", 1)
-
-                    value = None
-                    if len(line_split) > 1:
-                        value = line_split[1]
-
-                    last_item = line_split[0][1:].lower()
-                    items[last_item] = value
+                    key, _, value = line.partition(": ")
+                    last_item = value
+                    items[value] = value
                 else:
                     if last_item:
                         items[last_item] += " %s" % line
