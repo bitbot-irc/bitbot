@@ -51,7 +51,7 @@ class StdOut(Out):
         return Utils.color(Utils.bold(self.module_name), Utils.COLOR_GREEN)
 class StdErr(Out):
     def prefix(self):
-        return Utils.color(Utils.bold(self.module_name), Utils.COLOR_RED)
+        return Utils.color(Utils.bold("!"+self.module_name), Utils.COLOR_RED)
 
 @Utils.export("channelset", {"setting": "command-prefix",
     "help": "Set the command prefix used in this channel"})
