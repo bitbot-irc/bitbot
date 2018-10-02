@@ -107,6 +107,8 @@ class Channel(IRCObject.Object):
 
     def send_message(self, text, prefix=None, tags={}):
         self.server.send_message(self.name, text, prefix=prefix, tags=tags)
+    def send_notice(self, text, prefix=None, tags={}):
+        self.server.send_notice(self.name, text, prefix=prefix, tags=tags)
     def send_mode(self, mode=None, target=None):
         self.server.send_mode(self.name, mode, target)
     def send_kick(self, target, reason=None):

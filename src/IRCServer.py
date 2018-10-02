@@ -351,7 +351,7 @@ class Server(IRCObject.Object):
     def send_quit(self, reason="Leaving"):
         self.send("QUIT :%s" % reason)
 
-    def send_message(self, target, message, prefix=None, tags={}):
+    def _tag_str(self, tags):
         tag_str = ""
         for tag, value in tags.items():
             if tag_str:
@@ -361,9 +361,12 @@ class Server(IRCObject.Object):
                 tag_str += "=%s" % value
         if tag_str:
             tag_str = "@%s " % tag_str
+        return tag_str
 
+    def send_message(self, target, message, prefix=None, tags={}):
         full_message = message if not prefix else prefix+message
-        self.send("%sPRIVMSG %s :%s" % (tag_str, target, full_message))
+        self.send("%sPRIVMSG %s :%s" % (self._tag_str(tags), target,
+            full_message))
 
         action = full_message.startswith("\01ACTION "
             ) and full_message.endswith("\01")
@@ -374,19 +377,27 @@ class Server(IRCObject.Object):
         full_message_split = full_message.split()
         if self.has_channel(target):
             channel = self.get_channel(target)
-            channel.buffer.add_line(None, message, action, tags, True)
+            channel.buffer.add_message(None, message, action, tags, True)
             self.events.on("self.message.channel").call(
                 message=full_message, message_split=full_message_split,
                 channel=channel, action=action, server=self)
         else:
             user = self.get_user(target)
-            user.buffer.add_line(None, message, action, tags, True)
+            user.buffer.add_message(None, message, action, tags, True)
             self.events.on("self.message.private").call(
                 message=full_message, message_split=full_message_split,
                     user=user, action=action, server=self)
 
-    def send_notice(self, target, message):
-        self.send("NOTICE %s :%s" % (target, message))
+    def send_notice(self, target, message, prefix=None, tags={}):
+        full_message = message if not prefix else prefix+message
+        self.send("%sNOTICE %s :%s" % (self._tag_str(tags), target,
+            full_message))
+        if self.has_channel(target):
+            self.get_channel(target).buffer.add_notice(None, message, tags,
+                True)
+        else:
+            self.get_user(target).buffer.add_notice(None, message, tags,
+                True)
 
     def send_mode(self, target, mode=None, args=None):
         self.send("MODE %s%s%s" % (target, "" if mode == None else " %s" % mode,

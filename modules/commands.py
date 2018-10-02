@@ -4,12 +4,16 @@ from src import EventManager, ModuleManager, Utils
 STR_MORE = "%s (more...)" % Utils.FONT_RESET
 STR_CONTINUED = "(...continued) "
 
+COMMAND_METHOD = "command-method"
+COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
+
 OUT_CUTOFF = 400
 
 REGEX_CUTOFF = re.compile("^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
 
 class Out(object):
-    def __init__(self, module_name, target, msgid):
+    def __init__(self, server, module_name, target, msgid):
+        self.server = server
         self.module_name = module_name
         self.target = target
         self._text = ""
@@ -37,8 +41,16 @@ class Out(object):
             if self._msgid:
                 tags["+draft/reply"] = self._msgid
 
-            self.target.send_message(text,
-                prefix=Utils.FONT_RESET + "[%s] " % self.prefix(), tags=tags)
+            prefix = Utils.FONT_RESET + "[%s] " % self.prefix()
+            method = self._get_method()
+            if method == "PRIVMSG":
+                self.target.send_message(text, prefix=prefix, tags=tags)
+            elif method == "NOTICE":
+                self.target.send_notice(text, prefix=prefix, tags=tags)
+
+    def _get_method(self):
+        return self.target.get_setting(COMMAND_METHOD,
+            self.server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
 
     def set_prefix(self, prefix):
         self.module_name = prefix
@@ -53,12 +65,22 @@ class StdErr(Out):
     def prefix(self):
         return Utils.color(Utils.bold("!"+self.module_name), Utils.COLOR_RED)
 
+def _command_method_validate(s):
+    if s.upper() in COMMAND_METHODS:
+        return s.upper()
+
 @Utils.export("channelset", {"setting": "command-prefix",
     "help": "Set the command prefix used in this channel"})
 @Utils.export("serverset", {"setting": "command-prefix",
     "help": "Set the command prefix used on this server"})
 @Utils.export("serverset", {"setting": "identity-mechanism",
     "help": "Set the identity mechanism for this server"})
+@Utils.export("serverset", {"setting": "command-method",
+    "help": "Set the method used to respond to commands",
+    "validate": _command_method_validate})
+@Utils.export("channelset", {"setting": "command-method",
+    "help": "Set the method used to respond to commands",
+    "validate": _command_method_validate})
 class Module(ModuleManager.BaseModule):
     @Utils.hook("new.user|channel")
     def new(self, event):
@@ -105,8 +127,8 @@ class Module(ModuleManager.BaseModule):
                 module_name = hook.function.__self__._name
 
             msgid = event["tags"].get("draft/msgid", None)
-            stdout = StdOut(module_name, target, msgid)
-            stderr = StdErr(module_name, target, msgid)
+            stdout = StdOut(event["server"], module_name, target, msgid)
+            stderr = StdErr(event["server"], module_name, target, msgid)
 
             returns = self.events.on("preprocess.command").call_unsafe(
                 hook=hook, user=event["user"], server=event["server"],
@@ -260,15 +282,15 @@ class Module(ModuleManager.BaseModule):
 
     @Utils.hook("send.stdout")
     def send_stdout(self, event):
-        stdout = StdOut(event["module_name"], event["target"],
-            event.get("msgid", None))
+        stdout = StdOut(event["server"], event["module_name"],
+            event["target"], event.get("msgid", None))
         stdout.write(event["message"]).send()
         if stdout.has_text():
             event["target"].last_stdout = stdout
     @Utils.hook("send.stderr")
     def send_stderr(self, event):
-        stderr = StdErr(event["module_name"], event["target"],
-            event.get("msgid", None))
+        stderr = StdErr(event["server"], event["module_name"],
+            event["target"], event.get("msgid", None))
         stderr.write(event["message"]).send()
         if stderr.has_text():
             event["target"].last_stderr = stderr
