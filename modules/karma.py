@@ -41,10 +41,6 @@ class Module(ModuleManager.BaseModule):
                     setting = target
                     setting_target = user
                     if not event["channel"].has_user(user):
-                        if verbose:
-                            self.events.on("send.stderr").call(
-                                module_name="Karma", target=event["channel"],
-                                message="User not found")
                         return
 
                 positive = match.group(2)[0] == "+"
