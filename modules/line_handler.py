@@ -23,55 +23,41 @@ class Module(ModuleManager.BaseModule):
 
         if line[0] == "@":
             tags_prefix, line = line[1:].split(" ", 1)
-            for tag in tags_prefix.split(";"):
-                if tag:
-                    tag_split = tag.split("=", 1)
-                    tags[tag_split[0]] = "".join(tag_split[1:])
+            for tag in filter(None, tags_prefix.split(";")):
+                tag, _, value = tag.partition("=")
+                tags[tag] = value
+
         if "batch" in tags and tags["batch"] in event["server"].batches:
             server.batches[tag["batch"]].append(line)
             return
 
-        arbitrary = None
-        if " :" in line:
-            line, arbitrary = line.split(" :", 1)
-            if line.endswith(" "):
-                line = line[:-1]
-        if line[0] == ":":
-            prefix, command = line[1:].split(" ", 1)
-            prefix = Utils.seperate_hostmask(prefix)
-            if " " in command:
-                command, line = command.split(" ", 1)
-            else:
-                line = ""
-        else:
-            command = line
-            if " " in line:
-                command, line = line.split(" ", 1)
-        args = line.split(" ")
+        line, _, arbitrary = line.partition(" :")
+        arbitrary = arbitrary or None
 
-        hooks = self.events.on("raw").on(command).get_hooks()
-        default_event = False
-        for hook in hooks:
-            if hook.kwargs.get("default_event", False):
-                default_event = True
-                break
+        if line[0] == ":":
+            prefix, line = line[1:].split(" ", 1)
+            prefix = Utils.seperate_hostmask(prefix)
+        command, _, line = line.partition(" ")
+
+        args = line.split(" ")
         last = arbitrary or args[-1]
 
-        #server, prefix, command, args, arbitrary
-        self.events.on("raw").on(command).call(server=event["server"],
-            last=last, prefix=prefix, args=args, arbitrary=arbitrary,
-            tags=tags)
+        hooks = self.events.on("raw").on(command).get_hooks()
+        default_events = []
+        for hook in hooks:
+            default_events.append(hook.kwargs.get("default_event", False))
+        default_event = any(default_events)
+
+        kwargs = {"last": last, "args": args, "arbitrary": arbitrary,
+            "tags": tags, "last": last, "server": event["server"],
+            "prefix": prefix}
+
+        self.events.on("raw").on(command).call(**kwargs)
         if default_event or not hooks:
             if command.isdigit():
-                self.events.on("received.numeric").on(command).call(
-                    line=original_line, server=event["server"], tags=tags,
-                    last=last, line_split=original_line.split(" "),
-                    number=command)
+                self.events.on("received.numeric").on(command).call(**kwargs)
             else:
-                self.events.on("received").on(command).call(
-                    line=original_line, line_split=original_line.split(" "),
-                    command=command, server=event["server"], tags=tags,
-                    last=last)
+                self.events.on("received").on(command).call(**kwargs)
 
     # ping from the server
     @Utils.hook("raw.ping")
