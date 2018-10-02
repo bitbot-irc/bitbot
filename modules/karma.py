@@ -27,7 +27,8 @@ class Module(ModuleManager.BaseModule):
             if not event["user"].last_karma or (time.time()-event["user"
                     ].last_karma) >= KARMA_DELAY_SECONDS:
                 target = match.group(1).strip()
-                if target == event["user"].name:
+                if Utils.irc_lower(event["server"], target
+                        ) == event["user"].name:
                     if verbose:
                         self.events.on("send.stderr").call(
                             module_name="Karma", target=event["channel"],
