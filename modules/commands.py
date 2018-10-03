@@ -147,12 +147,13 @@ class Module(ModuleManager.BaseModule):
 
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
-                if "usage" in hook.kwargs:
+                usage = self._get_usage(hook)
+                if usage:
                     stderr.write("Not enough arguments, usage: %s %s" % (
-                        command, hook.kwargs["usage"])).send()
+                        command, usage)).send()
                 else:
-                    stderr.write("Not enough arguments (minimum: %d)" % min_args
-                       ).send()
+                    stderr.write("Not enough arguments (minimum: %d)" %
+                        min_args).send()
             else:
                 args = " ".join(args_split)
                 server = event["server"]
