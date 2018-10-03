@@ -140,7 +140,11 @@ class Module(ModuleManager.BaseModule):
                     stderr.write(returned).send()
                     target.buffer.skip_next()
                     return
+
             args_split = event["message_split"][args_index:]
+            if hook.kwargs.get("remove_empty", True):
+                args_split = list(filter(None, args_split))
+
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
                 if "usage" in hook.kwargs:

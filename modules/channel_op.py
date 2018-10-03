@@ -202,7 +202,8 @@ class Module(ModuleManager.BaseModule):
             "args_split"][0]
         event["target"].send_mode("-v", target)
 
-    @utils.hook("received.command.topic", min_args=1, channel_only=True)
+    @utils.hook("received.command.topic", min_args=1, channel_only=True,
+        remove_empty=False)
     def topic(self, event):
         """
         :help: Set the topic in the current channel
@@ -210,7 +211,8 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         """
         event["target"].send_topic(event["args"])
-    @utils.hook("received.command.tappend", min_args=1, channel_only=True)
+    @utils.hook("received.command.tappend", min_args=1, channel_only=True,
+        remove_empty=False)
     def tappend(self, event):
         """
         :help: Append to the topic in the current channel
