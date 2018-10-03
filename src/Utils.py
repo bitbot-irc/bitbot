@@ -342,3 +342,37 @@ def parse_docstring(s):
                             description += " "
                         description += line
     return Docstring(description, items)
+
+class IRCLine(object):
+    def __init__(self, tags, prefix, command, args, arbitrary, last, server):
+        self.tags = tags
+        self.prefix = prefix
+        self.command = command
+        self.args = args
+        self.arbitrary = arbitrary
+        self.last = last
+        self.server = server
+
+def parse_line(server, line):
+    tags = {}
+    prefix = None
+    command = None
+
+    if line[0] == "@":
+        tags_prefix, line = line[1:].split(" ", 1)
+        for tag in filter(None, tags_prefix.split(";")):
+            tag, _, value = tag.partition("=")
+            tags[tag] = value
+
+    line, _, arbitrary = line.partition(" :")
+    arbitrary = arbitrary or None
+
+    if line[0] == ":":
+        prefix, line = line[1:].split(" ", 1)
+        prefix = seperate_hostmask(prefix)
+    command, _, line = line.partition(" ")
+
+    args = line.split(" ")
+    last = arbitrary or args[-1]
+
+    return IRCLine(tags, prefix, command, args, arbitrary, last, server)

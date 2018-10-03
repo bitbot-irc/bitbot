@@ -14,50 +14,39 @@ CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "batch", "draft/labeled-response"}
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("raw")
-    def handle(self, event):
-        line = original_line = event["line"]
-        tags = {}
-        prefix = None
-        command = None
-
-        if line[0] == "@":
-            tags_prefix, line = line[1:].split(" ", 1)
-            for tag in filter(None, tags_prefix.split(";")):
-                tag, _, value = tag.partition("=")
-                tags[tag] = value
-
-        if "batch" in tags and tags["batch"] in event["server"].batches:
-            server.batches[tag["batch"]].append(line)
-            return
-
-        line, _, arbitrary = line.partition(" :")
-        arbitrary = arbitrary or None
-
-        if line[0] == ":":
-            prefix, line = line[1:].split(" ", 1)
-            prefix = Utils.seperate_hostmask(prefix)
-        command, _, line = line.partition(" ")
-
-        args = line.split(" ")
-        last = arbitrary or args[-1]
-
-        hooks = self.events.on("raw").on(command).get_hooks()
+    def _handle(self, line):
+        hooks = self.events.on("raw").on(line.command).get_hooks()
         default_events = []
         for hook in hooks:
             default_events.append(hook.kwargs.get("default_event", False))
         default_event = any(default_events)
 
-        kwargs = {"last": last, "args": args, "arbitrary": arbitrary,
-            "tags": tags, "last": last, "server": event["server"],
-            "prefix": prefix}
+        kwargs = {"args": line.args, "arbitrary": line.arbitrary,
+            "tags": line.tags, "last": line.last,
+            "server": line.server,  "prefix": line.prefix}
 
-        self.events.on("raw").on(command).call(**kwargs)
+        self.events.on("raw").on(line.command).call(**kwargs)
         if default_event or not hooks:
             if command.isdigit():
-                self.events.on("received.numeric").on(command).call(**kwargs)
+                self.events.on("received.numeric").on(line.command).call(
+                    **kwargs)
             else:
-                self.events.on("received").on(command).call(**kwargs)
+                self.events.on("received").on(line.command).call(**kwargs)
+    @Utils.hook("raw")
+    def handle_raw(self, event):
+        line = Utils.parse_line(event["server"], event["line"])
+        if "batch" in line.tags and line.tags["batch"] in event[
+                "server"].batches:
+            server.batches[tag["batch"]].append(line)
+        else:
+            self._handle(line)
+
+    @Utils.hook("preprocess.send")
+    def handle_send(self, event):
+        line = Utils.parse_line(event["server"], event["line"])
+        self.events.on("send").on(line.command).call(
+            args=line.args, arbitrary=line.arbitrary, tags=line.tags,
+            last=line.last, server=line.server)
 
     # ping from the server
     @Utils.hook("raw.ping")
