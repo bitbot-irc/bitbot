@@ -40,8 +40,10 @@ class Server(IRCObject.Object):
         self.channels = {}
 
         self.own_modes = {}
-        self.mode_prefixes = collections.OrderedDict(
-            {"@": "o", "+": "v"})
+        self.prefix_symbols = collections.OrderedDict(
+            (("@", "o"), ("+", "v")))
+        self.prefix_modes = collections.OrderedDict(
+            (("o", "@"), ("v", "+")))
         self.channel_modes = []
         self.channel_types = ["#"]
         self.case_mapping = "rfc1459"
@@ -260,8 +262,8 @@ class Server(IRCObject.Object):
         if len(encoded) > 450:
             encoded = encoded[:450]
         self.buffered_lines.append(encoded + b"\r\n")
-
         self.bot.log.debug(">%s | %s", [str(self), encoded.decode("utf8")])
+
     def _send(self):
         if not len(self.write_buffer):
             self.write_buffer = self.buffered_lines.pop(0)

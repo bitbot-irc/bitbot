@@ -70,12 +70,13 @@ class Module(ModuleManager.BaseModule):
 
         match = re.search(RE_PREFIXES, isupport_line)
         if match:
-            event["server"].mode_prefixes.clear()
+            event["server"].prefix_symbols.clear()
+            event["server"].prefix_modes.clear()
             modes = match.group(1)
-            prefixes = match.group(2)
-            for i, prefix in enumerate(prefixes):
-                if i < len(modes):
-                    event["server"].mode_prefixes[prefix] = modes[i]
+            symbols = match.group(2)
+            for symbol, mode in zip(symbols, modes):
+                event["server"].prefix_symbols[symbol] = mode
+                event["server"].prefix_modes[mode] = symbol
         match = re.search(RE_CHANMODES, isupport_line)
         if match:
             event["server"].channel_modes = list(match.group(4))
@@ -145,8 +146,8 @@ class Module(ModuleManager.BaseModule):
         for nickname in nicknames:
             modes = set([])
 
-            while nickname[0] in event["server"].mode_prefixes:
-                modes.add(event["server"].mode_prefixes[nickname[0]])
+            while nickname[0] in event["server"].prefix_symbols:
+                modes.add(event["server"].prefix_symbols[nickname[0]])
                 nickname = nickname[1:]
 
             if "userhost-in-names" in event["server"].capabilities:
@@ -336,8 +337,7 @@ class Module(ModuleManager.BaseModule):
                 for mode in chunk[1:]:
                     if mode in event["server"].channel_modes:
                         channel.change_mode(remove, mode)
-                    elif mode in event["server"].mode_prefixes.values(
-                            ) and len(args):
+                    elif mode in event["server"].prefix_modes and len(args):
                         channel.change_mode(remove, mode, args.pop(0))
                     else:
                         args.pop(0)

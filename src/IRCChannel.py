@@ -36,8 +36,7 @@ class Channel(IRCObject.Object):
     def remove_user(self, user):
         self.users.remove(user)
         for mode in list(self.modes.keys()):
-            if mode in self.server.mode_prefixes.values(
-                    ) and user in self.modes[mode]:
+            if mode in self.server.prefix_modes and user in self.modes[mode]:
                 self.modes[mode].discard(user)
                 if not len(self.modes[mode]):
                     del self.modes[mode]
@@ -48,7 +47,7 @@ class Channel(IRCObject.Object):
         if not mode in self.modes:
             self.modes[mode] = set([])
         if arg:
-            if mode in self.server.mode_prefixes.values():
+            if mode in self.server.prefix_modes:
                 user = self.server.get_user(arg)
                 if user:
                     self.modes[mode].add(user)
@@ -58,7 +57,7 @@ class Channel(IRCObject.Object):
         if not arg:
             del self.modes[mode]
         else:
-            if mode in self.server.mode_prefixes.values():
+            if mode in self.server.prefix_modes:
                 user = self.server.get_user(arg)
                 if user:
                     self.modes[mode].discard(user)
@@ -123,7 +122,7 @@ class Channel(IRCObject.Object):
         self.server.send_part(self.name, reason)
 
     def mode_or_above(self, user, mode):
-        mode_orders = list(self.server.mode_prefixes.values())
+        mode_orders = list(self.server.prefix_modes)
         mode_index = mode_orders.index(mode)
         for mode in mode_orders[:mode_index+1]:
             if user in self.modes.get(mode, []):
