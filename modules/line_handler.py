@@ -464,7 +464,7 @@ class Module(ModuleManager.BaseModule):
             lines = event["server"].batches[identifier]
             del event["server"].batches[identifier]
             for line in lines:
-                self.handle(event["server"], line)
+                self._handle(line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
     @Utils.hook("raw.chghost")
