@@ -29,6 +29,7 @@ class Module(ModuleManager.BaseModule):
             word = event["args"]
         else:
             word = event["target"].buffer.get(from_self=False)
+        word = word.replace(" ", "+")
 
         page = self._get_definition(word)
         if page:
