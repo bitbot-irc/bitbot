@@ -160,9 +160,9 @@ def parse_docstring(s):
 
             if line:
                 if line[0] == ":":
-                    key, _, value = line.partition(": ")
-                    last_item = value
-                    items[value] = value
+                    key, _, value = line[1:].partition(": ")
+                    last_item = key
+                    items[key] = value
                 else:
                     if last_item:
                         items[last_item] += " %s" % line
