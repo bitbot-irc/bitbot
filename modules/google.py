@@ -32,10 +32,11 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("No phrase provided")
 
-    @utils.hook("received.command.suggest", usage="[phrase]")
+    @utils.hook("received.command.suggest")
     def suggest(self, event):
         """
-        Get suggested phrases from Google
+        :help: Get suggested phrases from Google
+        :usage: [phrase]
         """
         phrase = event["args"] or event["target"].buffer.get()
         if phrase:
