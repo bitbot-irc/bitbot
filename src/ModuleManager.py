@@ -1,5 +1,5 @@
 import gc, glob, imp, io, inspect, os, sys, uuid
-from src import Utils
+from . import utils
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
 BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
@@ -54,7 +54,7 @@ class ModuleManager(object):
     def _load_module(self, bot, name):
         path = self._module_path(name)
 
-        for hashflag, value in Utils.get_hashflags(path):
+        for hashflag, value in utils.get_hashflags(path):
             if hashflag == "ignore":
                # nope, ignore this module.
                raise ModuleNotLoadedWarning("module ignored")
@@ -92,7 +92,7 @@ class ModuleManager(object):
             attribute = getattr(module_object, attribute_name)
             for hook in self._get_magic(attribute, BITBOT_HOOKS_MAGIC, []):
                 context_events.on(hook["event"]).hook(attribute,
-                    docstring=attribute.__doc__, **hook["kwargs"])
+                    **hook["kwargs"])
         for export in self._get_magic(module_object, BITBOT_EXPORTS_MAGIC, []):
             context_exports.add(export["setting"], export["value"])
 

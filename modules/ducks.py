@@ -1,29 +1,29 @@
 import random
 from operator import itemgetter
 from time import time
-from src import EventManager, Utils
+from src import EventManager, utils
 
 DUCK_TAIL = "・゜゜・。。・゜゜"
 DUCK_HEAD = ["\_o< ", "\_O< ", "\_0< ", "\_\u00f6< ", "\_\u00f8< ",
              "\_\u00f3< "]
 DUCK_MESSAGE = ["QUACK!", "FLAP FLAP!", "quack!", "squawk!"]
 DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!", "HONK!",
-                     Utils.underline("I AM THE METAL DUCK")]
+    utils.irc.underline("I AM THE METAL DUCK")]
 
 DUCK_MINIMUM_MESSAGES = 10
 DUCK_MINIMUM_UNIQUE = 3
 
-@Utils.export("channelset", {"setting": "ducks-enabled",
-    "help": "Toggle ducks!", "validate": Utils.bool_or_none})
-@Utils.export("channelset", {"setting": "ducks-kick",
+@utils.export("channelset", {"setting": "ducks-enabled",
+    "help": "Toggle ducks!", "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "ducks-kick",
     "help": "Should the bot kick if there's no duck?",
-    "validate": Utils.bool_or_none})
-@Utils.export("channelset", {"setting": "ducks-min-unique",
+    "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "ducks-min-unique",
     "help": "Minimum unique users required to talk before a duck spawns.",
-     "validate": Utils.int_or_none})
-@Utils.export("channelset", {"setting": "ducks-min-messages",
+     "validate": utils.int_or_none})
+@utils.export("channelset", {"setting": "ducks-min-messages",
     "help": "Minimum messages between ducks spawning.",
-    "validate": Utils.int_or_none})
+    "validate": utils.int_or_none})
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
@@ -32,7 +32,7 @@ class Module(object):
             for channel in server.channels.values():
                 self.bootstrap(channel)
 
-    @Utils.hook("new.channel")
+    @utils.hook("new.channel")
     def new_channel(self, event):
         self.bootstrap(event["channel"])
 
@@ -116,7 +116,7 @@ class Module(object):
         channel.send_kick(target,
                           "You tried shooting a non-existent duck. Creepy!")
 
-    @Utils.hook("received.command.decoy")
+    @utils.hook("received.command.decoy")
     def duck_decoy(self, event):
         """
         :help: Prepare a decoy duck
@@ -175,7 +175,8 @@ class Module(object):
         if random.randint(1, 20) == 1:
             # rare!
             message = random.choice(DUCK_MESSAGE_RARE)
-            duck = Utils.color(Utils.bold(duck + message), Utils.COLOR_RED)
+            duck = utils.irc.color(utils.irc.bold(duck + message),
+                utils.irc.COLOR_RED)
         else:
             # not rare!
             duck += random.choice(DUCK_MESSAGE)
@@ -191,7 +192,7 @@ class Module(object):
         else:
             game["duck_spawned"] = 1
 
-    @Utils.hook("received.message.channel",
+    @utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         if not event["channel"].get_setting("ducks-enabled", False):
@@ -222,7 +223,7 @@ class Module(object):
         if self.should_generate_duck(event) == True:
             self.show_duck(event)
 
-    @Utils.hook("received.command.bef")
+    @utils.hook("received.command.bef")
     def befriend(self, event):
         """
         :help: Befriend a duck
@@ -252,15 +253,15 @@ class Module(object):
         channel.set_user_setting(uid, "ducks-befriended", total_befriended)
 
         msg = "Aww! %s befriended a duck! You've befriended %s ducks in %s!" \
-              % (Utils.bold(nick), Utils.bold(total_befriended),
-                 Utils.bold(channel.name))
+              % (utils.irc.bold(nick), utils.irc.bold(total_befriended),
+                 utils.irc.bold(channel.name))
 
         event["stdout"].write(msg)
 
         self.clear_ducks(channel)
         event.eat()
 
-    @Utils.hook("received.command.bang")
+    @utils.hook("received.command.bang")
     def shoot(self, event):
         """
         :help: Shoot a duck
@@ -291,15 +292,15 @@ class Module(object):
         channel.set_user_setting(uid, "ducks-shot", total_shot)
 
         msg = "Pow! %s shot a duck! You've shot %s ducks in %s!" \
-              % (Utils.bold(nick), Utils.bold(total_shot),
-                 Utils.bold(channel.name))
+              % (utils.irc.bold(nick), utils.irc.bold(total_shot),
+                 utils.irc.bold(channel.name))
 
         event["stdout"].write(msg)
 
         self.clear_ducks(channel)
         event.eat()
 
-    @Utils.hook("received.command.duckstats")
+    @utils.hook("received.command.duckstats")
     def duck_stats(self, event):
         """
         :help: Show your duck stats
@@ -338,13 +339,13 @@ class Module(object):
         cf = channel_friends
 
         msg = "%s ducks killed (%s in %s), and %s ducks befriended (%s in %s)" \
-              % (Utils.bold(tp), Utils.bold(cp), Utils.bold(channel),
-                 Utils.bold(tf), Utils.bold(cf), Utils.bold(channel))
+            % (utils.irc.bold(tp), utils.irc.bold(cp), utils.irc.bold(channel),
+            utils.irc.bold(tf), utils.irc.bold(cf), utils.irc.bold(channel))
 
-        event["stdout"].write(Utils.bold(nick) + ": " + msg)
+        event["stdout"].write(utils.irc.bold(nick) + ": " + msg)
         event.eat()
 
-    @Utils.hook("received.command.killers")
+    @utils.hook("received.command.killers")
     def duck_enemies(self, event):
         """
         :help: Show the top duck shooters
@@ -366,15 +367,15 @@ class Module(object):
             enemy_nicks.append(user)
             enemy_ducks.append(enemies)
 
-        sentence = Utils.bold("Duck Wranglers: ")
+        sentence = utils.irc.bold("Duck Wranglers: ")
         build = []
 
         length = len(enemy_nicks) if len(enemy_nicks) < 8 else 8
 
         for i in range(0, length):
-            nick = Utils.prevent_highlight(enemy_nicks[i])
+            nick = utils.prevent_highlight(enemy_nicks[i])
             build.append("%s (%s)" \
-                         % (Utils.bold(nick),
+                         % (utils.irc.bold(nick),
                             enemy_ducks[i]))
 
         sentence += ", ".join(build)
@@ -382,7 +383,7 @@ class Module(object):
         event["stdout"].write(sentence)
         event.eat()
 
-    @Utils.hook("received.command.friends")
+    @utils.hook("received.command.friends")
     def duck_friends(self, event):
         """
         :help: Show the top duck friends
@@ -405,15 +406,15 @@ class Module(object):
             friend_nicks.append(user)
             friend_ducks.append(friends)
 
-        sentence = Utils.bold("Duck Friends: ")
+        sentence = utils.irc.bold("Duck Friends: ")
 
         length = len(friend_nicks) if len(friend_nicks) < 8 else 8
         build = []
 
         for i in range(0, length):
-            nick = Utils.prevent_highlight(friend_nicks[i])
+            nick = utils.prevent_highlight(friend_nicks[i])
             build.append("%s (%s)" \
-                         % (Utils.bold(nick),
+                         % (utils.irc.bold(nick),
                             friend_ducks[i])
                          )
 

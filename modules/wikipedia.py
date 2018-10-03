@@ -1,15 +1,15 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.wiki|wi", min_args=1)
+    @utils.hook("received.command.wiki|wi", min_args=1)
     def wikipedia(self, event):
         """
         :help: Get information from wikipedia
         :usage: <term>
         """
-        page = Utils.get_url(URL_WIKIPEDIA, get_params={
+        page = utils.http.get_url(URL_WIKIPEDIA, get_params={
             "action": "query", "prop": "extracts",
             "titles": event["args"], "exintro": "",
             "explaintext": "", "exchars": "500",

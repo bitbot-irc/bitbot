@@ -1,7 +1,7 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.todo")
+    @utils.hook("received.command.todo")
     def todo(self, event):
         """
         :help: Find out what's in your todo list
@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
             todo_count = len(todo)
             event["stdout"].write("There are %d items in your todo" % todo_count)
 
-    @Utils.hook("received.command.todoadd", min_args=1)
+    @utils.hook("received.command.todoadd", min_args=1)
     def todo_add(self, event):
         """
         :help: Add something to your todo list
@@ -38,7 +38,7 @@ class Module(ModuleManager.BaseModule):
         event["user"].set_setting("todo", todo)
         event["stdout"].write("Saved")
 
-    @Utils.hook("received.command.tododel", min_args=1)
+    @utils.hook("received.command.tododel", min_args=1)
     def todo_del(self, event):
         """
         :help: Remove something from your todo list

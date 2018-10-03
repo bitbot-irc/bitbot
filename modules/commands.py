@@ -1,7 +1,7 @@
 import re
-from src import EventManager, ModuleManager, Utils
+from src import EventManager, ModuleManager, utils
 
-STR_MORE = "%s (more...)" % Utils.FONT_RESET
+STR_MORE = "%s (more...)" % utils.irc.FONT_RESET
 STR_CONTINUED = "(...continued) "
 
 COMMAND_METHOD = "command-method"
@@ -41,7 +41,7 @@ class Out(object):
             if self._msgid:
                 tags["+draft/reply"] = self._msgid
 
-            prefix = Utils.FONT_RESET + "[%s] " % self.prefix()
+            prefix = utils.irc.FONT_RESET + "[%s] " % self.prefix()
             method = self._get_method()
             if method == "PRIVMSG":
                 self.target.send_message(text, prefix=prefix, tags=tags)
@@ -60,29 +60,31 @@ class Out(object):
 
 class StdOut(Out):
     def prefix(self):
-        return Utils.color(Utils.bold(self.module_name), Utils.COLOR_GREEN)
+        return utils.irc.color(utils.irc.bold(self.module_name),
+            utils.irc.COLOR_GREEN)
 class StdErr(Out):
     def prefix(self):
-        return Utils.color(Utils.bold("!"+self.module_name), Utils.COLOR_RED)
+        return utils.irc.color(utils.irc.bold("!"+self.module_name),
+            utils.irc.COLOR_RED)
 
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
         return s.upper()
 
-@Utils.export("channelset", {"setting": "command-prefix",
+@utils.export("channelset", {"setting": "command-prefix",
     "help": "Set the command prefix used in this channel"})
-@Utils.export("serverset", {"setting": "command-prefix",
+@utils.export("serverset", {"setting": "command-prefix",
     "help": "Set the command prefix used on this server"})
-@Utils.export("serverset", {"setting": "identity-mechanism",
+@utils.export("serverset", {"setting": "identity-mechanism",
     "help": "Set the identity mechanism for this server"})
-@Utils.export("serverset", {"setting": "command-method",
+@utils.export("serverset", {"setting": "command-method",
     "help": "Set the method used to respond to commands",
     "validate": _command_method_validate})
-@Utils.export("channelset", {"setting": "command-method",
+@utils.export("channelset", {"setting": "command-method",
     "help": "Set the method used to respond to commands",
     "validate": _command_method_validate})
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("new.user|channel")
+    @utils.hook("new.user|channel")
     def new(self, event):
         if "user" in event:
             target = event["user"]
@@ -165,7 +167,7 @@ class Module(ModuleManager.BaseModule):
             target.buffer.skip_next()
         event.eat()
 
-    @Utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
+    @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
         command_prefix = event["channel"].get_setting("command-prefix",
             event["server"].get_setting("command-prefix", "!"))
@@ -178,7 +180,7 @@ class Module(ModuleManager.BaseModule):
             command = event["message_split"][1].lower()
             self.message(event, command, 2)
 
-    @Utils.hook("received.message.private", priority=EventManager.PRIORITY_LOW)
+    @utils.hook("received.message.private", priority=EventManager.PRIORITY_LOW)
     def private_message(self, event):
         if event["message_split"]:
             command = event["message_split"][0].lower()
@@ -189,7 +191,7 @@ class Module(ModuleManager.BaseModule):
     def _get_usage(self, hook):
         return hook.get_kwarg("usage", None)
 
-    @Utils.hook("received.command.help")
+    @utils.hook("received.command.help")
     def help(self, event):
         """
         :help: Show help for a given command
@@ -218,7 +220,7 @@ class Module(ModuleManager.BaseModule):
             help_available = sorted(help_available)
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 
-    @Utils.hook("received.command.usage", min_args=1)
+    @utils.hook("received.command.usage", min_args=1)
     def usage(self, event):
         """
         :help: Show the usage for a given command
@@ -243,7 +245,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Unknown command '%s'" % command)
 
-    @Utils.hook("received.command.more", skip_out=True)
+    @utils.hook("received.command.more", skip_out=True)
     def more(self, event):
         """
         :help: Show more output from the last command
@@ -251,7 +253,7 @@ class Module(ModuleManager.BaseModule):
         if event["target"].last_stdout and event["target"].last_stdout.has_text():
             event["target"].last_stdout.send()
 
-    @Utils.hook("received.command.ignore", min_args=1)
+    @utils.hook("received.command.ignore", min_args=1)
     def ignore(self, event):
         """
         :help: Ignore commands from a given user
@@ -266,7 +268,7 @@ class Module(ModuleManager.BaseModule):
             user.set_setting("ignore", True)
             event["stdout"].write("Now ignoring '%s'" % user.nickname)
 
-    @Utils.hook("received.command.unignore", min_args=1)
+    @utils.hook("received.command.unignore", min_args=1)
     def unignore(self, event):
         """
         :help: Unignore commands from a given user
@@ -280,14 +282,14 @@ class Module(ModuleManager.BaseModule):
             user.set_setting("ignore", False)
             event["stdout"].write("Removed ignore for '%s'" % user.nickname)
 
-    @Utils.hook("send.stdout")
+    @utils.hook("send.stdout")
     def send_stdout(self, event):
         stdout = StdOut(event["server"], event["module_name"],
             event["target"], event.get("msgid", None))
         stdout.write(event["message"]).send()
         if stdout.has_text():
             event["target"].last_stdout = stdout
-    @Utils.hook("send.stderr")
+    @utils.hook("send.stderr")
     def send_stderr(self, event):
         stderr = StdErr(event["server"], event["module_name"],
             event["target"], event.get("msgid", None))

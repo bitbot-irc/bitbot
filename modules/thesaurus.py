@@ -1,18 +1,18 @@
 #--require-config bighugethesaurus-api-key
 
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.synonym|antonym", min_args=1)
+    @utils.hook("received.command.synonym|antonym", min_args=1)
     def thesaurus(self, event):
         """
         :help: Get synonyms/antonyms for a provided phrase
         :usage: <word> [type]
         """
         phrase = event["args_split"][0]
-        page = Utils.get_url(URL_THESAURUS % (self.bot.config[
+        page = utils.http.get_url(URL_THESAURUS % (self.bot.config[
             "bighugethesaurus-api-key"], phrase), json=True)
         syn_ant = event["command"][:3]
         if page:

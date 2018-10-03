@@ -1,7 +1,7 @@
-from src import EventManager, ModuleManager, Utils
+from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.message.channel", priority=EventManager.PRIORITY_HIGH)
+    @utils.hook("received.message.channel", priority=EventManager.PRIORITY_HIGH)
     def channel_message(self, event):
         messages = event["channel"].get_user_setting(event["user"].get_id(),
             "to", [])
@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
         if messages:
             event["channel"].del_user_setting(event["user"].get_id(), "to")
 
-    @Utils.hook("received.command.to", min_args=2, channel_only=True)
+    @utils.hook("received.command.to", min_args=2, channel_only=True)
     def to(self, event):
         """
         :help: Relay a message to a user the next time they talk in this

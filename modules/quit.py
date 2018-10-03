@@ -1,5 +1,5 @@
 import random
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 QUOTES = {
     "You can build a throne with bayonets, but it's difficult to sit on it." : "Boris Yeltsin",
@@ -56,7 +56,7 @@ QUOTES = {
 }
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("get.quit-quote")
+    @utils.hook("get.quit-quote")
     def quote(self, event):
         quote = random.choice(list(QUOTES.items()))
         return (" - " if quote[1] else "").join(quote)

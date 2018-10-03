@@ -1,7 +1,7 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.changenickname", min_args=1)
+    @utils.hook("received.command.changenickname", min_args=1)
     def change_nickname(self, event):
         """
         :help: Change my nickname
@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
         nickname = event["args_split"][0]
         event["server"].send_nick(nickname)
 
-    @Utils.hook("received.command.raw", min_args=1)
+    @utils.hook("received.command.raw", min_args=1)
     def raw(self, event):
         """
         :help: Send a line of raw IRC data
@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
         """
         event["server"].send(event["args"])
 
-    @Utils.hook("received.command.part")
+    @utils.hook("received.command.part")
     def part(self, event):
         """
         :help: Part from the current or given channel
@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("No channel provided")
         event["server"].send_part(target)
 
-    @Utils.hook("received.command.reconnect")
+    @utils.hook("received.command.reconnect")
     def reconnect(self, event):
         """
         :help: Reconnect to the current network

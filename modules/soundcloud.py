@@ -1,7 +1,7 @@
 #--require-config soundcloud-api-key
 
 import json, re, time
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_SOUNDCLOUD_TRACK = "http://api.soundcloud.com/tracks"
 URL_SOUNDCLOUD_RESOLVE = "http://api.soundcloud.com/resolve"
@@ -10,7 +10,7 @@ REGEX_SOUNDCLOUD = "https?://soundcloud.com/([^/]+)/([^/]+)"
 class Module(ModuleManager.BaseModule):
     _name = "SoundCloud"
 
-    @Utils.hook("received.command.soundcloud|sc")
+    @utils.hook("received.command.soundcloud|sc")
     def soundcloud(self, event):
         """
         :help: Search SoundCloud
@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
         else:
             get_params["url"] = url
 
-        page = Utils.get_url(
+        page = utils.http.get_url(
             URL_SOUNDCLOUD_TRACK if has_query else URL_SOUNDCLOUD_RESOLVE,
             get_params=get_params, json=True)
 

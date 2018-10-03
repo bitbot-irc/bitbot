@@ -1,7 +1,7 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.loadmodule", min_args=1)
+    @utils.hook("received.command.loadmodule", min_args=1)
     def load(self, event):
         """
         :help: Load a module
@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
         self.bot.modules.load_module(self.bot, name)
         event["stdout"].write("Loaded '%s'" % name)
 
-    @Utils.hook("received.command.unloadmodule", min_args=1)
+    @utils.hook("received.command.unloadmodule", min_args=1)
     def unload(self, event):
         """
         :help: Unload a module
@@ -33,7 +33,7 @@ class Module(ModuleManager.BaseModule):
         self.bot.modules.unload_module(name)
         self.bot.modules.load_module(self.bot, name)
 
-    @Utils.hook("received.command.reloadmodule", min_args=1)
+    @utils.hook("received.command.reloadmodule", min_args=1)
     def reload(self, event):
         """
         :help: Reload a module
@@ -56,7 +56,7 @@ class Module(ModuleManager.BaseModule):
             return
         event["stdout"].write("Reloaded '%s'" % name)
 
-    @Utils.hook("received.command.reloadallmodules")
+    @utils.hook("received.command.reloadallmodules")
     def reload_all(self, event):
         """
         :help: Reload all modules
@@ -82,7 +82,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("Reloaded %d modules" % len(reloaded))
 
-    @Utils.hook("received.command.enablemodule", min_args=1)
+    @utils.hook("received.command.enablemodule", min_args=1)
     def enable(self, event):
         """
         :help: Remove a module from the module blacklist
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("Module '%s' has been enabled and can now "
             "be loaded" % name)
 
-    @Utils.hook("received.command.disablemodule", min_args=1)
+    @utils.hook("received.command.disablemodule", min_args=1)
     def disable(self, event):
         """
         :help: Add a module to the module blacklist

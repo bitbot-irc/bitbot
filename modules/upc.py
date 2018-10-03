@@ -1,11 +1,11 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 UPCITEMDB_URL = "https://api.upcitemdb.com/prod/trial/lookup"
 
 class Module(ModuleManager.BaseModule):
     _name = "UPC"
 
-    @Utils.hook("received.command.upc|ean|gtin", min_args=1)
+    @utils.hook("received.command.upc|ean|gtin", min_args=1)
     def upc(self, event):
         """
         :help: Look up a product by UPC, EAN or GTIN
@@ -16,7 +16,7 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Invalid UPC/EAN provided")
             return
 
-        page = Utils.get_url(UPCITEMDB_URL,
+        page = utils.http.get_url(UPCITEMDB_URL,
             get_params={"upc": event["args_split"][0]},
             json=True)
         if page:

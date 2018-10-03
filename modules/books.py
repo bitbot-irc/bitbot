@@ -1,5 +1,5 @@
 import json, re
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_GOOGLEBOOKS = "https://www.googleapis.com/books/v1/volumes"
 URL_BOOKINFO = "https://books.google.co.uk/books?id=%s"
@@ -9,7 +9,7 @@ class Module(ModuleManager.BaseModule):
     _name = "ISBN"
 
     def get_book(self, query, event):
-        page = Utils.get_url(URL_GOOGLEBOOKS, get_params={
+        page = utils.http.get_url(URL_GOOGLEBOOKS, get_params={
             "q": query, "country": "us"}, json=True)
         if page:
             if page["totalItems"] > 0:
@@ -36,7 +36,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Failed to load results")
 
-    @Utils.hook("received.command.isbn", min_args=1)
+    @utils.hook("received.command.isbn", min_args=1)
     def isbn(self, event):
         """
         :help: Get book information from a provided ISBN
@@ -48,7 +48,7 @@ class Module(ModuleManager.BaseModule):
         isbn = isbn.replace("-", "")
         self.get_book("isbn:%s" % isbn, event)
 
-    @Utils.hook("received.command.book", min_args=1)
+    @utils.hook("received.command.book", min_args=1)
     def book(self, event):
         """
         :help: Get book information from a provided title

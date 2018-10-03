@@ -1,5 +1,5 @@
 import datetime, decimal, math, random, re, time
-from src import Utils
+from src import utils
 
 SIDES = {"heads": 0, "tails": 1}
 DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
@@ -36,7 +36,7 @@ class Module(object):
         bot.timers.add("coin-interest", INTEREST_INTERVAL,
             time.time()+until_next_hour)
 
-    @Utils.hook("received.command.coins")
+    @utils.hook("received.command.coins")
     def coins(self, event):
         """
         :help: Show how many coins you have
@@ -49,7 +49,7 @@ class Module(object):
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             "{0:.2f}".format(coins), "" if coins == 1 else "s"))
 
-    @Utils.hook("received.command.resetcoins", min_args=1)
+    @utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
         """
         :help: Reset a user's coins to 0
@@ -65,7 +65,7 @@ class Module(object):
             target.del_setting("coins")
             event["stdout"].write("Reset coins for %s" % target.nickname)
 
-    @Utils.hook("received.command.givecoins", min_args=1)
+    @utils.hook("received.command.givecoins", min_args=1)
     def give_coins(self, event):
         """
         :help: Give coins to a user
@@ -85,7 +85,7 @@ class Module(object):
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
             str(coins)))
 
-    @Utils.hook("received.command.richest")
+    @utils.hook("received.command.richest")
     def richest(self, event):
         """
         :help: Show the top 10 richest users
@@ -98,7 +98,7 @@ class Module(object):
 
         top_10 = sorted(all_coins.keys())
         top_10 = sorted(top_10, key=all_coins.get, reverse=True)[:10]
-        top_10 = ", ".join("%s (%s)" % (Utils.prevent_highlight(
+        top_10 = ", ".join("%s (%s)" % (utils.prevent_highlight(
             event["server"].get_user(nickname).nickname), "{0:.2f}".format(
             all_coins[nickname])) for nickname in top_10)
         event["stdout"].write("Richest users: %s" % top_10)
@@ -106,7 +106,7 @@ class Module(object):
     def _redeem_cache(self, server, user):
         return "redeem|%s|%s@%s" % (server.id, user.username, user.hostname)
 
-    @Utils.hook("received.command.redeemcoins")
+    @utils.hook("received.command.redeemcoins")
     def redeem_coins(self, event):
         """
         :help: Redeem your free coins
@@ -129,12 +129,12 @@ class Module(object):
             else:
                 time_left = self.bot.cache.until_expiration(cache)
                 event["stderr"].write("Please wait %s before redeeming" %
-                    Utils.to_pretty_time(math.ceil(time_left)))
+                    utils.to_pretty_time(math.ceil(time_left)))
         else:
             event["stderr"].write(
                 "You can only redeem coins when you have none")
 
-    @Utils.hook("received.command.flip", min_args=2, authenticated=True)
+    @utils.hook("received.command.flip", min_args=2, authenticated=True)
     def flip(self, event):
         """
         :help: Bet on a coin flip
@@ -178,7 +178,7 @@ class Module(object):
                 event["user"].nickname, side_name, coin_bet_str,
                 "" if coin_bet == 1 else "s"))
 
-    @Utils.hook("received.command.sendcoins", min_args=2, authenticated=True)
+    @utils.hook("received.command.sendcoins", min_args=2, authenticated=True)
     def send(self, event):
         """
         :help: Send coins to another user
@@ -230,7 +230,7 @@ class Module(object):
             event["user"].nickname, "{0:.2f}".format(send_amount),
             target_user.nickname))
 
-    @Utils.hook("timer.coin-interest")
+    @utils.hook("timer.coin-interest")
     def interest(self, event):
         for server in self.bot.servers.values():
             all_coins = server.get_all_user_settings(
@@ -247,7 +247,7 @@ class Module(object):
                         str(coins))
         event["timer"].redo()
 
-    @Utils.hook("received.command.roulette", min_args=2, authenticated=True)
+    @utils.hook("received.command.roulette", min_args=2, authenticated=True)
     def roulette(self, event):
         """
         :help: Spin a roulette wheel

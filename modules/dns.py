@@ -1,10 +1,10 @@
 import socket
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     _name = "DNS"
 
-    @Utils.hook("received.command.dns", min_args=1)
+    @utils.hook("received.command.dns", min_args=1)
     def dns(self, event):
         """
         :help: Get all addresses for a given hostname (IPv4/IPv6)

@@ -1,21 +1,21 @@
 import re, time
-from src import EventManager, ModuleManager, Utils
+from src import EventManager, ModuleManager, utils
 
 REGEX_KARMA = re.compile("^(.*[^-+])[-+]*(\+{2,}|\-{2,})$")
 KARMA_DELAY_SECONDS = 3
 
-@Utils.export("channelset", {"setting": "karma-verbose",
+@utils.export("channelset", {"setting": "karma-verbose",
     "help": "Enable/disable automatically responding to karma changes",
-    "validate": Utils.bool_or_none})
-@Utils.export("serverset", {"setting": "karma-nickname-only",
+    "validate": utils.bool_or_none})
+@utils.export("serverset", {"setting": "karma-nickname-only",
     "help": "Enable/disable karma being for nicknames only",
-    "validate": Utils.bool_or_none})
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("new.user")
+    @utils.hook("new.user")
     def new_user(self, event):
         event["user"].last_karma = None
 
-    @Utils.hook("received.message.channel",
+    @utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         match = re.match(REGEX_KARMA, event["message"].strip())
@@ -27,7 +27,7 @@ class Module(ModuleManager.BaseModule):
             if not event["user"].last_karma or (time.time()-event["user"
                     ].last_karma) >= KARMA_DELAY_SECONDS:
                 target = match.group(1).strip()
-                if Utils.irc_lower(event["server"], target
+                if utils.irc.lower(event["server"], target
                         ) == event["user"].name:
                     if verbose:
                         self.events.on("send.stderr").call(
@@ -63,7 +63,7 @@ class Module(ModuleManager.BaseModule):
                     target=event["channel"],
                     message="Try again in a couple of seconds")
 
-    @Utils.hook("received.command.karma")
+    @utils.hook("received.command.karma")
     def karma(self, event):
         """
         :help: Get your or someone else's karma
@@ -81,7 +81,7 @@ class Module(ModuleManager.BaseModule):
             karma = event["server"].get_setting("karma-%s" % target, 0)
         event["stdout"].write("%s has %s karma" % (target, karma))
 
-    @Utils.hook("received.command.resetkarma", min_args=1)
+    @utils.hook("received.command.resetkarma", min_args=1)
     def reset_karma(self, event):
         """
         :help: Reset a specified karma to 0

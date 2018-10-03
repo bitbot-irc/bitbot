@@ -1,16 +1,16 @@
 import base64, os
 import scrypt
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 REQUIRES_IDENTIFY = ("You need to be identified to use that command "
  "(/msg %s register | /msg %s identify)")
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("new.user")
+    @utils.hook("new.user")
     def new_user(self, event):
         self._logout(event["user"])
 
-    @Utils.hook("received.part")
+    @utils.hook("received.part")
     def on_part(self, event):
         if len(event["user"].channels) == 1 and event["user"
                 ].identified_account_override:
@@ -38,7 +38,7 @@ class Module(ModuleManager.BaseModule):
         user.identified_account_override = None
         user.identified_account_id_override = None
 
-    @Utils.hook("received.command.identify", private_only=True, min_args=1)
+    @utils.hook("received.command.identify", private_only=True, min_args=1)
     def identify(self, event):
         """
         :help: Identify yourself
@@ -80,7 +80,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("You are already identified")
 
-    @Utils.hook("received.command.register", private_only=True, min_args=1)
+    @utils.hook("received.command.register", private_only=True, min_args=1)
     def register(self, event):
         """
         :help: Register yourself
@@ -104,7 +104,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("This nickname is already registered")
 
-    @Utils.hook("received.command.setpassword", authenticated=True, min_args=1)
+    @utils.hook("received.command.setpassword", authenticated=True, min_args=1)
     def set_password(self, event):
         """
         :help: Change your password
@@ -114,7 +114,7 @@ class Module(ModuleManager.BaseModule):
         event["user"].set_setting("authentication", [hash, salt])
         event["stdout"].write("Set your password")
 
-    @Utils.hook("received.command.logout", private_only=True)
+    @utils.hook("received.command.logout", private_only=True)
     def logout(self, event):
         """
         :help: Logout from your identified account
@@ -125,7 +125,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("You are not logged in")
 
-    @Utils.hook("received.command.resetpassword", private_only=True,
+    @utils.hook("received.command.resetpassword", private_only=True,
         min_args=2)
     def reset_password(self, event):
         """
@@ -145,7 +145,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Reset password for '%s'" %
                 target.nickname)
 
-    @Utils.hook("preprocess.command")
+    @utils.hook("preprocess.command")
     def preprocess_command(self, event):
         permission = event["hook"].get_kwarg("permission", None)
         authenticated = event["hook"].kwargs.get("authenticated", False)
@@ -175,7 +175,7 @@ class Module(ModuleManager.BaseModule):
                 return REQUIRES_IDENTIFY % (event["server"].nickname,
                     event["server"].nickname)
 
-    @Utils.hook("received.command.mypermissions", authenticated=True)
+    @utils.hook("received.command.mypermissions", authenticated=True)
     def my_permissions(self, event):
         """
         :help: Show your permissions
@@ -189,7 +189,7 @@ class Module(ModuleManager.BaseModule):
         permissions = target.get_setting("permissions", [])
         return [target, registered, permissions]
 
-    @Utils.hook("received.command.givepermission", min_args=2)
+    @utils.hook("received.command.givepermission", min_args=2)
     def give_permission(self, event):
         """
         :help: Give a given permission to a given user
@@ -212,7 +212,7 @@ class Module(ModuleManager.BaseModule):
             target.set_setting("permissions", permissions)
             event["stdout"].write("Gave permission '%s' to %s" % (
                 permission, target.nickname))
-    @Utils.hook("received.command.removepermission", min_args=2)
+    @utils.hook("received.command.removepermission", min_args=2)
     def remove_permission(self, event):
         """
         :help: Remove a given permission from a given user

@@ -1,10 +1,10 @@
 import re
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 REGEX_URL = re.compile("https?://\S+", re.I)
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.title|t", usage="[URL]")
+    @utils.hook("received.command.title|t", usage="[URL]")
     def title(self, event):
         """
         :help: Get the title of a URL
@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
         if not url:
             event["stderr"].write("No URL provided/found.")
             return
-        soup = Utils.get_url(url, soup=True)
+        soup = utils.http.get_url(url, soup=True)
         if not soup:
             event["stderr"].write("Failed to get URL.")
             return

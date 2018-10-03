@@ -1,5 +1,5 @@
 import random
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 CHOICES = [
     "Definitely",
@@ -19,7 +19,8 @@ CHOICES = [
     "It is certain",
     "Naturally",
     "Reply hazy, try again later",
-    Utils.underline(Utils.color("DO NOT WASTE MY TIME", Utils.COLOR_RED)),
+    utils.irc.underline(utils.irc.color("DO NOT WASTE MY TIME",
+        utils.irc.COLOR_RED)),
     "Hmm... Could be!",
     "I'm leaning towards no",
     "Without a doubt",
@@ -29,11 +30,11 @@ CHOICES = [
 ]
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.8ball", min_args=1)
+    @utils.hook("received.command.8ball", min_args=1)
     def decide(selfs, event):
         """
         :help: Ask the mystic 8ball a question!
         :usage: <question>
         """
         event["stdout"].write("You shake the magic ball... it "
-                              "says " + Utils.bold(random.choice(CHOICES)))
+                              "says " + utils.irc.bold(random.choice(CHOICES)))

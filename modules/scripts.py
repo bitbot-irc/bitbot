@@ -1,6 +1,6 @@
 
 import glob, json, os, subprocess
-from src import IRCObject, Utils
+from src import IRCObject, utils
 
 class Module(object):
     def __init__(self, bot, events, exports):
@@ -12,7 +12,7 @@ class Module(object):
     def _load_scripts(self):
         for filename in glob.glob(os.path.join(self._directory, "*")):
             name = os.path.basename(filename)
-            for hashflag, value in Utils.get_hashflags(filename):
+            for hashflag, value in utils.get_hashflags(filename):
                 if hashflag == "name" and value:
                     name = value
                 elif hashflag == "hook" and value:
@@ -20,7 +20,7 @@ class Module(object):
                         lambda x: self.call(x, filename, name))
                     self._hooks.append([value, hook])
 
-    @Utils.hook("received.command.reloadscripts", permission="reloadscripts")
+    @utils.hook("received.command.reloadscripts", permission="reloadscripts")
     def reload(self, event):
         for event_name, hook in self._hooks:
             self.events.on(event_name).unhook(hook)

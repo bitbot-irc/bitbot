@@ -1,5 +1,5 @@
 import time
-from src import EventManager, ModuleManager, Utils
+from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
@@ -23,17 +23,17 @@ class Module(ModuleManager.BaseModule):
                 word_count = user.get_setting(setting, 0)
                 word_count += 1
                 user.set_setting(setting, word_count)
-    @Utils.hook("received.message.channel",
+    @utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         self._channel_message(event["user"], event)
-    @Utils.hook("self.message.channel",
+    @utils.hook("self.message.channel",
         priority=EventManager.PRIORITY_MONITOR)
     def self_channel_message(self, event):
         self._channel_message(event["server"].get_user(
             event["server"].nickname), event)
 
-    @Utils.hook("received.command.words", channel_only=True)
+    @utils.hook("received.command.words", channel_only=True)
     def words(self, event):
         """
         :help: See how many words you or the given nickname have used
@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("%s has used %d words (%d in %s)" % (
             target.nickname, total, this_channel, event["target"].name))
 
-    @Utils.hook("received.command.trackword", min_args=1)
+    @utils.hook("received.command.trackword", min_args=1)
     def track_word(self, event):
         """
         :help: Start tracking a word
@@ -70,7 +70,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Already tracking '%s'" % word)
 
-    @Utils.hook("received.command.wordusers", min_args=1)
+    @utils.hook("received.command.wordusers", min_args=1)
     def word_users(self, event):
         """
         :help: Show who has used a tracked word the most
@@ -85,7 +85,7 @@ class Module(ModuleManager.BaseModule):
 
             top_10 = sorted(word_users.keys())
             top_10 = sorted(top_10, key=word_users.get, reverse=True)[:10]
-            top_10 = ", ".join("%s (%d)" % (Utils.prevent_highlight(event[
+            top_10 = ", ".join("%s (%d)" % (utils.prevent_highlight(event[
                 "server"].get_user(nickname).nickname), word_users[nickname]
                 ) for nickname in top_10)
             event["stdout"].write("Top '%s' users: %s" % (word, top_10))

@@ -1,9 +1,9 @@
 import uuid
-from . import IRCBuffer, IRCObject, Utils
+from src import IRCBuffer, IRCObject, utils
 
 class Channel(IRCObject.Object):
     def __init__(self, name, id, server, bot):
-        self.name = Utils.irc_lower(server, name)
+        self.name = utils.irc.lower(server, name)
         self.id = id
         self.server = server
         self.bot = bot

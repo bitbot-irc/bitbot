@@ -1,5 +1,5 @@
 import random
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 INSULT_INTRO = ["Thou art a", "Ye", "Thou", "Thy", "Thee"]
 
@@ -52,7 +52,7 @@ INSULT_PART_3 = ["apple-john", "baggage", "barnacle", "bladder", "boar-pig",
 
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.insult")
+    @utils.hook("received.command.insult")
     def dispense_insult(self, event):
         insult = [random.choice(INSULT_INTRO), random.choice(INSULT_PART_1),
                   random.choice(INSULT_PART_2), random.choice(INSULT_PART_3)]
@@ -61,7 +61,9 @@ class Module(ModuleManager.BaseModule):
         target = ""
 
         if event["args_split"]:
-            target = Utils.bold(event["server"].get_user(
-                event["args_split"][0]).nickname) + ", "
+            target = event["args_split"][0]
+            if event["server"].has_user(target):
+                target= event["server"].get_user(target).nickname
+            target = "%s, " % target
 
         event["stdout"].write(target + insult + "!")

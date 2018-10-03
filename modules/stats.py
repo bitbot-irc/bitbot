@@ -1,17 +1,17 @@
 import time
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.uptime")
+    @utils.hook("received.command.uptime")
     def uptime(self, event):
         """
         :help: Show my uptime
         """
         seconds = int(time.time()-self.bot.start_time)
-        event["stdout"].write("Uptime: %s" % Utils.to_pretty_time(
+        event["stdout"].write("Uptime: %s" % utils.to_pretty_time(
             seconds))
 
-    @Utils.hook("received.command.stats")
+    @utils.hook("received.command.stats")
     def stats(self, event):
         """
         :help: Show my network/channel/user stats

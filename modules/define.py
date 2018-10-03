@@ -1,7 +1,7 @@
 #--require-config wordnik-api-key
 
 import time
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_WORDNIK = "https://api.wordnik.com/v4/word.json/%s/definitions"
 URL_WORDNIK_RANDOM = "https://api.wordnik.com/v4/words.json/randomWord"
@@ -12,14 +12,14 @@ class Module(ModuleManager.BaseModule):
     _last_called = 0
 
     def _get_definition(self, word):
-        page = Utils.get_url(URL_WORDNIK % word, get_params={
+        page = utils.http.get_url(URL_WORDNIK % word, get_params={
             "useCanonical": "true", "limit": 1,
             "sourceDictionaries": "wiktionary", "api_key": self.bot.config[
             "wordnik-api-key"]}, json=True)
 
         return page
 
-    @Utils.hook("received.command.define")
+    @utils.hook("received.command.define")
     def define(self, event):
         """
         :help: Define a provided term
@@ -40,7 +40,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Failed to load results")
 
-    @Utils.hook("received.command.randomword")
+    @utils.hook("received.command.randomword")
     def random_word(self, event):
         """
         :help: Define a random word
@@ -49,7 +49,7 @@ class Module(ModuleManager.BaseModule):
                 RANDOM_DELAY_SECONDS):
             self._last_called = time.time()
 
-            page = Utils.get_url(URL_WORDNIK_RANDOM, get_params={
+            page = utils.http.get_url(URL_WORDNIK_RANDOM, get_params={
                 "api_key":self.bot.config["wordnik-api-key"],
                 "min_dictionary_count":1},json=True)
             if page and len(page):

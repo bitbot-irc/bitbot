@@ -1,7 +1,7 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.ping")
+    @utils.hook("received.command.ping")
     def pong(self, event):
         """
         :help: Ping pong!

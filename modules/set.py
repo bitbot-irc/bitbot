@@ -1,4 +1,4 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def _set(self, settings, event, target):
@@ -22,7 +22,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("Available settings: %s" % (
                 ", ".join(settings_dict.keys())))
-    @Utils.hook("received.command.set")
+    @utils.hook("received.command.set")
     def set(self, event):
         """
         :help: Set a specified user setting
@@ -30,9 +30,9 @@ class Module(ModuleManager.BaseModule):
         """
         self._set(self.exports.get_all("set"), event, event["user"])
 
-    @Utils.hook("received.command.channelset", channel_only=True,
+    @utils.hook("received.command.channelset", channel_only=True,
         require_mode="o")
-    @Utils.hook("received.command.channelsetoverride", channel_only=True,
+    @utils.hook("received.command.channelsetoverride", channel_only=True,
         permission="channelsetoverride")
     def channel_set(self, event):
         """
@@ -41,7 +41,7 @@ class Module(ModuleManager.BaseModule):
         """
         self._set(self.exports.get_all("channelset"), event, event["target"])
 
-    @Utils.hook("received.command.serverset")
+    @utils.hook("received.command.serverset")
     def server_set(self, event):
         """
         :help: Set a specified server setting for the current server
@@ -57,7 +57,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("'%s' has no value set" % setting)
 
-    @Utils.hook("received.command.get", min_args=1)
+    @utils.hook("received.command.get", min_args=1)
     def get(self, event):
         """
         :help: Get a specified user setting
@@ -67,7 +67,7 @@ class Module(ModuleManager.BaseModule):
         self._get(event, setting, "", event["user"].get_setting(
             setting, None))
 
-    @Utils.hook("received.command.channelget", channel_only=True, min_args=1)
+    @utils.hook("received.command.channelget", channel_only=True, min_args=1)
     def channel_get(self, event):
         """
         :help: Get a specified channel setting for the current channel
@@ -78,7 +78,7 @@ class Module(ModuleManager.BaseModule):
         self._get(event, setting, " for %s" % event["target"].name,
             event["target"].get_setting(setting, None))
 
-    @Utils.hook("received.command.serverget", min_args=1)
+    @utils.hook("received.command.serverget", min_args=1)
     def server_get(self, event):
         """
         :help: Get a specified server setting for the current server

@@ -1,8 +1,8 @@
 
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("preprocess.command")
+    @utils.hook("preprocess.command")
     def preprocess_command(self, event):
         require_mode = event["hook"].get_kwarg("require_mode")
         if event["is_channel"] and require_mode:

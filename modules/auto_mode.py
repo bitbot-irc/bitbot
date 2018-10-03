@@ -1,7 +1,7 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
-@Utils.export("channelset", {"setting": "automode",
-    "help": "Disable/Enable automode", "validate": Utils.bool_or_none})
+@utils.export("channelset", {"setting": "automode",
+    "help": "Disable/Enable automode", "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     _name = "AutoMode"
 
@@ -13,10 +13,10 @@ class Module(ModuleManager.BaseModule):
                 channel.send_mode("+%s" % "".join(modes),
                     " ".join([user.nickname for mode in modes]))
 
-    @Utils.hook("received.join")
+    @utils.hook("received.join")
     def on_join(self, event):
         self._check_modes(event["channel"], event["user"])
-    @Utils.hook("received.account")
+    @utils.hook("received.account")
     def on_account(self, event):
         for channel in event["user"].channels:
             self._check_modes(channel, event["user"])
@@ -51,7 +51,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Removed automode %s from '%s'" % (
                 mode_name, target_user.nickname))
 
-    @Utils.hook("received.command.addop", min_args=1, channel_only=True)
+    @utils.hook("received.command.addop", min_args=1, channel_only=True)
     def add_op(self, event):
         """
         :help: Add a user to the auto-mode list as an op
@@ -59,7 +59,7 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         """
         self._add_mode(event, "o", "op")
-    @Utils.hook("received.command.removeop", min_args=1, channel_only=True)
+    @utils.hook("received.command.removeop", min_args=1, channel_only=True)
     def remove_op(self, event):
         """
         :help: Remove a user from the auto-mode list as an op
@@ -68,7 +68,7 @@ class Module(ModuleManager.BaseModule):
         """
         self._remove_mode(event, "o", "op")
 
-    @Utils.hook("received.command.addvoice", min_args=1, channel_only=True)
+    @utils.hook("received.command.addvoice", min_args=1, channel_only=True)
     def add_voice(self, event):
         """
         :help: Add a user to the auto-mode list as a voice
@@ -76,7 +76,7 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         """
         self._add_mode(event, "v", "voice")
-    @Utils.hook("received.command.removevoice", min_args=1, channel_only=True)
+    @utils.hook("received.command.removevoice", min_args=1, channel_only=True)
     def remove_voice(self, event):
         """
         :help: Remove a user from the auto-mode list as a voice

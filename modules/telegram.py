@@ -1,5 +1,6 @@
 #--ignore
 import telegram, telegram.ext
+from src import utils
 
 import json
 from datetime import datetime
@@ -48,7 +49,7 @@ class Module(Thread):
             }
         self.events.on("telegram.command").on(command).call(**data)
 
-    @Utils.hook("signal.interrupt")
+    @utils.hook("signal.interrupt")
     def sigint(self, event):
         self.updater.stop()
 

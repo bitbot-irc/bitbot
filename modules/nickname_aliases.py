@@ -1,6 +1,6 @@
 #--ignore
 import types, json
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 def get_target(user):
     return user.alias or user.nickname
@@ -24,7 +24,7 @@ def del_setting(user, setting):
 class Module(ModuleManager.BaseModule):
     _name = "Aliases"
 
-    @Utils.hook("new.user")
+    @utils.hook("new.user")
     def new_user(self, event):
         method_type = types.MethodType
         user = event["user"]
@@ -36,7 +36,7 @@ class Module(ModuleManager.BaseModule):
         event["user"].find_settings = method_type(find_settings, user)
         event["user"].del_setting = method_type(del_setting, user)
 
-    @Utils.hook("received.nick")
+    @utils.hook("received.nick")
     def nickname_change(self, event):
         old_nickname = event["old_nickname"]
         new_nickname = event["new_nickname"]
@@ -60,7 +60,7 @@ class Module(ModuleManager.BaseModule):
             SET nickname=? WHERE nickname=?""", [new_nickname.lower(),
             old_nickname.lower()])
 
-    @Utils.hook("received.command.alias")
+    @utils.hook("received.command.alias")
     def alias(self, event):
         if event["args"]:
             target = event["args_split"][0]

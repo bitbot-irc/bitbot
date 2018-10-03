@@ -1,5 +1,5 @@
 import collections, socket, ssl, sys, time
-from . import IRCChannel, IRCObject, IRCUser, Utils
+from src import IRCChannel, IRCObject, IRCUser, utils
 
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
@@ -142,9 +142,9 @@ class Server(IRCObject.Object):
 
     def set_own_nickname(self, nickname):
         self.nickname = nickname
-        self.nickname_lower = Utils.irc_lower(self, nickname)
+        self.nickname_lower = utils.irc.lower(self, nickname)
     def is_own_nickname(self, nickname):
-        return Utils.irc_equals(self, nickname, self.nickname)
+        return utils.irc.equals(self, nickname, self.nickname)
 
     def add_own_mode(self, mode, arg=None):
         self.own_modes[mode] = arg
@@ -157,7 +157,7 @@ class Server(IRCObject.Object):
             self.add_own_mode(mode, arg)
 
     def has_user(self, nickname):
-        return Utils.irc_lower(self, nickname) in self.users
+        return utils.irc.lower(self, nickname) in self.users
     def get_user(self, nickname, create=True):
         if not self.has_user(nickname) and create:
             user_id = self.get_user_id(nickname)
@@ -165,7 +165,7 @@ class Server(IRCObject.Object):
             self.events.on("new.user").call(user=new_user, server=self)
             self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
-        return self.users.get(Utils.irc_lower(self, nickname), None)
+        return self.users.get(utils.irc.lower(self, nickname), None)
     def get_user_id(self, nickname):
         self.bot.database.users.add(self.id, nickname)
         return self.bot.database.users.get_id(self.id, nickname)
@@ -175,11 +175,11 @@ class Server(IRCObject.Object):
             channel.remove_user(user)
 
     def change_user_nickname(self, old_nickname, new_nickname):
-        user = self.users.pop(Utils.irc_lower(self, old_nickname))
+        user = self.users.pop(utils.irc.lower(self, old_nickname))
         user._id = self.get_user_id(new_nickname)
-        self.users[Utils.irc_lower(self, new_nickname)] = user
+        self.users[utils.irc.lower(self, new_nickname)] = user
     def has_channel(self, channel_name):
-        return channel_name[0] in self.channel_types and Utils.irc_lower(
+        return channel_name[0] in self.channel_types and utils.irc.lower(
             self, channel_name) in self.channels
     def get_channel(self, channel_name):
         if not self.has_channel(channel_name):
@@ -189,7 +189,7 @@ class Server(IRCObject.Object):
             self.events.on("new.channel").call(channel=new_channel,
                 server=self)
             self.channels[new_channel.name] = new_channel
-        return self.channels[Utils.irc_lower(self, channel_name)]
+        return self.channels[utils.irc.lower(self, channel_name)]
     def get_channel_id(self, channel_name):
         self.bot.database.channels.add(self.id, channel_name)
         return self.bot.database.channels.get_id(self.id, channel_name)

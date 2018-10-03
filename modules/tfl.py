@@ -1,5 +1,5 @@
 import collections, datetime, re
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
 URL_BUS_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
@@ -46,7 +46,7 @@ class Module(ModuleManager.BaseModule):
                 platform = m.group(2)
         return platform
 
-    @Utils.hook("received.command.tflbus", min_args=1)
+    @utils.hook("received.command.tflbus", min_args=1)
     def bus(self, event):
         """
         :help: Get bus due times for a TfL bus stop
@@ -63,21 +63,24 @@ class Module(ModuleManager.BaseModule):
         real_stop_id = ""
         stop_name = ""
         if stop_id.isdigit():
-            bus_search = Utils.get_url(URL_BUS_SEARCH % stop_id, get_params={
-                "app_id": app_id, "app_key": app_key}, json=True)
+            bus_search = utils.http.get_url(URL_BUS_SEARCH % stop_id,
+                get_params={"app_id": app_id, "app_key": app_key},
+                json=True)
             bus_stop = bus_search["matches"][0]
             real_stop_id = bus_stop["id"]
             stop_name = bus_stop["name"]
         else:
-            bus_stop = Utils.get_url(URL_STOP % stop_id, get_params={
-                "app_id": app_id, "app_key": app_key}, json=True)
+            bus_stop = utils.http.get_url(URL_STOP % stop_id,
+                get_params={"app_id": app_id, "app_key": app_key},
+                json=True)
             if bus_stop:
                 real_stop_id = stop_id
                 stop_name = bus_stop["commonName"]
 
         if real_stop_id:
-            bus_stop = Utils.get_url(URL_BUS % real_stop_id, get_params={
-                "app_id": app_id, "app_key": app_key}, json=True)
+            bus_stop = utils.http.get_url(URL_BUS % real_stop_id,
+                get_params={"app_id": app_id, "app_key": app_key},
+                json=True)
             busses = []
             for bus in bus_stop:
                 bus_number = bus["lineName"]
@@ -123,7 +126,7 @@ class Module(ModuleManager.BaseModule):
         else:
            event["stderr"].write("Bus ID '%s' unknown" % stop_id)
 
-    @Utils.hook("received.command.tflline")
+    @utils.hook("received.command.tflline")
     def line(self, event):
         """
         :help: Get line status for TfL underground lines
@@ -132,7 +135,7 @@ class Module(ModuleManager.BaseModule):
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
 
-        lines = Utils.get_url(URL_LINE, get_params={
+        lines = utils.http.get_url(URL_LINE, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)
         statuses = []
         for line in lines:
@@ -167,7 +170,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("No results")
 
-    @Utils.hook("received.command.tflsearch", min_args=1)
+    @utils.hook("received.command.tflsearch", min_args=1)
     def search(self, event):
         """
         :help: Get a list of TfL stop IDs for a given name
@@ -179,7 +182,7 @@ class Module(ModuleManager.BaseModule):
         #As awful as this is, it also makes it ~work~.
         stop_name = event["args"].replace(" ", "%20")
 
-        stop_search = Utils.get_url(URL_STOP_SEARCH % stop_name, get_params={
+        stop_search = utils.http.get_url(URL_STOP_SEARCH % stop_name, get_params={
             "app_id": app_id, "app_key": app_key, "maxResults": "6", "faresOnly": "False"}, json=True)
         if stop_search:
             for stop in stop_search["matches"]:
@@ -189,7 +192,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("No results")
 
-    @Utils.hook("received.command.tflvehicle", min_args=1)
+    @utils.hook("received.command.tflvehicle", min_args=1)
     def vehicle(self, event):
         """
         :help: Get information for a given vehicle
@@ -200,7 +203,7 @@ class Module(ModuleManager.BaseModule):
 
         vehicle_id = event["args_split"][0]
 
-        vehicle = Utils.get_url(URL_VEHICLE % vehicle_id, get_params={
+        vehicle = utils.http.get_url(URL_VEHICLE % vehicle_id, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)[0]
 
         arrival_time = self.vehicle_span(vehicle["expectedArrival"], human=False)
@@ -210,7 +213,7 @@ class Module(ModuleManager.BaseModule):
             vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
                 vehicle["stationName"], vehicle["naptanId"], arrival_time, platform))
 
-    @Utils.hook("received.command.tflservice", min_args=1)
+    @utils.hook("received.command.tflservice", min_args=1)
     def service(self, event):
         """
         :help: Get service information and arrival estimates
@@ -230,8 +233,8 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write("%s is too high. Remember that the first arrival is 0" % service_id)
                 return
             service = results[int(service_id)]
-        arrivals = Utils.get_url(URL_LINE_ARRIVALS % service["route"], get_params={
-            "app_id": app_id, "app_key": app_key}, json=True)
+        arrivals = utils.http.get_url(URL_LINE_ARRIVALS % service["route"],
+            get_params={"app_id": app_id, "app_key": app_key}, json=True)
 
         arrivals = [a for a in arrivals if a["vehicleId"] == service["id"]]
         arrivals = sorted(arrivals, key=lambda b: b["timeToStation"])
@@ -243,7 +246,7 @@ class Module(ModuleManager.BaseModule):
             a["expectedArrival"][11:16]
             ) for a in arrivals]))
 
-    @Utils.hook("received.command.tflstop", min_args=1)
+    @utils.hook("received.command.tflstop", min_args=1)
     def stop(self, event):
         """
         :help: Get information for a given stop
@@ -254,7 +257,7 @@ class Module(ModuleManager.BaseModule):
 
         stop_id = event["args_split"][0]
 
-        stop = Utils.get_url(URL_STOP % stop_id, get_params={
+        stop = utils.http.get_url(URL_STOP % stop_id, get_params={
             "app_id": app_id, "app_key": app_key}, json=True)
 
     def route(self, event):
@@ -263,7 +266,7 @@ class Module(ModuleManager.BaseModule):
 
         route_id = event["args_split"][0]
 
-        route = Utils.get_url(URL_ROUTE % route_id, get_params={
+        route = utils.http.get_url(URL_ROUTE % route_id, get_params={
             "app_id": app_id, "app_key": app_key}, json=True)
 
         event["stdout"].write("")

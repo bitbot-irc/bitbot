@@ -1,5 +1,5 @@
 import re
-from . import Utils
+from src import utils
 
 class BufferLine(object):
     def __init__(self, sender, message, action, tags, from_self, method):
@@ -39,7 +39,7 @@ class Buffer(object):
     def find(self, pattern, **kwargs):
         from_self = kwargs.get("from_self", True)
         for_user = kwargs.get("for_user", "")
-        for_user = Utils.irc_lower(self.server, for_user
+        for_user = utils.irc.lower(self.server, for_user
             ) if for_user else None
         not_pattern = kwargs.get("not_pattern", None)
         for line in self.lines:
@@ -48,7 +48,7 @@ class Buffer(object):
             elif re.search(pattern, line.message):
                 if not_pattern and re.search(not_pattern, line.message):
                     continue
-                if for_user and not Utils.irc_lower(self.server, line.sender
+                if for_user and not utils.irc.lower(self.server, line.sender
                         ) == for_user:
                     continue
                 return line

@@ -1,10 +1,10 @@
 import random
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 ERROR_FORMAT = "Incorrect format! Format must be [number]d[number], e.g. 1d20"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.roll", min_args=1)
+    @utils.hook("received.command.roll", min_args=1)
     def roll_dice(self, event):
         """
         :help: Roll some dice, DND style!
@@ -35,6 +35,5 @@ class Module(ModuleManager.BaseModule):
         total = sum(results)
         results = ', '.join(map(str, results))
 
-        event["stdout"].write("Rolled " + Utils.bold(str_roll) + " for a total "
-                              + "of " + Utils.bold(str(total))
-                              + ": " + results)
+        event["stdout"].write("Rolled %s for a total of %d: %s" % (
+            str_roll, str(total), results))

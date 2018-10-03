@@ -1,17 +1,17 @@
 import time
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
-SECONDS_MAX = Utils.SECONDS_WEEKS*8
+SECONDS_MAX = utils.SECONDS_WEEKS*8
 SECONDS_MAX_DESCRIPTION = "8 weeks"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.in", min_args=2)
+    @utils.hook("received.command.in", min_args=2)
     def in_command(self, event):
         """
         :help: Set a reminder
         :usage: <time> <message>
         """
-        seconds = Utils.from_pretty_time(event["args_split"][0])
+        seconds = utils.from_pretty_time(event["args_split"][0])
         message = " ".join(event["args_split"][1:])
         if seconds:
             if seconds <= SECONDS_MAX:
@@ -29,7 +29,7 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write(
                 "Please provided a valid time above 0 seconds")
 
-    @Utils.hook("timer.in")
+    @utils.hook("timer.in")
     def timer_due(self, event):
         for server in self.bot.servers.values():
             if event["server_id"] == server.id:

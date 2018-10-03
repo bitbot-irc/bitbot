@@ -1,5 +1,5 @@
 import re, threading
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 RE_PREFIXES = re.compile(r"\bPREFIX=\((\w+)\)(\W+)(?:\b|$)")
 RE_CHANMODES = re.compile(
@@ -27,41 +27,41 @@ class Module(ModuleManager.BaseModule):
 
         self.events.on("raw").on(line.command).call(**kwargs)
         if default_event or not hooks:
-            if command.isdigit():
+            if line.command.isdigit():
                 self.events.on("received.numeric").on(line.command).call(
                     **kwargs)
             else:
                 self.events.on("received").on(line.command).call(**kwargs)
-    @Utils.hook("raw")
+    @utils.hook("raw")
     def handle_raw(self, event):
-        line = Utils.parse_line(event["server"], event["line"])
+        line = utils.irc.parse_line(event["server"], event["line"])
         if "batch" in line.tags and line.tags["batch"] in event[
                 "server"].batches:
             server.batches[tag["batch"]].append(line)
         else:
             self._handle(line)
 
-    @Utils.hook("preprocess.send")
+    @utils.hook("preprocess.send")
     def handle_send(self, event):
-        line = Utils.parse_line(event["server"], event["line"])
+        line = utils.irc.parse_line(event["server"], event["line"])
         self.events.on("send").on(line.command).call(
             args=line.args, arbitrary=line.arbitrary, tags=line.tags,
             last=line.last, server=line.server)
 
     # ping from the server
-    @Utils.hook("raw.ping")
+    @utils.hook("raw.ping")
     def ping(self, event):
         event["server"].send_pong(event["last"])
 
     # first numeric line the server sends
-    @Utils.hook("raw.001", default_event=True)
+    @utils.hook("raw.001", default_event=True)
     def handle_001(self, event):
         event["server"].name = event["prefix"].nickname
         event["server"].set_own_nickname(event["args"][0])
         event["server"].send_whois(event["server"].nickname)
 
     # server telling us what it supports
-    @Utils.hook("raw.005")
+    @utils.hook("raw.005")
     def handle_005(self, event):
         isupport_line = " ".join(event["args"][1:])
 
@@ -91,7 +91,7 @@ class Module(ModuleManager.BaseModule):
             isupport=isupport_line, server=event["server"])
 
     # whois respose (nickname, username, realname, hostname)
-    @Utils.hook("raw.311", default_event=True)
+    @utils.hook("raw.311", default_event=True)
     def handle_311(self, event):
         nickname = event["args"][1]
         if event["server"].is_own_nickname(nickname):
@@ -103,7 +103,7 @@ class Module(ModuleManager.BaseModule):
         target.realname = event["arbitrary"]
 
     # on-join channel topic line
-    @Utils.hook("raw.332")
+    @utils.hook("raw.332")
     def handle_332(self, event):
         channel = event["server"].get_channel(event["args"][1])
 
@@ -112,7 +112,7 @@ class Module(ModuleManager.BaseModule):
             server=event["server"], topic=event["arbitrary"])
 
     # channel topic changed
-    @Utils.hook("raw.topic")
+    @utils.hook("raw.topic")
     def topic(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         channel = event["server"].get_channel(event["args"][0])
@@ -121,12 +121,12 @@ class Module(ModuleManager.BaseModule):
             server=event["server"], topic=event["arbitrary"], user=user)
 
     # on-join channel topic set by/at
-    @Utils.hook("raw.333")
+    @utils.hook("raw.333")
     def handle_333(self, event):
         channel = event["server"].get_channel(event["args"][1])
 
         topic_setter_hostmask = event["args"][2]
-        topic_setter = Utils.seperate_hostmask(topic_setter_hostmask)
+        topic_setter = utils.irc.seperate_hostmask(topic_setter_hostmask)
         topic_time = int(event["args"][3]) if event["args"][3].isdigit(
             ) else None
 
@@ -138,7 +138,7 @@ class Module(ModuleManager.BaseModule):
             server=event["server"])
 
     # /names response, also on-join user list
-    @Utils.hook("raw.353", default_event=True)
+    @utils.hook("raw.353", default_event=True)
     def handle_353(self, event):
         channel = event["server"].get_channel(event["args"][2])
         nicknames = event["arbitrary"].split()
@@ -150,7 +150,7 @@ class Module(ModuleManager.BaseModule):
                 nickname = nickname[1:]
 
             if "userhost-in-names" in event["server"].capabilities:
-                hostmask = Utils.seperate_hostmask(nickname)
+                hostmask = utils.irc.seperate_hostmask(nickname)
                 nickname = hostmask.nickname
                 user = event["server"].get_user(hostmask.nickname)
                 user.username = hostmask.username
@@ -164,12 +164,12 @@ class Module(ModuleManager.BaseModule):
                 channel.add_mode(mode, nickname)
 
     # on-join user list has finished
-    @Utils.hook("raw.366", default_event=True)
+    @utils.hook("raw.366", default_event=True)
     def handle_366(self, event):
         event["server"].send_whox(event["args"][1], "n", "ahnrtu", "111")
 
     # on user joining channel
-    @Utils.hook("raw.join")
+    @utils.hook("raw.join")
     def join(self, event):
         account = None
         realname = None
@@ -207,7 +207,7 @@ class Module(ModuleManager.BaseModule):
             channel.send_mode()
 
     # on user parting channel
-    @Utils.hook("raw.part")
+    @utils.hook("raw.part")
     def part(self, event):
         channel = event["server"].get_channel(event["args"][0])
         reason = event["arbitrary"] or ""
@@ -226,12 +226,12 @@ class Module(ModuleManager.BaseModule):
             event["server"].remove_channel(channel)
 
     # unknown command sent by us, oops!
-    @Utils.hook("raw.421", default_event=True)
+    @utils.hook("raw.421", default_event=True)
     def handle_421(self, event):
         print("warning: unknown command '%s'." % event["args"][1])
 
     # a user has disconnected!
-    @Utils.hook("raw.quit")
+    @utils.hook("raw.quit")
     def quit(self, event):
         reason = event["arbitrary"] or ""
 
@@ -244,7 +244,7 @@ class Module(ModuleManager.BaseModule):
             event["server"].disconnect()
 
     # the server is telling us about its capabilities!
-    @Utils.hook("raw.cap")
+    @utils.hook("raw.cap")
     def cap(self, event):
         capabilities_list = (event["arbitrary"] or "").split(" ")
         capabilities = {}
@@ -295,13 +295,13 @@ class Module(ModuleManager.BaseModule):
             event["server"].send_capability_end()
 
     # the server is asking for authentication
-    @Utils.hook("raw.authenticate")
+    @utils.hook("raw.authenticate")
     def authenticate(self, event):
         self.events.on("received.authenticate").call(
             message=event["args"][0], server=event["server"])
 
     # someone has changed their nickname
-    @Utils.hook("raw.nick")
+    @utils.hook("raw.nick")
     def nick(self, event):
         new_nickname = event["last"]
         if not event["server"].is_own_nickname(event["prefix"].nickname):
@@ -320,7 +320,7 @@ class Module(ModuleManager.BaseModule):
                 new_nickname=new_nickname, old_nickname=old_nickname)
 
     # something's mode has changed
-    @Utils.hook("raw.mode")
+    @utils.hook("raw.mode")
     def mode(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][0]
@@ -354,7 +354,7 @@ class Module(ModuleManager.BaseModule):
                 server=event["server"])
 
     # someone (maybe me!) has been invited somewhere
-    @Utils.hook("raw.invite")
+    @utils.hook("raw.invite")
     def invite(self, event):
         target_channel = event["last"]
         user = event["server"].get_user(event["prefix"].nickname)
@@ -364,7 +364,7 @@ class Module(ModuleManager.BaseModule):
             target_user=target_user)
 
     # we've received a message
-    @Utils.hook("raw.privmsg")
+    @utils.hook("raw.privmsg")
     def privmsg(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         message = event["arbitrary"] or ""
@@ -398,7 +398,7 @@ class Module(ModuleManager.BaseModule):
                 event["tags"])
 
     # we've received a notice
-    @Utils.hook("raw.notice")
+    @utils.hook("raw.notice")
     def notice(self, event):
         message = event["arbitrary"] or ""
         message_split = message.split(" ")
@@ -427,7 +427,7 @@ class Module(ModuleManager.BaseModule):
                     server=event["server"], tags=event["tags"])
 
     # IRCv3 TAGMSG, used to send tags without any other information
-    @Utils.hook("raw.tagmsg")
+    @utils.hook("raw.tagmsg")
     def tagmsg(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][0]
@@ -441,7 +441,7 @@ class Module(ModuleManager.BaseModule):
                 user=user, tags=event["tags"], server=event["server"])
 
     # IRCv3 AWAY, used to notify us that a client we can see has changed /away
-    @Utils.hook("raw.away")
+    @utils.hook("raw.away")
     def away(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         message = event["arbitrary"]
@@ -454,7 +454,7 @@ class Module(ModuleManager.BaseModule):
             self.events.on("received.away.off").call(user=user,
                 server=event["server"])
 
-    @Utils.hook("raw.batch")
+    @utils.hook("raw.batch")
     def batch(self, event):
         identifier = event["args"][0]
         modifier, identifier = identifier[0], identifier[1:]
@@ -467,7 +467,7 @@ class Module(ModuleManager.BaseModule):
                 self._handle(line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
-    @Utils.hook("raw.chghost")
+    @utils.hook("raw.chghost")
     def chghost(self, event):
         username = event["args"][0]
         hostname = event["args"][1]
@@ -479,7 +479,7 @@ class Module(ModuleManager.BaseModule):
         target.username = username
         target.hostname = hostname
 
-    @Utils.hook("raw.account")
+    @utils.hook("raw.account")
     def account(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
 
@@ -496,13 +496,13 @@ class Module(ModuleManager.BaseModule):
                 server=event["server"])
 
     # response to a WHO command for user information
-    @Utils.hook("raw.352", default_event=True)
+    @utils.hook("raw.352", default_event=True)
     def handle_352(self, event):
         user = event["server"].get_user(event["args"][5])
         user.username = event["args"][2]
         user.hostname = event["args"][3]
     # response to a WHOX command for user information, including account name
-    @Utils.hook("raw.354", default_event=True)
+    @utils.hook("raw.354", default_event=True)
     def handle_354(self, event):
         if event["args"][1] == "111":
             username = event["args"][2]
@@ -519,7 +519,7 @@ class Module(ModuleManager.BaseModule):
                 user.identified_account = account
 
     # response to an empty mode command
-    @Utils.hook("raw.324", default_event=True)
+    @utils.hook("raw.324", default_event=True)
     def handle_324(self, event):
         channel = event["server"].get_channel(event["args"][1])
         modes = event["args"][2]
@@ -529,27 +529,27 @@ class Module(ModuleManager.BaseModule):
                     channel.add_mode(mode)
 
     # channel creation unix timestamp
-    @Utils.hook("raw.329", default_event=True)
+    @utils.hook("raw.329", default_event=True)
     def handle_329(self, event):
         channel = event["server"].get_channel(event["args"][1])
         channel.creation_timestamp = int(event["args"][2])
 
     # nickname already in use
-    @Utils.hook("raw.433", default_event=True)
+    @utils.hook("raw.433", default_event=True)
     def handle_433(self, event):
         pass
 
     # we need a registered nickname for this channel
-    @Utils.hook("raw.477", default_event=True)
+    @utils.hook("raw.477", default_event=True)
     def handle_477(self, event):
-        channel_name = Utils.irc_lower(event["server"], event["args"][1])
+        channel_name = utils.irc.lower(event["server"], event["args"][1])
         if channel_name in event["server"]:
             key = event["server"].attempted_join[channel_name]
             self.timers.add("rejoin", 5, channel_name=channe_name, key=key,
                 server_id=event["server"].id)
 
     # someone's been kicked from a channel
-    @Utils.hook("raw.kick")
+    @utils.hook("raw.kick")
     def kick(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][1]

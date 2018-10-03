@@ -1,13 +1,13 @@
 #--require-config trakt-api-key
 
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_TRAKT = "https://api-v2launch.trakt.tv/users/%s/watching"
 URL_TRAKTSLUG = "https://trakt.tv/%s/%s"
 
-@Utils.export("set", {"setting": "trakt", "help": "Set username on trakt.tv"})
+@utils.export("set", {"setting": "trakt", "help": "Set username on trakt.tv"})
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.nowwatching|nw")
+    @utils.hook("received.command.nowwatching|nw")
     def now_watching(self, event):
         """
         :help: Get what you or another user is now watching on trakt.tv
@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
         else:
             username = event["user"].get_setting("trakt",
                 event["user"].nickname)
-        page = Utils.get_url(URL_TRAKT % username, headers={
+        page = utils.http.get_url(URL_TRAKT % username, headers={
             "Content-Type": "application/json",
             "trakt-api-version": "2", "trakt-api-key":
             self.bot.config["trakt-api-key"]}, json=True,

@@ -1,7 +1,7 @@
 #--require-config google-api-key
 
 import re
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 REGEX_YOUTUBE = re.compile(
     "https?://(?:www.)?(?:youtu.be/|youtube.com/watch\?[\S]*v=)([\w\-]{11})",
@@ -16,12 +16,12 @@ URL_YOUTUBESHORT = "https://youtu.be/%s"
 ARROW_UP = "▲"
 ARROW_DOWN = "▼"
 
-@Utils.export("channelset", {"setting": "auto-youtube",
+@utils.export("channelset", {"setting": "auto-youtube",
     "help": "Disable/Enable automatically getting info from youtube URLs",
-    "validate": Utils.bool_or_none})
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def get_video_page(self, video_id, part):
-        return Utils.get_url(URL_YOUTUBEVIDEO, get_params={"part": part,
+        return utils.http.get_url(URL_YOUTUBEVIDEO, get_params={"part": part,
             "id": video_id, "key": self.bot.config["google-api-key"]},
             json=True)
     def video_details(self, video_id):
@@ -55,12 +55,12 @@ class Module(ModuleManager.BaseModule):
                 video_title, video_duration, video_uploader, "{:,}".format(
                 int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
 
-    @Utils.hook("get.searchyoutube")
+    @utils.hook("get.searchyoutube")
     def search_video(self, event):
         search = event["query"]
         video_id = ""
 
-        search_page = Utils.get_url(URL_YOUTUBESEARCH,
+        search_page = utils.http.get_url(URL_YOUTUBESEARCH,
             get_params={"q": search, "part": "snippet",
             "maxResults": "1", "type": "video",
             "key": self.bot.config["google-api-key"]},
@@ -71,7 +71,7 @@ class Module(ModuleManager.BaseModule):
                 video_id = search_page["items"][0]["id"]["videoId"]
                 return "https://youtu.be/%s" % video_id
 
-    @Utils.hook("received.command.yt|youtube")
+    @utils.hook("received.command.yt|youtube")
     def yt(self, event):
         """
         :help: Find a video on youtube
@@ -87,7 +87,7 @@ class Module(ModuleManager.BaseModule):
                 video_id = re.search(REGEX_YOUTUBE, last_youtube.message).group(1)
         if search or video_id:
             if not video_id:
-                search_page = Utils.get_url(URL_YOUTUBESEARCH,
+                search_page = utils.http.get_url(URL_YOUTUBESEARCH,
                     get_params={"q": search, "part": "snippet",
                     "maxResults": "1", "type": "video",
                     "key": self.bot.config["google-api-key"]},
@@ -106,7 +106,7 @@ class Module(ModuleManager.BaseModule):
         else:
            event["stderr"].write("No search phrase provided")
 
-    @Utils.hook("received.message.channel")
+    @utils.hook("received.message.channel")
     def channel_message(self, event):
         match = re.search(REGEX_YOUTUBE, event["message"])
         if match and event["channel"].get_setting("auto-youtube", False):
