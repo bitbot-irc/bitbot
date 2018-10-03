@@ -75,8 +75,9 @@ else:
             nickname = input("nickname: ")
             username = input("username: ")
             realname = input("realname: ")
+            bindhost = input("bindhost?: ")
             bot.database.servers.add(alias, hostname, port, password, ipv4,
-                tls, nickname, username, realname)
+                tls, bindhost, nickname, username, realname)
     except KeyboardInterrupt:
         print()
         pass

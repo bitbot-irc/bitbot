@@ -12,9 +12,9 @@ class Servers(Table):
         self.database.execute(
             """INSERT INTO servers (alias, hostname, port, password, ipv4,
             tls, bindhost, nickname, username, realname) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [hostname, port, password, ipv4, tls, bindhost, nickname, username,
-            realname])
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            [alias, hostname, port, password, ipv4, tls, bindhost, nickname,
+            username, realname])
     def get_all(self):
         return self.database.execute_fetchall(
             "SELECT server_id, alias FROM servers")
