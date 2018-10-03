@@ -12,6 +12,8 @@ class Module(ModuleManager.BaseModule):
     def _mode_symbols(self, user, channel, server):
         modes = channel.get_user_status(user)
         symbols = []
+        modes = list(channel.get_user_status(user))
+        modes.sort(key=lambda x: list(server.prefix_modes.keys()).index(x))
         for mode in channel.get_user_status(user):
             symbols.append(server.prefix_modes[mode])
         return "".join(symbols)
