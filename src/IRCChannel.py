@@ -14,6 +14,7 @@ class Channel(IRCObject.Object):
         self.topic_time = 0
         self.users = set([])
         self.modes = {}
+        self.user_modes = {}
         self.created_timestamp = None
         self.buffer = IRCBuffer.Buffer(bot, server)
 
@@ -40,6 +41,8 @@ class Channel(IRCObject.Object):
                 self.modes[mode].discard(user)
                 if not len(self.modes[mode]):
                     del self.modes[mode]
+                if user in self.user_modes:
+                    del self.user_modes
     def has_user(self, user):
         return user in self.users
 
@@ -51,6 +54,9 @@ class Channel(IRCObject.Object):
                 user = self.server.get_user(arg)
                 if user:
                     self.modes[mode].add(user)
+                    if not user in self.user_modes:
+                        self.user_modes[user] = set([])
+                    self.user_modes[user].add(mode)
             else:
                 self.modes[mode].add(arg.lower())
     def remove_mode(self, mode, arg=None):
@@ -61,6 +67,9 @@ class Channel(IRCObject.Object):
                 user = self.server.get_user(arg)
                 if user:
                     self.modes[mode].discard(user)
+                    self.user_modes[user].discard(mode)
+                    if not self.user_modes[user]:
+                        del self.user_modes[user]
             else:
                 self.modes[mode].discard(arg.lower())
             if not len(self.modes[mode]):
@@ -130,8 +139,4 @@ class Channel(IRCObject.Object):
         return False
 
     def get_user_status(self, user):
-        modes = ""
-        for mode in self.server.mode_prefixes.values():
-            if user in self.modes.get(mode, []):
-                modes += mode
-        return modes
+        return self.user_modes.get(user, [])

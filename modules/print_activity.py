@@ -9,13 +9,22 @@ class Module(ModuleManager.BaseModule):
             target += channel
         self.bot.log.info("%s | %s", [target, line])
 
+    def _mode_symbols(self, user, channel, server):
+        modes = channel.get_user_status(user)
+        symbols = []
+        for mode in channel.get_user_status(user):
+            symbols.append(server.prefix_modes[mode])
+        return "".join(symbols)
+
     def _on_message(self, event, nickname):
+        symbols = self._mode_symbols(event["user"], event["channel"],
+            event["server"])
         if event["action"]:
-            self.print_line(event, "* %s %s" % (nickname, event["message"]),
-                channel=event["channel"].name)
+            self.print_line(event, "* %s%s %s" % (symbols, nickname,
+                event["message"]), channel=event["channel"].name)
         else:
-            self.print_line(event, "<%s> %s" % (nickname, event["message"]),
-                channel=event["channel"].name)
+            self.print_line(event, "<%s%s> %s" % (symbols, nickname,
+                event["message"]), channel=event["channel"].name)
     @utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_HIGH)
     def channel_message(self, event):
