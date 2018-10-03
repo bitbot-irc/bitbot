@@ -16,22 +16,23 @@ class Module(ModuleManager.BaseModule):
             symbols.append(server.prefix_modes[mode])
         return "".join(symbols)
 
-    def _on_message(self, event, nickname):
-        symbols = self._mode_symbols(event["user"], event["channel"],
+    def _on_message(self, event, user):
+        symbols = self._mode_symbols(user, event["channel"],
             event["server"])
         if event["action"]:
-            self.print_line(event, "* %s%s %s" % (symbols, nickname,
+            self.print_line(event, "* %s%s %s" % (symbols, user.nickname,
                 event["message"]), channel=event["channel"].name)
         else:
-            self.print_line(event, "<%s%s> %s" % (symbols, nickname,
+            self.print_line(event, "<%s%s> %s" % (symbols, user.nickname,
                 event["message"]), channel=event["channel"].name)
     @utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_HIGH)
     def channel_message(self, event):
-        self._on_message(event, event["user"].nickname)
+        self._on_message(event, event["user"])
     @utils.hook("self.message.channel")
     def self_channel_message(self, event):
-        self._on_message(event, event["server"].nickname)
+        self._on_message(event, event["server"].get_user(
+            event["server"].nickname))
 
     def _on_notice(self, event, target):
         self.print_line(event, "(notice->%s) <%s> %s" % (
