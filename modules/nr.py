@@ -178,8 +178,11 @@ class Module(ModuleManager.BaseModule):
             station_summary = "%s (%s) - %s (%s):\n" % (query["locationName"], query["crs"], query["stationManager"],
                 query["stationManagerCode"])
         else:
-            station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"],
-                ", %s%s severe messages%s" % (Utils.color(nrcc_severe, Utils.COLOR_RED) if nrcc_severe else ""))
+            severe_summary = ""
+            if nrcc_severe:
+                severe_summary += ", "
+                severe_summary += Utils.bold(Utils.color("%s severe messages" % nrcc_severe, Utils.COLOR_RED))
+            station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"], severe_summary)
 
         if not "trainServices" in query and not "busServices" in query and not "ferryServices" in query:
             return event["stdout"].write("%s: No services for the next %s minutes" % (
@@ -283,7 +286,7 @@ class Module(ModuleManager.BaseModule):
                 "*" if t["platform_hidden"] else '',
                 "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
                 t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
-                Utils.color(t["times"][filter["type"]]["shortest"*filter["st"] or "short"], colours[t["times"][filter["type"]]["status"]]),
+                Utils.bold(Utils.color(t["times"][filter["type"]]["shortest"*filter["st"] or "short"], colours[t["times"][filter["type"]]["status"]])),
                 bool(t["activity"])*", " + "+".join(t["activity"]),
                 ) for t in trains_filtered])
         if event.get("external"):
