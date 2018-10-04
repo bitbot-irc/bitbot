@@ -136,7 +136,7 @@ def get_hashflags(filename):
             if not line.startswith("#"):
                 break
             elif line.startswith("#--"):
-                hashflag, sep, value = line.replace[3:].partition(" ")
+                hashflag, sep, value = line[3:].partition(" ")
                 hashflags[hashflag] = value if sep else None
     return hashflags.items()
 
