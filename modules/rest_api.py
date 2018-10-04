@@ -8,34 +8,36 @@ class Handler(http.server.BaseHTTPRequestHandler):
     timeout = 10
     def do_GET(self):
         _bot.lock.acquire()
-        parsed = urllib.parse.urlparse(self.path)
-        query = parsed.query
-        get_params = urllib.parse.parse_qs(query)
-
-        response = ""
-        code = 404
-
-        if not "key" in get_params or not _bot.get_setting(
-                "api-key-%s" % get_params["key"][0], False):
-            code = 401
-        else:
-            if parsed.path.startswith("/api/"):
-                _, _, endpoint = parsed.path[1:].partition("/")
-                response = _events.on("api").on(endpoint).call_for_result(
-                    params=get_params, path=endpoint.split("/"))
-
-                if response:
-                    response = json.dumps(response, sort_keys=True, indent=4)
-                    code = 200
-
-        self.send_response(code)
-        self.send_header("Content-type", "application/json")
-        self.end_headers()
         try:
+            parsed = urllib.parse.urlparse(self.path)
+            query = parsed.query
+            get_params = urllib.parse.parse_qs(query)
+
+            response = ""
+            code = 404
+
+            if not "key" in get_params or not _bot.get_setting(
+                    "api-key-%s" % get_params["key"][0], False):
+                code = 401
+            else:
+                if parsed.path.startswith("/api/"):
+                    _, _, endpoint = parsed.path[1:].partition("/")
+                    response = _events.on("api").on(endpoint).call_for_result(
+                        params=get_params, path=endpoint.split("/"))
+
+                    if response:
+                        response = json.dumps(response, sort_keys=True,
+                            indent=4)
+                        code = 200
+
+            self.send_response(code)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
             self.wfile.write(response.encode("utf8"))
         except:
             pass
-        _bot.lock.release()
+        finally:
+            _bot.lock.release()
 
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
