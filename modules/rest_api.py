@@ -1,5 +1,6 @@
-import http.server, json, threading, urllib.parse
+import http.server, json, threading, uuid, urllib.parse
 import flask
+from src import utils
 
 _bot = None
 _events = None
@@ -13,14 +14,18 @@ class Handler(http.server.BaseHTTPRequestHandler):
         response = ""
         code = 404
 
-        if parsed.path.startswith("/api/"):
-            _, _, endpoint = parsed.path[1:].partition("/")
-            response = _events.on("api").on(endpoint).call_for_result(
-                params=get_params)
+        if not "key" in get_params or not _bot.get_setting(
+                "api-key-%s" % get_params["key"][0], False):
+            code = 401
+        else:
+            if parsed.path.startswith("/api/"):
+                _, _, endpoint = parsed.path[1:].partition("/")
+                response = _events.on("api").on(endpoint).call_for_result(
+                    params=get_params, path=endpoint.split("/"))
 
-            if response:
-                response = json.dumps(response, sort_keys=True, indent=4)
-                code = 200
+                if response:
+                    response = json.dumps(response, sort_keys=True, indent=4)
+                    code = 200
 
         self.send_response(code)
         self.send_header("Content-type", "application/json")
@@ -49,3 +54,14 @@ class Module(object):
 
     def unload(self):
         self.httpd.shutdown()
+
+    @utils.hook("received.command.apikey", private_only=True)
+    def api_key(self, event):
+        """
+        :help: Generate a new API key
+        :permission: api-key
+        :prefix: APIKey
+        """
+        api_key = str(uuid.uuid4())
+        self.bot.set_setting("api-key-%s" % api_key, True)
+        event["stdout"].write(api_key)
