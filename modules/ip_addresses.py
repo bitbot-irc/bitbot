@@ -2,7 +2,7 @@ import re, socket
 from src import ModuleManager, utils
 
 URL_GEOIP = "http://ip-api.com/json/%s"
-REGEX_IP = ("(?:\b|\s|^)((?:(?:[a-f0-9]{1,4}:){2,}|::)[^\s]+)(?:\b|\s|$)" # ipv6
+REGEX_IP = ("((?:(?:[a-f0-9]{1,4}:){2,}|[a-f0-9:]*::)[a-f0-9:]*)" # ipv6
     "|"
     "((?:\d{1,3}\.){3}\d{1,3})") # ipv4
 REGEX_IP = re.compile(REGEX_IP, re.I)
@@ -77,4 +77,4 @@ class Module(ModuleManager.BaseModule):
         except (socket.herror, socket.gaierror) as e:
             event["stderr"].write(e.strerror)
             return
-        event["stdout"].write("%s: %s" % (ips[0], hostname))
+        event["stdout"].write("(%s) %s" % (ips[0], hostname))
