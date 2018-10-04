@@ -134,6 +134,11 @@ class ModuleManager(object):
         if not name in self.modules:
             raise ModuleNotFoundException()
         module = self.modules[name]
+        if hasattr(module, "unload"):
+            try:
+                module.unload()
+            except:
+                pass
         del self.modules[name]
 
         context = module._context
