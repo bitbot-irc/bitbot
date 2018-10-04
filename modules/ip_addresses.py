@@ -62,7 +62,7 @@ class Module(ModuleManager.BaseModule):
         event["stderr"].set_prefix("rDNS")
         try:
             hostname, alias, ips = socket.gethostbyaddr(event["args_split"][0])
-        except socket.herror as e:
-            event["stderr"].write(str(e))
+        except (socket.herror, socket.gaierror) as e:
+            event["stderr"].write(e.strerror)
             return
         event["stdout"].write("%s: %s" % (ips[0], hostname))
