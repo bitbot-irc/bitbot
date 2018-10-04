@@ -136,8 +136,8 @@ def get_hashflags(filename):
             if not line.startswith("#"):
                 break
             elif line.startswith("#--"):
-                hashflag, _, value = line.replace("#--", "", 1).partition(" ")
-                hashflags[hashflag] = value or None
+                hashflag, sep, value = line.replace[3:].partition(" ")
+                hashflags[hashflag] = value if sep else None
     return hashflags.items()
 
 class Docstring(object):
