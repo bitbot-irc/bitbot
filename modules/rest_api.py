@@ -5,6 +5,7 @@ from src import utils
 _bot = None
 _events = None
 class Handler(http.server.BaseHTTPRequestHandler):
+    timeout = 10
     def do_GET(self):
         _bot.lock.acquire()
         parsed = urllib.parse.urlparse(self.path)
