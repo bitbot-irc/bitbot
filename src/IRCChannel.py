@@ -42,7 +42,7 @@ class Channel(IRCObject.Object):
                 if not len(self.modes[mode]):
                     del self.modes[mode]
                 if user in self.user_modes:
-                    del self.user_modes
+                    del self.user_modes[user]
     def has_user(self, user):
         return user in self.users
 
