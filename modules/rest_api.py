@@ -23,8 +23,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 if parsed.path.startswith("/api/"):
                     _, _, endpoint = parsed.path[1:].partition("/")
                     endpoint, _, args = endpoint.partition("/")
+                    args = list(filter(None, args.split("/")))
+
                     response = _events.on("api").on(endpoint).call_for_result(
-                        params=get_params, path=args.split("/"))
+                        params=get_params, path=args)
 
                     if response:
                         response = json.dumps(response, sort_keys=True,
