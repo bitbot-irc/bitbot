@@ -60,6 +60,11 @@ class Module(ModuleManager.BaseModule):
             }
         return servers
 
+    def _channel_stats(self, channel):
+        return {
+            "users": len(channel.users),
+            "topic": channel.topic
+        }
     @utils.hook("api.channels")
     def channels_api(self, event):
         print(event["path"])
@@ -74,12 +79,13 @@ class Module(ModuleManager.BaseModule):
                 return None
             channels = {}
             for channel in server.channels.values():
-                channels[channel.name] = len(channel.users)
+                channels[channel.name] = self._channel_stats(channel)
             return channels
         else:
             channels = {}
             for server in self.bot.servers.values():
                 channels[server.id] = {}
                 for channel in server.channels.values():
-                    channels[server.id][str(channel)] = len(channel.users)
+                    channels[server.id][str(channel)] = self._channel_stats(
+                        channel)
             return channels
