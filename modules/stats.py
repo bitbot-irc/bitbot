@@ -89,3 +89,7 @@ class Module(ModuleManager.BaseModule):
                     channels[server.id][str(channel)] = self._channel_stats(
                         channel)
             return channels
+
+    @utils.hook("api.modules")
+    def modules_api(self, event):
+        return list(self.bot.modules.modules.keys())
