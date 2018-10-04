@@ -322,6 +322,7 @@ class Module(ModuleManager.BaseModule):
 
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
             "passing": (False, lambda x: type(x)==type(True)),
+            "associations": (False, lambda x: type(x)==type(True)),
             "type": ("arrival", lambda x: x in ["arrival", "departure"])
             })
 
@@ -351,7 +352,7 @@ class Module(ModuleManager.BaseModule):
             if schedule:
                 sources.append("Eagle/SCHEDULE")
                 if not query: query = {"trainid": schedule["signalling_id"] or "0000", "operator": schedule["operator_name"] or schedule["atoc_code"]}
-                stype = "class %s %s" % (schedule_query["tops_inferred"], schedule["power_type"]) if schedule_query["tops_inferred"] else schedule["power_type"]
+                stype = "%s %s" % (schedule_query["tops_inferred"], schedule["power_type"]) if schedule_query["tops_inferred"] else schedule["power_type"]
                 for k,v in {
                     "operatorCode": schedule["atoc_code"],
                     "serviceType": stype if stype else SCHEDULE_STATUS[schedule["status"]],
@@ -447,12 +448,12 @@ class Module(ModuleManager.BaseModule):
                 "*" * station["passing"],
                 station["name"],
                 station["crs"] + ", " if station["name"] != station["crs"] else '',
-                station["length"] + " cars, " if station["length"] and (station["first"] or (station["last"]) or station["associations"]) else '',
+                station["length"] + " car, " if station["length"] and (station["first"] or station["associations"]) else '',
                 ("~" if station["times"][filter["type"]]["estimate"] else '') +
                 station["times"][filter["type"]]["prefix"].replace(filter["type"][0], ""),
                 utils.irc.color(station["times"][filter["type"]]["short"], colours[station["times"][filter["type"]]["status"]]),
                 ", "*bool(station["activity_p"]) + "+".join(station["activity_p"]),
-                ", ".join([a["summary"] for a in station["associations"]]),
+                ", ".join([a["summary"] for a in station["associations"]] if filter["associations"] else ""),
                 )
             station["summary_external"] = "%1s%-5s %1s%-5s %-3s %-3s %-3s %s%s" % (
                 "~"*station["times"]["a"]["estimate"] + "s"*(station["times"]["a"]["schedule"]),
@@ -487,7 +488,7 @@ class Module(ModuleManager.BaseModule):
                 "\n".join([s["summary_external"] for s in stations_filtered])
                 ))
         else:
-            event["stdout"].write("%s%s %s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operatorCode"],
+            event["stdout"].write("%s%s %s %s (%s/%s/%s): %s" % (disruptions, query["operatorCode"],
                 query["trainid"], query["serviceType"],
                 utils.irc.color(done_count, utils.irc.COLOR_LIGHTBLUE),
                 len(stations_filtered), total_count,
