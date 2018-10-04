@@ -67,7 +67,7 @@ class Module(ModuleManager.BaseModule):
         for name in list(self.bot.modules.modules.keys()):
             try:
                 self._reload(name)
-            except ModuleWarning:
+            except ModuleManager.ModuleWarning:
                 continue
             except:
                 failed.append(name)
