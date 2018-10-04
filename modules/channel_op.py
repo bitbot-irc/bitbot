@@ -39,6 +39,7 @@ class Module(ModuleManager.BaseModule):
         :help: Kick a user from the current channel
         :usage: <nickname> [reason]
         :require_mode: o
+        :prefix: Kick
         """
         target = event["args_split"][0]
         reason = " ".join(event["args_split"][1:]) or None
@@ -46,7 +47,6 @@ class Module(ModuleManager.BaseModule):
         try:
             self._kick(event["server"], event["target"], target, reason)
         except UserNotFoundException:
-            event["stderr"].set_prefix("Kick")
             event["stderr"].write(str(e))
 
     def _ban_format(self, user, s):
@@ -109,11 +109,11 @@ class Module(ModuleManager.BaseModule):
         :help: Temporarily ban someone from the current channel
         :usage: <nickname/hostmask>
         :require_mode: o
+        :prefix: Tempban
         """
         try:
             self._temp_ban(event, True)
         except InvalidTimeoutException as e:
-            event["stderr"].set_prefix("Tempban")
             event["stderr"].write(str(e))
     @utils.hook("received.command.tempkickban|tkb", channel_only=True,
         min_args=2)
@@ -122,9 +122,9 @@ class Module(ModuleManager.BaseModule):
         :help: Temporarily kick and ban someone from the current channel
         :usage: <nickname>
         :require_mode: o
+        :prefix: TKB
         """
         reason = " ".join(event["args_split"][2:]) or None
-        event["stderr"].set_prefix("TKB")
         try:
             self._temp_ban(event, False)
             self._kick(event["server"], event["target"], event["args_split"][0],
@@ -150,6 +150,7 @@ class Module(ModuleManager.BaseModule):
         :help: Kick and ban a user from the current channel
         :usage: <nickname> [reason]
         :require_mode: o
+        :prefix: Kickban
         """
         target = event["args_split"][0]
         reason = " ".join(event["args_split"][1:]) or None
@@ -157,7 +158,6 @@ class Module(ModuleManager.BaseModule):
             self._ban(event["server"], event["target"], True, target)
             self._kick(event["server"], event["target"], target, reason)
         except UserNotFoundException as e:
-            event["stderr"].set_prefix("Kickban")
             event["stderr"].write(str(e))
 
     @utils.hook("received.command.op", channel_only=True)
