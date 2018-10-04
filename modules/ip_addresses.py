@@ -1,7 +1,11 @@
-import socket
+import re, socket
 from src import ModuleManager, utils
 
 URL_GEOIP = "http://ip-api.com/json/%s"
+REGEX_IP = ("(?:\b|\s|^)((?:(?:[a-f0-9]{1,4}:){2,}|::)[^\s]+)(?:\b|\s|$)" # ipv6
+    "|"
+    "((?:\d{1,3}\.){3}\d{1,3})") # ipv4
+REGEX_IP = re.compile(REGEX_IP, re.I)
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.dns", min_args=1)
@@ -50,15 +54,26 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Failed to load results")
 
-    @utils.hook("received.command.rdns", min_args=1)
+    @utils.hook("received.command.rdns")
     def rdns(self, event):
         """
         :help: Do a reverse-DNS look up on an IPv4/IPv6 address
         :usage: <IP>
         :prefix: rDNS
         """
+        ip = event["args_split"][0] if event["args"] else ""
+        if not ip:
+            line = event["target"].buffer.find(REGEX_IP)
+            if line:
+                match = REGEX_IP.search(line.message)
+                ip = match.group(1) or match.group(2)
+        if not ip:
+            event["stderr"].write("No IP provided")
+            return
+
+        print(ip)
         try:
-            hostname, alias, ips = socket.gethostbyaddr(event["args_split"][0])
+            hostname, alias, ips = socket.gethostbyaddr(ip)
         except (socket.herror, socket.gaierror) as e:
             event["stderr"].write(e.strerror)
             return
