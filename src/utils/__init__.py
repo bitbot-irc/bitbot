@@ -171,3 +171,14 @@ def parse_docstring(s):
                             description += " "
                         description += line
     return Docstring(description, items)
+
+def top_10(items, convert_key=lambda x: x, value_format=lambda x: x):
+        top_10 = sorted(items.keys())
+        top_10 = sorted(top_10, key=items.get, reverse=True)[:10]
+
+        top_10_items = []
+        for key in top_10:
+            top_10_items.append("%s (%s)" % (convert_key(key),
+                value_format(items[key])))
+
+        return top_10_items

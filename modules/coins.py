@@ -96,12 +96,11 @@ class Module(object):
         items = [(coin[0], decimal.Decimal(coin[1])) for coin in all_coins]
         all_coins = dict(items)
 
-        top_10 = sorted(all_coins.keys())
-        top_10 = sorted(top_10, key=all_coins.get, reverse=True)[:10]
-        top_10 = ", ".join("%s (%s)" % (utils.prevent_highlight(
-            event["server"].get_user(nickname).nickname), "{0:.2f}".format(
-            all_coins[nickname])) for nickname in top_10)
-        event["stdout"].write("Richest users: %s" % top_10)
+        top_10 = utils.top_10(all_coins,
+            convert_key=lambda nickname: utils.prevent_highlight(
+                event["server"].get_user(nickname).nickname),
+            value_format=lambda value: "{0:.2f}".format(value))
+        event["stdout"].write("Richest users: %s" % ", ".join(top_10))
 
     def _redeem_cache(self, server, user):
         return "redeem|%s|%s@%s" % (server.id, user.username, user.hostname)

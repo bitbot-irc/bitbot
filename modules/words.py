@@ -82,12 +82,36 @@ class Module(ModuleManager.BaseModule):
                 "word-%s" % word, [])
             items = [(word_user[0], word_user[1]) for word_user in word_users]
             word_users = dict(items)
-
-            top_10 = sorted(word_users.keys())
-            top_10 = sorted(top_10, key=word_users.get, reverse=True)[:10]
-            top_10 = ", ".join("%s (%d)" % (utils.prevent_highlight(event[
-                "server"].get_user(nickname).nickname), word_users[nickname]
-                ) for nickname in top_10)
-            event["stdout"].write("Top '%s' users: %s" % (word, top_10))
+            top_10 = utils.top_10(word_users,
+                convert_key=lambda nickname: utils.prevent_highlight(
+                    event["server"].get_user(nickname).nickname))
+            event["stdout"].write("Top '%s' users: %s" % (word,
+                ", ".join(top_10)))
         else:
             event["stderr"].write("That word is not being tracked")
+
+    @utils.hook("received.command.wordiest")
+    def wordiest(self, event):
+        """
+        :help: Show wordiest users
+        :usage: [channel]
+        """
+        channel_query = None
+        word_prefix = ""
+        if event["args_split"]:
+            channel_query = event["args_split"][0].lower()
+            word_prefix = " (%s)" % channel_query
+
+        words = event["server"].find_all_user_channel_settings("words")
+        user_words = {}
+        for channel_name, nickname, word_count in words:
+            if not channel_query or channel_name == channel_query:
+                if not nickname in user_words:
+                    user_words[nickname] = 0
+                user_words[nickname] += word_count
+
+        top_10 = utils.top_10(user_words,
+            convert_key=lambda nickname: utils.prevent_highlight(
+                event["server"].get_user(nickname).nickname))
+        event["stdout"].write("wordiest%s: %s" % (
+            word_prefix, ", ".join(top_10)))
