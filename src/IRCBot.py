@@ -122,8 +122,8 @@ class Bot(object):
 
     def run(self):
         while self.running:
-            self.lock.acquire()
             events = self.poll.poll(self.get_poll_timeout())
+            self.lock.acquire()
             self.timers.call()
             self.cache.expire()
 
