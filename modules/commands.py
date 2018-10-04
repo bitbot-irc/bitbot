@@ -124,8 +124,8 @@ class Module(ModuleManager.BaseModule):
             if is_channel and hook.kwargs.get("private_only"):
                 return
 
-            module_name = ""
-            if hasattr(hook.function, "__self__"):
+            module_name = self._get_prefix(hook) or ""
+            if not module_name and hasattr(hook.function, "__self__"):
                 module_name = hook.function.__self__._name
 
             msgid = event["tags"].get("draft/msgid", None)
@@ -195,6 +195,8 @@ class Module(ModuleManager.BaseModule):
         return hook.get_kwarg("help", None) or hook.docstring.description
     def _get_usage(self, hook):
         return hook.get_kwarg("usage", None)
+    def _get_prefix(self, hook):
+        return hook.get_kwarg("prefix", None)
 
     @utils.hook("received.command.help")
     def help(self, event):

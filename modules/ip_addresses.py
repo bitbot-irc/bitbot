@@ -9,9 +9,8 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Get all addresses for a given hostname (IPv4/IPv6)
         :usage: <hostname>
+        :prefix: DNS
         """
-        event["stdout"].set_prefix("DNS")
-        event["stderr"].set_prefix("DNS")
         hostname = event["args_split"][0]
         try:
             address_info = socket.getaddrinfo(hostname, 1, 0,
@@ -30,11 +29,10 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Get geoip data on a given IPv4/IPv6 address
         :usage: <IP>
+        :prefix: GeoIP
         """
         page = utils.http.get_url(URL_GEOIP % event["args_split"][0],
             json=True)
-        event["stdout"].set_prefix("GeoIP")
-        event["stderr"].set_prefix("GeoIP")
         if page:
             if page["status"] == "success":
                 data  = page["query"]
@@ -57,9 +55,8 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Do a reverse-DNS look up on an IPv4/IPv6 address
         :usage: <IP>
+        :prefix: rDNS
         """
-        event["stdout"].set_prefix("rDNS")
-        event["stderr"].set_prefix("rDNS")
         try:
             hostname, alias, ips = socket.gethostbyaddr(event["args_split"][0])
         except (socket.herror, socket.gaierror) as e:
