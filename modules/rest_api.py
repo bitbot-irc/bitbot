@@ -13,25 +13,32 @@ class Handler(http.server.BaseHTTPRequestHandler):
             query = parsed.query
             get_params = urllib.parse.parse_qs(query)
 
+            _, _, endpoint = parsed.path[1:].partition("/")
+            endpoint, _, args = endpoint.partition("/")
+            args = list(filter(None, args.split("/")))
+
             response = ""
             code = 404
 
-            if not "key" in get_params or not _bot.get_setting(
-                    "api-key-%s" % get_params["key"][0], False):
-                code = 401
-            else:
-                if parsed.path.startswith("/api/"):
-                    _, _, endpoint = parsed.path[1:].partition("/")
-                    endpoint, _, args = endpoint.partition("/")
-                    args = list(filter(None, args.split("/")))
+            hooks = _events.on("api").on(endpoint).get_hooks()
+            if hooks:
+                hook = hooks[0]
+                authenticated = hook.get_kwarg("authenticated", True)
+                key = get_params.get("key", None)
+                print(key)
+                if authenticated and (
+                        not key or
+                        not _bot.get_setting("api-key-%s" % key[0], False)):
+                    code = 401
+                else:
+                    if parsed.path.startswith("/api/"):
+                        response = _events.on("api").on(endpoint
+                            ).call_for_result(params=get_params, path=args)
 
-                    response = _events.on("api").on(endpoint).call_for_result(
-                        params=get_params, path=args)
-
-                    if response:
-                        response = json.dumps(response, sort_keys=True,
-                            indent=4)
-                        code = 200
+                        if response:
+                            response = json.dumps(response, sort_keys=True,
+                                indent=4)
+                            code = 200
 
             self.send_response(code)
             self.send_header("Content-type", "application/json")
