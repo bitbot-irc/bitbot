@@ -34,5 +34,5 @@ class Module(ModuleManager.BaseModule):
                     self.events.on("send.stdout").call(
                         module_name="CheckURL", target=event["channel"],
                         message="%s just send a malicous URL!" %
-                        event["user"].nickname)
+                        event["user"].nickname, server=event["server"])
 

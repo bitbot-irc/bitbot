@@ -32,7 +32,8 @@ class Module(ModuleManager.BaseModule):
                     if verbose:
                         self.events.on("send.stderr").call(
                             module_name="Karma", target=event["channel"],
-                            message="You cannot change your own karma")
+                            message="You cannot change your own karma",
+                            server=event["server"])
                     return
 
                 setting = "karma-%s" % target
@@ -56,11 +57,12 @@ class Module(ModuleManager.BaseModule):
                 if verbose:
                     self.events.on("send.stdout").call(
                        module_name="Karma", target=event["channel"],
-                       message="%s now has %d karma" % (target, karma))
+                       message="%s now has %d karma" % (target, karma),
+                       server=event["server"])
                 event["user"].last_karma = time.time()
             elif verbose:
                 self.events.on("send.stderr").call(module_name="Karma",
-                    target=event["channel"],
+                    target=event["channel"], server=event["server"],
                     message="Try again in a couple of seconds")
 
     @utils.hook("received.command.karma")
