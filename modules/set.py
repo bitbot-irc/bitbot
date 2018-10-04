@@ -50,6 +50,15 @@ class Module(ModuleManager.BaseModule):
         """
         self._set(self.exports.get_all("serverset"), event, event["server"])
 
+    @utils.hook("received.command.botset")
+    def bot_set(self, event):
+        """
+        :help: Set a specified bot setting
+        :usage: <setting> <value>
+        :permission: botset
+        """
+        self._set(self.exports.get_all("botset"), event, self.bot)
+
     def _get(self, event, setting, qualifier, value):
         if not value == None:
             event["stdout"].write("'%s'%s: %s" % (setting,
@@ -88,3 +97,13 @@ class Module(ModuleManager.BaseModule):
         setting = event["args_split"][0]
         self._get(event, setting, "", event["server"].get_setting(
             setting, None))
+
+    @utils.hook("received.command.botget", min_args=1)
+    def bot_get(self, event):
+        """
+        :help: Get a specified bot setting
+        :usage: <setting>
+        :permission: botget
+        """
+        setting = event["args_split"][0]
+        self._get(event, setting, "", self.bot.get_setting(setting, None))

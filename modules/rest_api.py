@@ -36,6 +36,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
             pass
         _bot.lock.release()
 
+@utils.export("botset", {"setting": "rest-api",
+    "help": "Enable/disable REST API",
+    "validate": utils.bool_or_none})
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
