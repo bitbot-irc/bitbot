@@ -48,20 +48,34 @@ class Module(ModuleManager.BaseModule):
         networks, channels, users = self._stats()
         return {"networks": networks, "channels": channels, "users": users}
 
+    def _server_stats(self, server):
+        return {
+            "hostname": server.target_hostname,
+            "port": server.port,
+            "tls": server.tls,
+            "alias": server.alias,
+            "hostmask": "%s!%s@%s" % (
+                server.nickname, server.username, server.hostname),
+            "users": len(server.users)
+        }
+
     @utils.hook("api.servers")
     def servers_api(self, event):
-        servers = {}
-        for server in self.bot.servers.values():
-            servers[server.id] = {
-                "hostname": server.target_hostname,
-                "port": server.port,
-                "tls": server.tls,
-                "alias": server.alias,
-                "hostmask": "%s!%s@%s" % (
-                    server.nickname, server.username, server.hostname),
-                "users": len(server.users)
-            }
-        return servers
+        if event["path"]:
+            server_id = event["path"][0]
+            if not server_id.isdigit():
+                return None
+            server_id = int(server_id)
+
+            server = self.bot.get_server(server_id)
+            if not server:
+                return None
+            return self._server_stats(server)
+        else:
+            servers = {}
+            for server in self.bot.servers.values():
+                servers[server.id] = self._server_stats(server)
+            return servers
 
     def _channel_stats(self, channel):
         return {
