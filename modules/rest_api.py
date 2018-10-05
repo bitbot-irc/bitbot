@@ -6,7 +6,7 @@ _bot = None
 _events = None
 class Handler(http.server.BaseHTTPRequestHandler):
     timeout = 10
-    def _handle(self, method, path, params):
+    def _handle(self, method, path, data="", params={}):
         _, _, endpoint = path[1:].partition("/")
         endpoint, _, args = endpoint.partition("/")
         args = list(filter(None, args.split("/")))
@@ -25,7 +25,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             else:
                 if path.startswith("/api/"):
                     response = _events.on("api").on(method).on(endpoint
-                        ).call_for_result(params=params, path=args)
+                        ).call_for_result(params=params, path=args, data=data)
 
                     if response:
                         response = json.dumps(response, sort_keys=True,
@@ -52,14 +52,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         get_params = self._decode_params(parsed.query)
-        self._handle("get", parsed.path, get_params)
+        self._handle("get", parsed.path, params=get_params)
 
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
+        post_params = self._decode_params(parsed.query)
         content_length = int(self.headers.get("content-length", 0))
         post_body = self.rfile.read(content_length)
-        post_params = self._decode_params(post_body)
-        self._handle("post", parsed.path, post_params)
+        self._handle("post", parsed.path, data=post_body, params=post_params)
 
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
