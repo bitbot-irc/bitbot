@@ -1,4 +1,7 @@
-import http.server, json, threading, uuid, urllib.parse
+#--require-config tls-api-key
+#--require-config tls-api-certificate
+
+import http.server, json, ssl, threading, uuid, urllib.parse
 import flask
 from src import utils
 
@@ -76,6 +79,10 @@ class Module(object):
 
         if bot.get_setting("rest-api", False):
             self.httpd = http.server.HTTPServer(("", 5000), Handler)
+            self.httpd.socket = ssl.wrap_socket(self.httpd.socket,
+                keyfile=self.bot.config["tls-api-key"],
+                certfile=self.bot.config["tls-api-certificate"],
+                server_side=True)
             self.thread = threading.Thread(target=self.httpd.serve_forever)
             self.thread.daemon = True
             self.thread.start()
