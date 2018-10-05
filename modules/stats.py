@@ -56,14 +56,19 @@ class Module(ModuleManager.BaseModule):
                 "hostname": server.target_hostname,
                 "port": server.port,
                 "tls": server.tls,
-                "alias": server.alias
+                "alias": server.alias,
+                "hostmask": "%s!%s@%s" % (
+                    server.nickname, server.username, server.hostname),
+                "users": len(server.users)
             }
         return servers
 
     def _channel_stats(self, channel):
         return {
             "users": len(channel.users),
-            "topic": channel.topic
+            "topic": channel.topic,
+            "topic-set-at": channel.topic_time,
+            "topic-set-by": channel.topic_setter_nickname
         }
     @utils.hook("api.channels")
     def channels_api(self, event):
