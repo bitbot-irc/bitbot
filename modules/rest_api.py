@@ -25,7 +25,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 hook = hooks[0]
                 authenticated = hook.get_kwarg("authenticated", True)
                 key = get_params.get("key", None)
-                print(key)
                 if authenticated and (
                         not key or
                         not _bot.get_setting("api-key-%s" % key[0], False)):

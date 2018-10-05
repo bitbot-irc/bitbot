@@ -67,7 +67,6 @@ class Module(ModuleManager.BaseModule):
         }
     @utils.hook("api.channels")
     def channels_api(self, event):
-        print(event["path"])
         if event["path"]:
             server_id = event["path"][0]
             if not server_id.isdigit():
