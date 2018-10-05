@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
         :help: Show my uptime
         """
         event["stdout"].write("Uptime: %s" % self._uptime())
-    @utils.hook("api.uptime")
+    @utils.hook("api.get.uptime")
     def uptime_api(self, event):
         return self._uptime()
 
@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
 
         event["stdout"].write(response)
 
-    @utils.hook("api.stats")
+    @utils.hook("api.get.stats")
     def stats_api(self, event):
         networks, channels, users = self._stats()
         return {"networks": networks, "channels": channels, "users": users}
@@ -59,7 +59,7 @@ class Module(ModuleManager.BaseModule):
             "users": len(server.users)
         }
 
-    @utils.hook("api.servers")
+    @utils.hook("api.get.servers")
     def servers_api(self, event):
         if event["path"]:
             server_id = event["path"][0]
@@ -84,7 +84,7 @@ class Module(ModuleManager.BaseModule):
             "topic-set-at": channel.topic_time,
             "topic-set-by": channel.topic_setter_nickname
         }
-    @utils.hook("api.channels")
+    @utils.hook("api.get.channels")
     def channels_api(self, event):
         if event["path"]:
             server_id = event["path"][0]
@@ -108,6 +108,6 @@ class Module(ModuleManager.BaseModule):
                         channel)
             return channels
 
-    @utils.hook("api.modules")
+    @utils.hook("api.get.modules")
     def modules_api(self, event):
         return list(self.bot.modules.modules.keys())
