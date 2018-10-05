@@ -93,8 +93,8 @@ class Server(IRCObject.Object):
         if self.get_setting("ssl-verify", True):
             context.verify_mode = ssl.CERT_REQUIRED
 
-        client_certificate = self.bot.config.get("ssl-certificate", None)
-        client_key = self.bot.config.get("ssl-key", None)
+        client_certificate = self.bot.config.get("tls-certificate", None)
+        client_key = self.bot.config.get("tls-key", None)
         if client_certificate and client_key:
             context.load_cert_chain(client_certificate, keyfile=client_key)
 

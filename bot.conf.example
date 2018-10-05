@@ -1,6 +1,6 @@
 [bot]
-ssl-certificate          =
-ssl-key                  =
+tls-certificate          =
+tls-key                  =
 # https://openweathermap.org/api
 openweathermap-api-key   =
 # https://products.wolframalpha.com/api/
