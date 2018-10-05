@@ -17,7 +17,7 @@ class Module(ModuleManager.BaseModule):
                 id = command["id"]
                 message = commit["message"]
                 author = "%s <%s>" % (commit["author"]["username"],
-                    commit["author"]["email])
+                    commit["author"]["email"])
                 modified_count = len(commit["modified"])
                 added_count = len(commit["added"])
                 removed_count = len(commit["removed"])
