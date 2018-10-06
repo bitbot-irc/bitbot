@@ -3,7 +3,8 @@ from src import ModuleManager, utils
 
 @utils.export("channelset", {"setting": "github-hook",
     "help": ("Disable/Enable showing BitBot's github commits in the "
-    "current channel"), "validate": utils.bool_or_none})
+    "current channel"), "validate": utils.bool_or_none,
+    "hidden": True})
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.github")
     def github(self, event):

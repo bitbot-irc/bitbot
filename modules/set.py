@@ -20,8 +20,10 @@ class Module(ModuleManager.BaseModule):
         elif len(event["args_split"]) == 1:
             event["stderr"].write("Please provide a value")
         else:
+            shown_settings = [key for key, value in settings_dict.items()
+                    if not value.get("hidden", False)]
             event["stdout"].write("Available settings: %s" % (
-                ", ".join(settings_dict.keys())))
+                ", ".join(shown_settings)))
     @utils.hook("received.command.set")
     def set(self, event):
         """
