@@ -27,12 +27,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 code = 401
             else:
                 if path.startswith("/api/"):
-                    response = _events.on("api").on(method).on(endpoint
-                        ).call_for_result(params=params, path=args, data=data)
+                    try:
+                        event_response = _events.on("api").on(method).on(
+                            endpoint).call_unsafe_for_result(
+                            params=params, path=args, data=data)
+                    except:
+                        code = 500
 
-                    if response:
-                        response = json.dumps(response, sort_keys=True,
-                            indent=4)
+                    if event_response:
+                        response = json.dumps(event_response,
+                            sort_keys=True, indent=4)
                         code = 200
 
         self.send_response(code)
