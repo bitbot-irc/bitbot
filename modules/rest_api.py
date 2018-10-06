@@ -27,6 +27,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 code = 401
             else:
                 if path.startswith("/api/"):
+                    event_response = None
                     try:
                         event_response = _events.on("api").on(method).on(
                             endpoint).call_unsafe_for_result(

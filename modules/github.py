@@ -14,7 +14,7 @@ class Module(ModuleManager.BaseModule):
             full_name = data["repository"]["full_name"]
 
             for commit in data["commits"]:
-                id = command["id"]
+                id = commit["id"]
                 message = commit["message"]
                 author = "%s <%s>" % (commit["author"]["username"],
                     commit["author"]["email"])
