@@ -26,12 +26,12 @@ class Bot(object):
         self.control_socket = ControlSocket.ControlSocket(self)
         self.add_socket(self.control_socket)
 
-        self.control_socket_client = socket.socket(
+        self._control_sclient = socket.socket(
             socket.AF_UNIX, socket.SOCK_STREAM)
-        self.control_socket_client.connect(self.config["control-socket"])
+        self._control_client.connect(self.config["control-socket"])
 
     def trigger(self):
-        self.control_socket_client.send(b"TRIGGER")
+        self._control_client.send(b"TRIGGER")
 
     def add_server(self, server_id, connect=True):
         (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
