@@ -18,5 +18,5 @@ class Config(object):
     def get(self, key, default=None):
         return self._config.get(key, default)
     def __contains__(self, key):
-        return key in self.config
+        return key in self._config
 
