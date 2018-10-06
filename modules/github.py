@@ -1,6 +1,9 @@
 import json
 from src import ModuleManager, utils
 
+@utils.export("channelset", {"setting": "github-hook",
+    "help": ("Disable/Enable showing BitBot's github commits in the "
+    "current channel"), "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.github")
     def github(self, event):
@@ -22,6 +25,15 @@ class Module(ModuleManager.BaseModule):
                 added_count = len(commit["added"])
                 removed_count = len(commit["removed"])
 
-                print("(%s) [%d/%d/%d mod/add/del] commit by %s: %s" % (
-                    full_name, modified_count, added_count, removed_count,
-                    author, message))
+                line = ("(%s) [files: %d/%d/%d mod/add/del] commit by %s: "
+                    "'%s'") % (full_name, modified_count, added_count,
+                    removed_count, author, message)
+                hooks = self.bot.database.channel_settings.find_by_setting(
+                    "github-hook")
+                hooks = [hook for hook in hooks if hook[2]]
+                for server_id, channel_name, _ in hooks:
+                    server = self.bot.get_server(server_id)
+                    channel = server.get_channel(channel_name)
+
+                    self.events.on("send.stdout").call(target=channel,
+                        module_name="Github", server=server, message=line)
