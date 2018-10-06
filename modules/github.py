@@ -41,4 +41,4 @@ class Module(ModuleManager.BaseModule):
 
                     self.events.on("send.stdout").call(target=channel,
                         module_name="Github", server=server, message=line)
-                    self.bot.register_both(server)
+                    self.bot.trigger()

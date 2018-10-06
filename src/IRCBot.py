@@ -1,4 +1,4 @@
-import os, select, sys, threading, time, traceback, uuid
+import os, select, socket, sys, threading, time, traceback, uuid
 from src import ControlSocket, EventManager, Exports, IRCServer, Logging
 from src import ModuleManager, utils
 
@@ -25,6 +25,13 @@ class Bot(object):
         self.other_sockets = {}
         self.control_socket = ControlSocket.ControlSocket(self)
         self.add_socket(self.control_socket)
+
+        self.control_socket_client = socket.socket(
+            socket.AF_UNIX, socket.SOCK_STREAM)
+        self.control_socket_client.connect(self.config["control-socket"])
+
+    def trigger(self):
+        self.control_socket_client.send(b"TRIGGER")
 
     def add_server(self, server_id, connect=True):
         (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
