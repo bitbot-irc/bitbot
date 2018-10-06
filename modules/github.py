@@ -18,7 +18,11 @@ class Module(ModuleManager.BaseModule):
 
             for commit in data["commits"]:
                 id = commit["id"]
-                message = commit["message"]
+
+                message = commit["message"].split("\n")
+                message = [line.strip() for line in message]
+                message = " ".join(message)
+
                 author = "%s <%s>" % (commit["author"]["username"],
                     commit["author"]["email"])
                 modified_count = len(commit["modified"])
