@@ -199,7 +199,7 @@ class Server(IRCObject.Object):
         for user in channel.users:
             user.part_channel(channel)
         del self.channels[channel.name]
-    def parse_line(self, line):
+    def parse_data(self, line):
         if not line:
             return
         self.events.on("raw").call(server=self, line=line)
@@ -212,16 +212,22 @@ class Server(IRCObject.Object):
     def read(self):
         data = b""
         try:
-            data = self.read_buffer + self.socket.recv(4096)
+            data = self.socket.recv(4096)
         except (ConnectionResetError, socket.timeout):
             self.disconnect()
-            return []
+            return None
+        if not data:
+            self.disconnect()
+            return None
+        data = self.read_buffer+data
         self.read_buffer = b""
+
         data_lines = [line.strip(b"\r") for line in data.split(b"\n")]
         if data_lines[-1]:
             self.read_buffer = data_lines[-1]
         data_lines.pop(-1)
         decoded_lines = []
+
         for line in data_lines:
             try:
                 line = line.decode(self.get_setting(
@@ -233,8 +239,7 @@ class Server(IRCObject.Object):
                 except:
                     continue
             decoded_lines.append(line)
-        if not decoded_lines:
-            self.disconnect()
+
         self.last_read = time.monotonic()
         self.ping_sent = False
         return decoded_lines

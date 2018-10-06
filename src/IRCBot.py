@@ -1,5 +1,6 @@
 import os, select, sys, threading, time, traceback, uuid
-from . import EventManager, Exports, IRCServer, Logging, ModuleManager
+from src import ControlSocket, EventManager, Exports, IRCServer, Logging
+from src import ModuleManager, utils
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
@@ -15,12 +16,15 @@ class Bot(object):
         self.modules = modules
         self.timers = timers
 
-        events.on("timer.reconnect").hook(self.reconnect)
         self.start_time = time.time()
         self.lock = threading.Lock()
-        self.servers = {}
         self.running = True
         self.poll = select.epoll()
+
+        self.servers = {}
+        self.other_sockets = {}
+        self.control_socket = ControlSocket.ControlSocket(self)
+        self.add_socket(self.control_socket)
 
     def add_server(self, server_id, connect=True):
         (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
@@ -35,6 +39,14 @@ class Bot(object):
         if connect and new_server.get_setting("connect", True):
             self.connect(new_server)
         return new_server
+
+    def add_socket(self, sock):
+        self.other_sockets[sock.fileno()] = sock
+        self.poll.register(sock.fileno(), select.EPOLLIN)
+
+    def remove_socket(self, sock):
+        del self.other_sockets[sock.fileno()]
+        self.poll.unregister(sock.fileno())
 
     def get_server(self, id):
         for server in self.servers.values():
@@ -101,6 +113,7 @@ class Bot(object):
             pass
         del self.servers[server.fileno()]
 
+    @utils.hook("timer.reconnect")
     def reconnect(self, event):
         server = self.add_server(event["server_id"], False)
         if self.connect(server):
@@ -128,19 +141,30 @@ class Bot(object):
             self.cache.expire()
 
             for fd, event in events:
+                sock = None
+                irc = False
                 if fd in self.servers:
-                    server = self.servers[fd]
+                    sock = self.servers[fd]
+                    irc = True
+                elif fd in self.other_sockets:
+                    sock = self.other_sockets[fd]
+
+                if sock:
                     if event & select.EPOLLIN:
-                        lines = server.read()
-                        for line in lines:
-                            self.log.debug("%s (raw) | %s", [str(server), line])
-                            server.parse_line(line)
+                        data = sock.read()
+                        if data == None:
+                            sock.disconnect()
+                        for piece in data:
+                            if irc:
+                                self.log.debug("%s (raw) | %s",
+                                    [str(sock), data])
+                            sock.parse_data(piece)
                     elif event & select.EPOLLOUT:
-                        server._send()
-                        self.register_read(server)
+                        sock._send()
+                        self.register_read(sock)
                     elif event & select.EPULLHUP:
                         print("hangup")
-                        server.disconnect()
+                        sock.disconnect()
 
             for server in list(self.servers.values()):
                 if server.read_timed_out():
@@ -160,4 +184,11 @@ class Bot(object):
                         str(server), reconnect_delay))
                 elif server.waiting_send() and server.throttle_done():
                     self.register_both(server)
+
+            for sock in list(self.other_sockets.values()):
+                if not sock.connected:
+                    self.remove_socket(sock)
+                elif sock.waiting_send():
+                    self.register_both(sock)
+
             self.lock.release()
