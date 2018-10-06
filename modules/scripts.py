@@ -16,9 +16,12 @@ class Module(object):
                 if hashflag == "name" and value:
                     name = value
                 elif hashflag == "hook" and value:
-                    hook = self.events.on(value).hook(
-                        lambda x: self.call(x, filename, name))
+                    hook_fn = self._make_hook(filename, name)
+                    hook = self.events.on(value).hook(hook_fn)
                     self._hooks.append([value, hook])
+
+    def _make_hook(self, filename, name):
+        return lambda event: self.call(event, filename, name)
 
     @utils.hook("received.command.reloadscripts", permission="reloadscripts")
     def reload(self, event):
