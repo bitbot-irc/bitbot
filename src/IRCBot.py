@@ -23,12 +23,13 @@ class Bot(object):
 
         self.servers = {}
         self.other_sockets = {}
-        self.control_socket = ControlSocket.ControlSocket(self)
-        self.add_socket(self.control_socket)
 
-        self._control_sclient = socket.socket(
-            socket.AF_UNIX, socket.SOCK_STREAM)
-        self._control_client.connect(self.config["control-socket"])
+        if "contorl-socket" in self.config:
+            self.control_socket = ControlSocket.ControlSocket(self)
+            self.add_socket(self.control_socket)
+            self._control_sclient = socket.socket(
+                socket.AF_UNIX, socket.SOCK_STREAM)
+            self._control_client.connect(self.config["control-socket"])
 
     def trigger(self):
         self._control_client.send(b"TRIGGER")
