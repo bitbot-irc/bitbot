@@ -25,7 +25,7 @@ class Module(ModuleManager.BaseModule):
             "tags": line.tags, "last": line.last,
             "server": line.server,  "prefix": line.prefix}
 
-        self.events.on("raw").on(line.command).call(**kwargs)
+        self.events.on("raw").on(line.command).call_unsafe(**kwargs)
         if default_event or not hooks:
             if line.command.isdigit():
                 self.events.on("received.numeric").on(line.command).call(
