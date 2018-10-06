@@ -33,4 +33,3 @@ class ControlSocket(object):
 
     def on_read(self, sock, data):
         data = data.strip("\r\n")
-        print(data)
