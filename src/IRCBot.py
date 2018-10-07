@@ -24,7 +24,7 @@ class Bot(object):
         self.servers = {}
         self.other_sockets = {}
         self._trigger_server, self._trigger_client = socket.socketpair()
-        self.add_socket(Socket.Socket(self._trigger_server, lambda x: x))
+        self.add_socket(Socket.Socket(self._trigger_server, lambda _, s: None))
 
     def trigger(self):
         self._trigger_client.send(b"TRIGGER")
