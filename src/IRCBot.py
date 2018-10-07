@@ -26,7 +26,11 @@ class Bot(object):
         self._trigger_server, self._trigger_client = socket.socketpair()
         self.add_socket(Socket.Socket(self._trigger_server, lambda _, s: None))
 
-    def trigger(self):
+        self._trigger_functions = []
+
+    def trigger(self, func=None):
+        if func:
+            self._trigger_functions.append(func)
         self._trigger_client.send(b"TRIGGER")
 
     def add_server(self, server_id, connect=True):
@@ -142,6 +146,9 @@ class Bot(object):
             self.lock.acquire()
             self.timers.call()
             self.cache.expire()
+
+            for func in self._trigger_functions:
+                func()
 
             for fd, event in events:
                 sock = None
