@@ -31,7 +31,11 @@ class Module(object):
         event["stdout"].write("Reloaded all scripts")
 
     def call(self, event, filename, name):
-        env = {}
+        env = {
+            "HOME": os.environ["HOME"],
+            "PATH": os.environ["PATH"]
+        }
+
         env["EVENT"] = event.name
         for key, value in event.kwargs.items():
             if isinstance(value, (str,)):
