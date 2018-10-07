@@ -128,15 +128,23 @@ def export(setting, value):
         return module
     return _export_func
 
+COMMENT_TYPES = ["#", "//"]
 def get_hashflags(filename):
     hashflags = {}
     with io.open(filename, mode="r", encoding="utf8") as f:
         for line in f:
             line = line.strip("\n")
-            if not line.startswith("#"):
+            found = False
+            for comment_type in COMMENT_TYPES:
+                if line.startswith(comment_type):
+                    line = line.replace(comment_type, "", 1).lstrip()
+                    found = True
+                    break
+
+            if not found:
                 break
-            elif line.startswith("#--"):
-                hashflag, sep, value = line[3:].partition(" ")
+            elif line.startswith("--"):
+                hashflag, sep, value = line[2:].partition(" ")
                 hashflags[hashflag] = value if sep else None
     return hashflags.items()
 
