@@ -40,6 +40,6 @@ class Module(ModuleManager.BaseModule):
                     server = self.bot.get_server(server_id)
                     channel = server.get_channel(channel_name)
 
-                    self.events.on("send.stdout").call(target=channel,
-                        module_name="Github", server=server, message=line)
-                    self.bot.trigger()
+                    self.bot.trigger(lambda: self.events.on("send.stdout"
+                        ).call(target=channel, module_name="Github",
+                        server=server, message=line))
