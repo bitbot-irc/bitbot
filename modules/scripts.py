@@ -43,7 +43,8 @@ class Module(object):
             elif isinstance(value, (IRCObject.Object,)):
                 env[key.upper()] = str(value)
 
-        proc = subprocess.Popen([filename], stdout=subprocess.PIPE, env=env)
+        proc = subprocess.Popen([filename], env=env,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         try:
             proc.wait(5)
         except subprocess.TimeoutExpired:
