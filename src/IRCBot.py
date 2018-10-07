@@ -29,9 +29,11 @@ class Bot(object):
         self._trigger_functions = []
 
     def trigger(self, func=None):
+        self.lock.acquire()
         if func:
             self._trigger_functions.append(func)
         self._trigger_client.send(b"TRIGGER")
+        self.lock.release()
 
     def add_server(self, server_id, connect=True):
         (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
@@ -149,6 +151,7 @@ class Bot(object):
 
             for func in self._trigger_functions:
                 func()
+            self._trigger_functions.clear()
 
             for fd, event in events:
                 sock = None
