@@ -1,6 +1,6 @@
 import os, select, socket, sys, threading, time, traceback, uuid
-from src import ControlSocket, EventManager, Exports, IRCServer, Logging
-from src import ModuleManager, utils
+from src import EventManager, Exports, IRCServer, Logging, ModuleManager
+from src import Socket, utils
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
@@ -23,16 +23,11 @@ class Bot(object):
 
         self.servers = {}
         self.other_sockets = {}
-
-        if "contorl-socket" in self.config:
-            self.control_socket = ControlSocket.ControlSocket(self)
-            self.add_socket(self.control_socket)
-            self._control_sclient = socket.socket(
-                socket.AF_UNIX, socket.SOCK_STREAM)
-            self._control_client.connect(self.config["control-socket"])
+        self._trigger_server, self._trigger_client = socket.socketpair()
+        self.add_socket(Socket.Socket(self._trigger_server, lambda x: x))
 
     def trigger(self):
-        self._control_client.send(b"TRIGGER")
+        self._trigger_client.send(b"TRIGGER")
 
     def add_server(self, server_id, connect=True):
         (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
