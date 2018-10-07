@@ -1,6 +1,9 @@
 import signal
-from src import Config
+from src import Config, utils
 
+@utils.export("serverset", {"setting": "quit-quote",
+    "help": "Set whether I pick a random quote to /quit with",
+    "validate": utils.bool_or_none})
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
@@ -16,9 +19,9 @@ class Module(object):
             reason = "Leaving"
             if server.get_setting("quit-quote", True):
                 reason = self.events.on("get.quit-quote"
-                    ).call_for_result(default="Leaving")
+                    ).call_for_result(default=reason)
             server.send_quit(reason)
-            self.bot.register_write(server)
+            self.bot.trigger()
 
         self.bot.running = False
 
