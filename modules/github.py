@@ -39,7 +39,8 @@ class Module(ModuleManager.BaseModule):
                 for server_id, channel_name, _ in hooks:
                     server = self.bot.get_server(server_id)
                     channel = server.get_channel(channel_name)
+                    self.bot.trigger(self._make_trigger(channel, server, line))
 
-                    self.bot.trigger(lambda: self.events.on("send.stdout"
-                        ).call(target=channel, module_name="Github",
-                        server=server, message=line))
+    def _make_trigger(self, channel, server, line):
+        return lambda: self.events.on("send.stdout").call(
+            target=channel, module_name="Github", server=server, message=line)
