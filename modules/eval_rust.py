@@ -36,4 +36,4 @@ class Module(ModuleManager.BaseModule):
 
         err_or_out = "stdout" if page["success"] else "stderr"
         event[err_or_out].write("%s: %s" % (event["user"].nickname,
-            page[err_or_out]))
+            page[err_or_out].strip("\n")))
