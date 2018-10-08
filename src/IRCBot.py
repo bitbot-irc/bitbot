@@ -167,6 +167,8 @@ class Bot(object):
                         data = sock.read()
                         if data == None:
                             sock.disconnect()
+                            continue
+
                         for piece in data:
                             if irc:
                                 self.log.debug("%s (raw) | %s",
