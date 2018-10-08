@@ -51,8 +51,8 @@ class Module(object):
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         try:
             proc.wait(5)
-        except subprocess.TimeoutExpired:
-            # execution of script expired
+        except subprocess.TimeoutExpired as e:
+            proc.kill()
             return
 
         out = proc.stdout.read().decode("utf8").strip("\n")
