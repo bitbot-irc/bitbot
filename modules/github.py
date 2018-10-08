@@ -30,8 +30,8 @@ class Module(ModuleManager.BaseModule):
                 added_count = len(commit["added"])
                 removed_count = len(commit["removed"])
 
-                line = ("(%s) [files: %d/%d/%d mod/add/del] commit by '%s': %s"
-                    % (full_name, modified_count, added_count,
+                line = ("(%s) [files: +%d ∆%d -%d] commit by '%s': %s"
+                    % (full_name, added_count, modified_count,
                     removed_count, author, message))
                 hooks = self.bot.database.channel_settings.find_by_setting(
                     "github-hook")
