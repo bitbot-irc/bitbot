@@ -14,20 +14,25 @@ def get_url(url, **kwargs):
     method = kwargs.get("method", "GET")
     get_params = kwargs.get("get_params", "")
     post_params = kwargs.get("post_params", None)
+    post_data = kwargs.get("post_data", None)
     headers = kwargs.get("headers", {})
+
     if get_params:
         get_params = "?%s" % urllib.parse.urlencode(get_params)
     if post_params:
-        post_params = urllib.parse.urlencode(post_params).encode("utf8")
+        post_data = urllib.parse.urlencode(post_params)
+
     url = "%s%s" % (url, get_params)
     try:
         url.encode("latin-1")
+        if post_data:
+            post_data = post_data.encode("utf8")
     except UnicodeEncodeError:
         if kwargs.get("code"):
             return 0, False
         return False
 
-    request = urllib.request.Request(url, post_params)
+    request = urllib.request.Request(url, post_data)
     request.add_header("Accept-Language", "en-US")
     request.add_header("User-Agent", USER_AGENT)
     for header, value in headers.items():
