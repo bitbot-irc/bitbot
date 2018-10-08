@@ -40,14 +40,14 @@ class Module(ModuleManager.BaseModule):
         """
         phrase = event["args"] or event["target"].buffer.get()
         if phrase:
-            page = utils.html.get_url(URL_GOOGLESUGGEST, get_params={
-                "output": "json", "client": "hp", "q": phrase})
+            page = utils.http.get_url(URL_GOOGLESUGGEST, get_params={
+                "output": "json", "client": "hp", "gl": "gb", "q": phrase})
             if page:
                 # google gives us jsonp, so we need to unwrap it.
                 page = page.split("(", 1)[1][:-1]
                 page = json.loads(page)
                 suggestions = page[1]
-                suggestions = [utils.html.strip_html(s[0]) for s in suggestions]
+                suggestions = [utils.http.strip_html(s[0]) for s in suggestions]
 
                 if suggestions:
                     event["stdout"].write("%s: %s" % (phrase,
