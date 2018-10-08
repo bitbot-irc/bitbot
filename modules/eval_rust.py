@@ -4,7 +4,7 @@ from src import ModuleManager, utils
 EVAL_URL = "https://play.rust-lang.org/execute"
 FN_TEMPLATE = """
 fn main() {
-    println!(\"{:?}\", {
+    println!("{:?}", {
         %s
     });
 }
