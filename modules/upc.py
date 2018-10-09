@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
         """
         arg_len = len(event["args_split"][0])
         if not arg_len == 12 and not arg_len == 13:
-            event["stderr"].write("Invalid UPC/EAN provided")
+            event["stderr"].write("Invalid UPC/EAN/GTIN provided")
             return
 
         page = utils.http.get_url(UPCITEMDB_URL,
