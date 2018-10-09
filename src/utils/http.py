@@ -16,6 +16,7 @@ def get_url(url, **kwargs):
     post_params = kwargs.get("post_params", None)
     post_data = kwargs.get("post_data", None)
     headers = kwargs.get("headers", {})
+    return_code = kwargs.get("code", False)
 
     if get_params:
         get_params = "?%s" % urllib.parse.urlencode(get_params)
@@ -28,10 +29,11 @@ def get_url(url, **kwargs):
         if post_data:
             post_data = post_data.encode("utf8")
     except UnicodeEncodeError:
-        if kwargs.get("code"):
+        if return_code:
             return 0, False
         return False
 
+    print(post_data)
     request = urllib.request.Request(url, post_data)
     request.add_header("Accept-Language", "en-US")
     request.add_header("User-Agent", USER_AGENT)
@@ -43,7 +45,7 @@ def get_url(url, **kwargs):
         response = urllib.request.urlopen(request, timeout=5)
     except urllib.error.HTTPError as e:
         traceback.print_exc()
-        if kwargs.get("code"):
+        if return_code:
             return e.code, False
         return False
     except urllib.error.URLError as e:
@@ -53,14 +55,19 @@ def get_url(url, **kwargs):
         return False
     except ssl.CertificateError as e:
         traceback.print_exc()
-        if kwargs.get("code"):
+        if return_code:
             return -1, False,
         return False
 
     response_content = response.read()
     encoding = response.info().get_content_charset()
     if kwargs.get("soup"):
-        return bs4.BeautifulSoup(response_content, kwargs.get("parser", "lxml"))
+        soup = bs4.BeautifulSoup(response_content, kwargs.get("parser",
+            "lxml"))
+        if return_code:
+            return response.code, soup
+        return soup
+
     if not encoding:
         soup = bs4.BeautifulSoup(response_content, kwargs.get("parser", "lxml"))
         metas = soup.find_all("meta")
