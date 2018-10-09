@@ -33,7 +33,6 @@ def get_url(url, **kwargs):
             return 0, False
         return False
 
-    print(post_data)
     request = urllib.request.Request(url, post_data)
     request.add_header("Accept-Language", "en-US")
     request.add_header("User-Agent", USER_AGENT)
