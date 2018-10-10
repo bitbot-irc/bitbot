@@ -58,6 +58,7 @@ def get_url(url, method="GET", get_params={}, post_data=None, headers={},
         except _json.decoder.JSONDecodeError as e:
             raise HTTPParsingException(str(e))
 
+    data = data.decode(response.encoding)
     if code:
         return response.status_code, data
     else:
