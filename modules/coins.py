@@ -1,4 +1,4 @@
-import datetime, decimal, math, random, re, time
+import datetime, decimal, math, re, secrets, time
 from src import utils
 
 SIDES = {"heads": 0, "tails": 1}
@@ -163,7 +163,7 @@ class Module(object):
             event["stderr"].write("You don't have enough coins to bet")
             return
 
-        chosen_side = random.choice(list(SIDES.keys()))
+        chosen_side = secrets.choice(list(SIDES.keys()))
         win = side_name == chosen_side
 
         if win:
@@ -285,7 +285,7 @@ class Module(object):
         # black, red, odds, evens, high (1-18), low (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
         # 1column (1,4..34), 2column (2,5..35), 3column (3,6..36)
-        choice = random.randint(0, 36)
+        choice = secrets.randbelow(0, 37)
         winnings = {}
         losses = {}
         if choice == 0:
