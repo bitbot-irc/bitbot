@@ -168,16 +168,22 @@ class Module(object):
 
         if win:
             event["user"].set_setting("coins", str(user_coins+coin_bet))
-            event["stdout"].write("%s flips %s and wins %s coin%s! (new total: %s)" % (
-                event["user"].nickname, side_name, coin_bet_str,
-                "" if coin_bet == 1 else "s",
-                user_coins+coin_bet))
+            event["stdout"].write(
+                "%s flips %s and wins %s coin%s! (new total: %s)" % (
+                    event["user"].nickname, side_name, coin_bet_str,
+                    "" if coin_bet == 1 else "s",
+                    user_coins+coin_bet
+                )
+            )
         else:
             event["user"].set_setting("coins", str(user_coins-coin_bet))
-            event["stdout"].write("%s flips %s and loses %s coin%s! (new total: %s)" % (
-                event["user"].nickname, side_name, coin_bet_str,
-                "" if coin_bet == 1 else "s",
-                user_coins-coin_bet))
+            event["stdout"].write(
+                    "%s flips %s and loses %s coin%s! (new total: %s)" % (
+                    event["user"].nickname, side_name, coin_bet_str,
+                    "" if coin_bet == 1 else "s",
+                    user_coins-coin_bet
+                )
+            )
 
     @utils.hook("received.command.sendcoins", min_args=2, authenticated=True)
     def send(self, event):
