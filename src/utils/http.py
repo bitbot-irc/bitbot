@@ -19,7 +19,8 @@ def throw_timeout():
     raise HTTPTimeoutException()
 
 def get_url(url, method="GET", get_params={}, post_data=None, headers={},
-        json_data=None, code=False, json=False, soup=False, parser="lxml"):
+        json_data=None, code=False, json=False, soup=False, parser="lxml",
+        fallback_encoding="utf8"):
 
     if not urllib.parse.urlparse(url).scheme:
         url = "http://%s" % url
@@ -53,7 +54,7 @@ def get_url(url, method="GET", get_params={}, post_data=None, headers={},
             return response.code, soup
         return soup
 
-    data = response_content.decode(response.encoding)
+    data = response_content.decode(response.encoding or fallback_encoding)
     if json and data:
         try:
             data = _json.loads(data)
