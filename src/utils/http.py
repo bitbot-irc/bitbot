@@ -6,6 +6,8 @@ USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
 REGEX_HTTP = re.compile("https?://", re.I)
 
+RESPONSE_MAX = (1024*1024)*100
+
 def get_url(url, method="GET", get_params={}, post_data=None, headers={},
         json_data=None, code=False, json=False, soup=False, parser="lxml"):
 
@@ -23,16 +25,18 @@ def get_url(url, method="GET", get_params={}, post_data=None, headers={},
         headers=headers,
         params=get_params,
         data=post_data,
-        json=json_data
+        json=json_data,
+        stream=True
     )
+    response_content = response.raw.read(RESPONSE_MAX, decode_content=True)
 
     if soup:
-        soup = bs4.BeautifulSoup(response.text, parser)
+        soup = bs4.BeautifulSoup(response_content, parser)
         if code:
             return response.code, soup
         return soup
 
-    data = response.text
+    data = response_content
     if json and data:
         try:
             data = _json.loads(data)
