@@ -4,7 +4,8 @@ from src import ModuleManager, utils
 REGEX_URL = re.compile("https?://\S+", re.I)
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.title|t", usage="[URL]")
+    @utils.hook("received.command.t", alias_of="title")
+    @utils.hook("received.command.title", usage="[URL]")
     def title(self, event):
         """
         :help: Get the title of a URL

@@ -7,7 +7,8 @@ URL_WA = "https://api.wolframalpha.com/v1/result"
 class Module(ModuleManager.BaseModule):
     _name = "Wolfram|Alpha"
 
-    @utils.hook("received.command.wolframalpha|wa", min_args=1)
+    @utils.hook("received.command.wa", alias_of="wolframalpha")
+    @utils.hook("received.command.wolframalpha", min_args=1)
     def wa(self, event):
         """
         :help: Evauate a given string on Wolfram|Alpha

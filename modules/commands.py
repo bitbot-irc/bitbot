@@ -112,6 +112,13 @@ class Module(ModuleManager.BaseModule):
                 return
 
             hook = self.get_hook(command)
+            alias_of = self._get_alias_of(hook)
+            if alias_of:
+                if self.has_command(alias_of):
+                    hook = self.get_hook(alias_of)
+                else:
+                    raise ValueError("'%s' is an alias of unknown command '%s'"
+                        % (command.lower(), alias_of.lower()))
             is_channel = False
 
             if "channel" in event:
@@ -197,6 +204,8 @@ class Module(ModuleManager.BaseModule):
         return hook.get_kwarg("usage", None)
     def _get_prefix(self, hook):
         return hook.get_kwarg("prefix", None)
+    def _get_alias_of(self, hook):
+        return hook.get_kwarg("alias_of", None)
 
     @utils.hook("received.command.help")
     def help(self, event):
@@ -222,8 +231,10 @@ class Module(ModuleManager.BaseModule):
             for child in self.events.on("received.command").get_children():
                 hooks = self.events.on("received.command").on(child).get_hooks()
 
-                if hooks and self._get_help(hooks[0]):
+                if hooks and self._get_help(hooks[0]
+                        ) and not self._get_alias_of(hooks[0]):
                     help_available.append(child)
+
             help_available = sorted(help_available)
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 

@@ -71,7 +71,8 @@ class Module(ModuleManager.BaseModule):
                 video_id = search_page["items"][0]["id"]["videoId"]
                 return "https://youtu.be/%s" % video_id
 
-    @utils.hook("received.command.yt|youtube")
+    @utils.hook("received.command.yt", alias_of="youtube")
+    @utils.hook("received.command.youtube")
     def yt(self, event):
         """
         :help: Find a video on youtube

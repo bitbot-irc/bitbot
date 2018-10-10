@@ -19,7 +19,8 @@ class Module(ModuleManager.BaseModule):
         since, unit = utils.time_unit(seconds_since)
         return "%s %s ago" % (since, unit)
 
-    @utils.hook("received.command.tweet|tw")
+    @utils.hook("received.command.tw", alias_of="tweet")
+    @utils.hook("received.command.tweet")
     def tweet(self, event):
         """
         :help: Get/find a tweet

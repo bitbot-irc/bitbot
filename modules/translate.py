@@ -6,7 +6,8 @@ URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
 REGEX_LANGUAGES = re.compile("(\w+)?:(\w+)? ")
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.translate|tr")
+    @utils.hook("received.command.tr", alias_of="translate")
+    @utils.hook("received.command.translate")
     def translate(self, event):
         """
         :help: Translate the provided phrase or the last line in thie current

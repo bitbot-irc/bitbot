@@ -8,7 +8,8 @@ URL_GOOGLESEARCH = "https://www.googleapis.com/customsearch/v1"
 URL_GOOGLESUGGEST = "http://google.com/complete/search"
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.google|g")
+    @utils.hook("received.command.g", alias_of="google")
+    @utils.hook("received.command.google")
     def google(self, event):
         """
         :help: Get first Google result for a given search term

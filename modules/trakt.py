@@ -7,7 +7,8 @@ URL_TRAKTSLUG = "https://trakt.tv/%s/%s"
 
 @utils.export("set", {"setting": "trakt", "help": "Set username on trakt.tv"})
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.nowwatching|nw")
+    @utils.hook("received.command.nw", alias_of="nowwatching")
+    @utils.hook("received.command.nowwatching")
     def now_watching(self, event):
         """
         :help: Get what you or another user is now watching on trakt.tv

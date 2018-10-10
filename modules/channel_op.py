@@ -33,7 +33,8 @@ class Module(ModuleManager.BaseModule):
         else:
             raise UserNotFoundException("That user is not in this channel")
 
-    @utils.hook("received.command.kick|k", channel_only=True, min_args=1)
+    @utils.hook("received.command.k", alias_of="kick")
+    @utils.hook("received.command.kick", channel_only=True, min_args=1)
     def kick(self, event):
         """
         :help: Kick a user from the current channel
@@ -103,7 +104,9 @@ class Module(ModuleManager.BaseModule):
         self.bot.timers.add_persistent("unban", timeout,
             server_id=event["server"].id,
             channel_name=event["target"].name, hostmask=hostmask)
-    @utils.hook("received.command.tempban|tb", channel_only=True, min_args=2)
+
+    @utils.hook("received.command.tb", alias_of="tempban")
+    @utils.hook("received.command.tempban", channel_only=True, min_args=2)
     def temp_ban(self, event):
         """
         :help: Temporarily ban someone from the current channel
@@ -115,7 +118,9 @@ class Module(ModuleManager.BaseModule):
             self._temp_ban(event, True)
         except InvalidTimeoutException as e:
             event["stderr"].write(str(e))
-    @utils.hook("received.command.tempkickban|tkb", channel_only=True,
+
+    @utils.hook("received.command.tkb", alias_of="tempkickban")
+    @utils.hook("received.command.tempkickban", channel_only=True,
         min_args=2)
     def temp_kick_ban(self, event):
         """
@@ -144,7 +149,8 @@ class Module(ModuleManager.BaseModule):
         self._ban(event["server"], event["target"], False,
             event["args_split"][0])
 
-    @utils.hook("received.command.kickban|kb", channel_only=True, min_args=1)
+    @utils.hook("received.command.kb", alias_of="kickban")
+    @utils.hook("received.command.kickban", channel_only=True, min_args=1)
     def kickban(self, event):
         """
         :help: Kick and ban a user from the current channel

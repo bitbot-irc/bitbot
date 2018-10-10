@@ -10,7 +10,8 @@ REGEX_SOUNDCLOUD = "https?://soundcloud.com/([^/]+)/([^/]+)"
 class Module(ModuleManager.BaseModule):
     _name = "SoundCloud"
 
-    @utils.hook("received.command.soundcloud|sc")
+    @utils.hook("received.command.sc", alias_of="soundcloud")
+    @utils.hook("received.command.soundcloud")
     def soundcloud(self, event):
         """
         :help: Search SoundCloud

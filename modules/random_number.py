@@ -4,7 +4,8 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     _name = "Random"
 
-    @utils.hook("received.command.random|rand")
+    @utils.hook("received.command.rand", alias_of="random")
+    @utils.hook("received.command.random")
     def random(self, event):
         """
         :help: Get a random number

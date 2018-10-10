@@ -7,7 +7,8 @@ class Module(ModuleManager.BaseModule):
             return [part.strip() for part in s.split("=", 1)]
         return None, None
 
-    @utils.hook("received.command.quoteadd|qadd", min_args=1)
+    @utils.hook("received.command.qadd", alias_of="quoteadd")
+    @utils.hook("received.command.quoteadd", min_args=1)
     def quote_add(self, event):
         """
         :help: Add a quote to a category
@@ -23,7 +24,8 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Please provide a category AND quote")
 
-    @utils.hook("received.command.quoteget|qget", min_args=1)
+    @utils.hook("received.command.qget", alias_of="quoteget")
+    @utils.hook("received.command.quoteget", min_args=1)
     def quote_get(self, event):
         """
         :help: Get a quote from a ccategory
@@ -46,7 +48,8 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Please provide a category and a "
                 "part of a quote to find")
 
-    @utils.hook("received.command.quotedel|qdel", min_args=1)
+    @utils.hook("received.command.qdel", alias_of="quotedel")
+    @utils.hook("received.command.quotedel", min_args=1)
     def quote_del(self, event):
         """
         :help: Delete a quote from a category
@@ -71,7 +74,8 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Please provide a category and a quote "
                 "to remove")
 
-    @utils.hook("received.command.quote|q", min_args=1)
+    @utils.hook("received.command.q", alias_of="quote")
+    @utils.hook("received.command.quote", min_args=1)
     def quote(self, event):
         """
         :help: Get a random quote from a category
