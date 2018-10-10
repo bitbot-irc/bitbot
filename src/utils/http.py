@@ -53,14 +53,13 @@ def get_url(url, method="GET", get_params={}, post_data=None, headers={},
             return response.code, soup
         return soup
 
-    data = response_content
+    data = response_content.decode(response.encoding)
     if json and data:
         try:
             data = _json.loads(data)
         except _json.decoder.JSONDecodeError as e:
             raise HTTPParsingException(str(e))
 
-    data = data.decode(response.encoding)
     if code:
         return response.status_code, data
     else:
