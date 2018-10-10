@@ -9,6 +9,15 @@ fn main() {
     });
 }
 """
+API_ARGS = {
+    "channel": "nightly",
+    "crateType": "bin",
+    "mode": "debug",
+    "tests": False,
+    "execute": True,
+    "target": "ast",
+    "backtrace": False
+}
 
 class Module(ModuleManager.BaseModule):
     _name = "Rust"
@@ -18,17 +27,11 @@ class Module(ModuleManager.BaseModule):
         :help: Evaluate a rust statement
         :usage: <statement>
         """
+        args = API_ARGS.copy()
+        args["code"] = FN_TEMPLATE % event["args"]
         try:
-            page = utils.http.get_url(EVAL_URL, post_data=json.dumps({
-                "code": FN_TEMPLATE % event["args"],
-                "channel": "nightly",
-                "crateType": "bin",
-                "mode": "debug",
-                "tests": False,
-                "execute": True,
-                "target": "ast",
-                "backtrace": False
-            }), method="POST", json=True)
+            page = utils.http.get_url(EVAL_URL, json_data=args,
+                method="POST", json=True)
         except socket.timeout:
             event["stderr"].write("%s: eval timed out" %
                 event["user"].nickname)

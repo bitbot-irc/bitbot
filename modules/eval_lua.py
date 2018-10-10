@@ -9,7 +9,7 @@ class Module(ModuleManager.BaseModule):
     def eval(self, event):
         try:
             page = utils.http.get_url(EVAL_URL,
-                post_params={"input": event["args"]},
+                post_data={"input": event["args"]},
                 method="POST",
                 soup=True)
         except socket.timeout:

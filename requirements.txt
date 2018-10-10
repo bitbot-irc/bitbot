@@ -1,5 +1,7 @@
 beautifulsoup4
 python-telegram-bot
+requests
 scrypt
 suds-jurko
 twitter
+
