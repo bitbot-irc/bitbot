@@ -95,7 +95,7 @@ class Module(ModuleManager.BaseModule):
 
         hash, salt = self._get_hash(event["server"], event["user"].nickname)
         if not hash and not salt:
-            password = event["args_split"][0]
+            password = event["args"]
             hash, salt = self._make_hash(password)
             event["user"].set_setting("authentication", [hash, salt])
             self._identified(event["server"], event["user"],
