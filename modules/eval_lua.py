@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
         if page:
             textareas = page.find_all("textarea")
             if len(textareas) > 1:
-                out = textareas[1].text.strip()
+                out = textareas[1].text.strip("\n")
                 event["stdout"].write("%s: %s" % (event["user"].nickname, out))
         else:
             event["stderr"].write("%s: failed to eval" % event["user"].nickname)
