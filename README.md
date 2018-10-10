@@ -4,6 +4,7 @@ Python3 event-driven modular IRC bot!
 ## Dependencies
 * [BeautifulSoup4](https://pypi.python.org/pypi/beautifulsoup4)
 * [python-telegram-bot](https://pypi.org/project/python-telegram-bot/)
+* [requests](https://pypi.org/project/requests/)
 * [scrypt](https://pypi.python.org/pypi/scrypt)
 * [suds](https://pypi.python.org/pypi/suds-jurko)
 * [twitter](https://pypi.python.org/pypi/twitter)
