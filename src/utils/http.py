@@ -15,6 +15,8 @@ class HTTPTimeoutException(HTTPException):
 class HTTPParsingException(HTTPException):
     pass
 
+def throw_timeout():
+    raise HTTPTimeoutException()
 
 def get_url(url, method="GET", get_params={}, post_data=None, headers={},
         json_data=None, code=False, json=False, soup=False, parser="lxml"):
@@ -27,7 +29,7 @@ def get_url(url, method="GET", get_params={}, post_data=None, headers={},
     if not "User-Agent" in headers:
         headers["User-Agent"] = USER_AGENT
 
-    signal.signal(signal.SIGALRM, lambda: raise TimeoutError())
+    signal.signal(signal.SIGALRM, throw_timeout)
     signal.alarm(5)
     try:
         response = requests.request(
