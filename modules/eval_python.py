@@ -5,6 +5,7 @@ EVAL_URL = "https://eval.appspot.com/eval"
 
 class Module(ModuleManager.BaseModule):
     _name = "Python"
+    @utils.hook("received.command.py", alias_of="python")
     @utils.hook("received.command.python", min_args=1)
     def eval(self, event):
         """
