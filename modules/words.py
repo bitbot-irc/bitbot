@@ -1,7 +1,7 @@
 import time
 from src import EventManager, ModuleManager, utils
 
-WORD_STOP = ";:,!?~"
+WORD_STOP = ";:.,!?~"
 
 class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
