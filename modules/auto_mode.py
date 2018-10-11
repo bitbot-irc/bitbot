@@ -5,21 +5,48 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     _name = "AutoMode"
 
-    def _check_modes(self, channel, user):
+    def _get_modes(self, channel, user):
         identified_account = user.get_identified_account()
         if identified_account and channel.get_setting("automode", False):
             modes = channel.get_user_setting(user.get_id(), "automodes", [])
-            if modes:
-                channel.send_mode("+%s" % "".join(modes),
-                    " ".join([user.nickname for mode in modes]))
+            return modes
+        return []
+    def _check_modes(self, channel, user):
+        modes = self._get_modes(channel, user)
+        if modes:
+            channel.send_mode("+%s" % "".join(modes),
+                " ".join([user.nickname for mode in modes]))
 
     @utils.hook("received.join")
     def on_join(self, event):
         self._check_modes(event["channel"], event["user"])
     @utils.hook("received.account")
+    @utils.hook("internal.identified")
     def on_account(self, event):
         for channel in event["user"].channels:
             self._check_modes(channel, event["user"])
+
+    @utils.hook("received.command.syncmodes", channel_only=True)
+    def sync_modes(self, event):
+        """
+        :help: Check/sync user modes
+        :require_mode: o
+        """
+        modes = []
+        for user in event["target"].users:
+            user_modes = self._get_modes(event["target"], user)
+            for user_mode in user_modes:
+                if not event["target"].has_mode(user, user_mode):
+                    modes.append([user_mode, user.nickname])
+
+        # break up in to chunks of (maximum) 3
+        # https://tools.ietf.org/html/rfc2812.html#section-3.2.3
+        mode_chunks = [modes[i:i+3] for i in range(0, len(modes), 3)]
+        for chunk in mode_chunks:
+            modes = [item[0] for item in chunk]
+            nicknames = [item[1] for item in chunk]
+            event["target"].send_mode(
+                "+%s" % "".join(modes), " ".join(nicknames))
 
     def _add_mode(self, event, mode, mode_name):
         target_user = event["server"].get_user(event["args_split"][0])

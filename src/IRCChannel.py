@@ -138,5 +138,8 @@ class Channel(IRCObject.Object):
                 return True
         return False
 
+    def has_mode(self, user, mode):
+        return user in self.modes.get(mode, [])
+
     def get_user_status(self, user):
         return self.user_modes.get(user, [])

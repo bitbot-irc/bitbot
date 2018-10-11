@@ -71,6 +71,8 @@ class Module(ModuleManager.BaseModule):
                     self._identified(event["server"], event["user"], account)
                     event["stdout"].write("Correct password, you have "
                         "been identified as '%s'." % account)
+                    self.events.on("internal.identified").call(
+                        user=event["user"])
                 else:
                     event["stderr"].write("Incorrect password for '%s'" %
                         account)
