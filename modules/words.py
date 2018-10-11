@@ -1,7 +1,8 @@
 import time
 from src import EventManager, ModuleManager, utils
 
-WORD_STOP = ";:.,!?~"
+WORD_START = "\"“'({<…"
+WORD_STOP = "\"”')}>;:.,!?~…"
 
 class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
@@ -20,7 +21,7 @@ class Module(ModuleManager.BaseModule):
         tracked_words = set(event["server"].get_setting(
             "tracked-words", []))
         for word in words:
-            word = word.rstrip(WORD_STOP)
+            word = word.lstrip(WORD_START).rstrip(WORD_STOP)
             if word.lower() in tracked_words:
                 setting = "word-%s" % word
                 word_count = user.get_setting(setting, 0)
