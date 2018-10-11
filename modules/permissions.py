@@ -202,7 +202,7 @@ class Module(ModuleManager.BaseModule):
         target, registered, permissions = self._get_user_details(
             event["server"], event["args_split"][0])
 
-        if target.identified_account == None:
+        if target.get_identified_account() == None:
             event["stderr"].write("%s isn't registered" % target.nickname)
             return
 
