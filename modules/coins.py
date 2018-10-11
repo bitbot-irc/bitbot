@@ -178,7 +178,7 @@ class Module(object):
         else:
             event["user"].set_setting("coins", str(user_coins-coin_bet))
             event["stdout"].write(
-                    "%s flips %s and loses %s coin%s! (new total: %s)" % (
+                "%s flips %s and loses %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
                     "" if coin_bet == 1 else "s",
                     user_coins-coin_bet
