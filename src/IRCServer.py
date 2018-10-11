@@ -224,9 +224,9 @@ class Server(IRCObject.Object):
 
         data_lines = [line.strip(b"\r") for line in data.split(b"\n")]
         if data_lines[-1]:
-            self.bot.log.trace("got non-complete line '%s', buffering.",
-                [data_lines[-1]])
             self.read_buffer = data_lines[-1]
+            self.bot.log.trace("recevied and buffered non-complete line: %s",
+                [data_lines[-1]])
 
         data_lines.pop(-1)
         decoded_lines = []
