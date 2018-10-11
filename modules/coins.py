@@ -167,21 +167,21 @@ class Module(object):
         win = side_name == chosen_side
 
         if win:
-            event["user"].set_setting("coins", str(user_coins+coin_bet))
+            new_coins = str(user_coins+coin_bet)
+            event["user"].set_setting("coins", new_coins)
             event["stdout"].write(
                 "%s flips %s and wins %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
-                    "" if coin_bet == 1 else "s",
-                    user_coins+coin_bet
+                    "" if coin_bet == 1 else "s", new_coins
                 )
             )
         else:
-            event["user"].set_setting("coins", str(user_coins-coin_bet))
+            new_coins = str(user_coins-coin_bet)
+            event["user"].set_setting("coins", new_coins)
             event["stdout"].write(
                 "%s flips %s and loses %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
-                    "" if coin_bet == 1 else "s",
-                    user_coins-coin_bet
+                    "" if coin_bet == 1 else "s", new_coins
                 )
             )
 
