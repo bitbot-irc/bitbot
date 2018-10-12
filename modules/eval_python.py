@@ -3,7 +3,8 @@ from src import ModuleManager, utils
 
 EVAL_TEMPLATE = """
 import sys
-result = eval(sys.stdin.read())
+compiled = compile(sys.stdin.read(), 'code', 'single')
+result = eval(compiled)
 print("")
 if not result == None:
     sys.stdout.write(str(result))
