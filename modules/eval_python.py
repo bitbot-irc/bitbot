@@ -1,7 +1,7 @@
 import socket
 from src import ModuleManager, utils
 
-EVAL_URL = "https://eval.appspot.com/eval"
+EVAL_URL = "https://pyeval.appspot.com/exec"
 
 class Module(ModuleManager.BaseModule):
     _name = "Python"
@@ -12,17 +12,27 @@ class Module(ModuleManager.BaseModule):
         :help: Evaluate a python statement
         :usage: <statement>
         """
+        id = None
         try:
-            code, page = utils.http.get_url(EVAL_URL, get_params={
-                "statement": event["args"]}, code=True)
-        except socket.timeout:
-            event["stderr"].write("%s: eval timed out" %
-                event["user"].nickname)
-            return
+            id = utils.http.get_url(EVAL_URL,
+                post_data={"input": event["args"]},
+                method="POST")
+        except:
+            pass
 
-        if not page == None and code == 200:
-            event["stdout"].write("%s: %s" % (event["user"].nickname,
-                page))
-        else:
-            event["stderr"].write("%s: failed to eval" %
-                event["user"].nickname)
+        if not id == None:
+            try:
+                page = utils.http.get_url(EVAL_URL,
+                    get_params={"id": id},
+                    json=True)
+            except socket.timeout:
+                event["stderr"].write("%s: eval timed out" %
+                    event["user"].nickname)
+                return
+
+            if page:
+                event["stdout"].write("%s: %s" % (event["user"].nickname,
+                    page["output"].strip("\n")))
+                return
+
+        event["stderr"].write("%s: failed to eval" % event["user"].nickname)
