@@ -8,6 +8,7 @@ DEFAULT_INTEREST_RATE = "0.01"
 INTEREST_INTERVAL = 60*60 # 1 hour
 DECIMAL_ZERO = decimal.Decimal("0")
 REGEX_FLOAT = re.compile("(?:\d+(?:\.\d{1,2}|$)|\.\d{1,2})")
+DEFAULT_MARKET_CAP = str(1_000_000_000)
 
 RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
 BLACK = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
@@ -36,6 +37,22 @@ class Module(object):
         bot.timers.add("coin-interest", INTEREST_INTERVAL,
             time.time()+until_next_hour)
 
+    def _get_pool(self, server):
+        return decimal.Decimal(server.get_setting("coins", DEFAULT_MARKET_CAP))
+    def _set_pool(self, server, amount):
+        server.set_setting("coins", str(amount))
+    def _take_from_pool(self, server, amount):
+        coins = self._get_pool(server)
+        self._set_pool(server, coins-amount)
+    def _give_to_pool(self, server, amount):
+        coins = self._get_pool(server)
+        self._set_pool(server, coins+amount)
+
+    @utils.hook("received.command.bank")
+    def bank(self, event):
+        event["stdout"].write("The Bank has %d coins" %
+            self._get_pool(event["server"]))
+
     @utils.hook("received.command.coins")
     def coins(self, event):
         """
@@ -62,6 +79,8 @@ class Module(object):
             event["stderr"].write("%s already has %s coins" % (
                 target.nickname, str(DECIMAL_ZERO)))
         else:
+            coins = decimal.Decimal(target.get_setting("coins", "0.0"))
+            self._give_to_pool(coins)
             target.del_setting("coins")
             event["stdout"].write("Reset coins for %s" % target.nickname)
 
@@ -79,9 +98,12 @@ class Module(object):
             event["stderr"].write(
                 "Please provide a positive number of coins to send")
             return
+
         coins = decimal.Decimal(match.group(0))
         target_coins = decimal.Decimal(target.get_setting("coins", "0.0"))
+        self._take_from_pool(coins)
         target.set_setting("coins", str(target_coins+coins))
+
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
             str(coins)))
 
@@ -119,6 +141,8 @@ class Module(object):
                     ].get_setting("redeem-amount", DEFAULT_REDEEM_AMOUNT))
                 event["user"].set_setting("coins", str(
                     user_coins+redeem_amount))
+                self._take_from_pool(event["server"], redeem_amount)
+
                 event["stdout"].write("Redeemed %s coins" % "{0:.2f}".format(
                     redeem_amount))
 
@@ -169,6 +193,7 @@ class Module(object):
 
         if win:
             new_coins = str(user_coins+coin_bet)
+            self._take_from_pool(event["server"], coin_bet)
             event["user"].set_setting("coins", new_coins)
             event["stdout"].write(
                 "%s flips %s and wins %s coin%s! (new total: %s)" % (
@@ -178,6 +203,7 @@ class Module(object):
             )
         else:
             new_coins = str(user_coins-coin_bet)
+            self._give_to_pool(event["server"], coin_bet)
             event["user"].set_setting("coins", new_coins)
             event["stdout"].write(
                 "%s flips %s and loses %s coin%s! (new total: %s)" % (
@@ -250,7 +276,9 @@ class Module(object):
             for nickname, coins in all_coins:
                 coins = decimal.Decimal(coins)
                 if coins > redeem_amount:
-                    coins += round(coins*interest_rate, 2)
+                    interest = round(coins*interest_rate, 2)
+                    coins += interest
+                    self._take_from_pool(server, interest)
                     server.get_user(nickname).set_setting("coins",
                         str(coins))
         event["timer"].redo()
@@ -356,6 +384,12 @@ class Module(object):
 
         coin_winnings = sum(bet[1] for bet in winnings.values())
         coin_losses = sum([loss for loss in losses.values()])
+
+        if coin_winnings:
+            self._take_from_pool(event["server"], coin_winnings)
+        if coin_losses:
+            self._give_to_pool(event["server"], coin_losses)
+
         total_winnings_str = " (%s total)" % coin_winnings if len(
             winnings.keys()) > 1 else ""
 
