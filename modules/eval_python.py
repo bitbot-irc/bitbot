@@ -1,38 +1,45 @@
 import socket
 from src import ModuleManager, utils
 
-EVAL_URL = "https://pyeval.appspot.com/exec"
+EVAL_TEMPLATE = """
+import sys
+result = eval(sys.stdin.read())
+if not result == None:
+    sys.stdout.write(str(result))
+"""
 
+EVAL_URL = "https://tpcg.tutorialspoint.com/tpcg.php"
 class Module(ModuleManager.BaseModule):
     _name = "Python"
-    @utils.hook("received.command.py", alias_of="python")
-    @utils.hook("received.command.python", min_args=1)
-    def eval(self, event):
-        """
-        :help: Evaluate a python statement
-        :usage: <statement>
-        """
-        id = None
+
+    def _eval(self, lang, event):
         try:
-            id = utils.http.get_url(EVAL_URL,
-                post_data={"input": event["args"]},
+            page = utils.http.get_url(EVAL_URL,
+                post_data={
+                    "lang": lang,
+                    "code": EVAL_TEMPLATE,
+                    "execute": "%s main.py" % lang,
+                    "mainfile": "main.py",
+                    "stdinput": event["args"]
+                },
                 method="POST")
         except:
             pass
 
-        if not id == None:
-            try:
-                page = utils.http.get_url(EVAL_URL,
-                    get_params={"id": id},
-                    json=True)
-            except socket.timeout:
-                event["stderr"].write("%s: eval timed out" %
-                    event["user"].nickname)
-                return
+        if page:
+            event["stdout"].write("%s: %s" % (event["user"].nickname,
+                page.split("</b></span><br>", 1)[1]))
+        else:
+            event["stderr"].write("%s: failed to eval" % event["user"].nickname)
 
-            if page:
-                event["stdout"].write("%s: %s" % (event["user"].nickname,
-                    page["output"].strip("\n")))
-                return
+    @utils.hook("received.command.py2", alias_of="python2")
+    @utils.hook("received.command.python2", min_args=1)
+    def eval(self, event):
+        self._eval("python", event)
 
-        event["stderr"].write("%s: failed to eval" % event["user"].nickname)
+    @utils.hook("received.command.py", alias_of="python")
+    @utils.hook("received.command.py3", alias_of="python")
+    @utils.hook("received.command.python", alias_of="python3")
+    @utils.hook("received.command.python3", min_args=1)
+    def eval3(self, event):
+        self._eval("python3", event)
