@@ -1,11 +1,10 @@
 
 import glob, json, os, subprocess
-from src import IRCObject, utils
+from src import IRCObject, ModuleManager, utils
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.events = events
-        self._directory = os.path.join(bot.directory, "modules", "scripts")
+class Module(ModuleManager.BaseModule):
+    def on_load(self):
+        self._directory = os.path.join(self.bot.directory, "modules", "scripts")
         self._hooks = []
         self._load_scripts()
 

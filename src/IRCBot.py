@@ -14,7 +14,7 @@ class Bot(object):
         self._exports = exports
         self.log = log
         self.modules = modules
-        self.timers = timers
+        self._timers = timers
 
         self.start_time = time.time()
         self.lock = threading.Lock()
@@ -100,7 +100,7 @@ class Bot(object):
 
     def get_poll_timeout(self):
         timeouts = []
-        timeouts.append(self.timers.next())
+        timeouts.append(self._timers.next())
         timeouts.append(self.next_send())
         timeouts.append(self.next_ping())
         timeouts.append(self.next_read_timeout())
@@ -146,7 +146,7 @@ class Bot(object):
         while self.running:
             events = self.poll.poll(self.get_poll_timeout())
             self.lock.acquire()
-            self.timers.call()
+            self._timers.call()
             self.cache.expire()
 
             for func in self._trigger_functions:
@@ -192,7 +192,7 @@ class Bot(object):
                     self.disconnect(server)
 
                     reconnect_delay = self.config.get("reconnect-delay", 10)
-                    self.timers.add("reconnect", reconnect_delay,
+                    self._timers.add("reconnect", reconnect_delay,
                         server_id=server.id)
 
                     print("disconnected from %s, reconnecting in %d seconds" % (

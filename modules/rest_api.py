@@ -3,7 +3,7 @@
 
 import http.server, json, ssl, threading, uuid, urllib.parse
 import flask
-from src import utils
+from src import ModuleManager, utils
 
 _bot = None
 _events = None
@@ -72,17 +72,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
     "validate": utils.bool_or_none})
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
+class Module(ModuleManager.BaseModule):
+    def on_load(self):
         global _bot
-        _bot = bot
+        _bot = self.bot
 
-        self.events = events
         global _events
-        _events = events
+        _events = self.events
 
-        if bot.get_setting("rest-api", False):
+        if self.bot.get_setting("rest-api", False):
             self.httpd = http.server.HTTPServer(("", 5000), Handler)
             self.httpd.socket = ssl.wrap_socket(self.httpd.socket,
                 keyfile=self.bot.config["tls-api-key"],

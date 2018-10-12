@@ -101,7 +101,7 @@ class Module(ModuleManager.BaseModule):
             hostmask = self._ban_user(event["target"], True,
                 event["server"].get_user(event["args_split"][0]))
 
-        self.bot.timers.add_persistent("unban", timeout,
+        self.timers.add_persistent("unban", timeout,
             server_id=event["server"].id,
             channel_name=event["target"].name, hostmask=hostmask)
 

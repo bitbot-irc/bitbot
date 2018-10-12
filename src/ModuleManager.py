@@ -27,6 +27,9 @@ class BaseModule(object):
         self.events = events
         self.exports = exports
         self.timers = timers
+        self.on_load()
+    def on_load(self):
+        pass
 
 class ModuleManager(object):
     def __init__(self, events, exports, timers, config, log, directory):

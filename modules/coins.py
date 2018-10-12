@@ -1,5 +1,5 @@
 import datetime, decimal, functools, math, re, secrets, time
-from src import utils
+from src import ModuleManager, utils
 
 SIDES = {"heads": 0, "tails": 1}
 DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
@@ -30,12 +30,11 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        bot.timers.add("coin-interest", INTEREST_INTERVAL,
+class Module(ModuleManager.BaseModule):
+    def on_load(self):
+        self.timers.add("coin-interest", INTEREST_INTERVAL,
             time.time()+self._until_next_hour())
-        bot.timers.add("coin-lottery", LOTTERY_INTERVAL,
+        self.timers.add("coin-lottery", LOTTERY_INTERVAL,
             time.time()+self._until_next_6_hour())
 
     def _until_next_hour(self, now=None):

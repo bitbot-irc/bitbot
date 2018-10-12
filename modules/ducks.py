@@ -1,7 +1,7 @@
 import random
 from operator import itemgetter
 from time import time
-from src import EventManager, utils
+from src import EventManager, ModuleManager, utils
 
 DUCK_TAIL = "・゜゜・。。・゜゜"
 DUCK_HEAD = ["\_o< ", "\_O< ", "\_0< ", "\_\u00f6< ", "\_\u00f8< ",
@@ -24,10 +24,8 @@ DUCK_MINIMUM_UNIQUE = 3
 @utils.export("channelset", {"setting": "ducks-min-messages",
     "help": "Minimum messages between ducks spawning.",
     "validate": utils.int_or_none})
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-
+class Module(ModuleManager.BaseModule):
+    def on_load(self):
         for server in self.bot.servers.values():
             for channel in server.channels.values():
                 self.bootstrap(channel)

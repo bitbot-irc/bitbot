@@ -55,7 +55,7 @@ for server_id, alias in bot.database.servers.get_all():
 if len(servers):
     bot._events.on("boot.done").call()
 
-    bot.timers.setup(bot.find_settings_prefix("timer-"))
+    timers.setup(bot.find_settings_prefix("timer-"))
 
     for server in servers:
         if not bot.connect(server):

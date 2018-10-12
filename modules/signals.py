@@ -1,13 +1,11 @@
 import signal
-from src import Config, utils
+from src import Config, ModuleManager, utils
 
 @utils.export("serverset", {"setting": "quit-quote",
     "help": "Set whether I pick a random quote to /quit with",
     "validate": utils.bool_or_none})
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
-        self.events = events
+class Module(ModuleManager.BaseModule):
+    def on_load(self):
         signal.signal(signal.SIGINT, self.SIGINT)
         signal.signal(signal.SIGUSR1, self.SIGUSR1)
 

@@ -17,7 +17,7 @@ class Module(ModuleManager.BaseModule):
             if seconds <= SECONDS_MAX:
                 due_time = int(time.time())+seconds
 
-                self.bot.timers.add_persistent("in", seconds, due_time=due_time,
+                self.timers.add_persistent("in", seconds, due_time=due_time,
                     target=event["target"].name, server_id=event["server"].id,
                     nickname=event["user"].nickname, message=message)
                 event["stdout"].write("Saved")
