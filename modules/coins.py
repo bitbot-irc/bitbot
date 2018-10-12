@@ -337,6 +337,7 @@ class Module(ModuleManager.BaseModule):
         losses = {}
         if choice == 0:
             loss = sum(bet_amounts)
+            self._give_to_pool(event["server"], loss)
             event["user"].set_setting("coins", str(user_coins-loss))
             event["stdout"].write("Roulette spin lands on 0, "
                 "the house wins, %s loses %s" % (
