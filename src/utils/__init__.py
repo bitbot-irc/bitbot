@@ -93,6 +93,7 @@ def parse_number(s):
     number = s[:-1]
     if not number.isdigit():
         raise ValueError("Invalid format '%s' passed to parse_number")
+    number = int(number)
 
     if unit == "k":
         number *= 1_000
