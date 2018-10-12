@@ -446,7 +446,9 @@ class Module(ModuleManager.BaseModule):
         :help: By ticket(s) for the lottery
         :usage: [amount]
         """
-        amount = event["args_split"][0]
+        amount = 1
+        if event["args_split"]:
+            amount = event["args_split"][0]
         if not amount.isdigit():
             event["stderr"].write("%s: Please provide a positive number "
                 "of tickets to buy" % event["user"].nickname)
