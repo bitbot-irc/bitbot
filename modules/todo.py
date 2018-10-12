@@ -56,3 +56,30 @@ class Module(ModuleManager.BaseModule):
                     "your todo")
         else:
             event["stderr"].write("Please provided a todo item number to remove")
+
+    @utils.hook("received.command.todomove", min_args=2)
+    def todo_move(self, event):
+        """
+        :help: Move a todo item to a different index
+        :usage: <from> <to>
+        """
+        _from_str, to_str = event["args_split"][0], event["args_split"][1]
+        if not _from_str.isdigit() or not to_str.isdigit():
+            event["stdout"].write("Please provide numeric indexes")
+            return
+
+        _from, to = int(_from_str)-1, int(to_str)-1
+        if _from < 0 or to < 0:
+            event["stderr"].write("Both indexes must be above 0")
+            return
+
+        todo = event["user"].get_setting("todo", [])
+        if _from > len(todo) or to > len(todo):
+            event["stderr"].write("Both indexes must be less than the "
+                "size of your todo list")
+            return
+
+        todo.insert(to, todo.pop(_from))
+        event["user"].set_setting("todo", todo)
+        event["stdout"].write("Moved todo item %s to position %s" % (
+            _from_str, to_str))
