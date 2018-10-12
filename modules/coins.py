@@ -329,7 +329,7 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickname)
             return
 
-        # black, red, odds, evens, high (1-18), low (19-36)
+        # black, red, odds, evens, low (1-18), high (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
         # 1column (1,4..34), 2column (2,5..35), 3column (3,6..36)
         choice = secrets.randbelow(37)
