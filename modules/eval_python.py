@@ -4,6 +4,7 @@ from src import ModuleManager, utils
 EVAL_TEMPLATE = """
 import sys
 result = eval(sys.stdin.read())
+print("")
 if not result == None:
     sys.stdout.write(str(result))
 """
@@ -28,7 +29,7 @@ class Module(ModuleManager.BaseModule):
 
         if page:
             event["stdout"].write("%s: %s" % (event["user"].nickname,
-                page.split("</b></span><br>", 1)[1]))
+                page.split("</b></span><br>", 1)[1].strip("\n")))
         else:
             event["stderr"].write("%s: failed to eval" % event["user"].nickname)
 
