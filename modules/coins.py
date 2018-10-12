@@ -211,7 +211,7 @@ class Module(object):
             "redeem-amount", DEFAULT_REDEEM_AMOUNT))
         new_user_coins = user_coins-send_amount
 
-        if new_user_coins == DECIMAL_ZERO:
+        if user_coins == DECIMAL_ZERO:
             event["stderr"].write("You have no coins")
             return
         elif new_user_coins < redeem_amount:
