@@ -22,16 +22,18 @@ class ModuleNotLoadedWarning(ModuleWarning):
     pass
 
 class BaseModule(object):
-    def __init__(self, bot, events, exports):
+    def __init__(self, bot, events, exports, timers):
         self.bot = bot
         self.events = events
         self.exports = exports
+        self.timers = timers
 
 class ModuleManager(object):
-    def __init__(self, events, exports, config, log, directory):
+    def __init__(self, events, exports, timers, config, log, directory):
         self.events = events
         self.exports = exports
         self.config = config
+        self.timers = timers
         self.log = log
         self.directory = directory
 
@@ -84,7 +86,9 @@ class ModuleManager(object):
         context = str(uuid.uuid4())
         context_events = self.events.new_context(context)
         context_exports = self.exports.new_context(context)
-        module_object = module.Module(bot, context_events, context_exports)
+        context_timers = self.timers.new_context(context)
+        module_object = module.Module(bot, context_events, context_exports,
+            context_timers)
 
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
@@ -144,6 +148,7 @@ class ModuleManager(object):
         context = module._context
         self.events.purge_context(context)
         self.exports.purge_context(context)
+        self.timers.purge_context(context)
 
         del sys.modules[self._import_name(name)]
         references = sys.getrefcount(module)
