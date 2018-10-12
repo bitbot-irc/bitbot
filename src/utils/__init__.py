@@ -1,7 +1,6 @@
-from . import irc, http
-
-import io, re
+import decimal, io, re
 from src import ModuleManager
+from . import irc, http
 
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60
@@ -86,21 +85,25 @@ def to_pretty_time(total_seconds, minimum_unit=UNIT_SECOND, max_units=6):
     return out
 
 def parse_number(s):
-    if s.isdigit():
+    try:
+        decimal.Decimal(s)
         return s
+    except:
+        pass
 
     unit = s[-1].lower()
     number = s[:-1]
-    if not number.isdigit():
+    try:
+        number = decimal.Decimal(number)
+    except:
         raise ValueError("Invalid format '%s' passed to parse_number" % number)
-    number = int(number)
 
     if unit == "k":
-        number *= 1_000
+        number *= decimal.Decimal("1_000")
     elif unit == "m":
-        number *= 1_000_000
+        number *= decimal.Decimal("1_000_000")
     elif unit == "b":
-        number *= 1_000_000_000
+        number *= decimal.Decimal("1_000_000_000")
     else:
         raise ValueError("Unknown unit '%s' given to parse_number" % unit)
     return str(number)
