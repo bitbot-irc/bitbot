@@ -81,7 +81,7 @@ class Timers(object):
             self.timers.append(timer)
 
     def next(self):
-        times = filter(None, [timer.time_left() for timer in self.timers])
+        times = filter(None, [timer.time_left() for timer in self.get_timers()])
         if not times:
             return None
         return max(min(times), 0)
