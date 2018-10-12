@@ -504,7 +504,7 @@ class Module(ModuleManager.BaseModule):
                 server.del_setting("lottery")
 
             users = [(nickname,)*value for nickname, value in lottery.items()]
-            users = functools.redcude(lambda x, y: x+y, users)
+            users = functools.redude(lambda x, y: x+y, users)
             winner = random.choice(users)
 
             user = server.get_user(winner)
