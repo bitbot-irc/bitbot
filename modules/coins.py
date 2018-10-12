@@ -50,8 +50,8 @@ class Module(object):
 
     @utils.hook("received.command.bank")
     def bank(self, event):
-        event["stdout"].write("The Bank has %d coins" %
-            self._get_pool(event["server"]))
+        event["stdout"].write("The Bank has %s coins" %
+            "{0:.2f}".format(self._get_pool(event["server"])))
 
     @utils.hook("received.command.coins")
     def coins(self, event):
