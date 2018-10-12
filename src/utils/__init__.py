@@ -92,7 +92,7 @@ def parse_number(s):
     unit = s[-1].lower()
     number = s[:-1]
     if not number.isdigit():
-        raise ValueError("Invalid format '%s' passed to parse_number")
+        raise ValueError("Invalid format '%s' passed to parse_number" % number)
     number = int(number)
 
     if unit == "k":
@@ -102,7 +102,7 @@ def parse_number(s):
     elif unit == "b":
         number *= 1_000_000_000
     else:
-        raise ValueError("Unknown unit '%s' given to parse_number")
+        raise ValueError("Unknown unit '%s' given to parse_number" % unit)
     return str(number)
 
 IS_TRUE = ["true", "yes", "on", "y"]
