@@ -26,17 +26,12 @@ class Module(ModuleManager.BaseModule):
         for channel in event["user"].channels:
             self._check_modes(channel, event["user"])
 
-    @utils.hook("received.command.syncmodes", channel_only=True)
-    def sync_modes(self, event):
-        """
-        :help: Check/sync user modes
-        :require_mode: o
-        """
+    def _check_channel(self, channel):
         modes = []
-        for user in event["target"].users:
-            user_modes = self._get_modes(event["target"], user)
+        for user in channel.users:
+            user_modes = self._get_modes(channel, user)
             for user_mode in user_modes:
-                if not event["target"].has_mode(user, user_mode):
+                if not channel.has_mode(user, user_mode):
                     modes.append([user_mode, user.nickname])
 
         # break up in to chunks of (maximum) 3
@@ -45,8 +40,19 @@ class Module(ModuleManager.BaseModule):
         for chunk in mode_chunks:
             modes = [item[0] for item in chunk]
             nicknames = [item[1] for item in chunk]
-            event["target"].send_mode(
+            channel.send_mode(
                 "+%s" % "".join(modes), " ".join(nicknames))
+    @utils.hook("received.command.syncmodes", channel_only=True)
+    def sync_modes(self, event):
+        """
+        :help: Check/sync user modes
+        :require_mode: o
+        """
+        self._check_channel(event["target"])
+    @utils.hook("set.channelset.automode")
+    def on_automode_set(self, event):
+        if event["value"]:
+            self._check_channel(event["target"])
 
     def _add_mode(self, event, mode, mode_name):
         target_user = event["server"].get_user(event["args_split"][0])
