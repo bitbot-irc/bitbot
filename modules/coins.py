@@ -488,6 +488,12 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("%s: The current jackpot is %s" % (
             event["user"].nickname, decimal.Decimal(LOTTERY_BUYIN)*count))
 
+    @utils.hook("received.command.nextlottery")
+    def next_lottery(self, event):
+        until = self._until_next_6_hour()
+        event["stdout"].write("Next lottery is in: %s" %
+            utils.to_pretty_time(until))
+
     @utils.hook("timer.coin-lottery")
     def lottery(self, event):
         for server in self.bot.servers.values():
