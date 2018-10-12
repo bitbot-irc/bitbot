@@ -147,6 +147,7 @@ class Module(object):
                 event["stderr"].write("You have no coins to bet")
                 return
 
+        coin_bet = utils.parse_number(coin_bet)
         match = REGEX_FLOAT.match(coin_bet)
         if not match or round(decimal.Decimal(coin_bet), 2) <= DECIMAL_ZERO:
             event["stderr"].write("Please provide a number of coins to bet")
@@ -275,6 +276,7 @@ class Module(object):
                 return
 
         for i, bet_amount in enumerate(bet_amounts):
+            bet_amount = utils.parse_number(bet_amount)
             match = REGEX_FLOAT.match(bet_amount)
             if not match or round(decimal.Decimal(bet_amount), 2
                     ) <= DECIMAL_ZERO:
