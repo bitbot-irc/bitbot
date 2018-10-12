@@ -1,4 +1,4 @@
-import datetime, decimal, math, re, secrets, time
+import datetime, decimal, functools, math, re, secrets, time
 from src import utils
 
 SIDES = {"heads": 0, "tails": 1}
@@ -9,6 +9,10 @@ INTEREST_INTERVAL = 60*60 # 1 hour
 DECIMAL_ZERO = decimal.Decimal("0")
 REGEX_FLOAT = re.compile("(?:\d+(?:\.\d{1,2}|$)|\.\d{1,2})")
 DEFAULT_MARKET_CAP = str(1_000_000_000)
+
+HOUR_MILLISECONDS = ((1*60)*60)*1000
+LOTTERY_INTERVAL = (60*60)*6 # 6 hours
+LOTTERY_BUYIN = "100.00"
 
 RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
 BLACK = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
@@ -29,13 +33,21 @@ REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 class Module(object):
     def __init__(self, bot, events, exports):
         self.bot = bot
-
-        now = datetime.datetime.now()
-        until_next_hour = 60-now.second
-        until_next_hour += ((60-(now.minute+1))*60)
-
         bot.timers.add("coin-interest", INTEREST_INTERVAL,
-            time.time()+until_next_hour)
+            time.time()+self._until_next_hour())
+        bot.timers.add("coin-lottery", LOTTERY_INTERVAL,
+            time.time()+self._until_next_6_hour())
+
+    def _until_next_hour(self, now=None):
+        now = now or datetime.datetime.now()
+        until_next_hour = 60-now.second
+        return until_next_hour+((60-(now.minute+1))*60)
+    def _until_next_6_hour(self):
+        now = datetime.datetime.now()
+        until_next_hour = self._until_next_hour(now)
+        until_next_6_hour = 6 - (datetime.datetime.now().hour % 6)
+        until_next_6_hour = until_next_6_hour*HOUR_MILLISECONDS
+        return until_next_hour+until_next_6_hour
 
     def _get_pool(self, server):
         return decimal.Decimal(server.get_setting("coins", DEFAULT_MARKET_CAP))
@@ -96,7 +108,8 @@ class Module(object):
         match = REGEX_FLOAT.match(coins)
         if not match or round(decimal.Decimal(coins), 2) <= DECIMAL_ZERO:
             event["stderr"].write(
-                "Please provide a positive number of coins to send")
+                "%s: Please provide a positive number of coins to send" %
+                event["user"].nickname)
             return
 
         coins = decimal.Decimal(match.group(0))
@@ -151,11 +164,13 @@ class Module(object):
                 self.bot.cache.temporary_cache(cache, redeem_delay)
             else:
                 time_left = self.bot.cache.until_expiration(cache)
-                event["stderr"].write("Please wait %s before redeeming" %
-                    utils.to_pretty_time(math.ceil(time_left)))
+                event["stderr"].write("%s: Please wait %s before redeeming" % (
+                    event["user"].nickname,
+                    utils.to_pretty_time(math.ceil(time_left))))
         else:
             event["stderr"].write(
-                "You can only redeem coins when you have none")
+                "%s: You can only redeem coins when you have none" %
+                event["user"].nickname)
 
     @utils.hook("received.command.flip", min_args=2, authenticated=True)
     def flip(self, event):
@@ -168,24 +183,28 @@ class Module(object):
         if coin_bet == "all":
             coin_bet = event["user"].get_setting("coins", "0.0")
             if decimal.Decimal(coin_bet) <= DECIMAL_ZERO:
-                event["stderr"].write("You have no coins to bet")
+                event["stderr"].write("%s: You have no coins to bet" %
+                    event["user"].nickname)
                 return
 
         coin_bet = utils.parse_number(coin_bet)
         match = REGEX_FLOAT.match(coin_bet)
         if not match or round(decimal.Decimal(coin_bet), 2) <= DECIMAL_ZERO:
-            event["stderr"].write("Please provide a number of coins to bet")
+            event["stderr"].write("%s: Please provide a number of coins to bet"
+                % event["user"].nickname)
             return
         coin_bet = decimal.Decimal(match.group(0))
         coin_bet_str = "{0:.2f}".format(coin_bet)
         if not side_name in SIDES:
-            event["stderr"].write("Please provide 'heads' or 'tails'")
+            event["stderr"].write("%s: Please provide 'heads' or 'tails'" %
+                event["user"].nickname)
             return
 
         user_coins = decimal.Decimal(event["user"].get_setting(
             "coins", "0.0"))
         if coin_bet > user_coins:
-            event["stderr"].write("You don't have enough coins to bet")
+            event["stderr"].write("%s: You don't have enough coins to bet" %
+                event["user"].nickname)
             return
 
         chosen_side = secrets.choice(list(SIDES.keys()))
@@ -220,14 +239,16 @@ class Module(object):
         """
         if event["user"].get_id() == event["server"].get_user(event[
                 "args_split"][0]).get_id():
-            event["stderr"].write("You can't send coins to yourself")
+            event["stderr"].write("%s: You can't send coins to yourself" %
+                event["user"].nickname)
             return
         send_amount = event["args_split"][1]
         match = REGEX_FLOAT.match(send_amount)
         if not match or round(decimal.Decimal(send_amount), 2
                 ) <= DECIMAL_ZERO:
             event["stderr"].write(
-                "Please provide a positive number of coins to send")
+                "%s: Please provide a positive number of coins to send" %
+                event["user"].nickname)
             return
         send_amount = decimal.Decimal(match.group(0))
 
@@ -238,18 +259,21 @@ class Module(object):
         new_user_coins = user_coins-send_amount
 
         if user_coins == DECIMAL_ZERO:
-            event["stderr"].write("You have no coins")
+            event["stderr"].write("%s: You have no coins" %
+                event["user"].nickname)
             return
         elif new_user_coins < redeem_amount:
             event["stderr"].write(
-                "You cannot send an amount of money that puts"
-                " you below %s coins" % "{0:.2f}".format(redeem_amount))
+                "%s: You cannot send an amount of money that puts"
+                " you below %s coins" % (
+                event["user"].nickname,
+                "{0:.2f}".format(redeem_amount)))
             return
         target_user = event["server"].get_user(event["args_split"][0])
         target_user_coins = target_user.get_setting("coins", None)
         if target_user_coins == None:
-            event["stderr"].write("You can only send coins to users that "
-                "have had coins before")
+            event["stderr"].write("%s: You can only send coins to users that "
+                "have had coins before" % event["user"].nickname)
             return
 
         event["user"].set_setting("coins", str(new_user_coins))
@@ -264,25 +288,6 @@ class Module(object):
             event["user"].nickname, "{0:.2f}".format(send_amount),
             target_user.nickname))
 
-    @utils.hook("timer.coin-interest")
-    def interest(self, event):
-        for server in self.bot.servers.values():
-            all_coins = server.get_all_user_settings(
-                "coins", [])
-            interest_rate = decimal.Decimal(server.get_setting(
-                "interest-rate", DEFAULT_INTEREST_RATE))
-            redeem_amount = decimal.Decimal(server.get_setting(
-                "redeem-amount", DEFAULT_REDEEM_AMOUNT))
-            for nickname, coins in all_coins:
-                coins = decimal.Decimal(coins)
-                if coins > redeem_amount:
-                    interest = round(coins*interest_rate, 2)
-                    coins += interest
-                    self._take_from_pool(server, interest)
-                    server.get_user(nickname).set_setting("coins",
-                        str(coins))
-        event["timer"].redo()
-
     @utils.hook("received.command.roulette", min_args=2, authenticated=True)
     def roulette(self, event):
         """
@@ -291,16 +296,19 @@ class Module(object):
         """
         bets = event["args_split"][0].lower().split(",")
         if "0" in bets:
-            event["stderr"].write("You can't bet on 0")
+            event["stderr"].write("%s: You can't bet on 0" %
+                event["user"].nickname)
             return
         bet_amounts = [amount.lower() for amount in event["args_split"][1:]]
         if len(bet_amounts) < len(bets):
-            event["stderr"].write("Please provide an amount for each bet")
+            event["stderr"].write("%s: Please provide an amount for each bet" %
+                event["user"].nickanme)
             return
         if len(bet_amounts) == 1 and bet_amounts[0] == "all":
             bet_amounts[0] = event["user"].get_setting("coins", "0.0")
             if decimal.Decimal(bet_amounts[0]) <= DECIMAL_ZERO:
-                event["stderr"].write("You have no coins to bet")
+                event["stderr"].write("%s: You have no coins to bet" %
+                    event["user"].nickname)
                 return
 
         for i, bet_amount in enumerate(bet_amounts):
@@ -309,7 +317,8 @@ class Module(object):
             if not match or round(decimal.Decimal(bet_amount), 2
                     ) <= DECIMAL_ZERO:
                 event["stderr"].write(
-                    "Please provide a positive number of coins to bet")
+                    "%s: Please provide a positive number of coins to bet" %
+                    event["user"].nickname)
                 return
             bet_amounts[i] = decimal.Decimal(match.group(0))
         bet_amount_total = sum(bet_amounts)
@@ -317,7 +326,8 @@ class Module(object):
         user_coins = decimal.Decimal(event["user"].get_setting("coins",
             "0.0"))
         if bet_amount_total > user_coins:
-            event["stderr"].write("You don't have enough coins to bet")
+            event["stderr"].write("%s: You don't have enough coins to bet" %
+                event["user"].nickname)
             return
 
         # black, red, odds, evens, high (1-18), low (19-36)
@@ -369,7 +379,8 @@ class Module(object):
             elif bet.isdigit() and (1 <= int(bet) <= 36):
                 odds = 35*(choice == int(bet))
             else:
-                event["stderr"].write("Unknown bet")
+                event["stderr"].write("%s: Unknown bet" %
+                    event["user"].nickname)
                 failed = True
                 break
             if odds == 0:
@@ -410,3 +421,91 @@ class Module(object):
             event["stdout"].write("Roulette spin lands on %s, "
                 "%s loses %s" % (choice, event["user"].nickname,
                 str(coin_losses)))
+
+    @utils.hook("timer.coin-interest")
+    def interest(self, event):
+        for server in self.bot.servers.values():
+            all_coins = server.get_all_user_settings(
+                "coins", [])
+            interest_rate = decimal.Decimal(server.get_setting(
+                "interest-rate", DEFAULT_INTEREST_RATE))
+            redeem_amount = decimal.Decimal(server.get_setting(
+                "redeem-amount", DEFAULT_REDEEM_AMOUNT))
+            for nickname, coins in all_coins:
+                coins = decimal.Decimal(coins)
+                if coins > redeem_amount:
+                    interest = round(coins*interest_rate, 2)
+                    coins += interest
+                    self._take_from_pool(server, interest)
+                    server.get_user(nickname).set_setting("coins",
+                        str(coins))
+        event["timer"].redo()
+
+    @utils.hook("received.command.lotterybuy")
+    def lottery_buy(self, event):
+        """
+        :help: By ticket(s) for the lottery
+        :usage: [amount]
+        """
+        amount = event["args_split"][0]
+        if not amount.isdigit():
+            event["stderr"].write("%s: Please provide a positive number "
+                "of tickets to buy" % event["user"].nickname)
+            return
+        amount = int(amount)
+
+        user_coins = decimal.Decimal(event["user"].get_setting("coins", "0.0"))
+        coin_amount = decimal.Decimal(LOTTERY_BUYIN)*amount
+        if coin_amount > user_coins:
+            event["stderr"].write("%s: You don't have enough coins" %
+                event["user"].nickname)
+            return
+
+        self._give_to_pool(event["server"], coin_amount)
+        event["user"].set_setting("coins", str(user_coins-coin_amount))
+
+        lottery = event["server"].get_setting("lottery", {})
+        nickname = event["user"].nickname_lower
+        if not nickname in lottery:
+            lottery[nickname] = 0
+        lottery[nickname] += amount
+        event["server"].set_setting("lottery", lottery)
+
+        event["stdout"].write("%s: You bought %d lottery ticket%s for %s" % (
+            event["user"].nickname, amount, "" if amount == 1 else "s",
+            "{0:.2f}".format(coin_amount)))
+
+    @utils.hook("received.command.mylottery")
+    def my_lottery(self, event):
+        lottery = event["server"].get_setting("lottery", {})
+        count = lottery.get(event["user"].nickname_lower, 0)
+        event["stdout"].write("%s: You have %d lottery ticket%s" % (
+            event["user"].nickname, count, "" if count == 1 else "s"))
+
+    @utils.hook("received.command.jackpot")
+    def jackpot(self, event):
+        lottery = event["server"].get_setting("lottery", {})
+        count = sum([value for nickname, value in lottery.items()])
+        event["stdout"].write("%s: The current jackpot is %s" % (
+            event["user"].nickname, decimal.Decimal(LOTTERY_BUYIN)*count))
+
+    @utils.hook("timer.coin-lottery")
+    def lottery(self, event):
+        for server in self.bot.servers.values():
+            lottery = server.get_setting("lottery", {})
+            if lottery:
+                server.del_setting("lottery")
+
+            users = [(nickname,)*value for nickname, value in lottery.items()]
+            users = functools.redcude(lambda x, y: x+y, users)
+            winner = random.choice(users)
+
+            user = server.get_user(winner)
+            coins = decimal.Decimal(user.get_setting("coins", "0.0"))
+            winnings = decimal.Decimal(LOTTERY_BUYIN)*len(users)
+
+            self._take_from_pool(server, winnings)
+            new_coins = coins+winnings
+            user.set_setting("coins", str(new_coins))
+            user.send_notice("You won %s in the lottery! you now have %s coins"
+                % ("{0:.2f}".format(winnings), "{0:.2f}".format(new_coins)))
