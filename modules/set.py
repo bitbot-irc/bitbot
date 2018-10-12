@@ -1,17 +1,23 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    def _set(self, settings, event, target):
+    def _set(self, category, event, target):
+        settings = self.exports.get_all(category)
         settings_dict = dict([(setting["setting"], setting
             ) for setting in settings])
+
         if len(event["args_split"]) > 1:
             setting = event["args_split"][0].lower()
             if setting in settings_dict:
                 value = " ".join(event["args_split"][1:])
                 value = settings_dict[setting].get("validate",
                     lambda x: x)(value)
+
                 if not value == None:
                     target.set_setting(setting, value)
+                    self.events.call("set").on(category).on(setting).call(
+                        value=value, target=target)
+
                     event["stdout"].write("Saved setting")
                 else:
                     event["stderr"].write("Invalid value")
@@ -24,13 +30,14 @@ class Module(ModuleManager.BaseModule):
                     if not value.get("hidden", False)]
             event["stdout"].write("Available settings: %s" % (
                 ", ".join(shown_settings)))
+
     @utils.hook("received.command.set")
     def set(self, event):
         """
         :help: Set a specified user setting
         :usage: <setting> <value>
         """
-        self._set(self.exports.get_all("set"), event, event["user"])
+        self._set("set", event, event["user"])
 
     @utils.hook("received.command.channelset", channel_only=True,
         require_mode="o")
@@ -41,7 +48,7 @@ class Module(ModuleManager.BaseModule):
         :help: Get a specified channel setting for the current channel
         :usage: <setting> <value>
         """
-        self._set(self.exports.get_all("channelset"), event, event["target"])
+        self._set("channelset", event, event["target"])
 
     @utils.hook("received.command.serverset")
     def server_set(self, event):
@@ -50,7 +57,7 @@ class Module(ModuleManager.BaseModule):
         :usage: <setting> <value>
         :permission: serverset
         """
-        self._set(self.exports.get_all("serverset"), event, event["server"])
+        self._set("serverset", event, event["server"])
 
     @utils.hook("received.command.botset")
     def bot_set(self, event):
@@ -59,7 +66,7 @@ class Module(ModuleManager.BaseModule):
         :usage: <setting> <value>
         :permission: botset
         """
-        self._set(self.exports.get_all("botset"), event, self.bot)
+        self._set("botset", event, self.bot)
 
     def _get(self, event, setting, qualifier, value):
         if not value == None:
