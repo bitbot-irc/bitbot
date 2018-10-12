@@ -37,8 +37,8 @@ database = Database.Database(log, args.database)
 events = events = EventManager.EventHook(log)
 exports = exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
-modules = modules = ModuleManager.ModuleManager(events, exports, config, log,
-    os.path.join(directory, "modules"))
+modules = modules = ModuleManager.ModuleManager(events, exports, timers, config,
+    log, os.path.join(directory, "modules"))
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
     exports, log, modules, timers)
