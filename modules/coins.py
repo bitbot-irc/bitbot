@@ -39,13 +39,13 @@ class Module(object):
             time.time()+self._until_next_6_hour())
 
     def _until_next_hour(self, now=None):
-        now = now or datetime.datetime.now()
+        now = now or datetime.datetime.utcnow()
         until_next_hour = 60-now.second
         return until_next_hour+((60-(now.minute+1))*60)
     def _until_next_6_hour(self):
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
         until_next_hour = self._until_next_hour(now)
-        until_next_6_hour = 6 - (datetime.datetime.now().hour % 6)
+        until_next_6_hour = 6 - (now.hour % 6)
         until_next_6_hour = until_next_6_hour*HOUR_MILLISECONDS
         return until_next_hour+until_next_6_hour
 
