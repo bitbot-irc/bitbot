@@ -85,6 +85,25 @@ def to_pretty_time(total_seconds, minimum_unit=UNIT_SECOND, max_units=6):
         units += 1
     return out
 
+def parse_number(s):
+    if s.isdigit():
+        return s
+
+    unit = s[-1].lower()
+    number = s[:-1]
+    if not number.isdigit():
+        raise ValueError("Invalid format '%s' passed to parse_number")
+
+    if unit == "k":
+        number *= 1_000
+    elif unit == "m":
+        number *= 1_000_000
+    elif unit == "b":
+        number *= 1_000_000_000
+    else:
+        raise ValueError("Unknown unit '%s' given to parse_number")
+    return str(number)
+
 IS_TRUE = ["true", "yes", "on", "y"]
 IS_FALSE = ["false", "no", "off", "n"]
 def bool_or_none(s):
