@@ -10,7 +10,7 @@ DECIMAL_ZERO = decimal.Decimal("0")
 REGEX_FLOAT = re.compile("(?:\d+(?:\.\d{1,2}|$)|\.\d{1,2})")
 DEFAULT_MARKET_CAP = str(1_000_000_000)
 
-HOUR_MILLISECONDS = ((1*60)*60)*1000
+HOUR_SECONDS = (1*60)*60
 LOTTERY_INTERVAL = (60*60)*6 # 6 hours
 LOTTERY_BUYIN = "100.00"
 
@@ -44,8 +44,8 @@ class Module(ModuleManager.BaseModule):
     def _until_next_6_hour(self):
         now = datetime.datetime.utcnow()
         until_next_hour = self._until_next_hour(now)
-        until_next_6_hour = 6 - (now.hour % 6)
-        until_next_6_hour = until_next_6_hour*HOUR_MILLISECONDS
+        until_next_6_hour = (6-(now.hour%6))-1
+        until_next_6_hour = until_next_6_hour*HOUR_SECONDS
         return until_next_hour+until_next_6_hour
 
     def _get_pool(self, server):
