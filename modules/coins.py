@@ -80,7 +80,7 @@ class Module(object):
                 target.nickname, str(DECIMAL_ZERO)))
         else:
             coins = decimal.Decimal(target.get_setting("coins", "0.0"))
-            self._give_to_pool(coins)
+            self._give_to_pool(event["server"], coins)
             target.del_setting("coins")
             event["stdout"].write("Reset coins for %s" % target.nickname)
 
@@ -101,7 +101,7 @@ class Module(object):
 
         coins = decimal.Decimal(match.group(0))
         target_coins = decimal.Decimal(target.get_setting("coins", "0.0"))
-        self._take_from_pool(coins)
+        self._take_from_pool(event["server"], coins)
         target.set_setting("coins", str(target_coins+coins))
 
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
