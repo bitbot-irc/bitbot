@@ -1,4 +1,4 @@
-import datetime, decimal, functools, math, re, secrets, time
+import datetime, decimal, functools, math, random, re, secrets, time
 from src import ModuleManager, utils
 
 SIDES = {"heads": 0, "tails": 1}
@@ -503,9 +503,11 @@ class Module(ModuleManager.BaseModule):
             lottery = server.get_setting("lottery", {})
             if lottery:
                 server.del_setting("lottery")
+            else:
+                continue
 
             users = [(nickname,)*value for nickname, value in lottery.items()]
-            users = functools.redude(lambda x, y: x+y, users)
+            users = functools.reduce(lambda x, y: x+y, users)
             winner = random.choice(users)
 
             user = server.get_user(winner)
