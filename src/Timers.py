@@ -53,7 +53,7 @@ class Timers(object):
     def setup(self, timers):
         for name, timer in timers:
             id = name.split("timer-", 1)[1]
-            self._add(timer["name"], timer["delay"], timer[
+            self._add(timer["name"], None, timer["delay"], timer[
                 "next-due"], id, False, timer["kwargs"])
 
     def _persist(self, timer):
