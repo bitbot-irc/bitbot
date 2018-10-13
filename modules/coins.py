@@ -64,17 +64,18 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("The Bank has %s coins" %
             "{0:.2f}".format(self._get_pool(event["server"])))
 
-    @utils.hook("received.command.totalcoins")
-    def total_coins(self, event):
-        all_coins = event["server"].get_all_user_settings("coins", [])
+    def _total_coins(self, server:
+        all_coins = server.get_all_user_settings("coins", [])
         all_coins = list(filter(lambda coin: decimal.Decimal(coin[1]),
             all_coins))
         all_coins = [decimal.Decimal(coin[1]) for coin in all_coins]
         all_coins = sum(all_coins)
-        pool = self._get_pool(event["server"])
+        pool = self._get_pool(server)
 
+    @utils.hook("received.command.totalcoins")
+    def total_coins(self, event):
         event["stdout"].write("Total coins: %s" % "{0:.2f}".format(
-            pool+all_coins))
+            self._total_coins(event["server"])))
 
     @utils.hook("received.command.coins")
     def coins(self, event):
