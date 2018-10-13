@@ -59,12 +59,21 @@ class Module(ModuleManager.BaseModule):
         coins = self._get_pool(server)
         self._set_pool(server, coins+amount)
 
+    def _user_coins(self, user, wallet="default"):
+        return decimal.Decimal(user.get_setting("wallets", {}).get(wallet,
+            "0.0"))
+    def _all_user_coins(self, user):
+        coins = user.get_setting("wallets", {})
+        return sum(coins.values())
+    def _reset_user_coins(self, user):
+        user.del_setting("wallets")
+
     @utils.hook("received.command.bank")
     def bank(self, event):
         event["stdout"].write("The Bank has %s coins" %
             "{0:.2f}".format(self._get_pool(event["server"])))
 
-    def _total_coins(self, server:
+    def _total_coins(self, server):
         all_coins = server.get_all_user_settings("coins", [])
         all_coins = list(filter(lambda coin: decimal.Decimal(coin[1]),
             all_coins))
