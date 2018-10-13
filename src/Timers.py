@@ -36,7 +36,7 @@ class TimersContext(object):
         self._parent._add(self.context, name, delay, next_due, None, False,
             kwargs)
     def add_persistent(self, name, delay, next_due=None, **kwargs):
-        self._parent._add(self.context, name, delay, next_due, None, True,
+        self._parent._add(None, name, delay, next_due, None, True,
             kwargs)
 
 class Timers(object):
@@ -61,7 +61,7 @@ class Timers(object):
             "name": timer.name, "delay": timer.delay,
             "next-due": timer.next_due, "kwargs": timer.kwargs})
     def _remove(self, timer):
-        if timer.context and timer.context in self.context_timers:
+        if timer.context:
             self.context_timers[timer.context].remove(timer)
             if not self.context_timers[timer.context]:
                 del self.context_timers[timer.conteext]
