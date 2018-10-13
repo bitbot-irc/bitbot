@@ -441,7 +441,7 @@ class Module(ModuleManager.BaseModule):
                         str(coins))
         event["timer"].redo()
 
-    @utils.hook("received.command.lotterybuy")
+    @utils.hook("received.command.lotterybuy", authenticated=True)
     def lottery_buy(self, event):
         """
         :help: By ticket(s) for the lottery
