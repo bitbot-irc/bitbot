@@ -1,8 +1,9 @@
 import time, uuid
 
 class Timer(object):
-    def __init__(self, id, name, delay, next_due, kwargs):
+    def __init__(self, id, context, name, delay, next_due, kwargs):
         self.id = id
+        self.context = context
         self.name = name
         self.delay = delay
         if next_due:
@@ -60,7 +61,12 @@ class Timers(object):
             "name": timer.name, "delay": timer.delay,
             "next-due": timer.next_due, "kwargs": timer.kwargs})
     def _remove(self, timer):
-        self.timers.remove(timer)
+        if timer.context:
+            self.context_timers[timer.context].remove(timer)
+            if not self.context_timers[timer.context]:
+                del self.context_timers[timer.conteext]
+        else:
+            self.timers.remove(timer)
         self.database.bot_settings.delete("timer-%s" % timer.id)
 
     def add(self, name, delay, next_due=None, **kwargs):
@@ -69,7 +75,7 @@ class Timers(object):
         self._add(None, name, delay, next_due, None, True, kwargs)
     def _add(self, context, name, delay, next_due, id, persist, kwargs):
         id = id or uuid.uuid4().hex
-        timer = Timer(id, name, delay, next_due, kwargs)
+        timer = Timer(id, context, name, delay, next_due, kwargs)
         if persist:
             self._persist(timer)
 
