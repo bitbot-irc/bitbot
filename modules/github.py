@@ -16,7 +16,8 @@ class Module(ModuleManager.BaseModule):
 
         if "commits" in data:
             full_name = data["repository"]["full_name"]
-
+            hooks = self.bot.database.channel_settings.find_by_setting(
+                "github-hook")
             for commit in data["commits"]:
                 id = commit["id"]
 
@@ -33,8 +34,6 @@ class Module(ModuleManager.BaseModule):
                 line = ("(%s) [files: +%d ∆%d -%d] commit by '%s': %s"
                     % (full_name, added_count, modified_count,
                     removed_count, author, message))
-                hooks = self.bot.database.channel_settings.find_by_setting(
-                    "github-hook")
                 hooks = [hook for hook in hooks if hook[2]]
                 for server_id, channel_name, _ in hooks:
                     server = self.bot.get_server(server_id)
