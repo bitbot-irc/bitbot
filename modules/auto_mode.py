@@ -49,10 +49,15 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         """
         self._check_channel(event["target"])
+
     @utils.hook("set.channelset.automode")
     def on_automode_set(self, event):
         if event["value"]:
             self._check_channel(event["target"])
+
+    @utils.hook("self.join")
+    def self_join(self, event):
+        self._check_channel(event["channel"])
 
     def _add_mode(self, event, mode, mode_name):
         target_user = event["server"].get_user(event["args_split"][0])
