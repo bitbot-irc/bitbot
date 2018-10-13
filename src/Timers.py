@@ -64,7 +64,7 @@ class Timers(object):
         if timer.context:
             self.context_timers[timer.context].remove(timer)
             if not self.context_timers[timer.context]:
-                del self.context_timers[timer.conteext]
+                del self.context_timers[timer.context]
         else:
             self.timers.remove(timer)
         self.database.bot_settings.delete("timer-%s" % timer.id)
