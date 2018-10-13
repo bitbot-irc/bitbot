@@ -61,7 +61,7 @@ class Timers(object):
             "name": timer.name, "delay": timer.delay,
             "next-due": timer.next_due, "kwargs": timer.kwargs})
     def _remove(self, timer):
-        if timer.context:
+        if timer.context and timer.context in self.context_timers:
             self.context_timers[timer.context].remove(timer)
             if not self.context_timers[timer.context]:
                 del self.context_timers[timer.conteext]
