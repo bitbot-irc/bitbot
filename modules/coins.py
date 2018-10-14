@@ -555,6 +555,6 @@ class Module(ModuleManager.BaseModule):
             self._take_from_pool(server, winnings)
             new_coins = coins+winnings
             user.set_setting("coins", str(new_coins))
-            event["server"].set_setting("lottery-winner", user.nickname)
+            server.set_setting("lottery-winner", user.nickname)
             user.send_notice("You won %s in the lottery! you now have %s coins"
                 % ("{0:.2f}".format(winnings), "{0:.2f}".format(new_coins)))
