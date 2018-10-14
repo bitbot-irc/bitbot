@@ -519,6 +519,17 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("Next lottery is in: %s" %
             utils.to_pretty_time(until))
 
+    @utils.hook("received.command.lotterywinner")
+    def lottery_winner(self, event):
+        """
+        :help: Show who last won the lottery
+        """
+        winner = event["server"].get_setting("lottery-winner", None)
+        if winner:
+            event["stdout"].write("Last lottery winner: %s" % winner)
+        else:
+            event["stderr"].write("There have been no lottery winners!")
+
     @utils.hook("timer.coin-lottery")
     def lottery(self, event):
         for server in self.bot.servers.values():
@@ -539,5 +550,6 @@ class Module(ModuleManager.BaseModule):
             self._take_from_pool(server, winnings)
             new_coins = coins+winnings
             user.set_setting("coins", str(new_coins))
+            event["server"].set_setting("lottery-winner", user.nickname)
             user.send_notice("You won %s in the lottery! you now have %s coins"
                 % ("{0:.2f}".format(winnings), "{0:.2f}".format(new_coins)))
