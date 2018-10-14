@@ -208,7 +208,10 @@ class Module(ModuleManager.BaseModule):
                     event["user"].nickname)
                 return
 
-        coin_bet = utils.parse_number(coin_bet)
+        try:
+            coin_bet = utils.parse_number(coin_bet)
+        except ValueError:
+            pass
         match = REGEX_FLOAT.match(coin_bet)
         if not match or round(decimal.Decimal(coin_bet), 2) <= DECIMAL_ZERO:
             event["stderr"].write("%s: Please provide a number of coins to bet"
@@ -333,7 +336,10 @@ class Module(ModuleManager.BaseModule):
                 return
 
         for i, bet_amount in enumerate(bet_amounts):
-            bet_amount = utils.parse_number(bet_amount)
+            try:
+                bet_amount = utils.parse_number(bet_amount)
+            except ValueError:
+                pass
             match = REGEX_FLOAT.match(bet_amount)
             if not match or round(decimal.Decimal(bet_amount), 2
                     ) <= DECIMAL_ZERO:
