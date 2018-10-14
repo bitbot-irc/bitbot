@@ -459,8 +459,7 @@ class Module(ModuleManager.BaseModule):
                     interest = round(coins*interest_rate, 2)
                     coins += interest
                     self._take_from_pool(server, interest)
-                    server.get_user(nickname).set_setting("coins",
-                        str(coins))
+                    server.set_user_setting(nickname, "coins", str(coins))
         event["timer"].redo()
 
     @utils.hook("received.command.lotterybuy", authenticated=True)

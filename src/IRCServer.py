@@ -135,6 +135,14 @@ class Server(IRCObject.Object):
             self.id, prefix, default)
     def del_setting(self, setting):
         self.bot.database.server_settings.delete(self.id, setting)
+
+    def get_user_setting(self, nickname, setting, defau;t=None):
+        user_id = self.get_user_id(nickname)
+        self.bot.database.user_settings.get(user_id, setting, default)
+    def set_user_setting(self, nickname, setting, value):
+        user_id = self.get_user_id(nickname)
+        self.bot.database.user_settings.set(user_id, setting, value)
+
     def get_all_user_settings(self, setting, default=[]):
         return self.bot.database.user_settings.find_all_by_setting(
             self.id, setting, default)
