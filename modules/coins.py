@@ -79,7 +79,7 @@ class Module(ModuleManager.BaseModule):
             all_coins))
         all_coins = [decimal.Decimal(coin[1]) for coin in all_coins]
         all_coins = sum(all_coins)
-        pool = self._get_pool(server)
+        return self._get_pool(server)+all_coins
 
     @utils.hook("received.command.totalcoins")
     def total_coins(self, event):
