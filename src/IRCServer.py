@@ -210,7 +210,7 @@ class Server(IRCObject.Object):
     def parse_data(self, line):
         if not line:
             return
-        self.events.on("raw").call(server=self, line=line)
+        self.events.on("raw").call_unsafe(server=self, line=line)
         self.check_users()
     def check_users(self):
         for user in self.new_users:

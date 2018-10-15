@@ -176,7 +176,7 @@ class Module(ModuleManager.BaseModule):
         realname = None
         if len(event["args"]) == 2:
             channel = event["server"].get_channel(event["args"][0])
-            if not event["args_split"][1] == "*":
+            if not event["args"][1] == "*":
                 account = event["args"][1]
             realname = event["arbitrary"]
         else:
