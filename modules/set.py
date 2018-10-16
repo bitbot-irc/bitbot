@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
 
                 if not value == None:
                     target.set_setting(setting, value)
-                    self.events.call("set").on(category).on(setting).call(
+                    self.events.on("set").on(category).on(setting).call(
                         value=value, target=target)
 
                     event["stdout"].write("Saved setting")
