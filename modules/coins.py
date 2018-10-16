@@ -448,7 +448,7 @@ class Module(ModuleManager.BaseModule):
                 "interest-rate", DEFAULT_INTEREST_RATE))
             redeem_amount = self._redeem_amount(server)
 
-            for nickname, coins in all_coins:
+            for nickname, coins in all_coins.items():
                 if coins > redeem_amount:
                     interest = round(coins*interest_rate, 2)
                     self._take_from_pool(server, interest)
