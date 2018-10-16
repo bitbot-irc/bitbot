@@ -74,6 +74,12 @@ class Module(ModuleManager.BaseModule):
         coins = list(filter(lambda coin: decimal.Decimal(coin[1]), coins))
         return dict([(coin[0], decimal.Decimal(coin[1])) for coin in coins])
 
+    def _redeem_amount(self, server):
+        return decimal.Decimal(server.get_setting("redeem-amount",
+            DEFAULT_REDEEM_AMOUNT))
+    def _redeem_delay(self, server):
+        return server.get_setting("redeem-delay", DEFAULT_REDEEM_DELAY)
+
     def _give(self, server, user, amount):
         user_coins = self._get_user_coins(user)
         self._take_from_pool(server, amount)
@@ -200,15 +206,13 @@ class Module(ModuleManager.BaseModule):
         if user_coins == DECIMAL_ZERO:
             cache = self._redeem_cache(event["server"], event["user"])
             if not self.bot.cache.has_item(cache):
-                redeem_amount = decimal.Decimal(event["server"
-                    ].get_setting("redeem-amount", DEFAULT_REDEEM_AMOUNT))
+                redeem_amount = self._redeem_amount(event["server"])
                 self._give(event["server"], event["user"], redeem_amount)
 
                 event["stdout"].write("Redeemed %s coins" % self._coin_str(
                     redeem_amount))
 
-                redeem_delay = event["server"].get_setting("redeem-delay",
-                    DEFAULT_REDEEM_DELAY)
+                redeem_delay = self._redeem_delay(event["server"])
                 self.bot.cache.temporary_cache(cache, redeem_delay)
             else:
                 time_left = self.bot.cache.until_expiration(cache)
@@ -296,8 +300,7 @@ class Module(ModuleManager.BaseModule):
             return
 
         user_coins = self._get_user_coins(event["user"])
-        redeem_amount = decimal.Decimal(event["server"].get_setting(
-            "redeem-amount", DEFAULT_REDEEM_AMOUNT))
+        redeem_amount = self._redeem_amount(event["server"])
         new_user_coins = user_coins-send_amount
 
         if user_coins == DECIMAL_ZERO:
@@ -462,8 +465,7 @@ class Module(ModuleManager.BaseModule):
 
             interest_rate = decimal.Decimal(server.get_setting(
                 "interest-rate", DEFAULT_INTEREST_RATE))
-            redeem_amount = decimal.Decimal(server.get_setting(
-                "redeem-amount", DEFAULT_REDEEM_AMOUNT))
+            redeem_amount = self._redeem_amount(server)
 
             for nickname, coins in all_coins:
                 if coins > redeem_amount:
