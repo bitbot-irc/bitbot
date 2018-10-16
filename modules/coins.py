@@ -69,6 +69,11 @@ class Module(ModuleManager.BaseModule):
     def _reset_user_coins(self, user):
         user.del_setting("coins")
 
+    def _all_coins(self, server):
+        coins = server.get_all_user_settings("coins", [])
+        coins = list(filter(lambda coin: decimal.Decimal(coin[1]), coins))
+        return dict([(coin[0], decimal.Decimal(coin[1])) for coin in coins])
+
     def _give(self, server, user, amount):
         user_coins = self._get_user_coins(user)
         self._take_from_pool(server, amount)
@@ -177,13 +182,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Show the top 10 richest users
         """
-        all_coins = event["server"].get_all_user_settings("coins", [])
-        all_coins = list(filter(lambda coin: decimal.Decimal(coin[1]),
-            all_coins))
-        items = [(coin[0], decimal.Decimal(coin[1])) for coin in all_coins]
-        all_coins = dict(items)
-
-        top_10 = utils.top_10(all_coins,
+        top_10 = utils.top_10(self._all_coins(event["server"]),
             convert_key=lambda nickname: utils.prevent_highlight(
                 event["server"].get_user(nickname).nickname),
             value_format=lambda value: self._coin_str(value))
@@ -459,14 +458,14 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("timer.coin-interest")
     def interest(self, event):
         for server in self.bot.servers.values():
-            all_coins = server.get_all_user_settings(
-                "coins", [])
+            all_coins = self._all_coins(server)
+
             interest_rate = decimal.Decimal(server.get_setting(
                 "interest-rate", DEFAULT_INTEREST_RATE))
             redeem_amount = decimal.Decimal(server.get_setting(
                 "redeem-amount", DEFAULT_REDEEM_AMOUNT))
+
             for nickname, coins in all_coins:
-                coins = decimal.Decimal(coins)
                 if coins > redeem_amount:
                     interest = round(coins*interest_rate, 2)
                     self._take_from_pool(server, interest)
