@@ -20,8 +20,7 @@ class Module(ModuleManager.BaseModule):
             if phrase:
                 phrase = phrase.message
         if not phrase:
-            event["stderr"].write("No phrase provided.")
-            return
+            raise utils.EventError("No phrase provided.")
         source_language = "auto"
         target_language = "en"
 

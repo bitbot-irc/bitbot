@@ -58,9 +58,8 @@ class Module(ModuleManager.BaseModule):
                 if len(definition):
                     definition = definition[0]
                 else:
-                    event["stderr"].write("Try again in a couple of "
-                        "seconds")
-                    return
+                    raise utils.EventError("Try again in a couple of seconds")
+
                 event["stdout"].write("Random Word: %s - Definition: %s" % (
                     page["word"], definition["text"]))
             else:

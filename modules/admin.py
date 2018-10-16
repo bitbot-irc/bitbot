@@ -51,18 +51,16 @@ class Module(ModuleManager.BaseModule):
         """
         id = event["args_split"][0]
         if not id.isdigit():
-            event["stderr"].write("Please provide a numeric server ID")
-            return
+            raise utils.EventError("Please provide a numeric server ID")
 
         id = int(id)
         if not self.bot.database.servers.get(id):
-            event["stderr"].write("Unknown server ID")
-            return
+            raise utils.EventError("Unknown server ID")
 
         existing_server = self.bot.get_server(id)
         if existing_server:
-            event["stderr"].write("Already connected to %s" % str(
+            raise utils.EventError("Already connected to %s" % str(
                 existing_server))
-            return
+
         server = self.bot.add_server(id)
         event["stdout"].write("Connecting to %s" % str(server))

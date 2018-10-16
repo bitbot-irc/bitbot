@@ -149,10 +149,11 @@ class Module(ModuleManager.BaseModule):
             })
 
         if filter["errors"]:
-            return event["stderr"].write("Filter: " + filter["errors_summary"])
+            raise utils.EventError("Filter: " + filter["errors_summary"])
 
         if filter["inter"] and filter["type"]!="departure":
-            return event["stderr"].write("Filtering by intermediate stations is only supported for departures.")
+            raise utils.EventError("Filtering by intermediate stations is only "
+                "supported for departures.")
 
         nr_filterlist = client.factory.create("filterList")
         if filter["inter"]: nr_filterlist.crs.append(filter["inter"])
@@ -171,9 +172,9 @@ class Module(ModuleManager.BaseModule):
                 nr_filterlist, "to", '', "PBS", filter["nonpassenger"])
         except WebFault as detail:
             if str(detail) == "Server raised fault: 'Invalid crs code supplied'":
-                return event["stderr"].write("Invalid CRS code.")
+                raise utils.EventError("Invalid CRS code.")
             else:
-                return event["stderr"].write("An error occurred.")
+                raise utils.EventError("An error occurred.")
 
         nrcc_severe = len([a for a in query["nrccMessages"][0] if a["severity"] == "Major"]) if "nrccMessages" in query else 0
         if event.get("external"):
@@ -327,8 +328,7 @@ class Module(ModuleManager.BaseModule):
             })
 
         if filter["errors"]:
-            event["stderr"].write("Filter: " + filter["errors_summary"])
-            return
+            raise utils.EventError("Filter: " + filter["errors_summary"])
 
         rid = service_id
         if len(service_id) <= 8:
@@ -508,7 +508,8 @@ class Module(ModuleManager.BaseModule):
             datetime.utcnow().time().strftime("%H:%M:%S+0000"))
 
         if not query:
-            return event["stderr"].write("No currently running services match this identifier")
+            raise utils.EventError("No currently running services match this "
+                "identifier")
 
         services = query["serviceList"][0]
         if event.get("external"):
@@ -527,7 +528,8 @@ class Module(ModuleManager.BaseModule):
         client = self.client
 
         if not event["args"].isnumeric():
-            return event["stderr"].write("The delay/cancellation code must be a number")
+            raise utils.EventError("The delay/cancellation code must be a "
+                "number")
         reasons = {a["code"]:(a["lateReason"], a["cancReason"]) for a in client.service.GetReasonCodeList()[0]}
         if event["args"] in reasons:
             event["stdout"].write("%s: %s" % (event["args"], " / ".join(reasons[event["args"]])))

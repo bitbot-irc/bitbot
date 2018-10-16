@@ -33,8 +33,7 @@ class Module(ModuleManager.BaseModule):
                     last_soundcloud.message).string
 
         if not query and not url:
-            event["stderr"].write("no search phrase provided")
-            return
+            raise utils.EventError("no search phrase provided")
         has_query = not query == None
         get_params = {"limit": 1,
             "client_id": self.bot.config["soundcloud-api-key"]}

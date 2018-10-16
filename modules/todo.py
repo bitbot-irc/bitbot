@@ -31,9 +31,7 @@ class Module(ModuleManager.BaseModule):
         todo = event["user"].get_setting("todo", [])
         for item in todo:
             if item.lower() == arg_lower:
-                event["stderr"].write(
-                   "That is already in your todo")
-                return
+                raise utils.EventError("That is already in your todo")
         todo.append(event["args"])
         event["user"].set_setting("todo", todo)
         event["stdout"].write("Saved")
@@ -70,14 +68,12 @@ class Module(ModuleManager.BaseModule):
 
         _from, to = int(_from_str)-1, int(to_str)-1
         if _from < 0 or to < 0:
-            event["stderr"].write("Both indexes must be above 0")
-            return
+            raise utils.EventError("Both indexes must be above 0")
 
         todo = event["user"].get_setting("todo", [])
         if _from > len(todo) or to > len(todo):
-            event["stderr"].write("Both indexes must be less than the "
+            raise utils.EventError("Both indexes must be less than the "
                 "size of your todo list")
-            return
 
         todo.insert(to, todo.pop(_from))
         event["user"].set_setting("todo", todo)

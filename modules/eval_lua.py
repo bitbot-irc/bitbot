@@ -13,9 +13,8 @@ class Module(ModuleManager.BaseModule):
                 method="POST",
                 soup=True)
         except socket.timeout:
-            event["stderr"].write("%s: eval timed out" %
+            raise utils.EventError("%s: eval timed out" %
                 event["user"].nickname)
-            return
 
         if page:
             textareas = page.find_all("textarea")

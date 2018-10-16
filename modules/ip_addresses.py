@@ -20,8 +20,8 @@ class Module(ModuleManager.BaseModule):
             address_info = socket.getaddrinfo(hostname, 1, 0,
                 socket.SOCK_DGRAM)
         except socket.gaierror:
-            event["stderr"].write("Failed to find hostname")
-            return
+            raise utils.EventError("Failed to find hostname")
+
         ips = []
         for _, _, _, _, address in address_info:
             ips.append(address[0])
@@ -68,13 +68,10 @@ class Module(ModuleManager.BaseModule):
                 match = REGEX_IP.search(line.message)
                 ip = match.group(1) or match.group(2)
         if not ip:
-            event["stderr"].write("No IP provided")
-            return
+            raise utils.EventError("No IP provided")
 
-        print(ip)
         try:
             hostname, alias, ips = socket.gethostbyaddr(ip)
         except (socket.herror, socket.gaierror) as e:
-            event["stderr"].write(e.strerror)
-            return
+            raise utils.EventError(e.strerror)
         event["stdout"].write("(%s) %s" % (ips[0], hostname))

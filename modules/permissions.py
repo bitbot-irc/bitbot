@@ -47,14 +47,12 @@ class Module(ModuleManager.BaseModule):
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
         if not identity_mechanism == "internal":
-            event["stderr"].write("The 'identify' command isn't available "
+            raise utils.EventError("The 'identify' command isn't available "
                 "on this network")
-            return
 
         if not event["user"].channels:
-            event["stderr"].write("You must share at least one channel "
+            raise utils.EventError("You must share at least one channel "
                 "with me before you can identify")
-            return
 
         if not event["user"].identified_account_override:
             if len(event["args_split"]) > 1:
@@ -91,9 +89,8 @@ class Module(ModuleManager.BaseModule):
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
         if not identity_mechanism == "internal":
-            event["stderr"].write("The 'identify' command isn't available "
+            raise utils.EventError("The 'identify' command isn't available "
                 "on this network")
-            return
 
         hash, salt = self._get_hash(event["server"], event["user"].nickname)
         if not hash and not salt:
@@ -203,8 +200,7 @@ class Module(ModuleManager.BaseModule):
             event["server"], event["args_split"][0])
 
         if target.get_identified_account() == None:
-            event["stderr"].write("%s isn't registered" % target.nickname)
-            return
+            raise utils.EventError("%s isn't registered" % target.nickname)
 
         if permission in permissions:
             event["stderr"].write("%s already has permission '%s'" % (
@@ -226,8 +222,7 @@ class Module(ModuleManager.BaseModule):
             event["server"], event["args_split"][0])
 
         if target.identified_account == None:
-            event["stderr"].write("%s isn't registered" % target.nickname)
-            return
+            raise utils.EventError("%s isn't registered" % target.nickname)
 
         if permission not in permissions:
             event["stderr"].write("%s doesn't have permission '%s'" % (

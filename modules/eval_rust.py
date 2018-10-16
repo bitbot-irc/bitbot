@@ -33,9 +33,8 @@ class Module(ModuleManager.BaseModule):
             page = utils.http.get_url(EVAL_URL, json_data=args,
                 method="POST", json=True)
         except socket.timeout:
-            event["stderr"].write("%s: eval timed out" %
+            raise utils.EventError("%s: eval timed out" %
                 event["user"].nickname)
-            return
 
         err_or_out = "stdout" if page["success"] else "stderr"
         event[err_or_out].write("%s: %s" % (event["user"].nickname,

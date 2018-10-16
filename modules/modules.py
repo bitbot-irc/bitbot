@@ -10,8 +10,7 @@ class Module(ModuleManager.BaseModule):
         """
         name = event["args_split"][0].lower()
         if name in self.bot.modules.modules:
-            event["stderr"].write("Module '%s' is already loaded" % name)
-            return
+            raise utils.EventError("Module '%s' is already loaded" % name)
         self.bot.modules.load_module(self.bot, name)
         event["stdout"].write("Loaded '%s'" % name)
 
@@ -24,8 +23,7 @@ class Module(ModuleManager.BaseModule):
         """
         name = event["args_split"][0].lower()
         if not name in self.bot.modules.modules:
-            event["stderr"].write("Module '%s' isn't loaded" % name)
-            return
+            raise utils.EventError("Module '%s' isn't loaded" % name)
         self.bot.modules.unload_module(name)
         event["stdout"].write("Unloaded '%s'" % name)
 
@@ -44,16 +42,13 @@ class Module(ModuleManager.BaseModule):
         try:
             self._reload(name)
         except ModuleManager.ModuleNotFoundException:
-            event["stderr"].write("Module '%s' isn't loaded" % name)
-            return
+            raise utils.EventError("Module '%s' isn't loaded" % name)
         except ModuleManager.ModuleWarning as warning:
-            event["stderr"].write("Module '%s' not loaded: %s" % (
+            raise utils.EventError("Module '%s' not loaded: %s" % (
                 name, str(warning)))
-            return
         except Exception as e:
-            event["stderr"].write("Failed to reload module '%s': %s" % (
+            raise utils.EventError("Failed to reload module '%s': %s" % (
                 name, str(e)))
-            return
         event["stdout"].write("Reloaded '%s'" % name)
 
     @utils.hook("received.command.reloadallmodules")
@@ -92,8 +87,7 @@ class Module(ModuleManager.BaseModule):
         name = event["args_split"][0].lower()
         blacklist = self.bot.get_setting("module-blacklist", [])
         if not name in blacklist:
-            event["stderr"].write("Module '%s' isn't disabled" % name)
-            return
+            raise utils.EventError("Module '%s' isn't disabled" % name)
 
         blacklist.remove(name)
         event["stdout"].write("Module '%s' has been enabled and can now "
@@ -114,8 +108,7 @@ class Module(ModuleManager.BaseModule):
 
         blacklist = self.bot.get_setting("module-blacklist", [])
         if name in blacklist:
-            event["stderr"].write("Module '%s' is already disabled" % name)
-            return
+            raise utils.EventError("Module '%s' is already disabled" % name)
 
         blacklist.append(name)
         self.bot.set_setting("module-blacklist", blacklist)

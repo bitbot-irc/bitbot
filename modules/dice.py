@@ -15,12 +15,10 @@ class Module(ModuleManager.BaseModule):
         results = []
 
         if len(roll) is not 2:
-            event["stderr"].write(ERROR_FORMAT)
-            return
+            raise utils.EventError(ERROR_FORMAT)
 
         if roll[0].isdigit() is False or roll[1].isdigit() is False:
-            event["stderr"].write(ERROR_FORMAT)
-            return
+            raise utils.EventError(ERROR_FORMAT)
 
         roll = [int(roll[0]), int(roll[1])]
 
