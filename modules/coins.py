@@ -30,6 +30,9 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
+class CoinParseException(Exception):
+    pass
+
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         self.timers.add("coin-interest", INTEREST_INTERVAL,
@@ -68,6 +71,23 @@ class Module(ModuleManager.BaseModule):
 
     def _coin_str(self, coins):
         return "{0:.2f}".format(coins)
+    def _parse_coins(self, s, minimum=None):
+        try:
+            s = utils.parse_number(s)
+        except ValueError:
+            pass
+
+        match = REGEX_FLOAT.match(s)
+        if match:
+            coins = decimal.Decimal(match.group(0))
+            if minimum == None or coins >= minimum:
+                return coins
+            else:
+                raise CoinParseException(
+                    "Coin amount provided is lower than %s" % minimum)
+        else:
+            raise CoinParseException(
+                "Please provide a valid positive coin amount")
 
     @utils.hook("received.command.bank")
     def bank(self, event):
@@ -125,15 +145,12 @@ class Module(ModuleManager.BaseModule):
         :permission: givecoins
         """
         target = event["server"].get_user(event["args_split"][0])
-        coins = event["args_split"][1]
-        match = REGEX_FLOAT.match(coins)
-        if not match or round(decimal.Decimal(coins), 2) <= DECIMAL_ZERO:
-            event["stderr"].write(
-                "%s: Please provide a positive number of coins to send" %
-                event["user"].nickname)
+        try:
+            coins = self._parse_coins(event["args_split"][0], DECIMAL_ZERO)
+        except CoinParseException as e:
+            event["stderr"].write("%s: %s" % (event["user"].nickname, str(e)))
             return
 
-        coins = decimal.Decimal(match.group(0))
         target_coins = self._get_user_coins(target)
         self._take_from_pool(event["server"], coins)
         self._set_user_coins(target, target_coins+coins)
@@ -207,17 +224,12 @@ class Module(ModuleManager.BaseModule):
                 return
         else:
             try:
-                coin_bet = utils.parse_number(coin_bet)
-            except ValueError:
-                pass
-            match = REGEX_FLOAT.match(coin_bet)
-            if not match or round(decimal.Decimal(coin_bet), 2) <= DECIMAL_ZERO:
-                event["stderr"].write("%s: Please provide a number of coins "
-                    "to bet" % event["user"].nickname)
+                coin_bet = self._parse_coins(coin_bet, DECIMAL_ZERO)
+            except CoinParseException as e:
+                event["stderr"].write("%s: %s" % (event["user"].nickname,
+                    str(e)))
                 return
-            coin_bet = decimal.Decimal(match.group(0))
 
-        coin_bet_str = self._coin_str(coin_bet)
         if not side_name in SIDES:
             event["stderr"].write("%s: Please provide 'heads' or 'tails'" %
                 event["user"].nickname)
@@ -232,6 +244,7 @@ class Module(ModuleManager.BaseModule):
         chosen_side = secrets.choice(list(SIDES.keys()))
         win = side_name == chosen_side
 
+        coin_bet_str = self._coin_str(coin_bet)
         if win:
             new_coins = user_coins+coin_bet
             self._take_from_pool(event["server"], coin_bet)
@@ -268,14 +281,11 @@ class Module(ModuleManager.BaseModule):
             return
 
         send_amount = event["args_split"][1]
-        match = REGEX_FLOAT.match(send_amount)
-        if not match or round(decimal.Decimal(send_amount), 2
-                ) <= DECIMAL_ZERO:
-            event["stderr"].write(
-                "%s: Please provide a positive number of coins to send" %
-                event["user"].nickname)
+        try:
+            send_amount = self._parse_coins(send_amount, DECIMAL_ZERO)
+        except CoinParseException as e:
+            event["stderr"].write("%s: %s" % (event["user"].nickname, str(e)))
             return
-        send_amount = decimal.Decimal(match.group(0))
 
         user_coins = self._get_user_coins(event["user"])
         redeem_amount = decimal.Decimal(event["server"].get_setting(
@@ -337,17 +347,12 @@ class Module(ModuleManager.BaseModule):
 
         for i, bet_amount in enumerate(bet_amounts):
             try:
-                bet_amount = utils.parse_number(bet_amount)
-            except ValueError:
-                pass
-            match = REGEX_FLOAT.match(bet_amount)
-            if not match or round(decimal.Decimal(bet_amount), 2
-                    ) <= DECIMAL_ZERO:
-                event["stderr"].write(
-                    "%s: Please provide a positive number of coins to bet" %
-                    event["user"].nickname)
+                bet_amount = utils._parse_coins(bet_amount, DECIMAL_ZERO)
+            except CoinParseException as e:
+                event["stderr"].write("%s: %s" % (event["user"].nickname,
+                    str(e)))
                 return
-            bet_amounts[i] = decimal.Decimal(match.group(0))
+
         bet_amount_total = sum(bet_amounts)
 
         user_coins = self._get_user_coins(event["user"])
