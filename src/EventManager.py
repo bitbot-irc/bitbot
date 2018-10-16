@@ -226,9 +226,10 @@ class EventHook(object):
             try:
                 returns.append(hook.call(event))
             except Exception as e:
-                self.log.error("failed to call event \"%s\"",
-                    [self._get_path()], exc_info=True)
-                if not safe:
+                if safe:
+                    self.log.error("failed to call event \"%s\"",
+                        [self._get_path()], exc_info=True)
+                else:
                     raise
 
         total_milliseconds = (time.monotonic() - start) * 1000
