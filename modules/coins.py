@@ -73,9 +73,9 @@ class Module(ModuleManager.BaseModule):
         user_coins = self._get_user_coins(user)
         self._take_from_pool(server, amount)
         self._set_user_coins(user, user_coins+amount)
-    def _take(self, user, amount):
+    def _take(self, server, user, amount):
         user_coins = self._get_user_coins(user)
-        self._give_to_pool(amount)
+        self._give_to_pool(server, amount)
         self._set_user_coins(user, user_coins-amount)
     def _move(self, user1, user2, amount):
         user1_coins = self._get_user_coins(user1)
