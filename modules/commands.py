@@ -172,7 +172,7 @@ class Module(ModuleManager.BaseModule):
                         args_split=args_split, stdout=stdout, stderr=stderr,
                         command=command.lower(), is_channel=is_channel)
                 except utils.EventError as e:
-                    stdout.write(str(e))
+                    stderr.write(str(e))
 
                 if not hook.kwargs.get("skip_out", False):
                     stdout.send()
