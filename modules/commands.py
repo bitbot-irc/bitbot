@@ -171,7 +171,7 @@ class Module(ModuleManager.BaseModule):
                         target=target, args=args, tags=event["tags"],
                         args_split=args_split, stdout=stdout, stderr=stderr,
                         command=command.lower(), is_channel=is_channel)
-                except EventManager.EventError as e:
+                except utils.EventError as e:
                     stdout.write(str(e))
 
                 if not hook.kwargs.get("skip_out", False):
