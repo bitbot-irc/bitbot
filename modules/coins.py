@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
     def _get_pool(self, server):
         return decimal.Decimal(server.get_setting("coins", DEFAULT_MARKET_CAP))
     def _set_pool(self, server, amount):
-        server.set_setting("coins", str(amount))
+        server.set_setting("coins", self._coin_str(amount))
     def _take_from_pool(self, server, amount):
         coins = self._get_pool(server)
         self._set_pool(server, coins-amount)
@@ -164,7 +164,7 @@ class Module(ModuleManager.BaseModule):
 
         self._give(event["server"], target, coins)
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
-            str(coins)))
+            self._coin_str(coins)))
 
     @utils.hook("received.command.richest")
     def richest(self, event):
