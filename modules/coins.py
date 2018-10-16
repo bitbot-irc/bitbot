@@ -106,6 +106,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.bank")
     def bank(self, event):
+        """
+        :help: Show how many coins The Bank currently has
+        """
         event["stdout"].write("The Bank has %s coins" %
             self._coin_str(self._get_pool(event["server"])))
 
@@ -119,6 +122,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.totalcoins")
     def total_coins(self, event):
+        """
+        :help: Show how many coins are currently in circulation
+        """
         event["stdout"].write("Total coins: %s" % self._coin_str(
             self._total_coins(event["server"])))
 
@@ -505,6 +511,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.mylottery")
     def my_lottery(self, event):
+        """
+        :help: Show how many lottery tickets you currently have
+        """
         lottery = event["server"].get_setting("lottery", {})
         count = lottery.get(event["user"].nickname_lower, 0)
         event["stdout"].write("%s: You have %d lottery ticket%s" % (
@@ -512,6 +521,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.jackpot")
     def jackpot(self, event):
+        """
+        :help: Show the current lottery jackpot
+        """
         lottery = event["server"].get_setting("lottery", {})
         count = sum([value for nickname, value in lottery.items()])
         event["stdout"].write("%s: The current jackpot is %s" % (
@@ -519,6 +531,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.nextlottery")
     def next_lottery(self, event):
+        """
+        :help: Show time until the next lottery draw
+        """
         until = self._until_next_6_hour()
         event["stdout"].write("Next lottery is in: %s" %
             utils.to_pretty_time(until))
