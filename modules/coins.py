@@ -144,13 +144,9 @@ class Module(ModuleManager.BaseModule):
         """
         target = event["server"].get_user(event["args_split"][0])
         coins = self._get_user_coins(target)
-        if coins == DECIMAL_ZERO:
-            event["stderr"].write("%s already has %s coins" % (
-                target.nickname, str(DECIMAL_ZERO)))
-        else:
-            self._give_to_pool(event["server"], coins)
-            self._reset_user_coins(target)
-            event["stdout"].write("Reset coins for %s" % target.nickname)
+        self._take(event["server"], target, coins)
+        self._reset_user_coins(target)
+        event["stdout"].write("Reset coins for %s" % target.nickname)
 
     @utils.hook("received.command.givecoins", min_args=1)
     def give_coins(self, event):
