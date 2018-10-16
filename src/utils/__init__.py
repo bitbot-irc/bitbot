@@ -134,6 +134,9 @@ def get_closest_setting(event, setting, default=None):
 def prevent_highlight(nickname):
     return nickname[0]+"\u200c"+nickname[1:]
 
+class EventError(Exception):
+    pass
+
 def _set_get_append(obj, setting, item):
     if not hasattr(obj, setting):
         setattr(obj, setting, [])

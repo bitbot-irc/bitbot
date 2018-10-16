@@ -176,8 +176,7 @@ class Module(ModuleManager.BaseModule):
         try:
             coins = self._parse_coins(event["args_split"][0], DECIMAL_ZERO)
         except CoinParseException as e:
-            event["stderr"].write("%s: %s" % (event["user"].nickname, str(e)))
-            return
+            raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
 
         self._give(event["server"], target, coins)
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
@@ -235,27 +234,23 @@ class Module(ModuleManager.BaseModule):
         if coin_bet == "all":
             coin_bet = self._get_user_coins(event["user"])
             if coin_bet <= DECIMAL_ZERO:
-                event["stderr"].write("%s: You have no coins to bet" %
+                raise utils.EventError("%s: You have no coins to bet" %
                     event["user"].nickname)
-                return
         else:
             try:
                 coin_bet = self._parse_coins(coin_bet, DECIMAL_ZERO)
             except CoinParseException as e:
-                event["stderr"].write("%s: %s" % (event["user"].nickname,
+                raise utils.EventError("%s: %s" % (event["user"].nickname,
                     str(e)))
-                return
 
         if not side_name in SIDES:
-            event["stderr"].write("%s: Please provide 'heads' or 'tails'" %
+             raise utils.EventError("%s: Please provide 'heads' or 'tails'" %
                 event["user"].nickname)
-            return
 
         user_coins = self._get_user_coins(event["user"])
         if coin_bet > user_coins:
-            event["stderr"].write("%s: You don't have enough coins to bet" %
+            raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
-            return
 
         chosen_side = secrets.choice(list(SIDES.keys()))
         win = side_name == chosen_side
@@ -288,39 +283,34 @@ class Module(ModuleManager.BaseModule):
         """
         if event["user"].get_id() == event["server"].get_user(event[
                 "args_split"][0]).get_id():
-            event["stderr"].write("%s: You can't send coins to yourself" %
+            raise utils.EventError("%s: You can't send coins to yourself" %
                 event["user"].nickname)
-            return
 
         send_amount = event["args_split"][1]
         try:
             send_amount = self._parse_coins(send_amount, DECIMAL_ZERO)
         except CoinParseException as e:
-            event["stderr"].write("%s: %s" % (event["user"].nickname, str(e)))
-            return
+            raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
 
         user_coins = self._get_user_coins(event["user"])
         redeem_amount = self._redeem_amount(event["server"])
         new_user_coins = user_coins-send_amount
 
         if user_coins == DECIMAL_ZERO:
-            event["stderr"].write("%s: You have no coins" %
+            raise utils.EventError("%s: You have no coins" %
                 event["user"].nickname)
-            return
         elif new_user_coins < redeem_amount:
-            event["stderr"].write(
+            raise utils.EventError(
                 "%s: You cannot send an amount of money that puts"
                 " you below %s coins" % (
                 event["user"].nickname,
                 self._coin_str(redeem_amount)))
-            return
 
         target_user = event["server"].get_user(event["args_split"][0])
         target_user_coins = self._get_user_coins(target_user)
         if target_user_coins == None:
-            event["stderr"].write("%s: You can only send coins to users that "
+            raise utils.EventError("%s: You can only send coins to users that "
                 "have had coins before" % event["user"].nickname)
-            return
 
         self._move(event["user"], target_user, send_amount)
 
@@ -336,37 +326,32 @@ class Module(ModuleManager.BaseModule):
         """
         bets = event["args_split"][0].lower().split(",")
         if "0" in bets:
-            event["stderr"].write("%s: You can't bet on 0" %
+            raise utils.EventError("%s: You can't bet on 0" %
                 event["user"].nickname)
-            return
         bet_amounts = [amount.lower() for amount in event["args_split"][1:]]
         if len(bet_amounts) < len(bets):
-            event["stderr"].write("%s: Please provide an amount for each bet" %
+            raise utils.EventError("%s: Please provide an amount for each bet" %
                 event["user"].nickanme)
-            return
         if len(bet_amounts) == 1 and bet_amounts[0] == "all":
             bet_amounts[0] = self._get_user_coins(event["user"])
             if bet_amounts[0] <= DECIMAL_ZERO:
-                event["stderr"].write("%s: You have no coins to bet" %
+                raise utils.EventError("%s: You have no coins to bet" %
                     event["user"].nickname)
-                return
             bet_amounts[0] = self._coin_str(bet_amounts[0])
 
         for i, bet_amount in enumerate(bet_amounts):
             try:
                 bet_amount = utils._parse_coins(bet_amount, DECIMAL_ZERO)
             except CoinParseException as e:
-                event["stderr"].write("%s: %s" % (event["user"].nickname,
+                raise utils.EventError("%s: %s" % (event["user"].nickname,
                     str(e)))
-                return
 
         bet_amount_total = sum(bet_amounts)
 
         user_coins = self._get_user_coins(event["user"])
         if bet_amount_total > user_coins:
-            event["stderr"].write("%s: You don't have enough coins to bet" %
+            raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
-            return
 
         # black, red, odds, evens, low (1-18), high (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
@@ -383,7 +368,6 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickname, loss))
             return
 
-        failed = False
         colour = "red" if choice in RED else "black"
         for i, bet in enumerate(bets):
             street_match = REGEX_STREET.match(bet)
@@ -418,16 +402,13 @@ class Module(ModuleManager.BaseModule):
             elif bet.isdigit() and (1 <= int(bet) <= 36):
                 odds = 35*(choice == int(bet))
             else:
-                event["stderr"].write("%s: Unknown bet" %
+                raise utils.EventError("%s: Unknown bet" %
                     event["user"].nickname)
-                failed = True
-                break
+
             if odds == 0:
                 losses[bet] = bet_amounts[i]
             else:
                 winnings[bet] = [odds, bet_amounts[i]*odds]
-        if failed:
-            return
 
         winnings_str = ["%s for %s (%d to 1)" % (winnings[bet][1], bet,
             winnings[bet][0]) for bet in winnings.keys()]
@@ -485,17 +466,15 @@ class Module(ModuleManager.BaseModule):
         if event["args_split"]:
             amount = event["args_split"][0]
         if not amount.isdigit():
-            event["stderr"].write("%s: Please provide a positive number "
+            raise utils.EventError("%s: Please provide a positive number "
                 "of tickets to buy" % event["user"].nickname)
-            return
         amount = int(amount)
 
         user_coins = self._get_user_coins(event["user"])
         coin_amount = decimal.Decimal(LOTTERY_BUYIN)*amount
         if coin_amount > user_coins:
-            event["stderr"].write("%s: You don't have enough coins" %
+            raise utils.EventError("%s: You don't have enough coins" %
                 event["user"].nickname)
-            return
 
         self._take(event["server"], event["user"], coin_amount)
 

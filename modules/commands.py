@@ -165,12 +165,15 @@ class Module(ModuleManager.BaseModule):
                 args = " ".join(args_split)
                 server = event["server"]
                 user = event["user"]
-                self.events.on("received.command").on(command
-                    ).call_limited(1, user=user, server=server,
-                    target=target, args=args,
-                    args_split=args_split, stdout=stdout, stderr=stderr,
-                    command=command.lower(), is_channel=is_channel,
-                    tags=event["tags"])
+                try:
+                    self.events.on("received.command").on(command
+                        ).call_unsafe_limited(1, user=user, server=server,
+                        target=target, args=args, tags=event["tags"],
+                        args_split=args_split, stdout=stdout, stderr=stderr,
+                        command=command.lower(), is_channel=is_channel)
+                except EventManager.EventError as e:
+                    stdout.write(str(e))
+
                 if not hook.kwargs.get("skip_out", False):
                     stdout.send()
                     stderr.send()
