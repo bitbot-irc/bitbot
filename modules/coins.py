@@ -59,19 +59,20 @@ class Module(ModuleManager.BaseModule):
         coins = self._get_pool(server)
         self._set_pool(server, coins+amount)
 
-    def _user_coins(self, user, wallet="default"):
-        return decimal.Decimal(user.get_setting("wallets", {}).get(wallet,
-            "0.0"))
-    def _all_user_coins(self, user):
-        coins = user.get_setting("wallets", {})
-        return sum(coins.values())
+    def _get_user_coins(self, user):
+        return decimal.Decimal(user.get_setting("coins", "0.0"))
+    def _set_user_coins(self, user, coins):
+        user.set_setting("coins", self._coin_str(coins))
     def _reset_user_coins(self, user):
-        user.del_setting("wallets")
+        user.del_setting("coins")
+
+    def _coin_str(self, coins):
+        return "{0:.2f}".format(coins)
 
     @utils.hook("received.command.bank")
     def bank(self, event):
         event["stdout"].write("The Bank has %s coins" %
-            "{0:.2f}".format(self._get_pool(event["server"])))
+            self._coin_str(self._get_pool(event["server"])))
 
     def _total_coins(self, server):
         all_coins = server.get_all_user_settings("coins", [])
@@ -83,7 +84,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.totalcoins")
     def total_coins(self, event):
-        event["stdout"].write("Total coins: %s" % "{0:.2f}".format(
+        event["stdout"].write("Total coins: %s" % self._coin_str(
             self._total_coins(event["server"])))
 
     @utils.hook("received.command.coins")
@@ -95,9 +96,9 @@ class Module(ModuleManager.BaseModule):
             target = event["server"].get_user(event["args_split"][0])
         else:
             target = event["user"]
-        coins = decimal.Decimal(target.get_setting("coins", "0.0"))
+        coins = self._get_user_coins(target)
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
-            "{0:.2f}".format(coins), "" if coins == 1 else "s"))
+            self._coin_str(coins), "" if coins == 1 else "s"))
 
     @utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
@@ -107,14 +108,13 @@ class Module(ModuleManager.BaseModule):
         :permission: resetcoins
         """
         target = event["server"].get_user(event["args_split"][0])
-        coins = decimal.Decimal(target.get_setting("coins", "0.0"))
+        coins = self._get_user_coins(target)
         if coins == DECIMAL_ZERO:
             event["stderr"].write("%s already has %s coins" % (
                 target.nickname, str(DECIMAL_ZERO)))
         else:
-            coins = decimal.Decimal(target.get_setting("coins", "0.0"))
             self._give_to_pool(event["server"], coins)
-            target.del_setting("coins")
+            self._reset_user_coins(target)
             event["stdout"].write("Reset coins for %s" % target.nickname)
 
     @utils.hook("received.command.givecoins", min_args=1)
@@ -134,9 +134,9 @@ class Module(ModuleManager.BaseModule):
             return
 
         coins = decimal.Decimal(match.group(0))
-        target_coins = decimal.Decimal(target.get_setting("coins", "0.0"))
+        target_coins = self._get_user_coins(target)
         self._take_from_pool(event["server"], coins)
-        target.set_setting("coins", str(target_coins+coins))
+        self._set_user_coins(target, target_coins+coins)
 
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
             str(coins)))
@@ -155,7 +155,7 @@ class Module(ModuleManager.BaseModule):
         top_10 = utils.top_10(all_coins,
             convert_key=lambda nickname: utils.prevent_highlight(
                 event["server"].get_user(nickname).nickname),
-            value_format=lambda value: "{0:.2f}".format(value))
+            value_format=lambda value: self._coin_str(value))
         event["stdout"].write("Richest users: %s" % ", ".join(top_10))
 
     def _redeem_cache(self, server, user):
@@ -166,18 +166,16 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Redeem your free coins
         """
-        user_coins = decimal.Decimal(event["user"].get_setting(
-            "coins", "0.0"))
+        user_coins = self._get_user_coins(event["user"])
         if user_coins == DECIMAL_ZERO:
             cache = self._redeem_cache(event["server"], event["user"])
             if not self.bot.cache.has_item(cache):
                 redeem_amount = decimal.Decimal(event["server"
                     ].get_setting("redeem-amount", DEFAULT_REDEEM_AMOUNT))
-                event["user"].set_setting("coins", str(
-                    user_coins+redeem_amount))
+                self._set_user_coins(event["user"], user_coins+redeem_amount)
                 self._take_from_pool(event["server"], redeem_amount)
 
-                event["stdout"].write("Redeemed %s coins" % "{0:.2f}".format(
+                event["stdout"].write("Redeemed %s coins" % self._coin_str(
                     redeem_amount))
 
                 redeem_delay = event["server"].get_setting("redeem-delay",
@@ -202,30 +200,30 @@ class Module(ModuleManager.BaseModule):
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1].lower()
         if coin_bet == "all":
-            coin_bet = event["user"].get_setting("coins", "0.0")
-            if decimal.Decimal(coin_bet) <= DECIMAL_ZERO:
+            coin_bet = self._get_user_coins(event["user"])
+            if coin_bet <= DECIMAL_ZERO:
                 event["stderr"].write("%s: You have no coins to bet" %
                     event["user"].nickname)
                 return
+        else:
+            try:
+                coin_bet = utils.parse_number(coin_bet)
+            except ValueError:
+                pass
+            match = REGEX_FLOAT.match(coin_bet)
+            if not match or round(decimal.Decimal(coin_bet), 2) <= DECIMAL_ZERO:
+                event["stderr"].write("%s: Please provide a number of coins "
+                    "to bet" % event["user"].nickname)
+                return
+            coin_bet = decimal.Decimal(match.group(0))
 
-        try:
-            coin_bet = utils.parse_number(coin_bet)
-        except ValueError:
-            pass
-        match = REGEX_FLOAT.match(coin_bet)
-        if not match or round(decimal.Decimal(coin_bet), 2) <= DECIMAL_ZERO:
-            event["stderr"].write("%s: Please provide a number of coins to bet"
-                % event["user"].nickname)
-            return
-        coin_bet = decimal.Decimal(match.group(0))
-        coin_bet_str = "{0:.2f}".format(coin_bet)
+        coin_bet_str = self._coin_str(coin_bet)
         if not side_name in SIDES:
             event["stderr"].write("%s: Please provide 'heads' or 'tails'" %
                 event["user"].nickname)
             return
 
-        user_coins = decimal.Decimal(event["user"].get_setting(
-            "coins", "0.0"))
+        user_coins = self._get_user_coins(event["user"])
         if coin_bet > user_coins:
             event["stderr"].write("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
@@ -235,23 +233,25 @@ class Module(ModuleManager.BaseModule):
         win = side_name == chosen_side
 
         if win:
-            new_coins = str(user_coins+coin_bet)
+            new_coins = user_coins+coin_bet
             self._take_from_pool(event["server"], coin_bet)
-            event["user"].set_setting("coins", new_coins)
+            self._set_user_coins(event["user"], new_coins)
+
             event["stdout"].write(
                 "%s flips %s and wins %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
-                    "" if coin_bet == 1 else "s", new_coins
+                    "" if coin_bet == 1 else "s", self._coin_str(new_coins)
                 )
             )
         else:
-            new_coins = str(user_coins-coin_bet)
+            new_coins = user_coins-coin_bet
             self._give_to_pool(event["server"], coin_bet)
-            event["user"].set_setting("coins", new_coins)
+            self._set_user_coins(event["user"], new_coins)
+
             event["stdout"].write(
                 "%s flips %s and loses %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
-                    "" if coin_bet == 1 else "s", new_coins
+                    "" if coin_bet == 1 else "s", self._coin_str(new_coins)
                 )
             )
 
@@ -266,6 +266,7 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("%s: You can't send coins to yourself" %
                 event["user"].nickname)
             return
+
         send_amount = event["args_split"][1]
         match = REGEX_FLOAT.match(send_amount)
         if not match or round(decimal.Decimal(send_amount), 2
@@ -276,8 +277,7 @@ class Module(ModuleManager.BaseModule):
             return
         send_amount = decimal.Decimal(match.group(0))
 
-        user_coins = decimal.Decimal(event["user"].get_setting("coins",
-            "0.0"))
+        user_coins = self._get_user_coins(event["user"])
         redeem_amount = decimal.Decimal(event["server"].get_setting(
             "redeem-amount", DEFAULT_REDEEM_AMOUNT))
         new_user_coins = user_coins-send_amount
@@ -291,25 +291,24 @@ class Module(ModuleManager.BaseModule):
                 "%s: You cannot send an amount of money that puts"
                 " you below %s coins" % (
                 event["user"].nickname,
-                "{0:.2f}".format(redeem_amount)))
+                self._coin_str(redeem_amount)))
             return
+
         target_user = event["server"].get_user(event["args_split"][0])
-        target_user_coins = target_user.get_setting("coins", None)
+        target_user_coins = self._get_user_coins(target)
         if target_user_coins == None:
             event["stderr"].write("%s: You can only send coins to users that "
                 "have had coins before" % event["user"].nickname)
             return
 
-        event["user"].set_setting("coins", str(new_user_coins))
+        self._set_user_coins(event["user"], new_user_coins)
         # get target_user_coins again, just in case *somehow* someone's
         # sending coins to themselves.
-        target_user_coins = target_user.get_setting("coins", None)
-        target_user_coins = decimal.Decimal(target_user_coins)
-
-        target_user.set_setting("coins", str(target_user_coins+send_amount))
+        target_user_coins = self._get_user_coins(target_user)
+        self._set_user_coins(target_user, target_user_coins+send_amount)
 
         event["stdout"].write("%s sent %s coins to %s" % (
-            event["user"].nickname, "{0:.2f}".format(send_amount),
+            event["user"].nickname, self._coin_str(send_amount),
             target_user.nickname))
 
     @utils.hook("received.command.roulette", min_args=2, authenticated=True)
@@ -329,11 +328,12 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickanme)
             return
         if len(bet_amounts) == 1 and bet_amounts[0] == "all":
-            bet_amounts[0] = event["user"].get_setting("coins", "0.0")
-            if decimal.Decimal(bet_amounts[0]) <= DECIMAL_ZERO:
+            bet_amounts[0] = self._get_user_coins(event["user"])
+            if bet_amounts[0] <= DECIMAL_ZERO:
                 event["stderr"].write("%s: You have no coins to bet" %
                     event["user"].nickname)
                 return
+            bet_amounts[0] = self._coin_str(bet_amounts[0])
 
         for i, bet_amount in enumerate(bet_amounts):
             try:
@@ -350,8 +350,7 @@ class Module(ModuleManager.BaseModule):
             bet_amounts[i] = decimal.Decimal(match.group(0))
         bet_amount_total = sum(bet_amounts)
 
-        user_coins = decimal.Decimal(event["user"].get_setting("coins",
-            "0.0"))
+        user_coins = self._get_user_coins(event["user"])
         if bet_amount_total > user_coins:
             event["stderr"].write("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
@@ -366,7 +365,7 @@ class Module(ModuleManager.BaseModule):
         if choice == 0:
             loss = sum(bet_amounts)
             self._give_to_pool(event["server"], loss)
-            event["user"].set_setting("coins", str(user_coins-loss))
+            self._set_user_coins(event["user"], user_coins-loss)
             event["stdout"].write("Roulette spin lands on 0, "
                 "the house wins, %s loses %s" % (
                 event["user"].nickname, loss))
@@ -433,13 +432,13 @@ class Module(ModuleManager.BaseModule):
             winnings.keys()) > 1 else ""
 
         new_user_coins = (user_coins-coin_losses)+coin_winnings
-        event["user"].set_setting("coins", str(new_user_coins))
+        self._set_user_coins(event["user"], new_user_coins)
 
         choice = "%d %s" % (choice, colour)
         if not losses and winnings:
             event["stdout"].write("Roulette spin lands on %s, "
                 "%s wins %s%s" % (choice, event["user"].nickname,
-                ", ".join(winnings_str), str(total_winnings_str)))
+                ", ".join(winnings_str), total_winnings_str))
         elif losses and winnings:
             event["stdout"].write("Roulette spin lands on %s, "
                 "%s wins %s%s; loses %s" % (choice,
@@ -463,9 +462,9 @@ class Module(ModuleManager.BaseModule):
                 coins = decimal.Decimal(coins)
                 if coins > redeem_amount:
                     interest = round(coins*interest_rate, 2)
-                    coins += interest
                     self._take_from_pool(server, interest)
-                    server.set_user_setting(nickname, "coins", str(coins))
+                    server.set_user_setting(nickname, "coins",
+                        self._coin_str(coins+interest))
         event["timer"].redo()
 
     @utils.hook("received.command.lotterybuy", authenticated=True)
@@ -483,7 +482,7 @@ class Module(ModuleManager.BaseModule):
             return
         amount = int(amount)
 
-        user_coins = decimal.Decimal(event["user"].get_setting("coins", "0.0"))
+        user_coins = self._get_user_coins(event["user"])
         coin_amount = decimal.Decimal(LOTTERY_BUYIN)*amount
         if coin_amount > user_coins:
             event["stderr"].write("%s: You don't have enough coins" %
@@ -491,7 +490,7 @@ class Module(ModuleManager.BaseModule):
             return
 
         self._give_to_pool(event["server"], coin_amount)
-        event["user"].set_setting("coins", str(user_coins-coin_amount))
+        self._set_user_coins(event["user"], user_coins-coin_amount)
 
         lottery = event["server"].get_setting("lottery", {})
         nickname = event["user"].nickname_lower
@@ -502,7 +501,7 @@ class Module(ModuleManager.BaseModule):
 
         event["stdout"].write("%s: You bought %d lottery ticket%s for %s" % (
             event["user"].nickname, amount, "" if amount == 1 else "s",
-            "{0:.2f}".format(coin_amount)))
+            self._coin_str(coin_amount)))
 
     @utils.hook("received.command.mylottery")
     def my_lottery(self, event):
@@ -549,12 +548,12 @@ class Module(ModuleManager.BaseModule):
             winner = random.choice(users)
 
             user = server.get_user(winner)
-            coins = decimal.Decimal(user.get_setting("coins", "0.0"))
+            coins = self._get_user_coins(user)
             winnings = decimal.Decimal(LOTTERY_BUYIN)*len(users)
 
             self._take_from_pool(server, winnings)
             new_coins = coins+winnings
-            user.set_setting("coins", str(new_coins))
+            self._set_user_coins(user, new_coins)
             server.set_setting("lottery-winner", user.nickname)
             user.send_notice("You won %s in the lottery! you now have %s coins"
-                % ("{0:.2f}".format(winnings), "{0:.2f}".format(new_coins)))
+                % (self._coin_str(winnings), self._coin_str(new_coins)))
