@@ -316,7 +316,7 @@ class Module(ModuleManager.BaseModule):
             return
 
         target_user = event["server"].get_user(event["args_split"][0])
-        target_user_coins = self._get_user_coins(target)
+        target_user_coins = self._get_user_coins(target_user)
         if target_user_coins == None:
             event["stderr"].write("%s: You can only send coins to users that "
                 "have had coins before" % event["user"].nickname)
