@@ -2,12 +2,12 @@ import html, socket
 from src import ModuleManager, utils
 
 EVAL_TEMPLATE = """
-import StringIO, sys
+import io, sys
 
 compiled = compile(sys.stdin.read(), "code", "single")
 
 old_stdout = sys.stdout
-stdout = StringIO.StringIO()
+stdout = io.StringIO()
 sys.stdout = stdout
 
 try:
