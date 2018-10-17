@@ -244,7 +244,7 @@ class Server(IRCObject.Object):
             try:
                 line = line.decode(encoding)
             except:
-                self.bot.log.trace("Cannot decode line with '%s', falling back",
+                self.bot.log.trace("can't decode line with '%s', falling back",
                     [encoding])
                 try:
                     line = line.decode(self.get_setting(
