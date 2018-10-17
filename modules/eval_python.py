@@ -41,12 +41,12 @@ class Module(ModuleManager.BaseModule):
             pass
 
         if page:
-            out = page.split("</b></span><br>", 1)[1].strip("\n")
+            out = page.split("</b></span><br>", 1)[1]
             out = html.unescape(out)
             out = json.loads(out)
 
             event["stdout" if out["success"] else "stderr"].write(
-                "%s: %s" % (event["user"].nickname, out["out"]))
+                "%s: %s" % (event["user"].nickname, out["out"].strip("\n")))
         else:
             event["stderr"].write("%s: failed to eval" % event["user"].nickname)
 
