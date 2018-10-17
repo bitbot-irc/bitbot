@@ -341,7 +341,7 @@ class Module(ModuleManager.BaseModule):
 
         for i, bet_amount in enumerate(bet_amounts):
             try:
-                bet_amount = self._parse_coins(bet_amount, DECIMAL_ZERO)
+                bet_amounts[i] = self._parse_coins(bet_amount, DECIMAL_ZERO)
             except CoinParseException as e:
                 raise utils.EventError("%s: %s" % (event["user"].nickname,
                     str(e)))
