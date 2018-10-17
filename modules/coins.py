@@ -545,6 +545,7 @@ class Module(ModuleManager.BaseModule):
             user = server.get_user(winner)
             coins = self._get_user_coins(user)
             winnings = decimal.Decimal(LOTTERY_BUYIN)*len(users)
+            new_coins = coins+winnings
 
             self._give(server, user, winnings)
             server.set_setting("lottery-winner", user.nickname)
