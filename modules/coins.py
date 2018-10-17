@@ -174,7 +174,7 @@ class Module(ModuleManager.BaseModule):
         """
         target = event["server"].get_user(event["args_split"][0])
         try:
-            coins = self._parse_coins(event["args_split"][0], DECIMAL_ZERO)
+            coins = self._parse_coins(event["args_split"][1], DECIMAL_ZERO)
         except CoinParseException as e:
             raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
 
