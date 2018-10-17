@@ -46,7 +46,7 @@ class Module(ModuleManager.BaseModule):
             out = json.loads(out)
 
             event["stdout" if out["success"] else "stderr"].write(
-                "%s: %s" % (event["user"].nickname, out))
+                "%s: %s" % (event["user"].nickname, out["out"]))
         else:
             event["stderr"].write("%s: failed to eval" % event["user"].nickname)
 
