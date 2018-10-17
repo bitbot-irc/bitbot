@@ -29,7 +29,7 @@ class Module(ModuleManager.BaseModule):
             pass
 
         if page:
-            out = page.split("</b></span><br>", 1)[1].strip("\n")))
+            out = page.split("</b></span><br>", 1)[1].strip("\n")
             out = html.unescape(out)
             event["stdout"].write("%s: %s" % (event["user"].nickname, out))
         else:
