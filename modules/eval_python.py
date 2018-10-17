@@ -16,9 +16,9 @@ except Exception as e:
     old_stdout.write(json.dumps({"success": False, "out": str(e)}))
     sys.exit()
 
-stdout.write("\n")
+stdout.write("\\n")
 if not result == None:
-    stdout.write(str(result)+"\n")
+    stdout.write(str(result)+"\\n")
 old_stdout.write(json.dumps({"success": True, "out": stdout.getvalue()}))
 """
 
