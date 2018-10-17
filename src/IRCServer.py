@@ -240,10 +240,12 @@ class Server(IRCObject.Object):
         decoded_lines = []
 
         for line in data_lines:
+            encoding = self.get_setting("encoding", "utf8")
             try:
-                line = line.decode(self.get_setting(
-                    "encoding", "utf8"))
+                line = line.decode(encoding)
             except:
+                self.bot.log.trace("Cannot decode line with '%s', falling back",
+                    [encoding])
                 try:
                     line = line.decode(self.get_setting(
                         "fallback-encoding", "latin-1"))
