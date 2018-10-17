@@ -1,4 +1,4 @@
-import html, socket
+import html, json, socket
 from src import ModuleManager, utils
 
 EVAL_TEMPLATE = """
