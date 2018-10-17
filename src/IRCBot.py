@@ -172,7 +172,7 @@ class Bot(object):
                         for piece in data:
                             if irc:
                                 self.log.debug("%s (raw) | %s",
-                                    [str(sock), data])
+                                    [str(sock), piece])
                             sock.parse_data(piece)
                     elif event & select.EPOLLOUT:
                         sock._send()
