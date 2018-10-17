@@ -2,7 +2,7 @@ import html, socket
 from src import ModuleManager, utils
 
 EVAL_TEMPLATE = """
-import io, sys
+import io, json, sys
 
 compiled = compile(sys.stdin.read(), "code", "single")
 
@@ -43,7 +43,10 @@ class Module(ModuleManager.BaseModule):
         if page:
             out = page.split("</b></span><br>", 1)[1].strip("\n")
             out = html.unescape(out)
-            event["stdout"].write("%s: %s" % (event["user"].nickname, out))
+            out = json.loads(out)
+
+            event["stdout" if out["success"] else "stderr"].write(
+                "%s: %s" % (event["user"].nickname, out))
         else:
             event["stderr"].write("%s: failed to eval" % event["user"].nickname)
 
