@@ -1,4 +1,4 @@
-import socket
+import html, socket
 from src import ModuleManager, utils
 
 EVAL_TEMPLATE = """
@@ -29,8 +29,9 @@ class Module(ModuleManager.BaseModule):
             pass
 
         if page:
-            event["stdout"].write("%s: %s" % (event["user"].nickname,
-                page.split("</b></span><br>", 1)[1].strip("\n")))
+            out = page.split("</b></span><br>", 1)[1].strip("\n")))
+            out = html.unescape(out)
+            event["stdout"].write("%s: %s" % (event["user"].nickname, out))
         else:
             event["stderr"].write("%s: failed to eval" % event["user"].nickname)
 
