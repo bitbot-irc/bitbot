@@ -82,7 +82,11 @@ class Module(ModuleManager.BaseModule):
         self._set_user_wallets(user, wallets)
 
     def _all_coins(self, server):
-        coins = server.get_all_user_settings("coins", [])
+        coins = server.get_all_user_settings("wallets", [])
+
+        for i, (nickname, wallet) in enumerate(coin_settings):
+            coins[i] = sum([decimal.Decimal(v) for v in wallet.values()])
+
         coins = list(filter(lambda coin: decimal.Decimal(coin[1]), coins))
         return dict([(coin[0], decimal.Decimal(coin[1])) for coin in coins])
 
