@@ -180,7 +180,7 @@ class Module(ModuleManager.BaseModule):
                 (event["user"].nickname, ", ".join(wallets)))
         else:
             wallet = event["args"]
-            if not self._user_has_wallet(wallet):
+            if not self._user_has_wallet(event["user"], wallet):
                 raise utils.EventError("%s: you don't have a '%s' wallet" %
                     (event["user"].nickname, wallet))
             coins = self._get_user_coins(user, wallet)
