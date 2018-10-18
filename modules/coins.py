@@ -88,8 +88,7 @@ class Module(ModuleManager.BaseModule):
             user_coins = sum([decimal.Decimal(v) for v in wallet.values()])
             coins[i] = (nickname, user_coins)
 
-        coins = list(filter(lambda coin: decimal.Decimal(coin[1]), coins))
-        return dict([(coin[0], decimal.Decimal(coin[1])) for coin in coins])
+        return dict(filter(lambda coin: coin[1], coins))
 
     def _redeem_amount(self, server):
         return decimal.Decimal(server.get_setting("redeem-amount",
@@ -141,11 +140,7 @@ class Module(ModuleManager.BaseModule):
             self._coin_str(self._get_pool(event["server"])))
 
     def _total_coins(self, server):
-        all_coins = server.get_all_user_settings("coins", [])
-        all_coins = list(filter(lambda coin: decimal.Decimal(coin[1]),
-            all_coins))
-        all_coins = [decimal.Decimal(coin[1]) for coin in all_coins]
-        all_coins = sum(all_coins)
+        all_coins = sum(self._all_coins(server).values())
         return self._get_pool(server)+all_coins
 
     @utils.hook("received.command.totalcoins")
