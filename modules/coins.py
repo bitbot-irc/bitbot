@@ -86,7 +86,7 @@ class Module(ModuleManager.BaseModule):
 
         for i, (nickname, wallet) in enumerate(coins):
             user_coins = sum([decimal.Decimal(v) for v in wallet.values()])
-            coins[i] = (nickname, wallet)
+            coins[i] = (nickname, user_coins)
 
         coins = list(filter(lambda coin: decimal.Decimal(coin[1]), coins))
         return dict([(coin[0], decimal.Decimal(coin[1])) for coin in coins])
