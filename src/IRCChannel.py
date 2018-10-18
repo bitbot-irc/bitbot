@@ -66,10 +66,12 @@ class Channel(IRCObject.Object):
             if mode in self.server.prefix_modes:
                 user = self.server.get_user(arg)
                 if user:
-                    self.modes[mode].discard(user)
-                    self.user_modes[user].discard(mode)
-                    if not self.user_modes[user]:
-                        del self.user_modes[user]
+                    if mode in self.modes:
+                        self.modes[mode].discard(user)
+                    if user in self.user_modes:
+                        self.user_modes[user].discard(mode)
+                        if not self.user_modes[user]:
+                            del self.user_modes[user]
             else:
                 self.modes[mode].discard(arg.lower())
             if not len(self.modes[mode]):
