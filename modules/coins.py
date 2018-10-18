@@ -70,6 +70,8 @@ class Module(ModuleManager.BaseModule):
         user.set_setting("wallets", wallets)
     def _reset_user_wallets(self, user):
         user.del_setting("wallets")
+    def _user_has_wallet(self, user, wallet):
+        return wallet.lower() in self._get_user_wallets(user)
 
     def _get_user_coins(self, user, wallet=WALLET_DEFAULT):
         wallets = self._get_user_wallets(user)
@@ -172,10 +174,18 @@ class Module(ModuleManager.BaseModule):
         :help: Show your wallets and their balances
         :usage: [wallet]
         """
-        if event["args_split"]:
+        if not event["args_split"]:
             wallets = self._get_user_wallets(event["user"]).keys()
             event["stdout"].write("%s: your available wallets are: %s" %
                 (event["user"].nickname, ", ".join(wallets)))
+        else:
+            wallet = event["args"]
+            if not self._user_has_wallet(wallet):
+                raise utils.EventError("%s: you don't have a '%s' wallet" %
+                    (event["user"].nickname, wallet))
+            coins = self._get_user_coins(user, wallet)
+            event["stdout"].write("%s: you have %s coins in your '%s' wallet" %
+                (event["user"].nickname, self._coin_str(coins), wallet))
 
     @utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
