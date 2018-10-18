@@ -62,12 +62,24 @@ class Module(ModuleManager.BaseModule):
         coins = self._get_pool(server)
         self._set_pool(server, coins+amount)
 
-    def _get_user_coins(self, user):
-        return decimal.Decimal(user.get_setting("coins", "0.0"))
-    def _set_user_coins(self, user, coins):
-        user.set_setting("coins", self._coin_str(coins))
-    def _reset_user_coins(self, user):
-        user.del_setting("coins")
+    def _get_user_wallets(self, user):
+        return user.get_setting("wallets", {})
+    def _set_user_wallets(self, user, wallets):
+        user.set_setting("wallets", wallets)
+    def _reset_user_wallets(self, user):
+        user.del_setting("wallets")
+
+    def _get_user_coins(self, user, wallet="default"):
+        wallets = self._get_user_wallets(user)
+        return decimal.Decimal(wallets.get(wallet.lower(), "0.0"))
+    def _get_all_user_coins(self, user):
+        wallets = self._get_user_wallets(user)
+        print(wallets)
+        return sum([decimal.Decimal(amount) for amount in wallets.values()])
+    def _set_user_coins(self, user, coins, wallet="default"):
+        wallets = self._get_user_wallets(user)
+        wallets[wallet.lower()] = self._coin_str(coins)
+        self._set_user_wallets(user, wallets)
 
     def _all_coins(self, server):
         coins = server.get_all_user_settings("coins", [])
@@ -148,7 +160,7 @@ class Module(ModuleManager.BaseModule):
             target = event["server"].get_user(event["args_split"][0])
         else:
             target = event["user"]
-        coins = self._get_user_coins(target)
+        coins = self._get_all_user_coins(target)
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             self._coin_str(coins), "" if coins == 1 else "s"))
 
@@ -160,9 +172,9 @@ class Module(ModuleManager.BaseModule):
         :permission: resetcoins
         """
         target = event["server"].get_user(event["args_split"][0])
-        coins = self._get_user_coins(target)
+        coins = self._get_all_user_coins(target)
         self._take(event["server"], target, coins)
-        self._reset_user_coins(target)
+        self._reset_user_wallets(target)
         event["stdout"].write("Reset coins for %s" % target.nickname)
 
     @utils.hook("received.command.givecoins", min_args=1)
@@ -201,7 +213,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Redeem your free coins
         """
-        user_coins = self._get_user_coins(event["user"])
+        user_coins = self._get_all_user_coins(event["user"])
         if user_coins == DECIMAL_ZERO:
             cache = self._redeem_cache(event["server"], event["user"])
             if not self.bot.cache.has_item(cache):
