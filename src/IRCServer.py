@@ -138,7 +138,7 @@ class Server(IRCObject.Object):
 
     def get_user_setting(self, nickname, setting, default=None):
         user_id = self.get_user_id(nickname)
-        self.bot.database.user_settings.get(user_id, setting, default)
+        return self.bot.database.user_settings.get(user_id, setting, default)
     def set_user_setting(self, nickname, setting, value):
         user_id = self.get_user_id(nickname)
         self.bot.database.user_settings.set(user_id, setting, value)
