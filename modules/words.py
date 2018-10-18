@@ -75,6 +75,14 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Already tracking '%s'" % word)
 
+    @utils.hook("received.command.trackedwords")
+    def tracked_words(self, event):
+        """
+        :help: List which words are being tracked on the current network
+        """
+        event["stdout"].write("Tracked words: %s" % ",".join(
+            event["server"].get_setting("tracked-words", [])))
+
     @utils.hook("received.command.wordusers", min_args=1)
     def word_users(self, event):
         """
