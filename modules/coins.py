@@ -30,6 +30,8 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
+WALLET_DEFAULT = "default"
+
 class CoinParseException(Exception):
     pass
 
@@ -69,13 +71,13 @@ class Module(ModuleManager.BaseModule):
     def _reset_user_wallets(self, user):
         user.del_setting("wallets")
 
-    def _get_user_coins(self, user, wallet="default"):
+    def _get_user_coins(self, user, wallet=WALLET_DEFAULT):
         wallets = self._get_user_wallets(user)
         return decimal.Decimal(wallets.get(wallet.lower(), "0.0"))
     def _get_all_user_coins(self, user):
         wallets = self._get_user_wallets(user)
         return sum([decimal.Decimal(amount) for amount in wallets.values()])
-    def _set_user_coins(self, user, coins, wallet="default"):
+    def _set_user_coins(self, user, coins, wallet=WALLET_DEFAULT):
         wallets = self._get_user_wallets(user)
         wallets[wallet.lower()] = self._coin_str(coins)
         self._set_user_wallets(user, wallets)
@@ -95,20 +97,21 @@ class Module(ModuleManager.BaseModule):
     def _redeem_delay(self, server):
         return server.get_setting("redeem-delay", DEFAULT_REDEEM_DELAY)
 
-    def _give(self, server, user, amount):
+    def _give(self, server, user, amount, wallet=WALLET_DEFAULT):
         user_coins = self._get_user_coins(user)
         self._take_from_pool(server, amount)
-        self._set_user_coins(user, user_coins+amount)
-    def _take(self, server, user, amount):
+        self._set_user_coins(user, user_coins+amount, wallet)
+    def _take(self, server, user, amount, wallet=WALLET_DEFAULT):
         user_coins = self._get_user_coins(user)
         self._give_to_pool(server, amount)
-        self._set_user_coins(user, user_coins-amount)
-    def _move(self, user1, user2, amount):
+        self._set_user_coins(user, user_coins-amount, wallet)
+    def _move(self, user1, user2, amount, from_wallet=WALLET_DEFAULT,
+            to_wallet=WALLET_DEFAULT):
         user1_coins = self._get_user_coins(user1)
-        self._set_user_coins(user1, user1_coins-amount)
+        self._set_user_coins(user1, user1_coins-amount, from_wallet)
 
         user2_coins = self._get_user_coins(user2)
-        self._set_user_coins(user2, user2_coins+amount)
+        self._set_user_coins(user2, user2_coins+amount, to_wallet)
 
     def _coin_str(self, coins):
         return "{0:.2f}".format(coins)
@@ -162,6 +165,17 @@ class Module(ModuleManager.BaseModule):
         coins = self._get_all_user_coins(target)
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             self._coin_str(coins), "" if coins == 1 else "s"))
+
+    @utils.hook("received.commands.wallet")
+    def wallet(self, event):
+        """
+        :help: Show your wallets and their balances
+        :usage: [wallet]
+        """
+        if event["args_split"]:
+            wallets = self._get_user_wallets(event["user"]).keys()
+            event["stdout"].write("%s: your available wallets are: %s" %
+                (event["user"].nickname, ", ".join(wallets)))
 
     @utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
@@ -465,9 +479,10 @@ class Module(ModuleManager.BaseModule):
                     self._take_from_pool(server, interest)
 
                     wallets = server.get_user_setting(nickname, "wallets", {})
-                    default_coins = wallets.get("default", "0.0")
+                    default_coins = wallets.get(WALLET_DEFAULT, "0.0")
                     default_coins = decimal.Decimal(default_coins)
-                    wallets["default"] = self._coin_str(default_coins+interest)
+                    wallets[WALLET_DEFAULT] = self._coin_str(
+                        default_coins+interest)
                     server.set_user_setting(nickname, "wallets", wallets)
         event["timer"].redo()
 
