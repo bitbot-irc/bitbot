@@ -166,7 +166,7 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             self._coin_str(coins), "" if coins == 1 else "s"))
 
-    @utils.hook("received.commands.wallet")
+    @utils.hook("received.command.wallet")
     def wallet(self, event):
         """
         :help: Show your wallets and their balances
