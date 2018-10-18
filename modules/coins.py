@@ -464,8 +464,12 @@ class Module(ModuleManager.BaseModule):
                 if coins > redeem_amount:
                     interest = round(coins*interest_rate, 2)
                     self._take_from_pool(server, interest)
-                    server.set_user_setting(nickname, "coins",
-                        self._coin_str(coins+interest))
+
+                    wallets = server.get_user_setting(nickname, "wallets", {})
+                    default_coins = wallets.get("default", "0.0")
+                    default_coins = decimal.Decimal(default_coins)
+                    wallets["default"] = self._coin_str(default_coins+interest)
+                    server.set_user_setting(nickname, "wallets", wallets)
         event["timer"].redo()
 
     @utils.hook("received.command.lotterybuy", authenticated=True)
