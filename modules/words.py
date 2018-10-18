@@ -80,7 +80,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: List which words are being tracked on the current network
         """
-        event["stdout"].write("Tracked words: %s" % ",".join(
+        event["stdout"].write("Tracked words: %s" % ", ".join(
             event["server"].get_setting("tracked-words", [])))
 
     @utils.hook("received.command.wordusers", min_args=1)
