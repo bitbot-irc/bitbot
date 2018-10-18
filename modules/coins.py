@@ -74,7 +74,6 @@ class Module(ModuleManager.BaseModule):
         return decimal.Decimal(wallets.get(wallet.lower(), "0.0"))
     def _get_all_user_coins(self, user):
         wallets = self._get_user_wallets(user)
-        print(wallets)
         return sum([decimal.Decimal(amount) for amount in wallets.values()])
     def _set_user_coins(self, user, coins, wallet="default"):
         wallets = self._get_user_wallets(user)
