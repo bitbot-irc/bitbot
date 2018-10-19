@@ -111,10 +111,12 @@ class Module(ModuleManager.BaseModule):
         user_coins = self._get_user_coins(user, wallet)
         self._take_from_pool(server, amount)
         self._set_user_coins(user, user_coins+amount, wallet)
+        return user_coins+amount
     def _take(self, server, user, amount, wallet=WALLET_DEFAULT):
         user_coins = self._get_user_coins(user, wallet)
         self._give_to_pool(server, amount)
         self._set_user_coins(user, user_coins-amount, wallet)
+        return user_coins-amount
     def _move(self, user1, user2, amount, from_wallet=WALLET_DEFAULT,
             to_wallet=WALLET_DEFAULT):
         user1_coins = self._get_user_coins(user1, from_wallet)
@@ -151,7 +153,14 @@ class Module(ModuleManager.BaseModule):
         if not ":" in s:
             return s, s
         wallet_1, _, wallet_2 = s.partition(":")
-        return wallet_1 or WALLET_DEFAULT, wallet_2 or WALLET_DEFAULT
+        wallet_1 = wallet_1.lower() or WALLET_DEFAUT
+        wallet_2 = wallet_2.lower() or WALLET_DEFAULT
+
+        wallets = self._get_user_wallets(user)
+        if not wallet_1 in wallets or not wallet_2 in wallets:
+            raise utils.EventError("Unknown wallet")
+
+        return wallet_1, wallet_2
 
     @utils.hook("received.command.bank")
     def bank(self, event):
@@ -351,12 +360,12 @@ class Module(ModuleManager.BaseModule):
 
         coin_bet_str = self._coin_str(coin_bet)
         if win:
-            self._give(event["server"], event["user"], coin_bet, wallet_out)
+            new_total = self._give(event["server"], event["user"], coin_bet,
+                wallet_out)
             event["stdout"].write(
                 "%s flips %s and wins %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
-                    "" if coin_bet == 1 else "s",
-                    self._coin_str(user_coins+coin_bet)
+                    "" if coin_bet == 1 else "s", self._coin_str(new_total)
                 )
             )
         else:
