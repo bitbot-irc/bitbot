@@ -384,13 +384,17 @@ class Module(ModuleManager.BaseModule):
         :help: Send coins to another user
         :usage: <nickname> <amount>
         """
-        wallet_in, wallet_out = self._default_wallets(event["user"])
+        target_user = event["server"].get_user(event["args_split"][0])
+
+        wallet_in, _ = self._default_wallets(event["user"])
+        _, wallet_out = self._default_wallets(target_user)
         if len(event["args_split"]) > 2:
-            wallet_in, wallet_out = self._parse_wallets(event["user"],
+            wallet_in, _ = self._parse_wallets(event["user"],
+                event["args_split"][2])
+            _, wallet_out = self._parse_wallets(target_user,
                 event["args_split"][2])
 
-        if event["user"].get_id() == event["server"].get_user(event[
-                "args_split"][0]).get_id():
+        if event["user"].get_id() == target_user.get_id():
             raise utils.EventError("%s: You can't send coins to yourself" %
                 event["user"].nickname)
 
@@ -414,7 +418,6 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickname,
                 self._coin_str(redeem_amount)))
 
-        target_user = event["server"].get_user(event["args_split"][0])
         target_user_coins = self._get_user_coins(target_user, wallet_out)
         if target_user_coins == None:
             raise utils.EventError("%s: You can only send coins to users that "
