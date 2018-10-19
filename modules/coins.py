@@ -108,19 +108,19 @@ class Module(ModuleManager.BaseModule):
         return server.get_setting("redeem-delay", DEFAULT_REDEEM_DELAY)
 
     def _give(self, server, user, amount, wallet=WALLET_DEFAULT):
-        user_coins = self._get_user_coins(user)
+        user_coins = self._get_user_coins(user, wallet)
         self._take_from_pool(server, amount)
         self._set_user_coins(user, user_coins+amount, wallet)
     def _take(self, server, user, amount, wallet=WALLET_DEFAULT):
-        user_coins = self._get_user_coins(user)
+        user_coins = self._get_user_coins(user, wallet)
         self._give_to_pool(server, amount)
         self._set_user_coins(user, user_coins-amount, wallet)
     def _move(self, user1, user2, amount, from_wallet=WALLET_DEFAULT,
             to_wallet=WALLET_DEFAULT):
-        user1_coins = self._get_user_coins(user1)
+        user1_coins = self._get_user_coins(user1, from_wallet)
         self._set_user_coins(user1, user1_coins-amount, from_wallet)
 
-        user2_coins = self._get_user_coins(user2)
+        user2_coins = self._get_user_coins(user2, to_wallet)
         self._set_user_coins(user2, user2_coins+amount, to_wallet)
 
     def _coin_str(self, coins):
