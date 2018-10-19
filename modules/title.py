@@ -20,9 +20,16 @@ class Module(ModuleManager.BaseModule):
                 url = re.search(REGEX_URL, url.message).group(0)
         if not url:
             raise utils.EventError("No URL provided/found.")
-        soup = utils.http.get_url(url, soup=True)
+
+        soup = None
+        try:
+            soup = utils.http.get_url(url, soup=True)
+        except:
+            pass
+
         if not soup:
             raise utils.EventError("Failed to get URL.")
+
         title = soup.title
         if title:
             title = title.text.replace("\n", " ").replace("\r", ""
