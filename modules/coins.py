@@ -83,6 +83,14 @@ class Module(ModuleManager.BaseModule):
         wallets = self._get_user_wallets(user)
         wallets[wallet.lower()] = self._coin_str(coins)
         self._set_user_wallets(user, wallets)
+    def _add_user_wallet(self, user, wallet):
+        wallets = self._get_user_wallets(user)
+        wallets[wallet.lower()] = "0.0"
+        self._set_user_wallets(user, wallets)
+    def _remove_user_wallet(self, user, wallet):
+        wallets = self._get_user_wallets(user)
+        del wallets[wallet.lower()]
+        self._set_user_wallets(user, wallet)
 
     def _all_coins(self, server):
         coins = server.get_all_user_settings("wallets", [])
@@ -134,6 +142,16 @@ class Module(ModuleManager.BaseModule):
         else:
             raise CoinParseException(
                 "Please provide a valid positive coin amount")
+
+    def _default_wallets(self, user):
+        return WALLET_DEFAULT, WALLET_DEFAULT
+    def _parse_wallets(self, user, s):
+        if not s:
+            return self._default_wallets()
+        if not ":" in s:
+            return s, s
+        wallet_1, _, wallet_2 = s.partition(":")
+        return wallet_1 or WALLET_DEFAULT, wallet_2 or WALLET_DEFAULT
 
     @utils.hook("received.command.bank")
     def bank(self, event):
@@ -187,6 +205,31 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("%s: you have %s coins in your '%s' wallet" %
                 (event["user"].nickname, self._coin_str(coins), wallet))
 
+    @utils.hook("received.command.addwallet", authenticated=True, min_args=1)
+    def add_wallet(self, event):
+        wallet = event["args_split"][0]
+        if self._user_has_wallet(wallet):
+            raise utils.EventError("%s: you already have a '%s' wallet" %
+                (event["user"].nickname, wallet))
+        self._add_user_wallet(event["user"], wallet)
+        event["stdout"].write("%s: added a '%s' wallet" % (
+            event["user"].nickname, wallet))
+    @utils.hook("received.command.removewallet", authenticated=True, min_args=1)
+    def remove_wallet(self, event):
+        wallet = event["args_split"][0]
+        if not self._user_has_wallet(wallet):
+            raise utils.EventError("%s: you don't have a '%s' wallet" %
+                (event["user"].nickname, wallet))
+        if wallet.lower() == WALLET_DEFAULT.lower():
+            raise utils.EventError("%s: you cannot delete the default wallet" %
+                event["user"].nickname)
+
+        coins = self._get_user_coins(event["user"], wallet)
+        self._give(event["server"], event["user"], coins, WALLET_DEFAULT)
+        self._remove_user_wallet(event["user"], wallet)
+        event["stdout"].write("%s: removed wallet '%s' and shifted any funds "
+            "to your default wallet" % (event["user"].nickname, wallet))
+
     @utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
         """
@@ -207,13 +250,18 @@ class Module(ModuleManager.BaseModule):
         :usage: <nickname> <coins>
         :permission: givecoins
         """
+        _, wallet_out = self._default_wallets(event["user"])
+        if len(event["args_split"]) > 1:
+            _, wallet_out = self._parse_wallets(event["user"],
+                event["args_split"][1])
+
         target = event["server"].get_user(event["args_split"][0])
         try:
             coins = self._parse_coins(event["args_split"][1], DECIMAL_ZERO)
         except CoinParseException as e:
             raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
 
-        self._give(event["server"], target, coins)
+        self._give(event["server"], target, coins, wallet_out)
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
             self._coin_str(coins)))
 
@@ -240,8 +288,14 @@ class Module(ModuleManager.BaseModule):
         if user_coins == DECIMAL_ZERO:
             cache = self._redeem_cache(event["server"], event["user"])
             if not self.bot.cache.has_item(cache):
+                _, wallet_out = self._default_wallets(event["user"])
+                if len(event["args_split"]) > 0:
+                    _, wallet_out = self._parse_wallets(event["user"],
+                        event["args_split"][0])
+
                 redeem_amount = self._redeem_amount(event["server"])
-                self._give(event["server"], event["user"], redeem_amount)
+                self._give(event["server"], event["user"], redeem_amount,
+                    wallet_out)
 
                 event["stdout"].write("Redeemed %s coins" % self._coin_str(
                     redeem_amount))
@@ -264,10 +318,15 @@ class Module(ModuleManager.BaseModule):
         :help: Bet on a coin flip
         :usage: heads|tails <coin amount>
         """
+        wallet_in, wallet_out = self._default_wallets(event["user"])
+        if len(event["args_split"] > 2):
+            wallet_in, wallet_out = self._parse_wallets(event["user"],
+                event["args_split"][2]
+
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1].lower()
         if coin_bet == "all":
-            coin_bet = self._get_user_coins(event["user"])
+            coin_bet = self._get_user_coins(event["user"], wallet_in)
             if coin_bet <= DECIMAL_ZERO:
                 raise utils.EventError("%s: You have no coins to bet" %
                     event["user"].nickname)
@@ -282,7 +341,7 @@ class Module(ModuleManager.BaseModule):
              raise utils.EventError("%s: Please provide 'heads' or 'tails'" %
                 event["user"].nickname)
 
-        user_coins = self._get_user_coins(event["user"])
+        user_coins = self._get_user_coins(event["user"], wallet_in)
         if coin_bet > user_coins:
             raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
@@ -292,7 +351,7 @@ class Module(ModuleManager.BaseModule):
 
         coin_bet_str = self._coin_str(coin_bet)
         if win:
-            self._give(event["server"], event["user"], coin_bet)
+            self._give(event["server"], event["user"], coin_bet, wallet_out)
             event["stdout"].write(
                 "%s flips %s and wins %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
@@ -301,7 +360,7 @@ class Module(ModuleManager.BaseModule):
                 )
             )
         else:
-            self._take(event["server"], event["user"], coin_bet)
+            self._take(event["server"], event["user"], coin_bet, wallet_in)
             event["stdout"].write(
                 "%s flips %s and loses %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
@@ -316,6 +375,11 @@ class Module(ModuleManager.BaseModule):
         :help: Send coins to another user
         :usage: <nickname> <amount>
         """
+        wallet_in, wallet_out = self._default_wallets()
+        if len(event["args_split"]) > 2:
+            wallet_in, wallet_out = self._parse_wallets(event["user"],
+                event["args_split"][2]
+
         if event["user"].get_id() == event["server"].get_user(event[
                 "args_split"][0]).get_id():
             raise utils.EventError("%s: You can't send coins to yourself" %
@@ -327,7 +391,7 @@ class Module(ModuleManager.BaseModule):
         except CoinParseException as e:
             raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
 
-        user_coins = self._get_user_coins(event["user"])
+        user_coins = self._get_user_coins(event["user"], wallet_in)
         redeem_amount = self._redeem_amount(event["server"])
         new_user_coins = user_coins-send_amount
 
@@ -342,12 +406,13 @@ class Module(ModuleManager.BaseModule):
                 self._coin_str(redeem_amount)))
 
         target_user = event["server"].get_user(event["args_split"][0])
-        target_user_coins = self._get_user_coins(target_user)
+        target_user_coins = self._get_user_coins(target_user, wallet_out)
         if target_user_coins == None:
             raise utils.EventError("%s: You can only send coins to users that "
                 "have had coins before" % event["user"].nickname)
 
-        self._move(event["user"], target_user, send_amount)
+        self._move(event["user"], target_user, send_amount, wallet_in,
+            wallet_out)
 
         event["stdout"].write("%s sent %s coins to %s" % (
             event["user"].nickname, self._coin_str(send_amount),
@@ -359,6 +424,11 @@ class Module(ModuleManager.BaseModule):
         :help: Spin a roulette wheel
         :usage: <type> <amount>
         """
+        wallet_in, wallet_out = self._default_wallets(event["user"])
+        if len(event["args_split"]) > 2:
+            wallet_in, wallet_out = self._parse_wallets(event["user"],
+                event["args_split"][2])
+
         bets = event["args_split"][0].lower().split(",")
         if "0" in bets:
             raise utils.EventError("%s: You can't bet on 0" %
@@ -368,7 +438,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("%s: Please provide an amount for each bet" %
                 event["user"].nickanme)
         if len(bet_amounts) == 1 and bet_amounts[0] == "all":
-            bet_amounts[0] = self._get_user_coins(event["user"])
+            bet_amounts[0] = self._get_user_coins(event["user"], wallet_in)
             if bet_amounts[0] <= DECIMAL_ZERO:
                 raise utils.EventError("%s: You have no coins to bet" %
                     event["user"].nickname)
@@ -383,11 +453,14 @@ class Module(ModuleManager.BaseModule):
 
         bet_amount_total = sum(bet_amounts)
 
-        user_coins = self._get_user_coins(event["user"])
+        user_coins = self._get_user_coins(event["user"], wallet_in)
         if bet_amount_total > user_coins:
             raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
 
+        payin = sum(bet_amounts)
+        self._set_user_coins(event["user"], payin, wallet_in)
+        self._give_to_pool(event["server"], payin)
         # black, red, odds, evens, low (1-18), high (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
         # 1column (1,4..34), 2column (2,5..35), 3column (3,6..36)
@@ -395,12 +468,9 @@ class Module(ModuleManager.BaseModule):
         winnings = {}
         losses = {}
         if choice == 0:
-            loss = sum(bet_amounts)
-            self._give_to_pool(event["server"], loss)
-            self._set_user_coins(event["user"], user_coins-loss)
             event["stdout"].write("Roulette spin lands on 0, "
                 "the house wins, %s loses %s" % (
-                event["user"].nickname, loss))
+                event["user"].nickname, payin))
             return
 
         colour = "red" if choice in RED else "black"
@@ -452,9 +522,8 @@ class Module(ModuleManager.BaseModule):
         coin_losses = sum([loss for loss in losses.values()])
 
         if coin_winnings:
-            self._give(event["server"], event["user"], coin_winnings)
-        if coin_losses:
-            self._take(event["server"], event["user"], coin_losses)
+            self._give(event["server"], event["user"], coin_winnings,
+                wallet_out)
 
         total_winnings_str = " (%s total)" % coin_winnings if len(
             winnings.keys()) > 1 else ""
@@ -502,6 +571,11 @@ class Module(ModuleManager.BaseModule):
         :help: By ticket(s) for the lottery
         :usage: [amount]
         """
+        wallet_in, _ = self._default_wallets(event["user"])
+        if len(event["args_split"]) > 0:
+            wallet_in, _ = self._parse_wallets(event["user"],
+                event["args_split"][0])
+
         amount = 1
         if event["args_split"]:
             amount = event["args_split"][0]
@@ -510,13 +584,13 @@ class Module(ModuleManager.BaseModule):
                 "of tickets to buy" % event["user"].nickname)
         amount = int(amount)
 
-        user_coins = self._get_user_coins(event["user"])
+        user_coins = self._get_user_coins(event["user"], wallet_in)
         coin_amount = decimal.Decimal(LOTTERY_BUYIN)*amount
         if coin_amount > user_coins:
             raise utils.EventError("%s: You don't have enough coins" %
                 event["user"].nickname)
 
-        self._take(event["server"], event["user"], coin_amount)
+        self._take(event["server"], event["user"], coin_amount, wallet_in)
 
         lottery = event["server"].get_setting("lottery", {})
         nickname = event["user"].nickname_lower
