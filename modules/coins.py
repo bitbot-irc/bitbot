@@ -65,7 +65,7 @@ class Module(ModuleManager.BaseModule):
         self._set_pool(server, coins+amount)
 
     def _get_user_wallets(self, user):
-        return user.get_setting("wallets", {})
+        return user.get_setting("wallets", {WALLET_DEFAULT: "0.0"})
     def _set_user_wallets(self, user, wallets):
         user.set_setting("wallets", wallets)
     def _reset_user_wallets(self, user):
