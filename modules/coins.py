@@ -90,7 +90,7 @@ class Module(ModuleManager.BaseModule):
     def _remove_user_wallet(self, user, wallet):
         wallets = self._get_user_wallets(user)
         del wallets[wallet.lower()]
-        self._set_user_wallets(user, wallet)
+        self._set_user_wallets(user, wallets)
 
     def _all_coins(self, server):
         coins = server.get_all_user_settings("wallets", [])
