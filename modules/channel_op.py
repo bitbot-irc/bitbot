@@ -70,7 +70,7 @@ class Module(ModuleManager.BaseModule):
     def _ban(self, server, channel, ban, target):
         target_user = server.get_user(target)
         if channel.has_user(target_user):
-            return this._ban_user(channel, ban, target_user)
+            return self._ban_user(channel, ban, target_user)
         else:
             if ban:
                 event["target"].send_ban(target)
