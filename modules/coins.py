@@ -153,7 +153,7 @@ class Module(ModuleManager.BaseModule):
         if not ":" in s:
             return s, s
         wallet_1, _, wallet_2 = s.partition(":")
-        wallet_1 = wallet_1.lower() or WALLET_DEFAUT
+        wallet_1 = wallet_1.lower() or WALLET_DEFAULT
         wallet_2 = wallet_2.lower() or WALLET_DEFAULT
 
         wallets = self._get_user_wallets(user)
