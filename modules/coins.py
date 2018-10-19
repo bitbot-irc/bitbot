@@ -402,12 +402,12 @@ class Module(ModuleManager.BaseModule):
 
         user_coins = self._get_user_coins(event["user"], wallet_in)
         redeem_amount = self._redeem_amount(event["server"])
-        new_user_coins = user_coins-send_amount
+        new_total_coins = self._get_all_user_coins(event["user"])-send_amount
 
         if user_coins == DECIMAL_ZERO:
             raise utils.EventError("%s: You have no coins" %
                 event["user"].nickname)
-        elif new_user_coins < redeem_amount:
+        elif new_total_coins < redeem_amount:
             raise utils.EventError(
                 "%s: You cannot send an amount of money that puts"
                 " you below %s coins" % (
