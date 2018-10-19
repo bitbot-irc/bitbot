@@ -319,7 +319,7 @@ class Module(ModuleManager.BaseModule):
         :usage: heads|tails <coin amount>
         """
         wallet_in, wallet_out = self._default_wallets(event["user"])
-        if len(event["args_split"] > 2):
+        if len(event["args_split"]) > 2:
             wallet_in, wallet_out = self._parse_wallets(event["user"],
                 event["args_split"][2])
 
