@@ -78,7 +78,7 @@ class Module(ModuleManager.BaseModule):
         return decimal.Decimal(wallets.get(wallet.lower(), "0.0"))
     def _get_all_user_coins(self, user):
         wallets = self._get_user_wallets(user)
-        return sum([decimal.Decimal(amount) for amount in wallets.values()])
+        return sum(decimal.Decimal(amount) for amount in wallets.values())
     def _set_user_coins(self, user, coins, wallet=WALLET_DEFAULT):
         wallets = self._get_user_wallets(user)
         wallets[wallet.lower()] = self._coin_str(coins)
@@ -96,7 +96,7 @@ class Module(ModuleManager.BaseModule):
         coins = server.get_all_user_settings("wallets", [])
 
         for i, (nickname, wallet) in enumerate(coins):
-            user_coins = sum([decimal.Decimal(v) for v in wallet.values()])
+            user_coins = sum(decimal.Decimal(v) for v in wallet.values())
             coins[i] = (nickname, user_coins)
 
         return dict(filter(lambda coin: coin[1], coins))
@@ -528,7 +528,7 @@ class Module(ModuleManager.BaseModule):
             winnings[bet][0]) for bet in winnings.keys()]
 
         coin_winnings = sum(bet[1] for bet in winnings.values())
-        coin_losses = sum([loss for loss in losses.values()])
+        coin_losses = sum(loss for loss in losses.values())
 
         if coin_winnings:
             self._give(event["server"], event["user"], coin_winnings,
@@ -628,7 +628,7 @@ class Module(ModuleManager.BaseModule):
         :help: Show the current lottery jackpot
         """
         lottery = event["server"].get_setting("lottery", {})
-        count = sum([value for nickname, value in lottery.items()])
+        count = sum(value for nickname, value in lottery.items())
         event["stdout"].write("%s: The current jackpot is %s" % (
             event["user"].nickname, decimal.Decimal(LOTTERY_BUYIN)*count))
 
