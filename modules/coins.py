@@ -208,7 +208,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.addwallet", authenticated=True, min_args=1)
     def add_wallet(self, event):
         wallet = event["args_split"][0]
-        if self._user_has_wallet(wallet):
+        if self._user_has_wallet(event["user"], wallet):
             raise utils.EventError("%s: you already have a '%s' wallet" %
                 (event["user"].nickname, wallet))
         self._add_user_wallet(event["user"], wallet)
@@ -217,7 +217,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.removewallet", authenticated=True, min_args=1)
     def remove_wallet(self, event):
         wallet = event["args_split"][0]
-        if not self._user_has_wallet(wallet):
+        if not self._user_has_wallet(event["user"], wallet):
             raise utils.EventError("%s: you don't have a '%s' wallet" %
                 (event["user"].nickname, wallet))
         if wallet.lower() == WALLET_DEFAULT.lower():
