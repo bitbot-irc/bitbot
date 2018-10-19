@@ -384,7 +384,7 @@ class Module(ModuleManager.BaseModule):
         :help: Send coins to another user
         :usage: <nickname> <amount>
         """
-        wallet_in, wallet_out = self._default_wallets()
+        wallet_in, wallet_out = self._default_wallets(event["user"])
         if len(event["args_split"]) > 2:
             wallet_in, wallet_out = self._parse_wallets(event["user"],
                 event["args_split"][2])
