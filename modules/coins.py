@@ -378,7 +378,7 @@ class Module(ModuleManager.BaseModule):
         wallet_in, wallet_out = self._default_wallets()
         if len(event["args_split"]) > 2:
             wallet_in, wallet_out = self._parse_wallets(event["user"],
-                event["args_split"][2]
+                event["args_split"][2])
 
         if event["user"].get_id() == event["server"].get_user(event[
                 "args_split"][0]).get_id():
