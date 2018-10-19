@@ -321,7 +321,7 @@ class Module(ModuleManager.BaseModule):
         wallet_in, wallet_out = self._default_wallets(event["user"])
         if len(event["args_split"] > 2):
             wallet_in, wallet_out = self._parse_wallets(event["user"],
-                event["args_split"][2]
+                event["args_split"][2])
 
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1].lower()
