@@ -260,9 +260,9 @@ class Module(ModuleManager.BaseModule):
         :permission: givecoins
         """
         _, wallet_out = self._default_wallets(event["user"])
-        if len(event["args_split"]) > 1:
+        if len(event["args_split"]) > 2:
             _, wallet_out = self._parse_wallets(event["user"],
-                event["args_split"][1])
+                event["args_split"][2])
 
         target = event["server"].get_user(event["args_split"][0])
         try:
