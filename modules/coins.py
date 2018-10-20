@@ -216,6 +216,10 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.addwallet", authenticated=True, min_args=1)
     def add_wallet(self, event):
+        """
+        :help: Add a wallet to your account
+        :usage: <wallet name>
+        """
         wallet = event["args_split"][0]
         if self._user_has_wallet(event["user"], wallet):
             raise utils.EventError("%s: you already have a '%s' wallet" %
@@ -225,6 +229,10 @@ class Module(ModuleManager.BaseModule):
             event["user"].nickname, wallet))
     @utils.hook("received.command.removewallet", authenticated=True, min_args=1)
     def remove_wallet(self, event):
+        """
+        :help: Remove a wallet from your account
+        :usage: <wallet name>
+        """
         wallet = event["args_split"][0]
         if not self._user_has_wallet(event["user"], wallet):
             raise utils.EventError("%s: you don't have a '%s' wallet" %
@@ -256,7 +264,7 @@ class Module(ModuleManager.BaseModule):
     def give_coins(self, event):
         """
         :help: Give coins to a user
-        :usage: <nickname> <coins>
+        :usage: <nickname> <coins> [wallet]
         :permission: givecoins
         """
         _, wallet_out = self._default_wallets(event["user"])
@@ -325,7 +333,7 @@ class Module(ModuleManager.BaseModule):
     def flip(self, event):
         """
         :help: Bet on a coin flip
-        :usage: heads|tails <coin amount>
+        :usage: heads|tails <coin amount> [wallet_in:wallet_out]
         """
         wallet_in, wallet_out = self._default_wallets(event["user"])
         if len(event["args_split"]) > 2:
@@ -382,7 +390,7 @@ class Module(ModuleManager.BaseModule):
     def send(self, event):
         """
         :help: Send coins to another user
-        :usage: <nickname> <amount>
+        :usage: <nickname> <amount> [wallet_in:wallet_out]
         """
         target_user = event["server"].get_user(event["args_split"][0])
 
@@ -434,7 +442,7 @@ class Module(ModuleManager.BaseModule):
     def roulette(self, event):
         """
         :help: Spin a roulette wheel
-        :usage: <type> <amount>
+        :usage: <type> <amount> [wallet_in:wallet_out]
         """
         wallet_in, wallet_out = self._default_wallets(event["user"])
         if len(event["args_split"]) > 2:
@@ -581,7 +589,7 @@ class Module(ModuleManager.BaseModule):
     def lottery_buy(self, event):
         """
         :help: By ticket(s) for the lottery
-        :usage: [amount]
+        :usage: [amount] [wallet]
         """
         wallet_in, _ = self._default_wallets(event["user"])
         if len(event["args_split"]) > 0:
