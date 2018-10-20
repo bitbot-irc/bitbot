@@ -47,4 +47,4 @@ class Module(ModuleManager.BaseModule):
                 ", size: %s, price: %s)" % (
                 brand, title, description, weight, size, pricing))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

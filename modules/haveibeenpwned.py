@@ -23,4 +23,4 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write("It seems '%s' has not been pwned" % (
                     event["args"]))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

@@ -25,5 +25,5 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No results found")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()
 

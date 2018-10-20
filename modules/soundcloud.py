@@ -59,4 +59,4 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("%s [%s] (posted by %s) %s" % (title,
                 duration, user, link))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

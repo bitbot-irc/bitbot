@@ -33,4 +33,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No weather information for this location")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

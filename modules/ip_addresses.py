@@ -52,7 +52,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No geoip data found")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()
 
     @utils.hook("received.command.rdns")
     def rdns(self, event):

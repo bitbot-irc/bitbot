@@ -25,4 +25,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stdout"].write("No results")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
                     else:
                         event["stderr"].write("No videos found")
                 else:
-                    event["stderr"].write("Failed to load results")
+                    raise utils.EventsResultsError()
             if video_id:
                 event["stdout"].write(self.video_details(video_id))
             else:

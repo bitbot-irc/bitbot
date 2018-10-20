@@ -136,6 +136,9 @@ def prevent_highlight(nickname):
 
 class EventError(Exception):
     pass
+class EventsResultsError(EventError):
+    def __init__(self):
+        EventError.__init__(self, "Failed to load results")
 
 def _set_get_append(obj, setting, item):
     if not hasattr(obj, setting):

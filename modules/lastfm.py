@@ -84,4 +84,4 @@ class Module(ModuleManager.BaseModule):
                     "The user '%s' has never scrobbled before" % (
                     shown_username))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

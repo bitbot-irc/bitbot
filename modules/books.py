@@ -34,7 +34,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("Unable to find book")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()
 
     @utils.hook("received.command.isbn", min_args=1)
     def isbn(self, event):

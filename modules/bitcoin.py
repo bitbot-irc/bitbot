@@ -22,4 +22,4 @@ class Module(ModuleManager.BaseModule):
                 event["stderr"].write("Unknown currency, available "
                     "currencies: %s" % ", ".join(page.keys()))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

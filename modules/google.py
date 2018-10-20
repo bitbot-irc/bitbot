@@ -29,7 +29,7 @@ class Module(ModuleManager.BaseModule):
                 else:
                     event["stderr"].write("No results found")
             else:
-                event["stderr"].write("Failed to load results")
+                raise utils.EventsResultsError()
         else:
             event["stderr"].write("No phrase provided")
 
@@ -56,6 +56,6 @@ class Module(ModuleManager.BaseModule):
                 else:
                     event["stderr"].write("No suggestions found")
             else:
-                event["stderr"].write("Failed to load results")
+                raise utils.EventsResultsError()
         else:
             event["stderr"].write("No phrase provided")
