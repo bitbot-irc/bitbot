@@ -456,7 +456,7 @@ class Module(ModuleManager.BaseModule):
         bet_amounts = [amount.lower() for amount in event["args_split"][1:]]
         if len(bet_amounts) < len(bets):
             raise utils.EventError("%s: Please provide an amount for each bet" %
-                event["user"].nickanme)
+                event["user"].nickname)
         if len(bet_amounts) == 1 and bet_amounts[0] == "all":
             bet_amounts[0] = self._get_user_coins(event["user"], wallet_in)
             if bet_amounts[0] <= DECIMAL_ZERO:
