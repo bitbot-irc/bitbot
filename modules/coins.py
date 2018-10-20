@@ -479,7 +479,7 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickname)
 
         payin = sum(bet_amounts)
-        self._take(event["user"], payin, wallet_in)
+        self._take(event["server"], event["user"], payin, wallet_in)
         self._give_to_pool(event["server"], payin)
         # black, red, odds, evens, low (1-18), high (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
