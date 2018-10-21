@@ -145,17 +145,25 @@ class Module(ModuleManager.BaseModule):
             raise CoinParseException(
                 "Please provide a valid positive coin amount")
 
+    def _get_default_wallets(self, user):
+        return user.get_setting("default-wallets", DEFAULT_WALLETS)
     def _set_default_wallet(self, user, type, wallet):
-        default_wallets = user.get_setting("default-wallets", DEFAULT_WALLETS)
+        default_wallets = self._get_default_wallets(user)
         default_wallets[type.lower()] = wallet.lower()
         user.set_setting("default-wallets", default_wallets)
     def _default_wallet(self, user, type):
-        default_wallets = user.get_setting("default-wallets", DEFAULT_WALLETS)
+        default_wallets = self._get_default_wallets(user)
         return default_wallets.get(type.lower(), None)
     def _default_wallets(self, user):
         default_wallet_in = self._default_wallet(user, "in")
         default_wallet_out = self._default_wallet(user, "out")
         return default_wallet_in, default_wallet_out
+    def _default_wallet_for(self, user, wallet):
+        default_wallets = self._get_default_wallets(user)
+        for key, value in default_wallets:
+            if value.lower() == wallet.lower():
+                return key
+
     def _parse_wallets(self, user, s):
         if not s:
             return self._default_wallets()
@@ -247,9 +255,11 @@ class Module(ModuleManager.BaseModule):
         if not self._user_has_wallet(event["user"], wallet):
             raise utils.EventError("%s: you don't have a '%s' wallet" %
                 (event["user"].nickname, wallet))
-        if wallet.lower() == WALLET_DEFAULT.lower():
-            raise utils.EventError("%s: you cannot delete the default wallet" %
-                event["user"].nickname)
+        default_type = self._default_wallet_for(event["user"], wallet)
+        if default_type:
+            raise utils.EventError("%s: you cannot delete a default wallet "
+                "('%s' is the default wallet for '%s')" %
+                (event["user"].nickname, wallet, default_type))
 
         coins = self._get_user_coins(event["user"], wallet)
         self._give(event["server"], event["user"], coins, WALLET_DEFAULT)
