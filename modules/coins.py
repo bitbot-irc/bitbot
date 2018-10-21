@@ -161,7 +161,7 @@ class Module(ModuleManager.BaseModule):
         return default_wallet_in, default_wallet_out
     def _default_wallet_for(self, user, wallet):
         default_wallets = self._get_default_wallets(user)
-        for key, value in default_wallets:
+        for key, value in default_wallets.items():
             if value.lower() == wallet.lower():
                 return key
 
