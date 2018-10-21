@@ -30,8 +30,8 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
-WALLET_DEFAULT = "default"
-
+WALLET_DEFAULT_NAME = "default"
+WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME}
 class CoinParseException(Exception):
     pass
 
@@ -145,13 +145,23 @@ class Module(ModuleManager.BaseModule):
             raise CoinParseException(
                 "Please provide a valid positive coin amount")
 
+    def _set_default_wallet(self, user, type, wallet):
+        default_wallets = user.get_setting("default-wallets", DEFAULT_WALLETS)
+        default_wallets[type.lower()] = wallet.lower()
+        user.set_setting("default-wallets", default_wallets)
+    def _default_wallet(self, user, type):
+        default_wallets = user.get_setting("default-wallets", DEFAULT_WALLETS)
+        return default_wallets.get(type.lower(), None)
     def _default_wallets(self, user):
-        return WALLET_DEFAULT, WALLET_DEFAULT
+        default_wallet_in = self._default_wallet(user, "in")
+        default_wallet_out = self._default_wallet(user, "out")
+        return default_wallet_in, default_wallet_out
     def _parse_wallets(self, user, s):
         if not s:
             return self._default_wallets()
         if not ":" in s:
             return s, s
+        wallet_in_default, wallet_out_default = self._default_wallets(user)
         wallet_1, _, wallet_2 = s.partition(":")
         wallet_1 = wallet_1.lower() or WALLET_DEFAULT
         wallet_2 = wallet_2.lower() or WALLET_DEFAULT
@@ -246,6 +256,23 @@ class Module(ModuleManager.BaseModule):
         self._remove_user_wallet(event["user"], wallet)
         event["stdout"].write("%s: removed wallet '%s' and shifted any funds "
             "to your default wallet" % (event["user"].nickname, wallet))
+
+    @utils.hook("received.command.defaultwallet", authenticated=True,
+        min_args=2)
+    def default_wallet(self, event):
+        """
+        :help: Set a default wallet for a given wallet type
+        :usage: <type> <wallet>
+        """
+        type = event["args_split"][0]
+        wallet = event["args_split"][1]
+        if not self._user_has_wallet(event["user"], wallet):
+            raise utils.EventError("%s: Unknown wallet" %
+                event["user"].nickname)
+
+        self._set_default_wallet(event["user"], type, wallet)
+        event["stdout"].write("%s: Set default wallet for '%s' to '%s'" %
+            (event["user"].nickname, type, wallet))
 
     @utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
