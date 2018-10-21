@@ -269,21 +269,25 @@ class Module(ModuleManager.BaseModule):
             "to your default wallet" % (event["user"].nickname, wallet))
 
     @utils.hook("received.command.defaultwallet", authenticated=True,
-        min_args=2)
+        min_args=1)
     def default_wallet(self, event):
         """
         :help: Set a default wallet for a given wallet type
         :usage: <type> <wallet>
         """
         type = event["args_split"][0]
-        wallet = event["args_split"][1]
-        if not self._user_has_wallet(event["user"], wallet):
-            raise utils.EventError("%s: Unknown wallet" %
-                event["user"].nickname)
-
-        self._set_default_wallet(event["user"], type, wallet)
-        event["stdout"].write("%s: Set default wallet for '%s' to '%s'" %
-            (event["user"].nickname, type, wallet))
+        if len(event["args_split"]) > 1:
+            wallet = event["args_split"][1]
+            if not self._user_has_wallet(event["user"], wallet):
+                raise utils.EventError("%s: Unknown wallet" %
+                    event["user"].nickname)
+            self._set_default_wallet(event["user"], type, wallet)
+            event["stdout"].write("%s: Set default wallet for '%s' to '%s'" %
+                (event["user"].nickname, type, wallet))
+        else:
+            wallet = self._default_wallet_for(event["user"], type)
+            event["stdout"].write("%s: Your default wallet for '%s' is '%s'" %
+                (event["user"].nickname, type, wallet))
 
     @utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
