@@ -444,10 +444,13 @@ class Module(ModuleManager.BaseModule):
         :help: Spin a roulette wheel
         :usage: <type> <amount> [wallet_in:wallet_out]
         """
+        expected_args = 1
+        expected_args += len(event["args_split"][0].split(","))
+
         wallet_in, wallet_out = self._default_wallets(event["user"])
-        if len(event["args_split"]) > 2:
+        if len(event["args_split"]) > expected_args:
             wallet_in, wallet_out = self._parse_wallets(event["user"],
-                event["args_split"][2])
+                event["args_split"][expected_args])
 
         bets = event["args_split"][0].lower().split(",")
         if "0" in bets:
