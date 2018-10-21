@@ -147,7 +147,7 @@ class Module(ModuleManager.BaseModule):
                 "Please provide a valid positive coin amount")
 
     def _get_default_wallets(self, user):
-        return user.get_setting("default-wallets", DEFAULT_WALLETS)
+        return user.get_setting("default-wallets", WALLET_DEFAULTS)
     def _set_default_wallet(self, user, type, wallet):
         default_wallets = self._get_default_wallets(user)
         default_wallets[type.lower()] = wallet.lower()
