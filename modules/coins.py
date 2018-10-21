@@ -285,7 +285,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("%s: Set default wallet for '%s' to '%s'" %
                 (event["user"].nickname, type, wallet))
         else:
-            wallet = self._default_wallet_for(event["user"], type)
+            wallet = self._default_wallet(event["user"], type)
             event["stdout"].write("%s: Your default wallet for '%s' is '%s'" %
                 (event["user"].nickname, type, wallet))
 
