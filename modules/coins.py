@@ -31,7 +31,8 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
 WALLET_DEFAULT_NAME = "default"
-WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME}
+WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME
+    "interest": WALLET_DEFAULT_NAME, "lottery": WALLET_DEFAULT_NAME}
 class CoinParseException(Exception):
     pass
 
@@ -618,9 +619,11 @@ class Module(ModuleManager.BaseModule):
                     self._take_from_pool(server, interest)
 
                     wallets = server.get_user_setting(nickname, "wallets", {})
-                    default_coins = wallets.get(WALLET_DEFAULT_NAME, "0.0")
+                    default_wallet = self._default_wallet_for(
+                        server.get_user(nickname), "interest")
+                    default_coins = wallets.get(default_wallet, "0.0")
                     default_coins = decimal.Decimal(default_coins)
-                    wallets[WALLET_DEFAULT_NAME] = self._coin_str(
+                    wallets[default_wallet] = self._coin_str(
                         default_coins+interest)
                     server.set_user_setting(nickname, "wallets", wallets)
         event["timer"].redo()
@@ -720,8 +723,9 @@ class Module(ModuleManager.BaseModule):
             coins = self._get_user_coins(user)
             winnings = decimal.Decimal(LOTTERY_BUYIN)*len(users)
             new_coins = coins+winnings
+            wallet = self._default_wallet_for(user, "lottery")
 
-            self._give(server, user, winnings)
+            self._give(server, user, winnings, wallet)
             server.set_setting("lottery-winner", user.nickname)
             user.send_notice("You won %s in the lottery! you now have %s coins"
                 % (self._coin_str(winnings), self._coin_str(new_coins)))
