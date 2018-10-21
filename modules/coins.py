@@ -65,7 +65,7 @@ class Module(ModuleManager.BaseModule):
         self._set_pool(server, coins+amount)
 
     def _get_user_wallets(self, user):
-        return user.get_setting("wallets", {WALLET_DEFAULT: "0.0"})
+        return user.get_setting("wallets", {WALLET_DEFAULT_NAME: "0.0"})
     def _set_user_wallets(self, user, wallets):
         user.set_setting("wallets", wallets)
     def _reset_user_wallets(self, user):
@@ -73,13 +73,13 @@ class Module(ModuleManager.BaseModule):
     def _user_has_wallet(self, user, wallet):
         return wallet.lower() in self._get_user_wallets(user)
 
-    def _get_user_coins(self, user, wallet=WALLET_DEFAULT):
+    def _get_user_coins(self, user, wallet=WALLET_DEFAULT_NAME):
         wallets = self._get_user_wallets(user)
         return decimal.Decimal(wallets.get(wallet.lower(), "0.0"))
     def _get_all_user_coins(self, user):
         wallets = self._get_user_wallets(user)
         return sum(decimal.Decimal(amount) for amount in wallets.values())
-    def _set_user_coins(self, user, coins, wallet=WALLET_DEFAULT):
+    def _set_user_coins(self, user, coins, wallet=WALLET_DEFAULT_NAME):
         wallets = self._get_user_wallets(user)
         wallets[wallet.lower()] = self._coin_str(coins)
         self._set_user_wallets(user, wallets)
@@ -107,18 +107,18 @@ class Module(ModuleManager.BaseModule):
     def _redeem_delay(self, server):
         return server.get_setting("redeem-delay", DEFAULT_REDEEM_DELAY)
 
-    def _give(self, server, user, amount, wallet=WALLET_DEFAULT):
+    def _give(self, server, user, amount, wallet=WALLET_DEFAULT_NAME):
         user_coins = self._get_user_coins(user, wallet)
         self._take_from_pool(server, amount)
         self._set_user_coins(user, user_coins+amount, wallet)
         return user_coins+amount
-    def _take(self, server, user, amount, wallet=WALLET_DEFAULT):
+    def _take(self, server, user, amount, wallet=WALLET_DEFAULT_NAME):
         user_coins = self._get_user_coins(user, wallet)
         self._give_to_pool(server, amount)
         self._set_user_coins(user, user_coins-amount, wallet)
         return user_coins-amount
-    def _move(self, user1, user2, amount, from_wallet=WALLET_DEFAULT,
-            to_wallet=WALLET_DEFAULT):
+    def _move(self, user1, user2, amount, from_wallet=WALLET_DEFAULT_NAME,
+            to_wallet=WALLET_DEFAULT_NAME):
         user1_coins = self._get_user_coins(user1, from_wallet)
         self._set_user_coins(user1, user1_coins-amount, from_wallet)
 
@@ -171,8 +171,8 @@ class Module(ModuleManager.BaseModule):
             return s, s
         wallet_in_default, wallet_out_default = self._default_wallets(user)
         wallet_1, _, wallet_2 = s.partition(":")
-        wallet_1 = wallet_1.lower() or WALLET_DEFAULT
-        wallet_2 = wallet_2.lower() or WALLET_DEFAULT
+        wallet_1 = wallet_1.lower() or wallet_in_Default
+        wallet_2 = wallet_2.lower() or wallet_out_default
 
         wallets = self._get_user_wallets(user)
         if not wallet_1 in wallets or not wallet_2 in wallets:
@@ -262,7 +262,7 @@ class Module(ModuleManager.BaseModule):
                 (event["user"].nickname, wallet, default_type))
 
         coins = self._get_user_coins(event["user"], wallet)
-        self._give(event["server"], event["user"], coins, WALLET_DEFAULT)
+        self._give(event["server"], event["user"], coins, WALLET_DEFAULT_NAME)
         self._remove_user_wallet(event["user"], wallet)
         event["stdout"].write("%s: removed wallet '%s' and shifted any funds "
             "to your default wallet" % (event["user"].nickname, wallet))
@@ -618,9 +618,9 @@ class Module(ModuleManager.BaseModule):
                     self._take_from_pool(server, interest)
 
                     wallets = server.get_user_setting(nickname, "wallets", {})
-                    default_coins = wallets.get(WALLET_DEFAULT, "0.0")
+                    default_coins = wallets.get(WALLET_DEFAULT_NAME, "0.0")
                     default_coins = decimal.Decimal(default_coins)
-                    wallets[WALLET_DEFAULT] = self._coin_str(
+                    wallets[WALLET_DEFAULT_NAME] = self._coin_str(
                         default_coins+interest)
                     server.set_user_setting(nickname, "wallets", wallets)
         event["timer"].redo()
