@@ -31,7 +31,7 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 
 WALLET_DEFAULT_NAME = "default"
-WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME
+WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME,
     "interest": WALLET_DEFAULT_NAME, "lottery": WALLET_DEFAULT_NAME}
 class CoinParseException(Exception):
     pass
