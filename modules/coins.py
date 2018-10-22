@@ -276,7 +276,7 @@ class Module(ModuleManager.BaseModule):
     def default_wallet(self, event):
         """
         :help: Set a default wallet for a given wallet type
-        :usage: <type> <wallet>
+        :usage: <type> [wallet]
         """
         type = event["args_split"][0]
         if len(event["args_split"]) > 1:
