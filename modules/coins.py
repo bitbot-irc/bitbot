@@ -167,7 +167,7 @@ class Module(ModuleManager.BaseModule):
 
     def _parse_wallets(self, user, s):
         if not s:
-            return self._default_wallets()
+            return self._default_wallets(user)
         if not ":" in s:
             return s, s
         wallet_in_default, wallet_out_default = self._default_wallets(user)
