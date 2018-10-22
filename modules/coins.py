@@ -524,7 +524,8 @@ class Module(ModuleManager.BaseModule):
         if "0" in bets:
             raise utils.EventError("%s: You can't bet on 0" %
                 event["user"].nickname)
-        bet_amounts = [amount.lower() for amount in event["args_split"][1:]]
+        bet_amounts = [amount.lower() for amount in event["args_split"][
+            1:expected_args]]
         if len(bet_amounts) < len(bets):
             raise utils.EventError("%s: Please provide an amount for each bet" %
                 event["user"].nickname)
