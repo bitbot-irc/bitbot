@@ -623,7 +623,7 @@ class Module(ModuleManager.BaseModule):
                     self._take_from_pool(server, interest)
 
                     wallets = server.get_user_setting(nickname, "wallets", {})
-                    default_wallet = self._default_wallet_for(
+                    default_wallet = self._default_wallet(
                         server.get_user(nickname), "interest")
                     default_coins = wallets.get(default_wallet, "0.0")
                     default_coins = decimal.Decimal(default_coins)
@@ -727,7 +727,7 @@ class Module(ModuleManager.BaseModule):
             coins = self._get_user_coins(user)
             winnings = decimal.Decimal(LOTTERY_BUYIN)*len(users)
             new_coins = coins+winnings
-            wallet = self._default_wallet_for(user, "lottery")
+            wallet = self._default_wallet(user, "lottery")
 
             self._give(server, user, winnings, wallet)
             server.set_setting("lottery-winner", user.nickname)
