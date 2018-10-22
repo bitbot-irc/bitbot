@@ -437,7 +437,7 @@ class Module(ModuleManager.BaseModule):
         """
         wallet_1 = event["args_split"][0]
         wallet_2 = event["args_split"][1]
-        amount = self._parse_coins(send_amount, DECIMAL_ZERO)
+        amount = self._parse_coins(event["args_split"][2], DECIMAL_ZERO)
         for wallet in [wallet_1, wallet_2]:
             if not self._user_has_wallet(event["user"], wallet):
                 raise utils.EventError("%s: Unknown wallet '%s'" %
