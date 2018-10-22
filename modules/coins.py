@@ -30,6 +30,7 @@ THIRD_COLUMN = list(range(1, 37))[2::3]
 
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 REGEX_DOUBLESTREET = re.compile("2street([1-9]|1[0-1])$")
+REGEX_CORNER = re.compile("([lr])corner([1-9]|1[0-1])$")
 
 WALLET_DEFAULT_NAME = "default"
 WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME,
@@ -501,6 +502,9 @@ class Module(ModuleManager.BaseModule):
             event["user"].nickname, self._coin_str(send_amount),
             target_user.nickname))
 
+    def _double_street(self, i):
+        return (row*3)-2, (row*3)+3
+
     @utils.hook("received.command.roulette", min_args=2, authenticated=True)
     def roulette(self, event):
         """
@@ -564,6 +568,7 @@ class Module(ModuleManager.BaseModule):
         for i, bet in enumerate(bets):
             street_match = REGEX_STREET.match(bet)
             doublestreet_match = REGEX_DOUBLESTREET.match(bet)
+            corner_match = REGEX_CORNER.match(bet)
 
             odds = 0
             if bet == "even":
@@ -595,7 +600,17 @@ class Module(ModuleManager.BaseModule):
                 odds = 11*(((row*3)-2) <= choice <= (row*3))
             elif doublestreet_match:
                 row = int(doublestreet_match.group(1))
-                odds = 5*(((row*3)-2) <= choice <= ((row*3)+3))
+                min_num, max_num = self._double_street(row)
+                odds = 5*(min_num <= choice <= max_num)
+            elif corner_match:
+                row = int(corner_match.group(2))
+                min_num, max_num = self._double_street(row)
+                numbers = list(range(min_num, max_num+1))
+                if corner_match.group(1) == "l":
+                    numbers = numbers[:2] + numbers[3:5]
+                else:
+                    numbers = numbers[1:3] + numbers[-2:]
+                odds = 8*(choice in numbers)
             elif bet.isdigit() and (1 <= int(bet) <= 36):
                 odds = 35*(choice == int(bet))
             else:
