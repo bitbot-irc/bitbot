@@ -266,10 +266,11 @@ class Module(ModuleManager.BaseModule):
                 (event["user"].nickname, wallet, default_type))
 
         coins = self._get_user_coins(event["user"], wallet)
-        self._give(event["server"], event["user"], coins, WALLET_DEFAULT_NAME)
+        in_wallet = self._default_wallet(event["user"], "in")
+        self._give(event["server"], event["user"], coins, in_wallet)
         self._remove_user_wallet(event["user"], wallet)
         event["stdout"].write("%s: removed wallet '%s' and shifted any funds "
-            "to your default wallet" % (event["user"].nickname, wallet))
+            "to your default 'in' wallet" % (event["user"].nickname, wallet))
 
     @utils.hook("received.command.defaultwallet", authenticated=True,
         min_args=1)
