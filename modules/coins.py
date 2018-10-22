@@ -429,6 +429,25 @@ class Module(ModuleManager.BaseModule):
                 )
             )
 
+    @utils.hook("received.command.movecoins", authenticated=True, min_args=3)
+    def move_coins(self, event):
+        """
+        :help: Move coins between your wallets
+        :usage: <wallet_1> <wallet_2> <amount>
+        """
+        wallet_1 = event["args_split"][0]
+        wallet_2 = event["args_split"][1]
+        amount = self._parse_coins(send_amount, DECIMAL_ZERO)
+        for wallet in [wallet_1, wallet_2]:
+            if not self._user_has_wallet(event["user"], wallet):
+                raise utils.EventError("%s: Unknown wallet '%s'" %
+                    (event["user"].nickname, wallet))
+
+        self._move(event["user"], event["user"], amount, wallet_1, wallet_2)
+        event["stdout"].write("%s: Moved %s coins from wallet '%s' to "
+            "wallet '%s'" % (event["user"].nickname, self._coin_str(amount),
+            wallet_1, wallet_2))
+
     @utils.hook("received.command.sendcoins", min_args=2, authenticated=True)
     def send(self, event):
         """
