@@ -33,6 +33,7 @@ REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 WALLET_DEFAULT_NAME = "default"
 WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME,
     "interest": WALLET_DEFAULT_NAME, "lottery": WALLET_DEFAULT_NAME}
+
 class CoinParseException(Exception):
     pass
 
@@ -502,6 +503,7 @@ class Module(ModuleManager.BaseModule):
         if len(bet_amounts) < len(bets):
             raise utils.EventError("%s: Please provide an amount for each bet" %
                 event["user"].nickname)
+
         if len(bet_amounts) == 1 and bet_amounts[0] == "all":
             bet_amounts[0] = self._get_user_coins(event["user"], wallet_in)
             if bet_amounts[0] <= DECIMAL_ZERO:
@@ -635,7 +637,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.lotterybuy", authenticated=True)
     def lottery_buy(self, event):
         """
-        :help: By ticket(s) for the lottery
+        :help: Buy ticket(s) for the lottery
         :usage: [amount] [wallet]
         """
         wallet_in, _ = self._default_wallets(event["user"])
