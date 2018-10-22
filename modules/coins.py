@@ -29,6 +29,7 @@ SECOND_COLUMN = list(range(1, 37))[1::3]
 THIRD_COLUMN = list(range(1, 37))[2::3]
 
 REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
+REGEX_DOUBLESTREET = re.compile("2street([1-9]|1[0-1])$")
 
 WALLET_DEFAULT_NAME = "default"
 WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME,
@@ -562,6 +563,8 @@ class Module(ModuleManager.BaseModule):
         colour = "red" if choice in RED else "black"
         for i, bet in enumerate(bets):
             street_match = REGEX_STREET.match(bet)
+            doublestreet_match = REGEX_DOUBLESTREET.match(bet)
+
             odds = 0
             if bet == "even":
                 odds = 1*((choice % 2) == 0)
@@ -590,6 +593,9 @@ class Module(ModuleManager.BaseModule):
             elif street_match:
                 row = int(street_match.group(1))
                 odds = 11*(((row*3)-2) <= choice <= (row*3))
+            elif doublestreet_match:
+                row = int(doublestreet_match.group(1))
+                odds = 5*(((row*3)-2) <= choice <= ((row*3)+3))
             elif bet.isdigit() and (1 <= int(bet) <= 36):
                 odds = 35*(choice == int(bet))
             else:
