@@ -621,7 +621,9 @@ class Module(ModuleManager.BaseModule):
             if odds == 0:
                 losses[bet] = bet_amounts[i]
             else:
-                winnings[bet] = [odds, bet_amounts[i]*odds]
+                win_amount = bet_amounts[i]
+                win_amount += bet_amounts[i]*odds
+                winnings[bet] = [odds, win_amount]
 
         winnings_str = ["%s for %s (%d to 1)" % (winnings[bet][1], bet,
             winnings[bet][0]) for bet in winnings.keys()]
