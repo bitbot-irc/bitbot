@@ -503,7 +503,7 @@ class Module(ModuleManager.BaseModule):
             target_user.nickname))
 
     def _double_street(self, i):
-        return (row*3)-2, (row*3)+3
+        return (i*3)-2, (i*3)+3
 
     @utils.hook("received.command.roulette", min_args=2, authenticated=True)
     def roulette(self, event):
