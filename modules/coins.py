@@ -562,7 +562,7 @@ class Module(ModuleManager.BaseModule):
         if choice == 0:
             event["stdout"].write("Roulette spin lands on 0, "
                 "the house wins, %s loses %s" % (
-                event["user"].nickname, amount_amount_total))
+                event["user"].nickname, bet_amount_total))
             return
 
         colour = "red" if choice in RED else "black"
