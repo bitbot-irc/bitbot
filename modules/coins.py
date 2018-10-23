@@ -629,7 +629,7 @@ class Module(ModuleManager.BaseModule):
             winnings[bet][0]) for bet in winnings.keys()]
 
         coin_winnings = DECIMAL_ZERO
-        for odds, amount in winnings.items():
+        for odds, amount in winnings.values():
             coin_winnings += amount # give back bet
             coin_winnings += amount*odds # give winnings
         coin_losses = sum(loss for loss in losses.values())
