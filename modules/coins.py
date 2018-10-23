@@ -551,6 +551,8 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
 
+        self._take(event["server"], event["user"], bet_amount_total, wallet_in)
+
         # black, red, odds, evens, low (1-18), high (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
         # 1column (1,4..34), 2column (2,5..35), 3column (3,6..36)
@@ -560,7 +562,7 @@ class Module(ModuleManager.BaseModule):
         if choice == 0:
             event["stdout"].write("Roulette spin lands on 0, "
                 "the house wins, %s loses %s" % (
-                event["user"].nickname, payin))
+                event["user"].nickname, amount_amount_total))
             return
 
         colour = "red" if choice in RED else "black"
@@ -621,18 +623,20 @@ class Module(ModuleManager.BaseModule):
             else:
                 winnings[bet] = [odds, bet_amounts[i]]
 
-        winnings_str = ["%s for %s (%d to 1)" % (winnings[bet][1], bet,
+        winnings_str = ["%s for %s (%d to 1)" % (
+            winnings[bet][1]*winnings[bet][0],
+            bet,
             winnings[bet][0]) for bet in winnings.keys()]
 
-        coin_winnings = sum(bet[1] for bet in winnings.values())
+        coin_winnings = DECIMAL_ZERO
+        for odds, amount in winnings.items():
+            coin_winnings += amount # give back bet
+            coin_winnings += amount*odds # give winnings
         coin_losses = sum(loss for loss in losses.values())
 
         if coin_winnings:
             self._give(event["server"], event["user"], coin_winnings,
                 wallet_out)
-        if coin_losses:
-            self._take(event["server"], event["user"], coin_losses,
-                wallet_in)
 
         total_winnings_str = " (%s total)" % coin_winnings if len(
             winnings.keys()) > 1 else ""
