@@ -8,10 +8,9 @@ def fail(s):
     old_stdout.write(json.dumps({"success": False, "out": str(e)}))
     sys.exit()
 
-
 try:
     compiled = compile(sys.stdin.read(), "code", "single")
-except Exception as e:
+except SyntaxError as e:
     self.fail(str(e))
 
 old_stdout = sys.stdout
