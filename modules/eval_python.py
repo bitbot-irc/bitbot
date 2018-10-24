@@ -33,6 +33,7 @@ class Module(ModuleManager.BaseModule):
     _name = "Python"
 
     def _eval(self, lang, event):
+        page = None
         try:
             page = utils.http.get_url(EVAL_URL,
                 post_data={
