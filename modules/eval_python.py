@@ -4,7 +4,15 @@ from src import ModuleManager, utils
 EVAL_TEMPLATE = """
 import io, json, sys
 
-compiled = compile(sys.stdin.read(), "code", "single")
+def fail(s):
+    old_stdout.write(json.dumps({"success": False, "out": str(e)}))
+    sys.exit()
+
+
+try:
+    compiled = compile(sys.stdin.read(), "code", "single")
+except Exception as e:
+    self.fail(str(e))
 
 old_stdout = sys.stdout
 stdout = io.StringIO()
@@ -13,8 +21,7 @@ sys.stdout = stdout
 try:
     result = eval(compiled)
 except Exception as e:
-    old_stdout.write(json.dumps({"success": False, "out": str(e)}))
-    sys.exit()
+    self.fail(str(e))
 
 stdout.write("\\n")
 if not result == None:
