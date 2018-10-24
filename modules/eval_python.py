@@ -11,7 +11,7 @@ def fail(s):
 try:
     compiled = compile(sys.stdin.read(), "code", "single")
 except SyntaxError as e:
-    self.fail(str(e))
+    fail(str(e))
 
 old_stdout = sys.stdout
 stdout = io.StringIO()
@@ -20,7 +20,7 @@ sys.stdout = stdout
 try:
     result = eval(compiled)
 except Exception as e:
-    self.fail(str(e))
+    fail(str(e))
 
 stdout.write("\\n")
 if not result == None:
