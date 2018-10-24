@@ -4,6 +4,7 @@ from src import ModuleManager, utils
 EVAL_TEMPLATE = """
 import io, json, sys
 
+old_stdout = sys.stdout
 def fail(s):
     old_stdout.write(json.dumps({"success": False, "out": str(e)}))
     sys.exit()
@@ -13,7 +14,6 @@ try:
 except SyntaxError as e:
     fail(str(e))
 
-old_stdout = sys.stdout
 stdout = io.StringIO()
 sys.stdout = stdout
 
