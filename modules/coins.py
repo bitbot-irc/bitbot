@@ -781,3 +781,4 @@ class Module(ModuleManager.BaseModule):
             server.set_setting("lottery-winner", user.nickname)
             user.send_notice("You won %s in the lottery! you now have %s coins"
                 % (self._coin_str(winnings), self._coin_str(new_coins)))
+        event["timer"].redo()
