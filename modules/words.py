@@ -1,5 +1,9 @@
 import time
-from src import ModuleManager, Utils
+from src import EventManager, ModuleManager, utils
+
+WORD_DELIM = "\"'…~*`"
+WORD_START = WORD_DELIM+"“({<"
+WORD_STOP = WORD_DELIM+"”)}>;:.,!?"
 
 class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
@@ -18,20 +22,23 @@ class Module(ModuleManager.BaseModule):
         tracked_words = set(event["server"].get_setting(
             "tracked-words", []))
         for word in words:
+            word = word.lstrip(WORD_START).rstrip(WORD_STOP)
             if word.lower() in tracked_words:
                 setting = "word-%s" % word
                 word_count = user.get_setting(setting, 0)
                 word_count += 1
                 user.set_setting(setting, word_count)
-    @Utils.hook("received.message.channel")
+    @utils.hook("received.message.channel",
+        priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         self._channel_message(event["user"], event)
-    @Utils.hook("self.message.channel")
+    @utils.hook("self.message.channel",
+        priority=EventManager.PRIORITY_MONITOR)
     def self_channel_message(self, event):
         self._channel_message(event["server"].get_user(
             event["server"].nickname), event)
 
-    @Utils.hook("received.command.words", channel_only=True)
+    @utils.hook("received.command.words", channel_only=True)
     def words(self, event):
         """
         :help: See how many words you or the given nickname have used
@@ -52,7 +59,7 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("%s has used %d words (%d in %s)" % (
             target.nickname, total, this_channel, event["target"].name))
 
-    @Utils.hook("received.command.trackword", min_args=1)
+    @utils.hook("received.command.trackword", min_args=1)
     def track_word(self, event):
         """
         :help: Start tracking a word
@@ -68,7 +75,15 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Already tracking '%s'" % word)
 
-    @Utils.hook("received.command.wordusers", min_args=1)
+    @utils.hook("received.command.trackedwords")
+    def tracked_words(self, event):
+        """
+        :help: List which words are being tracked on the current network
+        """
+        event["stdout"].write("Tracked words: %s" % ", ".join(
+            event["server"].get_setting("tracked-words", [])))
+
+    @utils.hook("received.command.wordusers", min_args=1)
     def word_users(self, event):
         """
         :help: Show who has used a tracked word the most
@@ -80,12 +95,36 @@ class Module(ModuleManager.BaseModule):
                 "word-%s" % word, [])
             items = [(word_user[0], word_user[1]) for word_user in word_users]
             word_users = dict(items)
-
-            top_10 = sorted(word_users.keys())
-            top_10 = sorted(top_10, key=word_users.get, reverse=True)[:10]
-            top_10 = ", ".join("%s (%d)" % (Utils.prevent_highlight(event[
-                "server"].get_user(nickname).nickname), word_users[nickname]
-                ) for nickname in top_10)
-            event["stdout"].write("Top '%s' users: %s" % (word, top_10))
+            top_10 = utils.top_10(word_users,
+                convert_key=lambda nickname: utils.prevent_highlight(
+                    event["server"].get_user(nickname).nickname))
+            event["stdout"].write("Top '%s' users: %s" % (word,
+                ", ".join(top_10)))
         else:
             event["stderr"].write("That word is not being tracked")
+
+    @utils.hook("received.command.wordiest")
+    def wordiest(self, event):
+        """
+        :help: Show wordiest users
+        :usage: [channel]
+        """
+        channel_query = None
+        word_prefix = ""
+        if event["args_split"]:
+            channel_query = event["args_split"][0].lower()
+            word_prefix = " (%s)" % channel_query
+
+        words = event["server"].find_all_user_channel_settings("words")
+        user_words = {}
+        for channel_name, nickname, word_count in words:
+            if not channel_query or channel_name == channel_query:
+                if not nickname in user_words:
+                    user_words[nickname] = 0
+                user_words[nickname] += word_count
+
+        top_10 = utils.top_10(user_words,
+            convert_key=lambda nickname: utils.prevent_highlight(
+                event["server"].get_user(nickname).nickname))
+        event["stdout"].write("wordiest%s: %s" % (
+            word_prefix, ", ".join(top_10)))

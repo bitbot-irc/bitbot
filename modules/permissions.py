@@ -1,16 +1,16 @@
 import base64, os
 import scrypt
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 REQUIRES_IDENTIFY = ("You need to be identified to use that command "
  "(/msg %s register | /msg %s identify)")
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("new.user")
+    @utils.hook("new.user")
     def new_user(self, event):
         self._logout(event["user"])
 
-    @Utils.hook("received.part")
+    @utils.hook("received.part")
     def on_part(self, event):
         if len(event["user"].channels) == 1 and event["user"
                 ].identified_account_override:
@@ -38,7 +38,7 @@ class Module(ModuleManager.BaseModule):
         user.identified_account_override = None
         user.identified_account_id_override = None
 
-    @Utils.hook("received.command.identify", private_only=True, min_args=1)
+    @utils.hook("received.command.identify", private_only=True, min_args=1)
     def identify(self, event):
         """
         :help: Identify yourself
@@ -47,14 +47,12 @@ class Module(ModuleManager.BaseModule):
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
         if not identity_mechanism == "internal":
-            event["stderr"].write("The 'identify' command isn't available "
+            raise utils.EventError("The 'identify' command isn't available "
                 "on this network")
-            return
 
         if not event["user"].channels:
-            event["stderr"].write("You must share at least one channel "
+            raise utils.EventError("You must share at least one channel "
                 "with me before you can identify")
-            return
 
         if not event["user"].identified_account_override:
             if len(event["args_split"]) > 1:
@@ -71,6 +69,8 @@ class Module(ModuleManager.BaseModule):
                     self._identified(event["server"], event["user"], account)
                     event["stdout"].write("Correct password, you have "
                         "been identified as '%s'." % account)
+                    self.events.on("internal.identified").call(
+                        user=event["user"])
                 else:
                     event["stderr"].write("Incorrect password for '%s'" %
                         account)
@@ -80,7 +80,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("You are already identified")
 
-    @Utils.hook("received.command.register", private_only=True, min_args=1)
+    @utils.hook("received.command.register", private_only=True, min_args=1)
     def register(self, event):
         """
         :help: Register yourself
@@ -89,13 +89,12 @@ class Module(ModuleManager.BaseModule):
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
         if not identity_mechanism == "internal":
-            event["stderr"].write("The 'identify' command isn't available "
+            raise utils.EventError("The 'identify' command isn't available "
                 "on this network")
-            return
 
         hash, salt = self._get_hash(event["server"], event["user"].nickname)
         if not hash and not salt:
-            password = event["args_split"][0]
+            password = event["args"]
             hash, salt = self._make_hash(password)
             event["user"].set_setting("authentication", [hash, salt])
             self._identified(event["server"], event["user"],
@@ -104,7 +103,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("This nickname is already registered")
 
-    @Utils.hook("received.command.setpassword", authenticated=True, min_args=1)
+    @utils.hook("received.command.setpassword", authenticated=True, min_args=1)
     def set_password(self, event):
         """
         :help: Change your password
@@ -114,7 +113,7 @@ class Module(ModuleManager.BaseModule):
         event["user"].set_setting("authentication", [hash, salt])
         event["stdout"].write("Set your password")
 
-    @Utils.hook("received.command.logout", private_only=True)
+    @utils.hook("received.command.logout", private_only=True)
     def logout(self, event):
         """
         :help: Logout from your identified account
@@ -125,7 +124,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("You are not logged in")
 
-    @Utils.hook("received.command.resetpassword", private_only=True,
+    @utils.hook("received.command.resetpassword", private_only=True,
         min_args=2)
     def reset_password(self, event):
         """
@@ -145,7 +144,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Reset password for '%s'" %
                 target.nickname)
 
-    @Utils.hook("preprocess.command")
+    @utils.hook("preprocess.command")
     def preprocess_command(self, event):
         permission = event["hook"].get_kwarg("permission", None)
         authenticated = event["hook"].kwargs.get("authenticated", False)
@@ -175,7 +174,7 @@ class Module(ModuleManager.BaseModule):
                 return REQUIRES_IDENTIFY % (event["server"].nickname,
                     event["server"].nickname)
 
-    @Utils.hook("received.command.mypermissions", authenticated=True)
+    @utils.hook("received.command.mypermissions", authenticated=True)
     def my_permissions(self, event):
         """
         :help: Show your permissions
@@ -189,7 +188,7 @@ class Module(ModuleManager.BaseModule):
         permissions = target.get_setting("permissions", [])
         return [target, registered, permissions]
 
-    @Utils.hook("received.command.givepermission", min_args=2)
+    @utils.hook("received.command.givepermission", min_args=2)
     def give_permission(self, event):
         """
         :help: Give a given permission to a given user
@@ -200,9 +199,8 @@ class Module(ModuleManager.BaseModule):
         target, registered, permissions = self._get_user_details(
             event["server"], event["args_split"][0])
 
-        if target.identified_account == None:
-            event["stderr"].write("%s isn't registered" % target.nickname)
-            return
+        if target.get_identified_account() == None:
+            raise utils.EventError("%s isn't registered" % target.nickname)
 
         if permission in permissions:
             event["stderr"].write("%s already has permission '%s'" % (
@@ -212,7 +210,7 @@ class Module(ModuleManager.BaseModule):
             target.set_setting("permissions", permissions)
             event["stdout"].write("Gave permission '%s' to %s" % (
                 permission, target.nickname))
-    @Utils.hook("received.command.removepermission", min_args=2)
+    @utils.hook("received.command.removepermission", min_args=2)
     def remove_permission(self, event):
         """
         :help: Remove a given permission from a given user
@@ -224,8 +222,7 @@ class Module(ModuleManager.BaseModule):
             event["server"], event["args_split"][0])
 
         if target.identified_account == None:
-            event["stderr"].write("%s isn't registered" % target.nickname)
-            return
+            raise utils.EventError("%s isn't registered" % target.nickname)
 
         if permission not in permissions:
             event["stderr"].write("%s doesn't have permission '%s'" % (

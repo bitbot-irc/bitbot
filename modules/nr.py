@@ -2,7 +2,7 @@ import collections, re, time
 from datetime import datetime, date
 from collections import Counter
 
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 from suds.client import Client
 from suds import WebFault
@@ -19,7 +19,9 @@ class Module(ModuleManager.BaseModule):
     _client = None
 
     PASSENGER_ACTIVITIES = ["U", "P", "R"]
-    COLOURS = [Utils.COLOR_LIGHTBLUE, Utils.COLOR_GREEN, Utils.COLOR_RED, Utils.COLOR_CYAN, Utils.COLOR_LIGHTGREY, Utils.COLOR_ORANGE]
+    COLOURS = [utils.irc.COLOR_LIGHTBLUE, utils.irc.COLOR_GREEN,
+        utils.irc.COLOR_RED, utils.irc.COLOR_CYAN, utils.irc.COLOR_LIGHTGREY,
+        utils.irc.COLOR_ORANGE]
 
     @property
     def client(self):
@@ -111,8 +113,8 @@ class Module(ModuleManager.BaseModule):
 
     def reduced_activities(self, string): return [a for a in self.activities(string) if a in self.PASSENGER_ACTIVITIES]
 
-    @Utils.hook("telegram.command.nrtrains")
-    @Utils.hook("received.command.nrtrains", min_args=1)
+    @utils.hook("telegram.command.nrtrains")
+    @utils.hook("received.command.nrtrains", min_args=1)
     def trains(self, event):
         """
         :help: Get train/bus services for a station (Powered by NRE)
@@ -147,10 +149,11 @@ class Module(ModuleManager.BaseModule):
             })
 
         if filter["errors"]:
-            return event["stderr"].write("Filter: " + filter["errors_summary"])
+            raise utils.EventError("Filter: " + filter["errors_summary"])
 
         if filter["inter"] and filter["type"]!="departure":
-            return event["stderr"].write("Filtering by intermediate stations is only supported for departures.")
+            raise utils.EventError("Filtering by intermediate stations is only "
+                "supported for departures.")
 
         nr_filterlist = client.factory.create("filterList")
         if filter["inter"]: nr_filterlist.crs.append(filter["inter"])
@@ -169,17 +172,20 @@ class Module(ModuleManager.BaseModule):
                 nr_filterlist, "to", '', "PBS", filter["nonpassenger"])
         except WebFault as detail:
             if str(detail) == "Server raised fault: 'Invalid crs code supplied'":
-                return event["stderr"].write("Invalid CRS code.")
+                raise utils.EventError("Invalid CRS code.")
             else:
-                return event["stderr"].write("An error occurred.")
+                raise utils.EventError("An error occurred.")
 
         nrcc_severe = len([a for a in query["nrccMessages"][0] if a["severity"] == "Major"]) if "nrccMessages" in query else 0
         if event.get("external"):
             station_summary = "%s (%s) - %s (%s):\n" % (query["locationName"], query["crs"], query["stationManager"],
                 query["stationManagerCode"])
         else:
-            station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"],
-                ", %s%s severe messages%s" % (Utils.color(nrcc_severe, Utils.COLOR_RED) if nrcc_severe else ""))
+            severe_summary = ""
+            if nrcc_severe:
+                severe_summary += ", "
+                severe_summary += utils.irc.bold(utils.irc.color("%s severe messages" % nrcc_severe, utils.irc.COLOR_RED))
+            station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"], severe_summary)
 
         if not "trainServices" in query and not "busServices" in query and not "ferryServices" in query:
             return event["stdout"].write("%s: No services for the next %s minutes" % (
@@ -230,7 +236,7 @@ class Module(ModuleManager.BaseModule):
             trains.append(parsed)
 
         if eagle_url:
-            summary_query = Utils.get_url("%s/json/summaries/%s?uids=%s" % (eagle_url, now.date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True, headers={"x-eagle-key": self.bot.config["eagle-api-key"]})
+            summary_query = utils.http.get_url("%s/json/summaries/%s?uids=%s" % (eagle_url, now.date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True, headers={"x-eagle-key": self.bot.config["eagle-api-key"]})
             if summary_query:
                 for t in trains:
                     summary = summary_query[t["uid"]]
@@ -283,7 +289,7 @@ class Module(ModuleManager.BaseModule):
                 "*" if t["platform_hidden"] else '',
                 "?" if "platformsAreUnreliable" in query and query["platformsAreUnreliable"] else '',
                 t["times"][filter["type"]]["prefix"].replace(filter["type"][0], '') if not t["cancelled"] else "",
-                Utils.color(t["times"][filter["type"]]["shortest"*filter["st"] or "short"], colours[t["times"][filter["type"]]["status"]]),
+                utils.irc.bold(utils.irc.color(t["times"][filter["type"]]["shortest"*filter["st"] or "short"], colours[t["times"][filter["type"]]["status"]])),
                 bool(t["activity"])*", " + "+".join(t["activity"]),
                 ) for t in trains_filtered])
         if event.get("external"):
@@ -292,8 +298,8 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("%s%s: %s" % (station_summary, " departures calling at %s" % filter["inter"] if filter["inter"] else '', trains_string))
 
-    @Utils.hook("telegram.command.nrservice")
-    @Utils.hook("received.command.nrservice", min_args=1)
+    @utils.hook("telegram.command.nrservice")
+    @utils.hook("received.command.nrservice", min_args=1)
     def service(self, event):
         """
         :help: Get train service information for a UID, headcode or RID
@@ -317,19 +323,19 @@ class Module(ModuleManager.BaseModule):
 
         filter = self.filter(' '.join(event["args_split"][1:]) if len(event["args_split"]) > 1 else "", {
             "passing": (False, lambda x: type(x)==type(True)),
+            "associations": (False, lambda x: type(x)==type(True)),
             "type": ("arrival", lambda x: x in ["arrival", "departure"])
             })
 
         if filter["errors"]:
-            event["stderr"].write("Filter: " + filter["errors_summary"])
-            return
+            raise utils.EventError("Filter: " + filter["errors_summary"])
 
         rid = service_id
         if len(service_id) <= 8:
             query = client.service.QueryServices(service_id, datetime.utcnow().date().isoformat(),
                 datetime.utcnow().time().strftime("%H:%M:%S+0000"))
             if eagle_url:
-                schedule_query = Utils.get_url("%s/json/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True, headers={"x-eagle-key": eagle_key})
+                schedule_query = utils.http.get_url("%s/json/schedule/%s/%s" % (eagle_url, service_id, datetime.now().date().isoformat()), json=True, headers={"x-eagle-key": eagle_key})
                 if schedule_query:
                     schedule = schedule_query["current"]
             if not query and not schedule:
@@ -346,7 +352,7 @@ class Module(ModuleManager.BaseModule):
             if schedule:
                 sources.append("Eagle/SCHEDULE")
                 if not query: query = {"trainid": schedule["signalling_id"] or "0000", "operator": schedule["operator_name"] or schedule["atoc_code"]}
-                stype = "class %s %s" % (schedule_query["tops_inferred"], schedule["power_type"]) if schedule_query["tops_inferred"] else schedule["power_type"]
+                stype = "%s %s" % (schedule_query["tops_inferred"], schedule["power_type"]) if schedule_query["tops_inferred"] else schedule["power_type"]
                 for k,v in {
                     "operatorCode": schedule["atoc_code"],
                     "serviceType": stype if stype else SCHEDULE_STATUS[schedule["status"]],
@@ -359,7 +365,7 @@ class Module(ModuleManager.BaseModule):
         if "delayReason" in query:
             disruptions.append("Delayed (%s%s)" % (query["delayReason"]["value"], " at " + query["delayReason"]["_tiploc"] if query["delayReason"]["_tiploc"] else ""))
         if disruptions and not external:
-            disruptions = Utils.color(", ".join(disruptions), Utils.COLOR_RED) + " "
+            disruptions = utils.irc.color(", ".join(disruptions), utils.irc.COLOR_RED) + " "
         elif disruptions and external:
             disruptions = ", ".join(disruptions)
         else: disruptions = ""
@@ -442,12 +448,12 @@ class Module(ModuleManager.BaseModule):
                 "*" * station["passing"],
                 station["name"],
                 station["crs"] + ", " if station["name"] != station["crs"] else '',
-                station["length"] + " cars, " if station["length"] and (station["first"] or (station["last"]) or station["associations"]) else '',
+                station["length"] + " car, " if station["length"] and (station["first"] or station["associations"]) else '',
                 ("~" if station["times"][filter["type"]]["estimate"] else '') +
                 station["times"][filter["type"]]["prefix"].replace(filter["type"][0], ""),
-                Utils.color(station["times"][filter["type"]]["short"], colours[station["times"][filter["type"]]["status"]]),
+                utils.irc.color(station["times"][filter["type"]]["short"], colours[station["times"][filter["type"]]["status"]]),
                 ", "*bool(station["activity_p"]) + "+".join(station["activity_p"]),
-                ", ".join([a["summary"] for a in station["associations"]]),
+                ", ".join([a["summary"] for a in station["associations"]] if filter["associations"] else ""),
                 )
             station["summary_external"] = "%1s%-5s %1s%-5s %-3s %-3s %-3s %s%s" % (
                 "~"*station["times"]["a"]["estimate"] + "s"*(station["times"]["a"]["schedule"]),
@@ -482,14 +488,14 @@ class Module(ModuleManager.BaseModule):
                 "\n".join([s["summary_external"] for s in stations_filtered])
                 ))
         else:
-            event["stdout"].write("%s%s %s %s (%s%s%s/%s/%s): %s" % (disruptions, query["operatorCode"],
+            event["stdout"].write("%s%s %s %s (%s/%s/%s): %s" % (disruptions, query["operatorCode"],
                 query["trainid"], query["serviceType"],
-                Utils.color(done_count, Utils.COLOR_LIGHTBLUE),
+                utils.irc.color(done_count, utils.irc.COLOR_LIGHTBLUE),
                 len(stations_filtered), total_count,
                 ", ".join([s["summary"] for s in stations_filtered])))
 
-    @Utils.hook("telegram.command.nrhead")
-    @Utils.hook("received.command.nrhead", min_args=1)
+    @utils.hook("telegram.command.nrhead")
+    @utils.hook("received.command.nrhead", min_args=1)
     def head(self, event):
         """
         :help: Get information for a given headcode/UID/RID (Powered by NRE)
@@ -502,7 +508,8 @@ class Module(ModuleManager.BaseModule):
             datetime.utcnow().time().strftime("%H:%M:%S+0000"))
 
         if not query:
-            return event["stderr"].write("No currently running services match this identifier")
+            raise utils.EventError("No currently running services match this "
+                "identifier")
 
         services = query["serviceList"][0]
         if event.get("external"):
@@ -510,8 +517,8 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write(", ".join(["h/%s r/%s u/%s rs/%s %s (%s) -> %s (%s)" % (a["trainid"], a["rid"], a["uid"], a["rsid"], a["originName"], a["originCrs"], a["destinationName"], a["destinationCrs"]) for a in services]))
 
-    @Utils.hook("telegram.command.nrcode")
-    @Utils.hook("received.command.nrcode", min_args=1)
+    @utils.hook("telegram.command.nrcode")
+    @utils.hook("received.command.nrcode", min_args=1)
     def service_code(self, event):
         """
         :help: Get the text for a given delay/cancellation code (Powered by NRE)
@@ -521,7 +528,8 @@ class Module(ModuleManager.BaseModule):
         client = self.client
 
         if not event["args"].isnumeric():
-            return event["stderr"].write("The delay/cancellation code must be a number")
+            raise utils.EventError("The delay/cancellation code must be a "
+                "number")
         reasons = {a["code"]:(a["lateReason"], a["cancReason"]) for a in client.service.GetReasonCodeList()[0]}
         if event["args"] in reasons:
             event["stdout"].write("%s: %s" % (event["args"], " / ".join(reasons[event["args"]])))

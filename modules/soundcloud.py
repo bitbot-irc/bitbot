@@ -1,7 +1,7 @@
 #--require-config soundcloud-api-key
 
 import json, re, time
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_SOUNDCLOUD_TRACK = "http://api.soundcloud.com/tracks"
 URL_SOUNDCLOUD_RESOLVE = "http://api.soundcloud.com/resolve"
@@ -10,7 +10,8 @@ REGEX_SOUNDCLOUD = "https?://soundcloud.com/([^/]+)/([^/]+)"
 class Module(ModuleManager.BaseModule):
     _name = "SoundCloud"
 
-    @Utils.hook("received.command.soundcloud|sc")
+    @utils.hook("received.command.sc", alias_of="soundcloud")
+    @utils.hook("received.command.soundcloud")
     def soundcloud(self, event):
         """
         :help: Search SoundCloud
@@ -32,8 +33,7 @@ class Module(ModuleManager.BaseModule):
                     last_soundcloud.message).string
 
         if not query and not url:
-            event["stderr"].write("no search phrase provided")
-            return
+            raise utils.EventError("no search phrase provided")
         has_query = not query == None
         get_params = {"limit": 1,
             "client_id": self.bot.config["soundcloud-api-key"]}
@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
         else:
             get_params["url"] = url
 
-        page = Utils.get_url(
+        page = utils.http.get_url(
             URL_SOUNDCLOUD_TRACK if has_query else URL_SOUNDCLOUD_RESOLVE,
             get_params=get_params, json=True)
 
@@ -59,4 +59,4 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("%s [%s] (posted by %s) %s" % (title,
                 duration, user, link))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

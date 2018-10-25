@@ -1,13 +1,13 @@
 import time
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.message.channel")
+    @utils.hook("received.message.channel")
     def channel_message(self, event):
         seen_seconds = time.time()
         event["user"].set_setting("seen", seen_seconds)
 
-    @Utils.hook("received.command.seen", min_args=1)
+    @utils.hook("received.command.seen", min_args=1)
     def seen(self, event):
         """
         :help: Find out when a user was last seen
@@ -16,7 +16,7 @@ class Module(ModuleManager.BaseModule):
         seen_seconds = event["server"].get_user(event["args_split"][0]
             ).get_setting("seen")
         if seen_seconds:
-            since = Utils.to_pretty_time(time.time()-seen_seconds,
+            since = utils.to_pretty_time(time.time()-seen_seconds,
                 max_units=2)
             event["stdout"].write("%s was last seen %s ago" % (
                 event["args_split"][0], since))

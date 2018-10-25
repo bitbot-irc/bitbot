@@ -1,5 +1,5 @@
 import itertools, time, traceback
-from src import Utils
+from src import utils
 
 PRIORITY_URGENT = 0
 PRIORITY_HIGH = 1
@@ -30,7 +30,7 @@ class EventCallback(object):
         self.function = function
         self.priority = priority
         self.kwargs = kwargs
-        self.docstring = Utils.parse_docstring(function.__doc__)
+        self.docstring = utils.parse_docstring(function.__doc__)
 
     def call(self, event):
         return self.function(event)
@@ -226,9 +226,10 @@ class EventHook(object):
             try:
                 returns.append(hook.call(event))
             except Exception as e:
-                self.log.error("failed to call event \"%s\"",
-                    [self._get_path()], exc_info=True)
-                if not safe:
+                if safe:
+                    self.log.error("failed to call event \"%s\"",
+                        [self._get_path()], exc_info=True)
+                else:
                     raise
 
         total_milliseconds = (time.monotonic() - start) * 1000

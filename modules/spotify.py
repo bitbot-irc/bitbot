@@ -1,17 +1,18 @@
 import json
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_SPOTIFY = "https://api.spotify.com/v1/search"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.spotify", min_args=1)
+    @utils.hook("received.command.spotify", min_args=1)
     def spotify(self, event):
         """
         :help: Search for a track on spotify
         :usage: <term>
         """
-        page = Utils.get_url(URL_SPOTIFY, get_params={"type": "track",
-            "limit": 1, "q": event["args"]}, json=True)
+        page = utils.http.get_url(URL_SPOTIFY, get_params=
+            {"type": "track", "limit": 1, "q": event["args"]},
+            json=True)
         if page:
             if len(page["tracks"]["items"]):
                 item = page["tracks"]["items"][0]
@@ -23,4 +24,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No results found")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

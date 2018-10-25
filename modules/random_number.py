@@ -1,10 +1,11 @@
 import random, uuid
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     _name = "Random"
 
-    @Utils.hook("received.command.random|rand")
+    @utils.hook("received.command.rand", alias_of="random")
+    @utils.hook("received.command.random")
     def random(self, event):
         """
         :help: Get a random number
@@ -28,7 +29,7 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write(
                 "Both start and end must be valid integers")
 
-    @Utils.hook("received.command.guid")
+    @utils.hook("received.command.guid")
     def guid(self, event):
         """
         :help: Get a random guid

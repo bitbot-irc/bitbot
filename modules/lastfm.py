@@ -1,15 +1,17 @@
 #--require-config lastfm-api-key
 
 from datetime import datetime, timezone
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
-@Utils.export("set", {"setting": "lastfm", "help": "Set last.fm username"})
+@utils.export("set", {"setting": "lastfm", "help": "Set last.fm username"})
 class Module(ModuleManager.BaseModule):
     _name = "last.fm"
 
-    @Utils.hook("received.command.np|listening|nowplaying")
+    @utils.hook("received.command.np", alias_of="nowplaying")
+    @utils.hook("received.command.listening", alias_of="nowplaying")
+    @utils.hook("received.command.nowplaying")
     def np(self, event):
         """
         :help: Get the last listened to track from a user
@@ -22,7 +24,7 @@ class Module(ModuleManager.BaseModule):
             lastfm_username = event["user"].get_setting("lastfm",
                 event["user"].nickname)
             shown_username = event["user"].nickname
-        page = Utils.get_url(URL_SCROBBLER, get_params={
+        page = utils.http.get_url(URL_SCROBBLER, get_params={
             "method": "user.getrecenttracks", "user": lastfm_username,
             "api_key": self.bot.config["lastfm-api-key"],
             "format": "json", "limit": "1"}, json=True)
@@ -51,7 +53,7 @@ class Module(ModuleManager.BaseModule):
 
                 short_url = " -- " + short_url if short_url else ""
 
-                info_page = Utils.get_url(URL_SCROBBLER, get_params={
+                info_page = utils.http.get_url(URL_SCROBBLER, get_params={
                     "method": "track.getInfo", "artist": artist,
                     "track": track_name, "autocorrect": "1",
                     "api_key": self.bot.config["lastfm-api-key"],
@@ -82,4 +84,4 @@ class Module(ModuleManager.BaseModule):
                     "The user '%s' has never scrobbled before" % (
                     shown_username))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

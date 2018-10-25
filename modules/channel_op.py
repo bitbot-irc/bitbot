@@ -1,25 +1,25 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class UserNotFoundException(Exception):
     pass
 class InvalidTimeoutException(Exception):
     pass
 
-@Utils.export("channelset", {"setting": "highlight-spam-threshold",
+@utils.export("channelset", {"setting": "highlight-spam-threshold",
     "help": "Set the number of nicknames in a message that qualifies as spam",
-     "validate": Utils.int_or_none})
-@Utils.export("channelset", {"setting": "highlight-spam-protection",
+     "validate": utils.int_or_none})
+@utils.export("channelset", {"setting": "highlight-spam-protection",
     "help": "Enable/Disable highlight spam protection",
-    "validate": Utils.bool_or_none})
-@Utils.export("channelset", {"setting": "highlight-spam-ban",
+    "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "highlight-spam-ban",
     "help": "Enable/Disable banning highlight spammers "
-    "instead of just kicking", "validate": Utils.bool_or_none})
-@Utils.export("channelset", {"setting": "ban-format",
+    "instead of just kicking", "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "ban-format",
     "help": "Set ban format ($n = nick, $u = username, $h = hostname)"})
 class Module(ModuleManager.BaseModule):
     _name = "Channel Op"
 
-    @Utils.hook("timer.unban")
+    @utils.hook("timer.unban")
     def _timer_unban(self, event):
         server = self.bot.get_server(event["server_id"])
         if server.has_channel(event["channel_name"]):
@@ -33,12 +33,14 @@ class Module(ModuleManager.BaseModule):
         else:
             raise UserNotFoundException("That user is not in this channel")
 
-    @Utils.hook("received.command.kick|k", channel_only=True, min_args=1)
+    @utils.hook("received.command.k", alias_of="kick")
+    @utils.hook("received.command.kick", channel_only=True, min_args=1)
     def kick(self, event):
         """
         :help: Kick a user from the current channel
         :usage: <nickname> [reason]
         :require_mode: o
+        :prefix: Kick
         """
         target = event["args_split"][0]
         reason = " ".join(event["args_split"][1:]) or None
@@ -46,7 +48,6 @@ class Module(ModuleManager.BaseModule):
         try:
             self._kick(event["server"], event["target"], target, reason)
         except UserNotFoundException:
-            event["stderr"].set_prefix("Kick")
             event["stderr"].write(str(e))
 
     def _ban_format(self, user, s):
@@ -69,7 +70,7 @@ class Module(ModuleManager.BaseModule):
     def _ban(self, server, channel, ban, target):
         target_user = server.get_user(target)
         if channel.has_user(target_user):
-            return this._ban_user(channel, ban, target_user)
+            return self._ban_user(channel, ban, target_user)
         else:
             if ban:
                 event["target"].send_ban(target)
@@ -77,7 +78,7 @@ class Module(ModuleManager.BaseModule):
                 event["target"].send_unban(target)
             return target
 
-    @Utils.hook("received.command.ban", channel_only=True, min_args=1)
+    @utils.hook("received.command.ban", channel_only=True, min_args=1)
     def ban(self, event):
         """
         :help: Ban a user/hostmask from the current channel
@@ -88,7 +89,7 @@ class Module(ModuleManager.BaseModule):
             event["args_split"][0])
 
     def _temp_ban(self, event, accept_hostmask):
-        timeout = Utils.from_pretty_time(event["args_split"][1])
+        timeout = utils.from_pretty_time(event["args_split"][1])
         if not timeout:
             raise InvalidTimeoutException(
                 "Please provided a valid time above 0 seconds")
@@ -100,31 +101,35 @@ class Module(ModuleManager.BaseModule):
             hostmask = self._ban_user(event["target"], True,
                 event["server"].get_user(event["args_split"][0]))
 
-        self.bot.timers.add_persistent("unban", timeout,
+        self.timers.add_persistent("unban", timeout,
             server_id=event["server"].id,
             channel_name=event["target"].name, hostmask=hostmask)
-    @Utils.hook("received.command.tempban|tb", channel_only=True, min_args=2)
+
+    @utils.hook("received.command.tb", alias_of="tempban")
+    @utils.hook("received.command.tempban", channel_only=True, min_args=2)
     def temp_ban(self, event):
         """
         :help: Temporarily ban someone from the current channel
         :usage: <nickname/hostmask>
         :require_mode: o
+        :prefix: Tempban
         """
         try:
             self._temp_ban(event, True)
         except InvalidTimeoutException as e:
-            event["stderr"].set_prefix("Tempban")
             event["stderr"].write(str(e))
-    @Utils.hook("received.command.tempkickban|tkb", channel_only=True,
+
+    @utils.hook("received.command.tkb", alias_of="tempkickban")
+    @utils.hook("received.command.tempkickban", channel_only=True,
         min_args=2)
     def temp_kick_ban(self, event):
         """
         :help: Temporarily kick and ban someone from the current channel
         :usage: <nickname>
         :require_mode: o
+        :prefix: TKB
         """
         reason = " ".join(event["args_split"][2:]) or None
-        event["stderr"].set_prefix("TKB")
         try:
             self._temp_ban(event, False)
             self._kick(event["server"], event["target"], event["args_split"][0],
@@ -134,7 +139,7 @@ class Module(ModuleManager.BaseModule):
         except UserNotFoundException as e:
             event["stderr"].write(str(e))
 
-    @Utils.hook("received.command.unban", channel_only=True, min_args=1)
+    @utils.hook("received.command.unban", channel_only=True, min_args=1)
     def unban(self, event):
         """
         :help: Unban a user/hostmask from the current channel
@@ -144,12 +149,14 @@ class Module(ModuleManager.BaseModule):
         self._ban(event["server"], event["target"], False,
             event["args_split"][0])
 
-    @Utils.hook("received.command.kickban|kb", channel_only=True, min_args=1)
+    @utils.hook("received.command.kb", alias_of="kickban")
+    @utils.hook("received.command.kickban", channel_only=True, min_args=1)
     def kickban(self, event):
         """
         :help: Kick and ban a user from the current channel
         :usage: <nickname> [reason]
         :require_mode: o
+        :prefix: Kickban
         """
         target = event["args_split"][0]
         reason = " ".join(event["args_split"][1:]) or None
@@ -157,10 +164,9 @@ class Module(ModuleManager.BaseModule):
             self._ban(event["server"], event["target"], True, target)
             self._kick(event["server"], event["target"], target, reason)
         except UserNotFoundException as e:
-            event["stderr"].set_prefix("Kickban")
             event["stderr"].write(str(e))
 
-    @Utils.hook("received.command.op", channel_only=True)
+    @utils.hook("received.command.op", channel_only=True)
     def op(self, event):
         """
         :help: Op a user in the current channel
@@ -170,7 +176,7 @@ class Module(ModuleManager.BaseModule):
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("+o", target)
-    @Utils.hook("received.command.deop", channel_only=True)
+    @utils.hook("received.command.deop", channel_only=True)
     def deop(self, event):
         """
         :help: Remove op from a user in the current channel
@@ -181,7 +187,7 @@ class Module(ModuleManager.BaseModule):
             "args_split"][0]
         event["target"].send_mode("-o", target)
 
-    @Utils.hook("received.command.voice", channel_only=True)
+    @utils.hook("received.command.voice", channel_only=True)
     def voice(self, event):
         """
         :help: Voice a user in the current channel
@@ -191,7 +197,7 @@ class Module(ModuleManager.BaseModule):
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
         event["target"].send_mode("+v", target)
-    @Utils.hook("received.command.devoice", channel_only=True)
+    @utils.hook("received.command.devoice", channel_only=True)
     def devoice(self, event):
         """
         :help: Remove voice from a user in the current channel
@@ -202,7 +208,8 @@ class Module(ModuleManager.BaseModule):
             "args_split"][0]
         event["target"].send_mode("-v", target)
 
-    @Utils.hook("received.command.topic", min_args=1, channel_only=True)
+    @utils.hook("received.command.topic", min_args=1, channel_only=True,
+        remove_empty=False)
     def topic(self, event):
         """
         :help: Set the topic in the current channel
@@ -210,7 +217,8 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         """
         event["target"].send_topic(event["args"])
-    @Utils.hook("received.command.tappend", min_args=1, channel_only=True)
+    @utils.hook("received.command.tappend", min_args=1, channel_only=True,
+        remove_empty=False)
     def tappend(self, event):
         """
         :help: Append to the topic in the current channel
@@ -219,7 +227,7 @@ class Module(ModuleManager.BaseModule):
         """
         event["target"].send_topic(event["target"].topic + event["args"])
 
-    @Utils.hook("received.message.channel")
+    @utils.hook("received.message.channel")
     def highlight_spam(self, event):
         if event["channel"].get_setting("highlight-spam-protection", False):
             nicknames = list(map(lambda user: user.nickname,
@@ -237,3 +245,11 @@ class Module(ModuleManager.BaseModule):
                             event["user"].username, event["user"].hostname))
                     event["channel"].send_kick(event["user"].nickname,
                         "highlight spam detected")
+
+    @utils.hook("received.command.leave", channel_only=True)
+    def leave(self, event):
+        """
+        :help: Part me from the current channel
+        :require_mode: o
+        """
+        event["target"].send_part()

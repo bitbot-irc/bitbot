@@ -1,5 +1,5 @@
 import collections, socket, ssl, sys, time
-from . import IRCChannel, IRCObject, IRCUser, Utils
+from src import IRCChannel, IRCObject, IRCUser, utils
 
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
@@ -40,8 +40,10 @@ class Server(IRCObject.Object):
         self.channels = {}
 
         self.own_modes = {}
-        self.mode_prefixes = collections.OrderedDict(
-            {"@": "o", "+": "v"})
+        self.prefix_symbols = collections.OrderedDict(
+            (("@", "o"), ("+", "v")))
+        self.prefix_modes = collections.OrderedDict(
+            (("o", "@"), ("v", "+")))
         self.channel_modes = []
         self.channel_types = ["#"]
         self.case_mapping = "rfc1459"
@@ -91,8 +93,8 @@ class Server(IRCObject.Object):
         if self.get_setting("ssl-verify", True):
             context.verify_mode = ssl.CERT_REQUIRED
 
-        client_certificate = self.bot.config.get("ssl-certificate", None)
-        client_key = self.bot.config.get("ssl-key", None)
+        client_certificate = self.bot.config.get("tls-certificate", None)
+        client_key = self.bot.config.get("tls-key", None)
         if client_certificate and client_key:
             context.load_cert_chain(client_certificate, keyfile=client_key)
 
@@ -133,6 +135,14 @@ class Server(IRCObject.Object):
             self.id, prefix, default)
     def del_setting(self, setting):
         self.bot.database.server_settings.delete(self.id, setting)
+
+    def get_user_setting(self, nickname, setting, default=None):
+        user_id = self.get_user_id(nickname)
+        return self.bot.database.user_settings.get(user_id, setting, default)
+    def set_user_setting(self, nickname, setting, value):
+        user_id = self.get_user_id(nickname)
+        self.bot.database.user_settings.set(user_id, setting, value)
+
     def get_all_user_settings(self, setting, default=[]):
         return self.bot.database.user_settings.find_all_by_setting(
             self.id, setting, default)
@@ -142,9 +152,9 @@ class Server(IRCObject.Object):
 
     def set_own_nickname(self, nickname):
         self.nickname = nickname
-        self.nickname_lower = Utils.irc_lower(self, nickname)
+        self.nickname_lower = utils.irc.lower(self, nickname)
     def is_own_nickname(self, nickname):
-        return Utils.irc_equals(self, nickname, self.nickname)
+        return utils.irc.equals(self, nickname, self.nickname)
 
     def add_own_mode(self, mode, arg=None):
         self.own_modes[mode] = arg
@@ -157,15 +167,15 @@ class Server(IRCObject.Object):
             self.add_own_mode(mode, arg)
 
     def has_user(self, nickname):
-        return Utils.irc_lower(self, nickname) in self.users
-    def get_user(self, nickname):
-        if not self.has_user(nickname):
+        return utils.irc.lower(self, nickname) in self.users
+    def get_user(self, nickname, create=True):
+        if not self.has_user(nickname) and create:
             user_id = self.get_user_id(nickname)
             new_user = IRCUser.User(nickname, user_id, self, self.bot)
             self.events.on("new.user").call(user=new_user, server=self)
             self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
-        return self.users[Utils.irc_lower(self, nickname)]
+        return self.users.get(utils.irc.lower(self, nickname), None)
     def get_user_id(self, nickname):
         self.bot.database.users.add(self.id, nickname)
         return self.bot.database.users.get_id(self.id, nickname)
@@ -175,11 +185,11 @@ class Server(IRCObject.Object):
             channel.remove_user(user)
 
     def change_user_nickname(self, old_nickname, new_nickname):
-        user = self.users.pop(Utils.irc_lower(self, old_nickname))
+        user = self.users.pop(utils.irc.lower(self, old_nickname))
         user._id = self.get_user_id(new_nickname)
-        self.users[Utils.irc_lower(self, new_nickname)] = user
+        self.users[utils.irc.lower(self, new_nickname)] = user
     def has_channel(self, channel_name):
-        return channel_name[0] in self.channel_types and Utils.irc_lower(
+        return channel_name[0] in self.channel_types and utils.irc.lower(
             self, channel_name) in self.channels
     def get_channel(self, channel_name):
         if not self.has_channel(channel_name):
@@ -189,7 +199,7 @@ class Server(IRCObject.Object):
             self.events.on("new.channel").call(channel=new_channel,
                 server=self)
             self.channels[new_channel.name] = new_channel
-        return self.channels[Utils.irc_lower(self, channel_name)]
+        return self.channels[utils.irc.lower(self, channel_name)]
     def get_channel_id(self, channel_name):
         self.bot.database.channels.add(self.id, channel_name)
         return self.bot.database.channels.get_id(self.id, channel_name)
@@ -197,10 +207,10 @@ class Server(IRCObject.Object):
         for user in channel.users:
             user.part_channel(channel)
         del self.channels[channel.name]
-    def parse_line(self, line):
+    def parse_data(self, line):
         if not line:
             return
-        self.events.on("raw").call(server=self, line=line)
+        self.events.on("raw").call_unsafe(server=self, line=line)
         self.check_users()
     def check_users(self):
         for user in self.new_users:
@@ -210,29 +220,39 @@ class Server(IRCObject.Object):
     def read(self):
         data = b""
         try:
-            data = self.read_buffer + self.socket.recv(4096)
+            data = self.socket.recv(4096)
         except (ConnectionResetError, socket.timeout):
             self.disconnect()
-            return []
+            return None
+        if not data:
+            self.disconnect()
+            return None
+        data = self.read_buffer+data
         self.read_buffer = b""
+
         data_lines = [line.strip(b"\r") for line in data.split(b"\n")]
         if data_lines[-1]:
             self.read_buffer = data_lines[-1]
+            self.bot.log.trace("recevied and buffered non-complete line: %s",
+                [data_lines[-1]])
+
         data_lines.pop(-1)
         decoded_lines = []
+
         for line in data_lines:
+            encoding = self.get_setting("encoding", "utf8")
             try:
-                line = line.decode(self.get_setting(
-                    "encoding", "utf8"))
+                line = line.decode(encoding)
             except:
+                self.bot.log.trace("can't decode line with '%s', falling back",
+                    [encoding])
                 try:
                     line = line.decode(self.get_setting(
                         "fallback-encoding", "latin-1"))
                 except:
                     continue
             decoded_lines.append(line)
-        if not decoded_lines:
-            self.disconnect()
+
         self.last_read = time.monotonic()
         self.ping_sent = False
         return decoded_lines
@@ -260,8 +280,8 @@ class Server(IRCObject.Object):
         if len(encoded) > 450:
             encoded = encoded[:450]
         self.buffered_lines.append(encoded + b"\r\n")
-
         self.bot.log.debug(">%s | %s", [str(self), encoded.decode("utf8")])
+
     def _send(self):
         if not len(self.write_buffer):
             self.write_buffer = self.buffered_lines.pop(0)
@@ -351,7 +371,7 @@ class Server(IRCObject.Object):
     def send_quit(self, reason="Leaving"):
         self.send("QUIT :%s" % reason)
 
-    def send_message(self, target, message, prefix=None, tags={}):
+    def _tag_str(self, tags):
         tag_str = ""
         for tag, value in tags.items():
             if tag_str:
@@ -361,9 +381,12 @@ class Server(IRCObject.Object):
                 tag_str += "=%s" % value
         if tag_str:
             tag_str = "@%s " % tag_str
+        return tag_str
 
+    def send_message(self, target, message, prefix=None, tags={}):
         full_message = message if not prefix else prefix+message
-        self.send("%sPRIVMSG %s :%s" % (tag_str, target, full_message))
+        self.send("%sPRIVMSG %s :%s" % (self._tag_str(tags), target,
+            full_message))
 
         action = full_message.startswith("\01ACTION "
             ) and full_message.endswith("\01")
@@ -374,19 +397,27 @@ class Server(IRCObject.Object):
         full_message_split = full_message.split()
         if self.has_channel(target):
             channel = self.get_channel(target)
-            channel.buffer.add_line(None, message, action, tags, True)
+            channel.buffer.add_message(None, message, action, tags, True)
             self.events.on("self.message.channel").call(
                 message=full_message, message_split=full_message_split,
                 channel=channel, action=action, server=self)
         else:
             user = self.get_user(target)
-            user.buffer.add_line(None, message, action, tags, True)
+            user.buffer.add_message(None, message, action, tags, True)
             self.events.on("self.message.private").call(
                 message=full_message, message_split=full_message_split,
                     user=user, action=action, server=self)
 
-    def send_notice(self, target, message):
-        self.send("NOTICE %s :%s" % (target, message))
+    def send_notice(self, target, message, prefix=None, tags={}):
+        full_message = message if not prefix else prefix+message
+        self.send("%sNOTICE %s :%s" % (self._tag_str(tags), target,
+            full_message))
+        if self.has_channel(target):
+            self.get_channel(target).buffer.add_notice(None, message, tags,
+                True)
+        else:
+            self.get_user(target).buffer.add_notice(None, message, tags,
+                True)
 
     def send_mode(self, target, mode=None, args=None):
         self.send("MODE %s%s%s" % (target, "" if mode == None else " %s" % mode,

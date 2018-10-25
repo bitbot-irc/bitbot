@@ -1,8 +1,9 @@
 import time, uuid
 
 class Timer(object):
-    def __init__(self, id, name, delay, next_due, kwargs):
+    def __init__(self, id, context, name, delay, next_due, kwargs):
         self.id = id
+        self.context = context
         self.name = name
         self.delay = delay
         if next_due:
@@ -27,17 +28,32 @@ class Timer(object):
     def done(self):
         return self._done
 
+class TimersContext(object):
+    def __init__(self, parent, context):
+        self._parent = parent
+        self.context = context
+    def add(self, name, delay, next_due=None, **kwargs):
+        self._parent._add(self.context, name, delay, next_due, None, False,
+            kwargs)
+    def add_persistent(self, name, delay, next_due=None, **kwargs):
+        self._parent._add(None, name, delay, next_due, None, True,
+            kwargs)
+
 class Timers(object):
     def __init__(self, database, events, log):
         self.database = database
         self.events = events
         self.log = log
         self.timers = []
+        self.context_timers = {}
+
+    def new_context(self, context):
+        return TimersContext(self, context)
 
     def setup(self, timers):
         for name, timer in timers:
             id = name.split("timer-", 1)[1]
-            self._add(timer["name"], timer["delay"], timer[
+            self._add(timer["name"], None, timer["delay"], timer[
                 "next-due"], id, False, timer["kwargs"])
 
     def _persist(self, timer):
@@ -45,31 +61,49 @@ class Timers(object):
             "name": timer.name, "delay": timer.delay,
             "next-due": timer.next_due, "kwargs": timer.kwargs})
     def _remove(self, timer):
-        self.timers.remove(timer)
+        if timer.context:
+            self.context_timers[timer.context].remove(timer)
+            if not self.context_timers[timer.context]:
+                del self.context_timers[timer.context]
+        else:
+            self.timers.remove(timer)
         self.database.bot_settings.delete("timer-%s" % timer.id)
 
     def add(self, name, delay, next_due=None, **kwargs):
-        self._add(name, delay, next_due, None, False, kwargs)
+        self._add(None, name, delay, next_due, None, False, kwargs)
     def add_persistent(self, name, delay, next_due=None, **kwargs):
-        self._add(name, delay, next_due, None, True, kwargs)
-    def _add(self, name, delay, next_due, id, persist, kwargs):
+        self._add(None, name, delay, next_due, None, True, kwargs)
+    def _add(self, context, name, delay, next_due, id, persist, kwargs):
         id = id or uuid.uuid4().hex
-        timer = Timer(id, name, delay, next_due, kwargs)
+        timer = Timer(id, context, name, delay, next_due, kwargs)
         if persist:
             self._persist(timer)
-        self.timers.append(timer)
+
+        if context and not persist:
+            if not context in self.context_timers:
+                self.context_timers[context] = []
+            self.context_timers[context].append(timer)
+        else:
+            self.timers.append(timer)
 
     def next(self):
-        times = filter(None, [timer.time_left() for timer in self.timers])
+        times = filter(None, [timer.time_left() for timer in self.get_timers()])
         if not times:
             return None
         return max(min(times), 0)
 
+    def get_timers(self):
+        return self.timers + sum(self.context_timers.values(), [])
+
     def call(self):
-        for timer in self.timers[:]:
+        for timer in self.get_timers():
             if timer.due():
                 timer.finish()
                 self.events.on("timer.%s" % timer.name).call(timer=timer,
                     **timer.kwargs)
                 if timer.done():
                     self._remove(timer)
+
+    def purge_context(self, context):
+        if context in self.context_timers:
+            del self.context_timers[context]

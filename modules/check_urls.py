@@ -1,28 +1,28 @@
 #--require-config virustotal-api-key
 
 import re
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_VIRUSTOTAL = "https://www.virustotal.com/vtapi/v2/url/report"
 RE_URL = re.compile(r"https?://\S+", re.I)
 
-@Utils.export("channelset", {"setting": "check-urls",
+@utils.export("channelset", {"setting": "check-urls",
     "help": "Enable/Disable automatically checking for malicious URLs",
-     "validate": Utils.bool_or_none})
-@Utils.export("serverset", {"setting": "check-urls",
+     "validate": utils.bool_or_none})
+@utils.export("serverset", {"setting": "check-urls",
     "help": "Enable/Disable automatically checking for malicious URLs",
-    "validate": Utils.bool_or_none})
-@Utils.export("channelset", {"setting": "check-urls-kick",
+    "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "check-urls-kick",
     "help": "Enable/Disable automatically kicking users that "
-    "send malicious URLs", "validate": Utils.bool_or_none})
+    "send malicious URLs", "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.message.channel")
+    @utils.hook("received.message.channel")
     def message(self, event):
         match = RE_URL.search(event["message"])
         if match and event["channel"].get_setting("check-urls",
                 event["server"].get_setting("check-urls", False)):
             url = match.group(0)
-            page = Utils.get_url(URL_VIRUSTOTAL, get_params={
+            page = utils.http.get_url(URL_VIRUSTOTAL, get_params={
                 "apikey": self.bot.config["virustotal-api-key"],
                 "resource": url}, json=True)
 
@@ -34,5 +34,5 @@ class Module(ModuleManager.BaseModule):
                     self.events.on("send.stdout").call(
                         module_name="CheckURL", target=event["channel"],
                         message="%s just send a malicous URL!" %
-                        event["user"].nickname)
+                        event["user"].nickname, server=event["server"])
 

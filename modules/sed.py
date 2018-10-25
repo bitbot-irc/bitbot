@@ -1,21 +1,21 @@
 import re, traceback
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^s/")
 
-@Utils.export("channelset", {"setting": "sed",
+@utils.export("channelset", {"setting": "sed",
     "help": "Disable/Enable sed in a channel",
-    "validate": Utils.bool_or_none})
-@Utils.export("channelset", {"setting": "sed-sender-only",
+    "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "sed-sender-only",
     "help": "Disable/Enable sed only looking at the messages sent by the user",
-    "validate": Utils.bool_or_none})
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.message.channel")
+    @utils.hook("received.message.channel")
     def channel_message(self, event):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
         if event["message"].startswith("s/") and len(sed_split) > 2:
-            if event["action"] or not Utils.get_closest_setting(
+            if event["action"] or not utils.get_closest_setting(
                     event, "sed", False):
                 return
 
@@ -48,7 +48,7 @@ class Module(ModuleManager.BaseModule):
                 return
             replace = sed_split[2].replace("\\/", "/")
 
-            for_user = event["user"].nickname if Utils.get_closest_setting(
+            for_user = event["user"].nickname if utils.get_closest_setting(
                 event, "sed-sender-only", False
             ) else None
             line = event["channel"].buffer.find(pattern, from_self=False,

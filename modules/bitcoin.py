@@ -1,16 +1,16 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     _name = "BTC"
 
-    @Utils.hook("received.command.btc")
+    @utils.hook("received.command.btc")
     def btc(self, event):
         """
         :help: Get the exchange rate of bitcoins
         :usage: [currency]
         """
         currency = (event["args"] or "USD").upper()
-        page = Utils.get_url("https://blockchain.info/ticker",
+        page = utils.http.get_url("https://blockchain.info/ticker",
             json=True)
         if page:
             if currency in page:
@@ -22,4 +22,4 @@ class Module(ModuleManager.BaseModule):
                 event["stderr"].write("Unknown currency, available "
                     "currencies: %s" % ", ".join(page.keys()))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

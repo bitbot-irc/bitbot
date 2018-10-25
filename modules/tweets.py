@@ -5,7 +5,7 @@
 
 import datetime, re, time, traceback
 import twitter
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 REGEX_TWITTERURL = re.compile(
     "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)
@@ -16,10 +16,11 @@ class Module(ModuleManager.BaseModule):
     def make_timestamp(self, s):
         seconds_since = time.time() - datetime.datetime.strptime(s,
             "%a %b %d %H:%M:%S %z %Y").timestamp()
-        since, unit = Utils.time_unit(seconds_since)
+        since, unit = utils.time_unit(seconds_since)
         return "%s %s ago" % (since, unit)
 
-    @Utils.hook("received.command.tweet|tw")
+    @utils.hook("received.command.tw", alias_of="tweet")
+    @utils.hook("received.command.tweet")
     def tweet(self, event):
         """
         :help: Get/find a tweet

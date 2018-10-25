@@ -1,5 +1,5 @@
 import gc, glob, imp, io, inspect, os, sys, uuid
-from src import Utils
+from . import utils
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
 BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
@@ -22,16 +22,21 @@ class ModuleNotLoadedWarning(ModuleWarning):
     pass
 
 class BaseModule(object):
-    def __init__(self, bot, events, exports):
+    def __init__(self, bot, events, exports, timers):
         self.bot = bot
         self.events = events
         self.exports = exports
+        self.timers = timers
+        self.on_load()
+    def on_load(self):
+        pass
 
 class ModuleManager(object):
-    def __init__(self, events, exports, config, log, directory):
+    def __init__(self, events, exports, timers, config, log, directory):
         self.events = events
         self.exports = exports
         self.config = config
+        self.timers = timers
         self.log = log
         self.directory = directory
 
@@ -54,7 +59,7 @@ class ModuleManager(object):
     def _load_module(self, bot, name):
         path = self._module_path(name)
 
-        for hashflag, value in Utils.get_hashflags(path):
+        for hashflag, value in utils.get_hashflags(path):
             if hashflag == "ignore":
                # nope, ignore this module.
                raise ModuleNotLoadedWarning("module ignored")
@@ -84,7 +89,9 @@ class ModuleManager(object):
         context = str(uuid.uuid4())
         context_events = self.events.new_context(context)
         context_exports = self.exports.new_context(context)
-        module_object = module.Module(bot, context_events, context_exports)
+        context_timers = self.timers.new_context(context)
+        module_object = module.Module(bot, context_events, context_exports,
+            context_timers)
 
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
@@ -92,7 +99,7 @@ class ModuleManager(object):
             attribute = getattr(module_object, attribute_name)
             for hook in self._get_magic(attribute, BITBOT_HOOKS_MAGIC, []):
                 context_events.on(hook["event"]).hook(attribute,
-                    docstring=attribute.__doc__, **hook["kwargs"])
+                    **hook["kwargs"])
         for export in self._get_magic(module_object, BITBOT_EXPORTS_MAGIC, []):
             context_exports.add(export["setting"], export["value"])
 
@@ -134,11 +141,17 @@ class ModuleManager(object):
         if not name in self.modules:
             raise ModuleNotFoundException()
         module = self.modules[name]
+        if hasattr(module, "unload"):
+            try:
+                module.unload()
+            except:
+                pass
         del self.modules[name]
 
         context = module._context
         self.events.purge_context(context)
         self.exports.purge_context(context)
+        self.timers.purge_context(context)
 
         del sys.modules[self._import_name(name)]
         references = sys.getrefcount(module)

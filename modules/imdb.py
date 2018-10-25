@@ -1,7 +1,7 @@
 #--require-config omdbapi-api-key
 
 import json
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_OMDB = "http://www.omdbapi.com/"
 URL_IMDBTITLE = "http://imdb.com/title/%s"
@@ -9,13 +9,13 @@ URL_IMDBTITLE = "http://imdb.com/title/%s"
 class Module(ModuleManager.BaseModule):
     _name = "IMDb"
 
-    @Utils.hook("received.command.imdb", min_args=1)
+    @utils.hook("received.command.imdb", min_args=1)
     def imdb(self, event):
         """
         :help: Search for a given title on IMDb
         :usage: <movie/tv title>
         """
-        page = Utils.get_url(URL_OMDB, get_params={
+        page = utils.http.get_url(URL_OMDB, get_params={
             "t": event["args"],
             "apikey": self.bot.config["omdbapi-api-key"]},
             json=True)
@@ -28,4 +28,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("Title not found")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

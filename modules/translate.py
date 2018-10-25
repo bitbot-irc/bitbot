@@ -1,12 +1,13 @@
 import json, re
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_TRANSLATE = "http://translate.googleapis.com/translate_a/single"
 URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
 REGEX_LANGUAGES = re.compile("(\w+)?:(\w+)? ")
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.translate|tr")
+    @utils.hook("received.command.tr", alias_of="translate")
+    @utils.hook("received.command.translate")
     def translate(self, event):
         """
         :help: Translate the provided phrase or the last line in thie current
@@ -19,8 +20,7 @@ class Module(ModuleManager.BaseModule):
             if phrase:
                 phrase = phrase.message
         if not phrase:
-            event["stderr"].write("No phrase provided.")
-            return
+            raise utils.EventError("No phrase provided.")
         source_language = "auto"
         target_language = "en"
 
@@ -32,7 +32,7 @@ class Module(ModuleManager.BaseModule):
                 target_language = language_match.group(2)
             phrase = phrase.split(" ", 1)[1]
 
-        data = Utils.get_url(URL_TRANSLATE, get_params={
+        data = utils.http.get_url(URL_TRANSLATE, get_params={
             "client": "gtx", "sl": source_language,
             "tl": target_language, "dt": "t", "q": phrase})
 

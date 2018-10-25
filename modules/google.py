@@ -2,13 +2,14 @@
 #--require-config google-search-id
 
 import json
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_GOOGLESEARCH = "https://www.googleapis.com/customsearch/v1"
 URL_GOOGLESUGGEST = "http://google.com/complete/search"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.google|g")
+    @utils.hook("received.command.g", alias_of="google")
+    @utils.hook("received.command.google")
     def google(self, event):
         """
         :help: Get first Google result for a given search term
@@ -16,37 +17,38 @@ class Module(ModuleManager.BaseModule):
         """
         phrase = event["args"] or event["target"].buffer.get()
         if phrase:
-            page = Utils.get_url(URL_GOOGLESEARCH, get_params={
+            page = utils.http.get_url(URL_GOOGLESEARCH, get_params={
                 "q": phrase, "key": self.bot.config[
                 "google-api-key"], "cx": self.bot.config[
                 "google-search-id"], "prettyPrint": "true",
                 "num": 1, "gl": "gb"}, json=True)
             if page:
                 if "items" in page and len(page["items"]):
-                    event["stdout"].write("(" + Utils.bold(phrase) + ") " \
-                                          + page["items"][0]["link"])
+                    event["stdout"].write(
+                        "(%s) %s" % (phrase, page["items"][0]["link"]))
                 else:
                     event["stderr"].write("No results found")
             else:
-                event["stderr"].write("Failed to load results")
+                raise utils.EventsResultsError()
         else:
             event["stderr"].write("No phrase provided")
 
-    @Utils.hook("received.command.suggest", usage="[phrase]")
+    @utils.hook("received.command.suggest")
     def suggest(self, event):
         """
-        Get suggested phrases from Google
+        :help: Get suggested phrases from Google
+        :usage: [phrase]
         """
         phrase = event["args"] or event["target"].buffer.get()
         if phrase:
-            page = Utils.get_url(URL_GOOGLESUGGEST, get_params={
-                "output": "json", "client": "hp", "q": phrase})
+            page = utils.http.get_url(URL_GOOGLESUGGEST, get_params={
+                "output": "json", "client": "hp", "gl": "gb", "q": phrase})
             if page:
                 # google gives us jsonp, so we need to unwrap it.
                 page = page.split("(", 1)[1][:-1]
                 page = json.loads(page)
                 suggestions = page[1]
-                suggestions = [Utils.strip_html(s[0]) for s in suggestions]
+                suggestions = [utils.http.strip_html(s[0]) for s in suggestions]
 
                 if suggestions:
                     event["stdout"].write("%s: %s" % (phrase,
@@ -54,6 +56,6 @@ class Module(ModuleManager.BaseModule):
                 else:
                     event["stderr"].write("No suggestions found")
             else:
-                event["stderr"].write("Failed to load results")
+                raise utils.EventsResultsError()
         else:
             event["stderr"].write("No phrase provided")

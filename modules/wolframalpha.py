@@ -1,19 +1,21 @@
 #--require-config wolframalpha-api-key
 import json
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_WA = "https://api.wolframalpha.com/v1/result"
 
 class Module(ModuleManager.BaseModule):
     _name = "Wolfram|Alpha"
 
-    @Utils.hook("received.command.wolframalpha|wa", min_args=1)
+    @utils.hook("received.command.wa", alias_of="wolframalpha")
+    @utils.hook("received.command.wolframalpha", min_args=1)
     def wa(self, event):
         """
         :help: Evauate a given string on Wolfram|Alpha
         :usage: <query>
         """
-        code, result = Utils.get_url(URL_WA, get_params={"i": event["args"],
+        code, result = utils.http.get_url(URL_WA,
+            get_params={"i": event["args"],
             "appid": self.bot.config["wolframalpha-api-key"],
             "reinterpret": "true", "units": "metric"}, code=True)
 
@@ -23,4 +25,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stdout"].write("No results")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

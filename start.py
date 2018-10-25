@@ -37,8 +37,8 @@ database = Database.Database(log, args.database)
 events = events = EventManager.EventHook(log)
 exports = exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
-modules = modules = ModuleManager.ModuleManager(events, exports, config, log,
-    os.path.join(directory, "modules"))
+modules = modules = ModuleManager.ModuleManager(events, exports, timers, config,
+    log, os.path.join(directory, "modules"))
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
     exports, log, modules, timers)
@@ -55,7 +55,7 @@ for server_id, alias in bot.database.servers.get_all():
 if len(servers):
     bot._events.on("boot.done").call()
 
-    bot.timers.setup(bot.find_settings_prefix("timer-"))
+    timers.setup(bot.find_settings_prefix("timer-"))
 
     for server in servers:
         if not bot.connect(server):
@@ -75,8 +75,9 @@ else:
             nickname = input("nickname: ")
             username = input("username: ")
             realname = input("realname: ")
+            bindhost = input("bindhost?: ")
             bot.database.servers.add(alias, hostname, port, password, ipv4,
-                tls, nickname, username, realname)
+                tls, bindhost, nickname, username, realname)
     except KeyboardInterrupt:
         print()
         pass

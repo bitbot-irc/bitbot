@@ -1,11 +1,11 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 UPCITEMDB_URL = "https://api.upcitemdb.com/prod/trial/lookup"
 
 class Module(ModuleManager.BaseModule):
     _name = "UPC"
 
-    @Utils.hook("received.command.upc|ean|gtin", min_args=1)
+    @utils.hook("received.command.upc|ean|gtin", min_args=1)
     def upc(self, event):
         """
         :help: Look up a product by UPC, EAN or GTIN
@@ -13,16 +13,14 @@ class Module(ModuleManager.BaseModule):
         """
         arg_len = len(event["args_split"][0])
         if not arg_len == 12 and not arg_len == 13:
-            event["stderr"].write("Invalid UPC/EAN provided")
-            return
+            raise utils.EventError("Invalid UPC/EAN/GTIN provided")
 
-        page = Utils.get_url(UPCITEMDB_URL,
+        page = utils.http.get_url(UPCITEMDB_URL,
             get_params={"upc": event["args_split"][0]},
             json=True)
         if page:
             if not len(page["items"]):
-                event["stderr"].write("UPC/EAN not found")
-                return
+                raise utils.EventError("UPC/EAN not found")
             item = page["items"][0]
 
             brand = item.get("brand", None)
@@ -49,4 +47,4 @@ class Module(ModuleManager.BaseModule):
                 ", size: %s, price: %s)" % (
                 brand, title, description, weight, size, pricing))
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

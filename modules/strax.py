@@ -1,8 +1,8 @@
 import random
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.strax")
+    @utils.hook("received.command.strax")
     def strax(self, event):
         """
         :help: Suggests a glorious method of battle for the glory of the

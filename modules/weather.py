@@ -1,18 +1,18 @@
 #--require-config openweathermap-api-key
 
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
 
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.command.weather", min_args=1, usage="<location>")
+    @utils.hook("received.command.weather", min_args=1, usage="<location>")
     def weather(self, event):
         """
         :help: Get current weather data for a provided location
         :usage: <location>
         """
         api_key = self.bot.config["openweathermap-api-key"]
-        page = Utils.get_url(URL_WEATHER, get_params={
+        page = utils.http.get_url(URL_WEATHER, get_params={
             "q": event["args"], "units": "metric",
             "APPID": api_key},
             json=True)
@@ -33,4 +33,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No weather information for this location")
         else:
-            event["stderr"].write("Failed to load results")
+            raise utils.EventsResultsError()

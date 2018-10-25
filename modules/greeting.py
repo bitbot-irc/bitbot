@@ -1,9 +1,9 @@
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
-@Utils.export("channelset", {"setting": "greeting",
+@utils.export("channelset", {"setting": "greeting",
     "help": "Set a greeting to send to users when they join"})
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.join")
+    @utils.hook("received.join")
     def join(self, event):
         greeting = event["channel"].get_setting("greeting", None)
         if greeting:

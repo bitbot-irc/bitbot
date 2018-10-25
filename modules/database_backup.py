@@ -1,20 +1,19 @@
 import datetime, glob, os, shutil, time
-from src import Utils
+from src import ModuleManager, utils
 
 BACKUP_INTERVAL = 60*60 # 1 hour
 BACKUP_COUNT = 5
 
-class Module(object):
-    def __init__(self, bot, events, exports):
-        self.bot = bot
+class Module(ModuleManager.BaseModule):
+    def on_load(self):
         now = datetime.datetime.now()
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        bot.timers.add("database-backup", BACKUP_INTERVAL,
+        self.timers.add("database-backup", BACKUP_INTERVAL,
             time.time()+until_next_hour)
 
-    @Utils.hook("timer.database-backup")
+    @utils.hook("timer.database-backup")
     def backup(self, event):
         location =  self.bot.database.location
         files = glob.glob("%s.*" % location)

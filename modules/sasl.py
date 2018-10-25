@@ -1,5 +1,5 @@
 import base64
-from src import ModuleManager, Utils
+from src import ModuleManager, utils
 
 def _validate(self, s):
     mechanism = s
@@ -7,11 +7,11 @@ def _validate(self, s):
         mechanism, arguments = s.split(" ", 1)
     return {"mechanism": mechanism, "args": arguments}
 
-@Utils.export("serverset", {"setting": "sasl",
+@utils.export("serverset", {"setting": "sasl",
     "help": "Set the sasl username/password for this server",
     "validate": _validate})
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("received.cap.ls")
+    @utils.hook("received.cap.ls")
     def on_cap(self, event):
         has_sasl = "sasl" in event["capabilities"]
         our_sasl = event["server"].get_setting("sasl", None)
@@ -28,14 +28,14 @@ class Module(ModuleManager.BaseModule):
         if do_sasl:
             event["server"].queue_capability("sasl")
 
-    @Utils.hook("received.cap.ack")
+    @utils.hook("received.cap.ack")
     def on_cap_ack(self, event):
         if "sasl" in event["capabilities"]:
             sasl = event["server"].get_setting("sasl")
             event["server"].send_authenticate(sasl["mechanism"].upper())
             event["server"].wait_for_capability("sasl")
 
-    @Utils.hook("received.authenticate")
+    @utils.hook("received.authenticate")
     def on_authenticate(self, event):
         if event["message"] != "+":
             event["server"].send_authenticate("*")
@@ -58,9 +58,9 @@ class Module(ModuleManager.BaseModule):
 
     def _end_sasl(self, server):
         server.capability_done("sasl")
-    @Utils.hook("received.numeric.903")
+    @utils.hook("received.numeric.903")
     def sasl_success(self, event):
         self._end_sasl(event["server"])
-    @Utils.hook("received.numeric.904")
+    @utils.hook("received.numeric.904")
     def sasl_failure(self, event):
         self._end_sasl(event["server"])

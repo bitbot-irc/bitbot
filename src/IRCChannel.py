@@ -1,9 +1,9 @@
 import uuid
-from . import IRCBuffer, IRCObject, Utils
+from src import IRCBuffer, IRCObject, utils
 
 class Channel(IRCObject.Object):
     def __init__(self, name, id, server, bot):
-        self.name = Utils.irc_lower(server, name)
+        self.name = utils.irc.lower(server, name)
         self.id = id
         self.server = server
         self.bot = bot
@@ -14,6 +14,7 @@ class Channel(IRCObject.Object):
         self.topic_time = 0
         self.users = set([])
         self.modes = {}
+        self.user_modes = {}
         self.created_timestamp = None
         self.buffer = IRCBuffer.Buffer(bot, server)
 
@@ -36,11 +37,12 @@ class Channel(IRCObject.Object):
     def remove_user(self, user):
         self.users.remove(user)
         for mode in list(self.modes.keys()):
-            if mode in self.server.mode_prefixes.values(
-                    ) and user in self.modes[mode]:
+            if mode in self.server.prefix_modes and user in self.modes[mode]:
                 self.modes[mode].discard(user)
                 if not len(self.modes[mode]):
                     del self.modes[mode]
+                if user in self.user_modes:
+                    del self.user_modes[user]
     def has_user(self, user):
         return user in self.users
 
@@ -48,20 +50,28 @@ class Channel(IRCObject.Object):
         if not mode in self.modes:
             self.modes[mode] = set([])
         if arg:
-            if mode in self.server.mode_prefixes.values():
+            if mode in self.server.prefix_modes:
                 user = self.server.get_user(arg)
                 if user:
                     self.modes[mode].add(user)
+                    if not user in self.user_modes:
+                        self.user_modes[user] = set([])
+                    self.user_modes[user].add(mode)
             else:
                 self.modes[mode].add(arg.lower())
     def remove_mode(self, mode, arg=None):
         if not arg:
             del self.modes[mode]
         else:
-            if mode in self.server.mode_prefixes.values():
+            if mode in self.server.prefix_modes:
                 user = self.server.get_user(arg)
                 if user:
-                    self.modes[mode].discard(user)
+                    if mode in self.modes:
+                        self.modes[mode].discard(user)
+                    if user in self.user_modes:
+                        self.user_modes[user].discard(mode)
+                        if not self.user_modes[user]:
+                            del self.user_modes[user]
             else:
                 self.modes[mode].discard(arg.lower())
             if not len(self.modes[mode]):
@@ -107,6 +117,8 @@ class Channel(IRCObject.Object):
 
     def send_message(self, text, prefix=None, tags={}):
         self.server.send_message(self.name, text, prefix=prefix, tags=tags)
+    def send_notice(self, text, prefix=None, tags={}):
+        self.server.send_notice(self.name, text, prefix=prefix, tags=tags)
     def send_mode(self, mode=None, target=None):
         self.server.send_mode(self.name, mode, target)
     def send_kick(self, target, reason=None):
@@ -117,18 +129,19 @@ class Channel(IRCObject.Object):
         self.server.send_mode(self.name, "-b", hostmask)
     def send_topic(self, topic):
         self.server.send_topic(self.name, topic)
+    def send_part(self, reason=None):
+        self.server.send_part(self.name, reason)
 
     def mode_or_above(self, user, mode):
-        mode_orders = list(self.server.mode_prefixes.values())
+        mode_orders = list(self.server.prefix_modes)
         mode_index = mode_orders.index(mode)
         for mode in mode_orders[:mode_index+1]:
             if user in self.modes.get(mode, []):
                 return True
         return False
 
+    def has_mode(self, user, mode):
+        return user in self.modes.get(mode, [])
+
     def get_user_status(self, user):
-        modes = ""
-        for mode in self.server.mode_prefixes.values():
-            if user in self.modes.get(mode, []):
-                modes += mode
-        return modes
+        return self.user_modes.get(user, [])

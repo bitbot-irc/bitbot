@@ -1,15 +1,19 @@
 import re
-from src import EventManager, ModuleManager, Utils
+from src import EventManager, ModuleManager, utils
 
-STR_MORE = "%s (more...)" % Utils.FONT_RESET
+STR_MORE = "%s (more...)" % utils.irc.FONT_RESET
 STR_CONTINUED = "(...continued) "
+
+COMMAND_METHOD = "command-method"
+COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
 OUT_CUTOFF = 400
 
 REGEX_CUTOFF = re.compile("^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
 
 class Out(object):
-    def __init__(self, module_name, target, msgid):
+    def __init__(self, server, module_name, target, msgid):
+        self.server = server
         self.module_name = module_name
         self.target = target
         self._text = ""
@@ -37,8 +41,16 @@ class Out(object):
             if self._msgid:
                 tags["+draft/reply"] = self._msgid
 
-            self.target.send_message(text,
-                prefix=Utils.FONT_RESET + "[%s] " % self.prefix(), tags=tags)
+            prefix = utils.irc.FONT_RESET + "[%s] " % self.prefix()
+            method = self._get_method()
+            if method == "PRIVMSG":
+                self.target.send_message(text, prefix=prefix, tags=tags)
+            elif method == "NOTICE":
+                self.target.send_notice(text, prefix=prefix, tags=tags)
+
+    def _get_method(self):
+        return self.target.get_setting(COMMAND_METHOD,
+            self.server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
 
     def set_prefix(self, prefix):
         self.module_name = prefix
@@ -48,19 +60,31 @@ class Out(object):
 
 class StdOut(Out):
     def prefix(self):
-        return Utils.color(Utils.bold(self.module_name), Utils.COLOR_GREEN)
+        return utils.irc.color(utils.irc.bold(self.module_name),
+            utils.irc.COLOR_GREEN)
 class StdErr(Out):
     def prefix(self):
-        return Utils.color(Utils.bold(self.module_name), Utils.COLOR_RED)
+        return utils.irc.color(utils.irc.bold("!"+self.module_name),
+            utils.irc.COLOR_RED)
 
-@Utils.export("channelset", {"setting": "command-prefix",
+def _command_method_validate(s):
+    if s.upper() in COMMAND_METHODS:
+        return s.upper()
+
+@utils.export("channelset", {"setting": "command-prefix",
     "help": "Set the command prefix used in this channel"})
-@Utils.export("serverset", {"setting": "command-prefix",
+@utils.export("serverset", {"setting": "command-prefix",
     "help": "Set the command prefix used on this server"})
-@Utils.export("serverset", {"setting": "identity-mechanism",
+@utils.export("serverset", {"setting": "identity-mechanism",
     "help": "Set the identity mechanism for this server"})
+@utils.export("serverset", {"setting": "command-method",
+    "help": "Set the method used to respond to commands",
+    "validate": _command_method_validate})
+@utils.export("channelset", {"setting": "command-method",
+    "help": "Set the method used to respond to commands",
+    "validate": _command_method_validate})
 class Module(ModuleManager.BaseModule):
-    @Utils.hook("new.user|channel")
+    @utils.hook("new.user|channel")
     def new(self, event):
         if "user" in event:
             target = event["user"]
@@ -88,6 +112,13 @@ class Module(ModuleManager.BaseModule):
                 return
 
             hook = self.get_hook(command)
+            alias_of = self._get_alias_of(hook)
+            if alias_of:
+                if self.has_command(alias_of):
+                    hook = self.get_hook(alias_of)
+                else:
+                    raise ValueError("'%s' is an alias of unknown command '%s'"
+                        % (command.lower(), alias_of.lower()))
             is_channel = False
 
             if "channel" in event:
@@ -100,13 +131,13 @@ class Module(ModuleManager.BaseModule):
             if is_channel and hook.kwargs.get("private_only"):
                 return
 
-            module_name = ""
-            if hasattr(hook.function, "__self__"):
+            module_name = self._get_prefix(hook) or ""
+            if not module_name and hasattr(hook.function, "__self__"):
                 module_name = hook.function.__self__._name
 
             msgid = event["tags"].get("draft/msgid", None)
-            stdout = StdOut(module_name, target, msgid)
-            stderr = StdErr(module_name, target, msgid)
+            stdout = StdOut(event["server"], module_name, target, msgid)
+            stderr = StdErr(event["server"], module_name, target, msgid)
 
             returns = self.events.on("preprocess.command").call_unsafe(
                 hook=hook, user=event["user"], server=event["server"],
@@ -116,25 +147,33 @@ class Module(ModuleManager.BaseModule):
                     stderr.write(returned).send()
                     target.buffer.skip_next()
                     return
+
             args_split = event["message_split"][args_index:]
+            if hook.kwargs.get("remove_empty", True):
+                args_split = list(filter(None, args_split))
+
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
-                if "usage" in hook.kwargs:
+                usage = self._get_usage(hook)
+                if usage:
                     stderr.write("Not enough arguments, usage: %s %s" % (
-                        command, hook.kwargs["usage"])).send()
+                        command, usage)).send()
                 else:
-                    stderr.write("Not enough arguments (minimum: %d)" % min_args
-                       ).send()
+                    stderr.write("Not enough arguments (minimum: %d)" %
+                        min_args).send()
             else:
                 args = " ".join(args_split)
                 server = event["server"]
                 user = event["user"]
-                self.events.on("received.command").on(command
-                    ).call_limited(1, user=user, server=server,
-                    target=target, args=args,
-                    args_split=args_split, stdout=stdout, stderr=stderr,
-                    command=command.lower(), is_channel=is_channel,
-                    tags=event["tags"])
+                try:
+                    self.events.on("received.command").on(command
+                        ).call_unsafe_limited(1, user=user, server=server,
+                        target=target, args=args, tags=event["tags"],
+                        args_split=args_split, stdout=stdout, stderr=stderr,
+                        command=command.lower(), is_channel=is_channel)
+                except utils.EventError as e:
+                    stderr.write(str(e))
+
                 if not hook.kwargs.get("skip_out", False):
                     stdout.send()
                     stderr.send()
@@ -143,7 +182,7 @@ class Module(ModuleManager.BaseModule):
             target.buffer.skip_next()
         event.eat()
 
-    @Utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
+    @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
         command_prefix = event["channel"].get_setting("command-prefix",
             event["server"].get_setting("command-prefix", "!"))
@@ -156,7 +195,7 @@ class Module(ModuleManager.BaseModule):
             command = event["message_split"][1].lower()
             self.message(event, command, 2)
 
-    @Utils.hook("received.message.private", priority=EventManager.PRIORITY_LOW)
+    @utils.hook("received.message.private", priority=EventManager.PRIORITY_LOW)
     def private_message(self, event):
         if event["message_split"]:
             command = event["message_split"][0].lower()
@@ -166,8 +205,12 @@ class Module(ModuleManager.BaseModule):
         return hook.get_kwarg("help", None) or hook.docstring.description
     def _get_usage(self, hook):
         return hook.get_kwarg("usage", None)
+    def _get_prefix(self, hook):
+        return hook.get_kwarg("prefix", None)
+    def _get_alias_of(self, hook):
+        return hook.get_kwarg("alias_of", None)
 
-    @Utils.hook("received.command.help")
+    @utils.hook("received.command.help")
     def help(self, event):
         """
         :help: Show help for a given command
@@ -191,12 +234,14 @@ class Module(ModuleManager.BaseModule):
             for child in self.events.on("received.command").get_children():
                 hooks = self.events.on("received.command").on(child).get_hooks()
 
-                if hooks and self._get_help(hooks[0]):
+                if hooks and self._get_help(hooks[0]
+                        ) and not self._get_alias_of(hooks[0]):
                     help_available.append(child)
+
             help_available = sorted(help_available)
             event["stdout"].write("Commands: %s" % ", ".join(help_available))
 
-    @Utils.hook("received.command.usage", min_args=1)
+    @utils.hook("received.command.usage", min_args=1)
     def usage(self, event):
         """
         :help: Show the usage for a given command
@@ -221,7 +266,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Unknown command '%s'" % command)
 
-    @Utils.hook("received.command.more", skip_out=True)
+    @utils.hook("received.command.more", skip_out=True)
     def more(self, event):
         """
         :help: Show more output from the last command
@@ -229,7 +274,7 @@ class Module(ModuleManager.BaseModule):
         if event["target"].last_stdout and event["target"].last_stdout.has_text():
             event["target"].last_stdout.send()
 
-    @Utils.hook("received.command.ignore", min_args=1)
+    @utils.hook("received.command.ignore", min_args=1)
     def ignore(self, event):
         """
         :help: Ignore commands from a given user
@@ -244,7 +289,7 @@ class Module(ModuleManager.BaseModule):
             user.set_setting("ignore", True)
             event["stdout"].write("Now ignoring '%s'" % user.nickname)
 
-    @Utils.hook("received.command.unignore", min_args=1)
+    @utils.hook("received.command.unignore", min_args=1)
     def unignore(self, event):
         """
         :help: Unignore commands from a given user
@@ -258,15 +303,17 @@ class Module(ModuleManager.BaseModule):
             user.set_setting("ignore", False)
             event["stdout"].write("Removed ignore for '%s'" % user.nickname)
 
-    @Utils.hook("send.stdout")
+    @utils.hook("send.stdout")
     def send_stdout(self, event):
-        stdout = StdOut(event["module_name"], event["target"])
+        stdout = StdOut(event["server"], event["module_name"],
+            event["target"], event.get("msgid", None))
         stdout.write(event["message"]).send()
         if stdout.has_text():
             event["target"].last_stdout = stdout
-    @Utils.hook("send.stderr")
+    @utils.hook("send.stderr")
     def send_stderr(self, event):
-        stderr = StdErr(event["module_name"], event["target"])
+        stderr = StdErr(event["server"], event["module_name"],
+            event["target"], event.get("msgid", None))
         stderr.write(event["message"]).send()
         if stderr.has_text():
             event["target"].last_stderr = stderr

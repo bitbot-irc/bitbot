@@ -12,9 +12,9 @@ class Servers(Table):
         self.database.execute(
             """INSERT INTO servers (alias, hostname, port, password, ipv4,
             tls, bindhost, nickname, username, realname) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [hostname, port, password, ipv4, tls, bindhost, nickname, username,
-            realname])
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            [alias, hostname, port, password, ipv4, tls, bindhost, nickname,
+            username, realname])
     def get_all(self):
         return self.database.execute_fetchall(
             "SELECT server_id, alias FROM servers")
@@ -139,6 +139,19 @@ class ChannelSettings(Table):
         self.database.execute(
             """DELETE FROM channel_settings WHERE channel_id=?
             AND setting=?""", [channel_id, setting.lower()])
+
+    def find_by_setting(self, setting, default=[]):
+        values = self.database.execute_fetchall(
+            """SELECT channels.server_id, channels.name,
+            channel_settings.value FROM channel_settings
+            INNER JOIN channels ON
+            channel_settings.channel_id=channels.channel_id
+            WHERE channel_settings.setting=?""", [setting])
+        if values:
+            for i, value in enumerate(values):
+                values[i] = value[0], value[1], json.loads(value[2])
+            return values
+        return default
 
 class UserSettings(Table):
     def set(self, user_id, setting, value):
