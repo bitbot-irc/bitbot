@@ -30,7 +30,7 @@ def get_url(url, method="GET", get_params={}, post_data=None, headers={},
     if not "User-Agent" in headers:
         headers["User-Agent"] = USER_AGENT
 
-    signal.signal(signal.SIGALRM, throw_timeout)
+    signal.signal(signal.SIGALRM, lambda _1, _2: throw_timeout())
     signal.alarm(5)
     try:
         response = requests.request(
