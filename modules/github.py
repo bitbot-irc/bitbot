@@ -34,7 +34,7 @@ class Module(ModuleManager.BaseModule):
                 removed_count = len(commit["removed"])
                 url = COMMIT_URL % (full_name, id[:8])
 
-                line = ("(%s) [files: +%d ∆%d -%d] commit by '%s': %s %s"
+                line = ("(%s) [files: +%d ∆%d -%d] commit by '%s': %s - %s"
                     % (full_name, added_count, modified_count,
                     removed_count, author, message, url))
                 hooks = [hook for hook in hooks if hook[2]]
