@@ -1,6 +1,8 @@
 import json
 from src import ModuleManager, utils
 
+COMMIT_URL = "https://github.com/%s/commit/%s"
+
 @utils.export("channelset", {"setting": "github-hook",
     "help": ("Disable/Enable showing BitBot's github commits in the "
     "current channel"), "validate": utils.bool_or_none,
@@ -30,10 +32,11 @@ class Module(ModuleManager.BaseModule):
                 modified_count = len(commit["modified"])
                 added_count = len(commit["added"])
                 removed_count = len(commit["removed"])
+                url = COMMIT_URL % (full_name, id[:8])
 
-                line = ("(%s) [files: +%d ∆%d -%d] commit by '%s': %s"
+                line = ("(%s) [files: +%d ∆%d -%d] commit by '%s': %s %s"
                     % (full_name, added_count, modified_count,
-                    removed_count, author, message))
+                    removed_count, author, message, url))
                 hooks = [hook for hook in hooks if hook[2]]
                 for server_id, channel_name, _ in hooks:
                     server = self.bot.get_server(server_id)
