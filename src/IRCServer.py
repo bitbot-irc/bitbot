@@ -221,7 +221,7 @@ class Server(IRCObject.Object):
         data = b""
         try:
             data = self.socket.recv(4096)
-        except (ConnectionResetError, socket.timeout):
+        except (ConnectionResetError, socket.timeout, OSError):
             self.disconnect()
             return None
         if not data:
