@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
             "action": action,
             "added_by": event["user"].nickname,
             "added_at": time.time()})
-        event["target"].set_setting("badwords", badowrds)
+        event["target"].set_setting("badwords", badwords)
         event["stdout"].write("%s: added to badwords" % event["user"].nickname)
 
     @utils.hook("received.command.badwordsdel", channel_only=True, min_args=1)
