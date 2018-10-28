@@ -57,7 +57,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.channel")
     def channel_message(self, event):
-        badwords = event["target"].get_setting("badwords", [])
+        badwords = event["channel"].get_setting("badwords", [])
         message_lower = event["message"].lower()
         for badword in badwords:
             if badword["pattern"] in message_lower:
