@@ -63,12 +63,12 @@ class Module(ModuleManager.BaseModule):
             if badword["pattern"] in message_lower:
                 kick = False
                 ban = False
-                if pattern["action"] == "kick":
+                if badword["action"] == "kick":
                     kick = True
-                elif pattern["action"] == "kickban":
+                elif badword["action"] == "kickban":
                     ban = True
                     kick = True
-                elif pattern["action"] == "ban":
+                elif badword["action"] == "ban":
                     ban = True
 
                 if ban:
