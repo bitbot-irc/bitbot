@@ -8,10 +8,10 @@ class Module(ModuleManager.BaseModule):
         :help: List the badwords in the current channel
         :require_mode: o
         """
-        badwords = events["channel"].get_getting("badwords", [])
+        badwords = event["channel"].get_getting("badwords", [])
         badwords = ("(%d) %s" % (i, badword["pattern"]) for badword in
             enumerate(badwords))
-        events["stdout"].write("%s: %s" % (event["target"].name,
+        event["stdout"].write("%s: %s" % (event["target"].name,
             ", ".join(badwords)))
 
     @utils.hook("received.command.badwordsadd", channel_only=True, min_args=2)
