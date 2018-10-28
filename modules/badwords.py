@@ -60,7 +60,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.message.channel")
     def channel_message(self, event):
         if event["channel"].mode_or_above(event["user"], "v"):
-            continue
+            return
 
         badwords = event["channel"].get_setting("badwords", [])
         message_lower = event["message"].lower()
