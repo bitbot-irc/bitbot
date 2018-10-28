@@ -12,7 +12,7 @@ class Module(ModuleManager.BaseModule):
         badwords = ("(%d) %s" % (i, badword["pattern"]) for badword in
             enumerate(badwords))
         events["stdout"].write("%s: %s" % (event["target"].name,
-            ", ".join(badwords))
+            ", ".join(badwords)))
 
     @utils.hook("received.command.badwordsadd", channel_only=True, min_args=2)
     def badwords_add(self, event):
