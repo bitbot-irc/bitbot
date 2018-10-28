@@ -154,10 +154,10 @@ class Module(ModuleManager.BaseModule):
 
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
-                usage = self._get_usage(hook)
+                usage = self._get_usage(hook, command)
                 if usage:
-                    stderr.write("Not enough arguments, usage: %s %s" % (
-                        command, usage)).send()
+                    stderr.write("Not enough arguments, usage: %s" %
+                        usage).send()
                 else:
                     stderr.write("Not enough arguments (minimum: %d)" %
                         min_args).send()
@@ -203,8 +203,15 @@ class Module(ModuleManager.BaseModule):
 
     def _get_help(self, hook):
         return hook.get_kwarg("help", None) or hook.docstring.description
-    def _get_usage(self, hook):
-        return hook.get_kwarg("usage", None)
+    def _get_usage(self, hook, command):
+        usage = hook.get_kwarg("usage", None)
+        is not usage:
+            usages = hook.docstring.var_items.get("usage", None)
+            if usages:
+                return " | ".join(
+                    "%s %s" % (command, usage) for usage in usages)
+        return usage
+
     def _get_prefix(self, hook):
         return hook.get_kwarg("prefix", None)
     def _get_alias_of(self, hook):
@@ -255,12 +262,12 @@ class Module(ModuleManager.BaseModule):
         command = event["args_split"][0].lower()
         if command in self.events.on("received").on(
                 "command").get_children():
+            command_str = "%s%s" % (command_prefix, command)
             hooks = self.events.on("received.command").on(command).get_hooks()
-            usage = self._get_usage(hooks[0])
+            usage = self._get_usage(hooks[0], command_str)
 
             if usage:
-                event["stdout"].write("Usage: %s%s %s" % (command_prefix,
-                    command, usage))
+                event["stdout"].write("Usage: %s" % usage))
             else:
                 event["stderr"].write("No usage help available for %s" % command)
         else:
