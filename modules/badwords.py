@@ -9,7 +9,7 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         """
         badwords = event["target"].get_setting("badwords", [])
-        badwords = ("(%d) %s" % (i, badword["pattern"]) for badword in
+        badwords = ("(%d) %s" % (i, badword["pattern"]) for i, badword in
             enumerate(badwords))
         event["stdout"].write("%s: %s" % (event["target"].name,
             ", ".join(badwords)))
