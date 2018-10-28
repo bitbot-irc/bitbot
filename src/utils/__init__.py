@@ -197,7 +197,7 @@ def parse_docstring(s):
                     key, _, value = line[1:].partition(": ")
                     last_item = key
 
-                    if key in multiple_items:
+                    if key in var_items:
                         var_items[key].append(value)
                     elif key in items:
                         var_items[key] = [items.pop(key), value]
