@@ -65,7 +65,7 @@ class Module(ModuleManager.BaseModule):
                 ban = False
                 if pattern["action"] == "kick":
                     kick = True
-                elif pattern["action"] == "kickban"
+                elif pattern["action"] == "kickban":
                     ban = True
                     kick = True
                 elif pattern["action"] == "ban":
