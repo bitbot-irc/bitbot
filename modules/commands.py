@@ -267,7 +267,7 @@ class Module(ModuleManager.BaseModule):
             usage = self._get_usage(hooks[0], command_str)
 
             if usage:
-                event["stdout"].write("Usage: %s" % usage))
+                event["stdout"].write("Usage: %s" % usage)
             else:
                 event["stderr"].write("No usage help available for %s" % command)
         else:
