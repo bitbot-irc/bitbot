@@ -178,14 +178,16 @@ def get_hashflags(filename):
     return hashflags.items()
 
 class Docstring(object):
-    def __init__(self, description, items):
+    def __init__(self, description, items, var_items):
         self.description = description
         self.items = items
+        self.var_items = var_items
 
 def parse_docstring(s):
     description = ""
     last_item = None
     items = {}
+    var_items = {}
     if s:
         for line in s.split("\n"):
             line = line.strip()
@@ -194,7 +196,13 @@ def parse_docstring(s):
                 if line[0] == ":":
                     key, _, value = line[1:].partition(": ")
                     last_item = key
-                    items[key] = value
+
+                    if key in multiple_items:
+                        var_items[key].append(value)
+                    elif key in items:
+                        var_items[key] = [items.pop(key), value]
+                    else:
+                        items[key] = value
                 else:
                     if last_item:
                         items[last_item] += " %s" % line
@@ -202,7 +210,7 @@ def parse_docstring(s):
                         if description:
                             description += " "
                         description += line
-    return Docstring(description, items)
+    return Docstring(description, items, var_items)
 
 def top_10(items, convert_key=lambda x: x, value_format=lambda x: x):
         top_10 = sorted(items.keys())
