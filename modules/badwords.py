@@ -9,7 +9,7 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         """
         badwords = event["target"].get_setting("badwords", [])
-        badwords = ("(%d) %s" % (i, badword["pattern"]) for i, badword in
+        badwords = ("(%d) %s" % (i+1, badword["pattern"]) for i, badword in
             enumerate(badwords))
         event["stdout"].write("%s: %s" % (event["target"].name,
             ", ".join(badwords)))
@@ -51,6 +51,7 @@ class Module(ModuleManager.BaseModule):
         if index_int >= len(badwords):
            raise utils.EventError("%s: unknown badwords index %s" % (
                 event["user"].nickname, index))
+
         badwords.pop(index_int)
         event["target"].set_setting("badwords", badwords)
         event["stdout"].write("%s: removed from badwords" %
