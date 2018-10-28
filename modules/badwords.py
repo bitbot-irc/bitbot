@@ -8,7 +8,7 @@ class Module(ModuleManager.BaseModule):
         :help: List the badwords in the current channel
         :require_mode: o
         """
-        badwords = event["target"].get_getting("badwords", [])
+        badwords = event["target"].get_setting("badwords", [])
         badwords = ("(%d) %s" % (i, badword["pattern"]) for badword in
             enumerate(badwords))
         event["stdout"].write("%s: %s" % (event["target"].name,
