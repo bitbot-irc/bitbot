@@ -53,7 +53,8 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickname, index))
         badwords.pop(index_int)
         event["target"].set_setting("badwords", badwords)
-        event["stdout"].write("%s: added to badwords" % event["user"].nickname)
+        event["stdout"].write("%s: removed from badwords" %
+            event["user"].nickname)
 
     @utils.hook("received.message.channel")
     def channel_message(self, event):
