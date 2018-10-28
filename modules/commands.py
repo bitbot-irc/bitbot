@@ -205,7 +205,7 @@ class Module(ModuleManager.BaseModule):
         return hook.get_kwarg("help", None) or hook.docstring.description
     def _get_usage(self, hook, command):
         usage = hook.get_kwarg("usage", None)
-        is not usage:
+        if not usage:
             usages = hook.docstring.var_items.get("usage", None)
             if usages:
                 return " | ".join(
