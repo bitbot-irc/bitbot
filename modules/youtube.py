@@ -85,7 +85,12 @@ class Module(ModuleManager.BaseModule):
         else:
             last_youtube = event["target"].buffer.find(REGEX_YOUTUBE)
             if last_youtube:
-                video_id = re.search(REGEX_YOUTUBE, last_youtube.message).group(1)
+                search = last_youtube.message
+
+        url_match = re.search(REGEX_YOUTUBE, search)
+        if search and url_match:
+            video_id = url_match.group(1)
+
         if search or video_id:
             if not video_id:
                 search_page = utils.http.get_url(URL_YOUTUBESEARCH,
