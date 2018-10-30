@@ -10,6 +10,7 @@ LEVELS = {
 }
 
 class BitBotFormatter(logging.Formatter):
+    converter = time.gmtime
     def formatTime(self, record, datefmt=None):
         ct = self.converter(record.created)
         if datefmt:
@@ -36,7 +37,6 @@ class Log(object):
         formatter = BitBotFormatter(
             "%(asctime)s [%(levelname)s] %(message)s",
             "%Y-%m-%dT%H:%M:%S.%fZ")
-        formatter.converter = time.gmtime
 
         stdout_handler = logging.StreamHandler(sys.stdout)
         stdout_handler.setLevel(stdout_level)
