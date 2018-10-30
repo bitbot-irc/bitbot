@@ -14,7 +14,7 @@ class Exports(object):
         self._add(context, setting, value)
     def _add(self, context: str, setting: str, value: typing.Any):
         if context == None:
-            if not setting in self_exports:
+            if not setting in self._exports:
                 self._exports[setting] = []
             self._exports[setting].append(value)
         else:
