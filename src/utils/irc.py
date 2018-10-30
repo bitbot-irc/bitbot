@@ -1,4 +1,4 @@
-import string, re
+import string, re, typing
 
 ASCII_UPPER = string.ascii_uppercase
 ASCII_LOWER = string.ascii_lowercase
@@ -7,32 +7,36 @@ STRICT_RFC1459_LOWER = ASCII_LOWER+r'|{}'
 RFC1459_UPPER = STRICT_RFC1459_UPPER+"^"
 RFC1459_LOWER = STRICT_RFC1459_LOWER+"~"
 
-def remove_colon(s):
+def remove_colon(s: str) -> str:
     if s.startswith(":"):
         s = s[1:]
     return s
 
+MULTI_REPLACE_ITERABLE = typing.Iterable[str]
 # case mapping lowercase/uppcase logic
-def _multi_replace(s, chars1, chars2):
+def _multi_replace(s: str,
+        chars1: typing.Iterable[str],
+        chars2: typing.Iterable[str]) -> str:
     for char1, char2 in zip(chars1, chars2):
         s = s.replace(char1, char2)
     return s
-def lower(server, s):
-    if server.case_mapping == "ascii":
+def lower(case_mapping: str, s: str) -> str:
+    if case_mapping == "ascii":
         return _multi_replace(s, ASCII_UPPER, ASCII_LOWER)
-    elif server.case_mapping == "rfc1459":
+    elif case_mapping == "rfc1459":
         return _multi_replace(s, RFC1459_UPPER, RFC1459_LOWER)
-    elif server.case_mapping == "strict-rfc1459":
+    elif case_mapping == "strict-rfc1459":
         return _multi_replace(s, STRICT_RFC1459_UPPER, STRICT_RFC1459_LOWER)
     else:
-        raise ValueError("unknown casemapping '%s'" % server.case_mapping)
+        raise ValueError("unknown casemapping '%s'" % case_mapping)
 
 # compare a string while respecting case mapping
-def equals(server, s1, s2):
-    return lower(server, s1) == lower(server, s2)
+def equals(case_mapping: str, s1: str, s2: str) -> bool:
+    return lower(case_mapping, s1) == lower(case_mapping, s2)
 
 class IRCHostmask(object):
-    def __init__(self, nickname, username, hostname, hostmask):
+    def __init__(self, nickname: str, username: str, hostname: str,
+            hostmask: str):
         self.nickname = nickname
         self.username = username
         self.hostname = hostname
@@ -42,24 +46,24 @@ class IRCHostmask(object):
     def __str__(self):
         return self.hostmask
 
-def seperate_hostmask(hostmask):
+def seperate_hostmask(hostmask: str) -> IRCHostmask:
     hostmask = remove_colon(hostmask)
     nickname, _, username = hostmask.partition("!")
     username, _, hostname = username.partition("@")
     return IRCHostmask(nickname, username, hostname, hostmask)
 
-
 class IRCLine(object):
-    def __init__(self, tags, prefix, command, args, arbitrary, last, server):
+    def __init__(self, tags: dict, prefix: str, command: str,
+            args: typing.List[str], arbitrary: typing.Optional[str],
+            last: str):
         self.tags = tags
         self.prefix = prefix
         self.command = command
         self.args = args
         self.arbitrary = arbitrary
         self.last = last
-        self.server = server
 
-def parse_line(server, line):
+def parse_line(line: str) -> IRCLine:
     tags = {}
     prefix = None
     command = None
@@ -81,7 +85,7 @@ def parse_line(server, line):
     args = line.split(" ")
     last = arbitrary or args[-1]
 
-    return IRCLine(tags, prefix, command, args, arbitrary, last, server)
+    return IRCLine(tags, prefix, command, args, arbitrary, last)
 
 COLOR_WHITE, COLOR_BLACK, COLOR_BLUE, COLOR_GREEN = 0, 1, 2, 3
 COLOR_RED, COLOR_BROWN, COLOR_PURPLE, COLOR_ORANGE = 4, 5, 6, 7
@@ -94,20 +98,20 @@ FONT_BOLD, FONT_ITALIC, FONT_UNDERLINE, FONT_INVERT = ("\x02", "\x1D",
 FONT_COLOR, FONT_RESET = "\x03", "\x0F"
 REGEX_COLOR = re.compile("%s\d\d(?:,\d\d)?" % FONT_COLOR)
 
-def color(s, foreground, background=None):
+def color(s: str, foreground: str, background: str=None) -> str:
     foreground = str(foreground).zfill(2)
     if background:
         background = str(background).zfill(2)
     return "%s%s%s%s%s" % (FONT_COLOR, foreground,
         "" if not background else ",%s" % background, s, FONT_COLOR)
 
-def bold(s):
+def bold(s: str) -> str:
     return "%s%s%s" % (FONT_BOLD, s, FONT_BOLD)
 
-def underline(s):
+def underline(s: str) -> str:
     return "%s%s%s" % (FONT_UNDERLINE, s, FONT_UNDERLINE)
 
-def strip_font(s):
+def strip_font(s: str) -> str:
     s = s.replace(FONT_BOLD, "")
     s = s.replace(FONT_ITALIC, "")
     s = REGEX_COLOR.sub("", s)

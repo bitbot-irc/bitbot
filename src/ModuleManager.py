@@ -1,8 +1,5 @@
-import gc, glob, imp, io, inspect, os, sys, uuid
-from . import utils
-
-BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
-BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
+import gc, glob, imp, io, inspect, os, sys, typing, uuid
+from src import Config, EventManager, Exports, IRCBot, Logging, Timers, utils
 
 class ModuleException(Exception):
     pass
@@ -22,7 +19,11 @@ class ModuleNotLoadedWarning(ModuleWarning):
     pass
 
 class BaseModule(object):
-    def __init__(self, bot, events, exports, timers):
+    def __init__(self,
+            bot: "IRCBot.Bot",
+            events: EventManager.EventHook,
+            exports: Exports.Exports,
+            timers: Timers.Timers):
         self.bot = bot
         self.events = events
         self.exports = exports
@@ -32,7 +33,13 @@ class BaseModule(object):
         pass
 
 class ModuleManager(object):
-    def __init__(self, events, exports, timers, config, log, directory):
+    def __init__(self,
+            events: EventManager.EventHook,
+            exports: Exports.Exports,
+            timers: Timers.Timers,
+            config: Config.Config,
+            log: Logging.Log,
+            directory: str):
         self.events = events
         self.exports = exports
         self.config = config
@@ -43,23 +50,24 @@ class ModuleManager(object):
         self.modules = {}
         self.waiting_requirement = {}
 
-    def list_modules(self):
+    def list_modules(self) -> typing.List[str]:
         return sorted(glob.glob(os.path.join(self.directory, "*.py")))
 
-    def _module_name(self, path):
+    def _module_name(self, path: str) -> str:
         return os.path.basename(path).rsplit(".py", 1)[0].lower()
-    def _module_path(self, name):
+    def _module_path(self, name: str) -> str:
         return os.path.join(self.directory, "%s.py" % name)
-    def _import_name(self, name):
+    def _import_name(self, name: str) -> str:
         return "bitbot_%s" % name
 
-    def _get_magic(self, obj, magic, default):
+    def _get_magic(self, obj: typing.Any, magic: str, default: typing.Any
+            ) -> typing.Any:
         return getattr(obj, magic) if hasattr(obj, magic) else default
 
-    def _load_module(self, bot, name):
+    def _load_module(self, bot: "IRCBot.Bot", name: str):
         path = self._module_path(name)
 
-        for hashflag, value in utils.get_hashflags(path):
+        for hashflag, value in utils.parse.hashflags(path):
             if hashflag == "ignore":
                # nope, ignore this module.
                raise ModuleNotLoadedWarning("module ignored")
@@ -97,10 +105,12 @@ class ModuleManager(object):
             module_object._name = name.title()
         for attribute_name in dir(module_object):
             attribute = getattr(module_object, attribute_name)
-            for hook in self._get_magic(attribute, BITBOT_HOOKS_MAGIC, []):
+            for hook in self._get_magic(attribute,
+                    utils.consts.BITBOT_HOOKS_MAGIC, []):
                 context_events.on(hook["event"]).hook(attribute,
                     **hook["kwargs"])
-        for export in self._get_magic(module_object, BITBOT_EXPORTS_MAGIC, []):
+        for export in self._get_magic(module_object,
+                utils.consts.BITBOT_EXPORTS_MAGIC, []):
             context_exports.add(export["setting"], export["value"])
 
         module_object._context = context
@@ -111,7 +121,7 @@ class ModuleManager(object):
                 "attempted to be used twice")
         return module_object
 
-    def load_module(self, bot, name):
+    def load_module(self, bot: "IRCBot.Bot", name: str):
         try:
             module = self._load_module(bot, name)
         except ModuleWarning as warning:
@@ -128,7 +138,8 @@ class ModuleManager(object):
                 self.load_module(bot, requirement_name)
         self.log.info("Module '%s' loaded", [name])
 
-    def load_modules(self, bot, whitelist=[], blacklist=[]):
+    def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
+            blacklist: typing.List[str]=[]):
         for path in self.list_modules():
             name = self._module_name(path)
             if name in whitelist or (not whitelist and not name in blacklist):
@@ -137,7 +148,7 @@ class ModuleManager(object):
                 except ModuleWarning:
                     pass
 
-    def unload_module(self, name):
+    def unload_module(self, name: str):
         if not name in self.modules:
             raise ModuleNotFoundException()
         module = self.modules[name]

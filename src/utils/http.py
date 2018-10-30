@@ -1,4 +1,4 @@
-import re, signal, traceback, urllib.error, urllib.parse
+import re, signal, traceback, typing, urllib.error, urllib.parse
 import json as _json
 import bs4, requests
 
@@ -18,9 +18,10 @@ class HTTPParsingException(HTTPException):
 def throw_timeout():
     raise HTTPTimeoutException()
 
-def get_url(url, method="GET", get_params={}, post_data=None, headers={},
-        json_data=None, code=False, json=False, soup=False, parser="lxml",
-        fallback_encoding="utf8"):
+def get_url(url: str, method: str="GET", get_params: dict={},
+        post_data: typing.Any=None, headers: dict={},
+        json_data: typing.Any=None, code: bool=False, json: bool=False,
+        soup: bool=False, parser: str="lxml", fallback_encoding: str="utf8"):
 
     if not urllib.parse.urlparse(url).scheme:
         url = "http://%s" % url
@@ -66,6 +67,6 @@ def get_url(url, method="GET", get_params={}, post_data=None, headers={},
     else:
         return data
 
-def strip_html(s):
+def strip_html(s: str) -> str:
     return bs4.BeautifulSoup(s, "lxml").get_text()
 

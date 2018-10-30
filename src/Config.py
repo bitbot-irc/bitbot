@@ -1,7 +1,7 @@
-import configparser, os
+import configparser, os, typing
 
 class Config(object):
-    def __init__(self, location):
+    def __init__(self, location: str):
         self.location = location
         self._config = {}
         self.load()
@@ -13,10 +13,10 @@ class Config(object):
                 parser.read_string(config_file.read())
                 self._config = dict(parser["bot"].items())
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> typing.Any:
         return self._config[key]
-    def get(self, key, default=None):
+    def get(self, key: str, default: typing.Any=None) -> typing.Any:
         return self._config.get(key, default)
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return key in self._config
 

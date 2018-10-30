@@ -1,8 +1,9 @@
-import uuid
-from src import IRCBuffer, IRCObject, utils
+import typing, uuid
+from src import IRCBot, IRCChannel, IRCBuffer, IRCObject, IRCServer, utils
 
 class User(IRCObject.Object):
-    def __init__(self, nickname, id, server, bot):
+    def __init__(self, nickname: str, id: int, server: "IRCServer.Server",
+            bot: "IRCBot.Bot"):
         self.server = server
         self.set_nickname(nickname)
         self._id = id
@@ -20,46 +21,51 @@ class User(IRCObject.Object):
         self.away = False
         self.buffer = IRCBuffer.Buffer(bot, server)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "IRCUser.User(%s|%s)" % (self.server.name, self.name)
-    def __str__(self):
+    def __str__(self) -> str:
         return self.nickname
 
-    def get_id(self):
+    def get_id(self)-> int:
         return (self.identified_account_id_override or
             self.identified_account_id or self._id)
-    def get_identified_account(self):
+    def get_identified_account(self) -> str:
         return (self.identified_account_override or self.identified_account)
 
-    def set_nickname(self, nickname):
+    def set_nickname(self, nickname: str):
         self.nickname = nickname
-        self.nickname_lower = utils.irc.lower(self.server, nickname)
+        self.nickname_lower = utils.irc.lower(self.server.case_mapping,
+            nickname)
         self.name = self.nickname_lower
-    def join_channel(self, channel):
+    def join_channel(self, channel: "IRCChannel.Channel"):
         self.channels.add(channel)
-    def part_channel(self, channel):
+    def part_channel(self, channel: "IRCChannel.Channel"):
         self.channels.remove(channel)
-    def set_setting(self, setting, value):
+
+    def set_setting(self, setting: str, value: typing.Any):
         self.bot.database.user_settings.set(self.get_id(), setting, value)
-    def get_setting(self, setting, default=None):
+    def get_setting(self, setting: str, default: typing.Any=None) -> typing.Any:
         return self.bot.database.user_settings.get(self.get_id(), setting,
             default)
-    def find_settings(self, pattern, default=[]):
+    def find_settings(self, pattern: str, default: typing.Any=[]
+            ) -> typing.List[typing.Any]:
         return self.bot.database.user_settings.find(self.get_id(), pattern,
             default)
-    def find_settings_prefix(self, prefix, default=[]):
+    def find_settings_prefix(self, prefix: str, default: typing.Any=[]
+            ) -> typing.List[typing.Any]:
         return self.bot.database.user_settings.find_prefix(self.get_id(),
             prefix, default)
     def del_setting(self, setting):
         self.bot.database.user_settings.delete(self.get_id(), setting)
-    def get_channel_settings_per_setting(self, setting, default=[]):
+    def get_channel_settings_per_setting(self, setting: str,
+            default: typing.Any=[]) -> typing.List[typing.Any]:
         return self.bot.database.user_channel_settings.find_by_setting(
             self.get_id(), setting, default)
 
-    def send_message(self, message, prefix=None, tags={}):
+    def send_message(self, message: str, prefix: str=None, tags: dict={}):
         self.server.send_message(self.nickname, message, prefix=prefix,
             tags=tags)
-    def send_notice(self, text, prefix=None, tags={}):
+    def send_notice(self, text: str, prefix: str=None, tags: dict={}):
         self.server.send_notice(self.nickname, text, prefix=prefix, tags=tags)
-    def send_ctcp_response(self, command, args):
+    def send_ctcp_response(self, command: str, args: str):
         self.send_notice("\x01%s %s\x01" % (command, args))

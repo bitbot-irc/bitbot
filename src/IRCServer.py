@@ -1,5 +1,5 @@
-import collections, socket, ssl, sys, time
-from src import IRCChannel, IRCObject, IRCUser, utils
+import collections, socket, ssl, sys, time, typing
+from src import EventManager, IRCBot, IRCChannel, IRCObject, IRCUser, utils
 
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
@@ -7,8 +7,12 @@ READ_TIMEOUT_SECONDS = 120
 PING_INTERVAL_SECONDS = 30
 
 class Server(IRCObject.Object):
-    def __init__(self, bot, events, id, alias, hostname, port, password,
-            ipv4, tls, bindhost, nickname, username, realname):
+    def __init__(self,
+            bot: "IRCBot.Bot",
+            events: EventManager.EventHook,
+            id: int, alias: str, hostname: str, port: int, password: str,
+            ipv4: bool, tls: bool, bindhost: str,
+            nickname: str, username: str, realname: str):
         self.connected = False
         self.bot = bot
         self.events = events
@@ -121,77 +125,80 @@ class Server(IRCObject.Object):
         except:
             pass
 
-    def set_setting(self, setting, value):
+    def set_setting(self, setting: str, value: typing.Any):
         self.bot.database.server_settings.set(self.id, setting,
             value)
-    def get_setting(self, setting, default=None):
+    def get_setting(self, setting: str, default: typing.Any=None):
         return self.bot.database.server_settings.get(self.id,
             setting, default)
-    def find_settings(self, pattern, default=[]):
+    def find_settings(self, pattern: str, default: typing.Any=[]):
         return self.bot.database.server_settings.find(self.id,
             pattern, default)
-    def find_settings_prefix(self, prefix, default=[]):
+    def find_settings_prefix(self, prefix: str, default: typing.Any=[]):
         return self.bot.database.server_settings.find_prefix(
             self.id, prefix, default)
-    def del_setting(self, setting):
+    def del_setting(self, setting: str):
         self.bot.database.server_settings.delete(self.id, setting)
 
-    def get_user_setting(self, nickname, setting, default=None):
+    def get_user_setting(self, nickname: str, setting: str,
+            default: typing.Any=None):
         user_id = self.get_user_id(nickname)
         return self.bot.database.user_settings.get(user_id, setting, default)
-    def set_user_setting(self, nickname, setting, value):
+    def set_user_setting(self, nickname: str, setting: str, value: typing.Any):
         user_id = self.get_user_id(nickname)
         self.bot.database.user_settings.set(user_id, setting, value)
 
-    def get_all_user_settings(self, setting, default=[]):
+    def get_all_user_settings(self, setting: str, default: typing.Any=[]):
         return self.bot.database.user_settings.find_all_by_setting(
             self.id, setting, default)
-    def find_all_user_channel_settings(self, setting, default=[]):
+    def find_all_user_channel_settings(self, setting: str,
+            default: typing.Any=[]):
         return self.bot.database.user_channel_settings.find_all_by_setting(
             self.id, setting, default)
 
-    def set_own_nickname(self, nickname):
+    def set_own_nickname(self, nickname: str):
         self.nickname = nickname
-        self.nickname_lower = utils.irc.lower(self, nickname)
-    def is_own_nickname(self, nickname):
+        self.nickname_lower = utils.irc.lower(self.case_mapping, nickname)
+    def is_own_nickname(self, nickname: str):
         return utils.irc.equals(self, nickname, self.nickname)
 
-    def add_own_mode(self, mode, arg=None):
+    def add_own_mode(self, mode: str, arg: str=None):
         self.own_modes[mode] = arg
-    def remove_own_mode(self, mode):
+    def remove_own_mode(self, mode: str):
         del self.own_modes[mode]
-    def change_own_mode(self, remove, mode, arg=None):
+    def change_own_mode(self, remove: bool, mode: str, arg: str=None):
         if remove:
             self.remove_own_mode(mode)
         else:
             self.add_own_mode(mode, arg)
 
-    def has_user(self, nickname):
-        return utils.irc.lower(self, nickname) in self.users
-    def get_user(self, nickname, create=True):
+    def has_user(self, nickname: str):
+        return utils.irc.lower(self.case_mapping, nickname) in self.users
+    def get_user(self, nickname: str, create: bool=True):
         if not self.has_user(nickname) and create:
             user_id = self.get_user_id(nickname)
             new_user = IRCUser.User(nickname, user_id, self, self.bot)
             self.events.on("new.user").call(user=new_user, server=self)
             self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
-        return self.users.get(utils.irc.lower(self, nickname), None)
-    def get_user_id(self, nickname):
+        return self.users.get(utils.irc.lower(self.case_mapping, nickname),
+            None)
+    def get_user_id(self, nickname: str):
         self.bot.database.users.add(self.id, nickname)
         return self.bot.database.users.get_id(self.id, nickname)
-    def remove_user(self, user):
+    def remove_user(self, user: IRCUser.User):
         del self.users[user.nickname_lower]
         for channel in user.channels:
             channel.remove_user(user)
 
-    def change_user_nickname(self, old_nickname, new_nickname):
-        user = self.users.pop(utils.irc.lower(self, old_nickname))
+    def change_user_nickname(self, old_nickname: str, new_nickname: str):
+        user = self.users.pop(utils.irc.lower(self.case_mapping, old_nickname))
         user._id = self.get_user_id(new_nickname)
-        self.users[utils.irc.lower(self, new_nickname)] = user
-    def has_channel(self, channel_name):
+        self.users[utils.irc.lower(self.case_mapping, new_nickname)] = user
+    def has_channel(self, channel_name: str):
         return channel_name[0] in self.channel_types and utils.irc.lower(
-            self, channel_name) in self.channels
-    def get_channel(self, channel_name):
+            self.case_mapping, channel_name) in self.channels
+    def get_channel(self, channel_name: str):
         if not self.has_channel(channel_name):
             channel_id = self.get_channel_id(channel_name)
             new_channel = IRCChannel.Channel(channel_name, channel_id,
@@ -199,15 +206,15 @@ class Server(IRCObject.Object):
             self.events.on("new.channel").call(channel=new_channel,
                 server=self)
             self.channels[new_channel.name] = new_channel
-        return self.channels[utils.irc.lower(self, channel_name)]
-    def get_channel_id(self, channel_name):
+        return self.channels[utils.irc.lower(self.case_mapping, channel_name)]
+    def get_channel_id(self, channel_name: str):
         self.bot.database.channels.add(self.id, channel_name)
         return self.bot.database.channels.get_id(self.id, channel_name)
-    def remove_channel(self, channel):
+    def remove_channel(self, channel: IRCChannel.Channel):
         for user in channel.users:
             user.part_channel(channel)
         del self.channels[channel.name]
-    def parse_data(self, line):
+    def parse_data(self, line: str):
         if not line:
             return
         self.events.on("raw").call_unsafe(server=self, line=line)
@@ -271,7 +278,7 @@ class Server(IRCObject.Object):
     def read_timed_out(self):
         return self.until_read_timeout == 0
 
-    def send(self, data):
+    def send(self, data: str):
         returned = self.events.on("preprocess.send").call_unsafe_for_result(
             server=self, line=data)
         line = returned or data
@@ -314,16 +321,16 @@ class Server(IRCObject.Object):
         time_left = time_left-now
         return time_left
 
-    def send_user(self, username, realname):
+    def send_user(self, username: str, realname: str):
         self.send("USER %s 0 * :%s" % (username, realname))
-    def send_nick(self, nickname):
+    def send_nick(self, nickname: str):
         self.send("NICK %s" % nickname)
 
     def send_capibility_ls(self):
         self.send("CAP LS 302")
-    def queue_capability(self, capability):
+    def queue_capability(self, capability: str):
         self._capability_queue.add(capability)
-    def queue_capabilities(self, capabilities):
+    def queue_capabilities(self, capabilities: typing.List[str]):
         self._capability_queue.update(capabilities)
     def send_capability_queue(self):
         if self.has_capability_queue():
@@ -332,46 +339,46 @@ class Server(IRCObject.Object):
             self.send_capability_request(capabilities)
     def has_capability_queue(self):
         return bool(len(self._capability_queue))
-    def send_capability_request(self, capability):
+    def send_capability_request(self, capability: str):
         self.send("CAP REQ :%s" % capability)
     def send_capability_end(self):
         self.send("CAP END")
-    def send_authenticate(self, text):
+    def send_authenticate(self, text: str):
         self.send("AUTHENTICATE %s" % text)
     def send_starttls(self):
         self.send("STARTTLS")
 
     def waiting_for_capabilities(self):
         return bool(len(self._capabilities_waiting))
-    def wait_for_capability(self, capability):
+    def wait_for_capability(self, capability: str):
         self._capabilities_waiting.add(capability)
-    def capability_done(self, capability):
+    def capability_done(self, capability: str):
         self._capabilities_waiting.remove(capability)
         if not self._capabilities_waiting:
             self.send_capability_end()
 
-    def send_pass(self, password):
+    def send_pass(self, password: str):
         self.send("PASS %s" % password)
 
-    def send_ping(self, nonce="hello"):
+    def send_ping(self, nonce: str="hello"):
         self.send("PING :%s" % nonce)
-    def send_pong(self, nonce="hello"):
+    def send_pong(self, nonce: str="hello"):
         self.send("PONG :%s" % nonce)
 
-    def try_rejoin(self, event):
+    def try_rejoin(self, event: EventManager.Event):
         if event["server_id"] == self.id and event["channel_name"
                 ] in self.attempted_join:
             self.send_join(event["channel_name"], event["key"])
-    def send_join(self, channel_name, key=None):
+    def send_join(self, channel_name: str, key: str=None):
         self.send("JOIN %s%s" % (channel_name,
             "" if key == None else " %s" % key))
-    def send_part(self, channel_name, reason=None):
+    def send_part(self, channel_name: str, reason: str=None):
         self.send("PART %s%s" % (channel_name,
             "" if reason == None else " %s" % reason))
-    def send_quit(self, reason="Leaving"):
+    def send_quit(self, reason: str="Leaving"):
         self.send("QUIT :%s" % reason)
 
-    def _tag_str(self, tags):
+    def _tag_str(self, tags: dict):
         tag_str = ""
         for tag, value in tags.items():
             if tag_str:
@@ -383,7 +390,8 @@ class Server(IRCObject.Object):
             tag_str = "@%s " % tag_str
         return tag_str
 
-    def send_message(self, target, message, prefix=None, tags={}):
+    def send_message(self, target: str, message: str, prefix: str=None,
+            tags: dict={}):
         full_message = message if not prefix else prefix+message
         self.send("%sPRIVMSG %s :%s" % (self._tag_str(tags), target,
             full_message))
@@ -408,7 +416,8 @@ class Server(IRCObject.Object):
                 message=full_message, message_split=full_message_split,
                     user=user, action=action, server=self)
 
-    def send_notice(self, target, message, prefix=None, tags={}):
+    def send_notice(self, target: str, message: str, prefix: str=None,
+            tags: dict={}):
         full_message = message if not prefix else prefix+message
         self.send("%sNOTICE %s :%s" % (self._tag_str(tags), target,
             full_message))
@@ -419,31 +428,31 @@ class Server(IRCObject.Object):
             self.get_user(target).buffer.add_notice(None, message, tags,
                 True)
 
-    def send_mode(self, target, mode=None, args=None):
+    def send_mode(self, target: str, mode: str=None, args: str=None):
         self.send("MODE %s%s%s" % (target, "" if mode == None else " %s" % mode,
             "" if args == None else " %s" % args))
 
-    def send_topic(self, channel_name, topic):
+    def send_topic(self, channel_name: str, topic: str):
         self.send("TOPIC %s :%s" % (channel_name, topic))
-    def send_kick(self, channel_name, target, reason=None):
+    def send_kick(self, channel_name: str, target: str, reason: str=None):
         self.send("KICK %s %s%s" % (channel_name, target,
             "" if reason == None else " :%s" % reason))
-    def send_names(self, channel_name):
+    def send_names(self, channel_name: str):
         self.send("NAMES %s" % channel_name)
-    def send_list(self, search_for=None):
+    def send_list(self, search_for: str=None):
         self.send(
             "LIST%s" % "" if search_for == None else " %s" % search_for)
-    def send_invite(self, target, channel_name):
+    def send_invite(self, target: str, channel_name: str):
         self.send("INVITE %s %s" % (target, channel_name))
 
-    def send_whois(self, target):
+    def send_whois(self, target: str):
         self.send("WHOIS %s" % target)
-    def send_whowas(self, target, amount=None, server=None):
+    def send_whowas(self, target: str, amount: int=None, server: str=None):
         self.send("WHOWAS %s%s%s" % (target,
             "" if amount == None else " %s" % amount,
             "" if server == None else " :%s" % server))
-    def send_who(self, filter=None):
+    def send_who(self, filter: str=None):
         self.send("WHO%s" % ("" if filter == None else " %s" % filter))
-    def send_whox(self, mask, filter, fields, label=None):
+    def send_whox(self, mask: str, filter: str, fields: str, label: str=None):
         self.send("WHO %s %s%%%s%s" % (mask, filter, fields,
             ","+label if label else ""))
