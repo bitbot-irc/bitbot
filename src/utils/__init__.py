@@ -93,9 +93,9 @@ def parse_number(s: str) -> str:
         pass
 
     unit = s[-1].lower()
-    number = s[:-1]
+    number_str = s[:-1]
     try:
-        number = decimal.Decimal(number)
+        number = decimal.Decimal(number_str)
     except:
         raise ValueError("Invalid format '%s' passed to parse_number" % number)
 
@@ -155,7 +155,7 @@ def export(setting: str, value: typing.Any):
     return _export_func
 
 TOP_10_CALLABLE = typing.Callable[[typing.Any], typing.Any]
-def top_10(items: typing.List[typing.Any],
+def top_10(items: typing.Dict[typing.Any, typing.Any],
         convert_key: TOP_10_CALLABLE=lambda x: x,
         value_format: TOP_10_CALLABLE=lambda x: x):
     top_10 = sorted(items.keys())

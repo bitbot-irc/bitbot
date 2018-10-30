@@ -32,7 +32,7 @@ class EventCallback(object):
         self.function = function
         self.priority = priority
         self.kwargs = kwargs
-        self.docstring = utils.parse.docstring(function.__doc__)
+        self.docstring = utils.parse.docstring(function.__doc__ or "")
 
     def call(self, event: Event) -> typing.Any:
         return self.function(event)
@@ -49,6 +49,7 @@ class EventHook(object):
         self.parent = parent
         self._children = {}
         self._hooks = []
+        self._replayed = False
         self._stored_events = []
         self._context_hooks = {}
 
@@ -57,10 +58,14 @@ class EventHook(object):
 
     def _get_path(self) -> str:
         path = []
-        parent = self
-        while not parent == None and not parent.name == None:
-            path.append(parent.name)
-            parent = parent.parent
+        parent = self # type: typing.Optional[EventHook]
+        while not parent == None:
+            cast_parent = typing.cast(EventHook, parent)
+            if cast_parent.name == None:
+                break
+
+            path.append(typing.cast(str, cast_parent.name))
+            parent = cast_parent.parent
         return DEFAULT_EVENT_DELIMITER.join(path[::-1])
 
     def new_context(self, context: str) -> "EventHookContext":
@@ -72,8 +77,8 @@ class EventHook(object):
     def _context_hook(self, context: str, function: CALLBACK_TYPE,
             priority: int, replay: bool, kwargs: dict) -> EventCallback:
         return self._hook(function, context, priority, replay, kwargs)
-    def _hook(self, function: CALLBACK_TYPE, context: str, priority: int,
-            replay: bool, kwargs: dict) -> EventCallback:
+    def _hook(self, function: CALLBACK_TYPE, context: typing.Optional[str],
+            priority: int, replay: bool, kwargs: dict) -> EventCallback:
         callback = EventCallback(function, priority, kwargs)
 
         if context == None:
@@ -83,10 +88,10 @@ class EventHook(object):
                 self._context_hooks[context] = []
             self._context_hooks[context].append(callback)
 
-        if replay and not self._stored_events == None:
+        if replay and not self._replayed:
             for kwargs in self._stored_events:
                 self._call(kwargs, True, None)
-        self._stored_events = None
+        self._replayed = True
         return callback
 
     def unhook(self, callback: "EventHook"):
@@ -102,58 +107,65 @@ class EventHook(object):
         for context in empty:
             del self._context_hooks[context]
 
-    def _make_multiple_hook(self, source: "EventHook", context: str,
-            events: typing.List[str]) -> "MultipleEventHook":
+    def _make_multiple_hook(self, source: "EventHook",
+            context: typing.Optional[str],
+            events: typing.Iterable[str]) -> "MultipleEventHook":
         multiple_event_hook = MultipleEventHook()
         for event in events:
             event_hook = source.get_child(event)
             if not context == None:
-                event_hook = event_hook.new_context(context)
-            multiple_event_hook._add(event_hook)
+                context_hook = event_hook.new_context(typing.cast(str, context))
+                multiple_event_hook._add(typing.cast(EventHook, context_hook))
+            else:
+                multiple_event_hook._add(event_hook)
         return multiple_event_hook
 
-    def on(self, subevent: str, *extra_subevents,
-            delimiter: int = DEFAULT_EVENT_DELIMITER) -> "EventHook":
+    def on(self, subevent: str, *extra_subevents: str,
+            delimiter: str = DEFAULT_EVENT_DELIMITER) -> "EventHook":
         return self._on(subevent, extra_subevents, None, delimiter)
     def _context_on(self, context: str, subevent: str,
-            extra_subevents: typing.List[str],
+            extra_subevents: typing.Tuple[str, ...],
             delimiter: str = DEFAULT_EVENT_DELIMITER) -> "EventHook":
         return self._on(subevent, extra_subevents, context, delimiter)
-    def _on(self, subevent: str, extra_subevents: typing.List[str],
-            context: str, delimiter: str) -> "EventHook":
+    def _on(self, subevent: str, extra_subevents: typing.Tuple[str, ...],
+            context: typing.Optional[str], delimiter: str) -> "EventHook":
         if delimiter in subevent:
             event_chain = subevent.split(delimiter)
             event_obj = self
             for event_name in event_chain:
                 if DEFAULT_MULTI_DELIMITER in event_name:
-                    return self._make_multiple_hook(event_obj, context,
+                    multiple_hook = self._make_multiple_hook(event_obj, context,
                         event_name.split(DEFAULT_MULTI_DELIMITER))
+                    return typing.cast(EventHook, multiple_hook)
 
                 event_obj = event_obj.get_child(event_name)
             if not context == None:
-                return event_obj.new_context(context)
+                context_hook = event_obj.new_context(typing.cast(str, context))
+                return typing.cast(EventHook, context_hook)
             return event_obj
 
         if extra_subevents:
-            return self._make_multiple_hook(self, context,
+            multiple_hook = self._make_multiple_hook(self, context,
                 (subevent,)+extra_subevents)
+            return typing.cast(EventHook, multiple_hook)
 
         child = self.get_child(subevent)
         if not context == None:
-            child = child.new_context(context)
+            context_child = child.new_context(typing.cast(str, context))
+            child = typing.cast(EventHook, context_child)
         return child
 
     def call_for_result(self, default=None, **kwargs) -> typing.Any:
         return (self.call_limited(1, **kwargs) or [default])[0]
     def assure_call(self, **kwargs):
-        if not self._stored_events == None:
+        if not self._replayed:
             self._stored_events.append(kwargs)
         else:
             self._call(kwargs, True, None)
     def call(self, **kwargs) -> typing.List[typing.Any]:
         return self._call(kwargs, True, None)
     def call_limited(self, maximum: int, **kwargs) -> typing.List[typing.Any]:
-        return self._call(kwargs, True, None)
+        return self._call(kwargs, True, maximum)
 
     def call_unsafe_for_result(self, default=None, **kwargs) -> typing.Any:
         return (self.call_unsafe_limited(1, **kwargs) or [default])[0]
@@ -163,7 +175,7 @@ class EventHook(object):
             ) -> typing.List[typing.Any]:
         return self._call(kwargs, False, maximum)
 
-    def _call(self, kwargs: dict, safe: bool, maximum: int
+    def _call(self, kwargs: dict, safe: bool, maximum: typing.Optional[int]
             ) -> typing.List[typing.Any]:
         event_path = self._get_path()
         self.log.trace("calling event: \"%s\" (params: %s)",
@@ -223,10 +235,10 @@ class EventHook(object):
     def get_hooks(self) -> typing.List[EventCallback]:
         return sorted(self._hooks + sum(self._context_hooks.values(), []),
             key=lambda e: e.priority)
-    def get_children(self) -> typing.List["EventHook"]:
+    def get_children(self) -> typing.List[str]:
         return list(self._children.keys())
     def is_empty(self) -> bool:
-        return len(self.get_hooks() + self.get_children()) == 0
+        return (len(self.get_hooks())+len(self.get_children())) == 0
 
 class MultipleEventHook(object):
     def __init__(self):

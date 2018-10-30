@@ -1,5 +1,5 @@
 import re, typing
-from src import IRCBot, utils
+from src import IRCBot, IRCServer, utils
 
 class BufferLine(object):
     def __init__(self, sender: str, message: str, action: bool, tags: dict,

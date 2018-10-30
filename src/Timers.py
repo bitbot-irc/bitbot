@@ -2,8 +2,8 @@ import time, typing, uuid
 from src import Database, EventManager, Logging
 
 class Timer(object):
-    def __init__(self, id: int, context: str, name: str, delay: float,
-            next_due: float, kwargs: dict):
+    def __init__(self, id: str, context: typing.Optional[str], name: str,
+            delay: float, next_due: typing.Optional[float], kwargs: dict):
         self.id = id
         self.context = context
         self.name = name
@@ -46,7 +46,7 @@ class Timers(object):
     def setup(self, timers: typing.List[typing.Tuple[str, dict]]):
         for name, timer in timers:
             id = name.split("timer-", 1)[1]
-            self._add(timer["name"], None, timer["delay"], timer[
+            self._add(None, timer["name"], timer["delay"], timer[
                 "next-due"], id, False, timer["kwargs"])
 
     def _persist(self, timer: Timer):
@@ -67,9 +67,10 @@ class Timers(object):
     def add_persistent(self, name: str, delay: float, next_due: float=None,
             **kwargs):
         self._add(None, name, delay, next_due, None, True, kwargs)
-    def _add(self, context: str, name: str, delay: float, next_due: float,
-            id: str, persist: bool, kwargs: dict):
-        id = id or uuid.uuid4().hex
+    def _add(self, context: typing.Optional[str], name: str, delay: float,
+            next_due: typing.Optional[float], id: typing.Optional[str],
+            persist: bool, kwargs: dict):
+        id = id or str(uuid.uuid4())
         timer = Timer(id, context, name, delay, next_due, kwargs)
         if persist:
             self._persist(timer)
@@ -81,7 +82,7 @@ class Timers(object):
         else:
             self.timers.append(timer)
 
-    def next(self) -> float:
+    def next(self) -> typing.Optional[float]:
         times = filter(None, [timer.time_left() for timer in self.get_timers()])
         if not times:
             return None

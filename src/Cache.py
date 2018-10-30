@@ -8,14 +8,14 @@ class Cache(object):
     def cache(self, item: typing.Any) -> str:
         return self._cache(item, None)
     def temporary_cache(self, item: typing.Any, timeout: float)-> str:
-        return self._cache(item, timeout)
-    def _cache(self, item: typing.Any, timeout: float) -> str:
+        return self._cache(item, time.monotonic()+timeout)
+    def _cache(self, item: typing.Any, timeout: typing.Optional[float]) -> str:
         id = str(uuid.uuid4())
-        self._items[id] = [item, time.monotonic()+timeout]
+        self._items[id] = [item, timeout]
         self._item_to_id[item] = id
         return id
 
-    def next_expiration(self) -> float:
+    def next_expiration(self) -> typing.Optional[float]:
         expirations = [self._items[id][1] for id in self._items]
         expirations = list(filter(None, expirations))
         if not expirations:

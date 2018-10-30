@@ -36,7 +36,7 @@ class Bot(object):
         self.lock.release()
 
     def add_server(self, server_id: int, connect: bool = True
-            ) -> typing.Optional[IRCServer.Server]:
+            ) -> IRCServer.Server:
         (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
             username, realname) = self.database.servers.get(server_id)
 
@@ -44,7 +44,7 @@ class Bot(object):
             hostname, port, password, ipv4, tls, bindhost, nickname, username,
             realname)
         if not new_server.get_setting("connect", True):
-            return
+            return new_server
         self._events.on("new.server").call(server=new_server)
         if connect and new_server.get_setting("connect", True):
             self.connect(new_server)

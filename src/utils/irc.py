@@ -53,7 +53,7 @@ def seperate_hostmask(hostmask: str) -> IRCHostmask:
     return IRCHostmask(nickname, username, hostname, hostmask)
 
 class IRCLine(object):
-    def __init__(self, tags: dict, prefix: str, command: str,
+    def __init__(self, tags: dict, prefix: typing.Optional[str], command: str,
             args: typing.List[str], arbitrary: typing.Optional[str],
             last: str):
         self.tags = tags
@@ -65,7 +65,7 @@ class IRCLine(object):
 
 def parse_line(line: str) -> IRCLine:
     tags = {}
-    prefix = None
+    prefix = typing.Optional[IRCHostmask]
     command = None
 
     if line[0] == "@":
@@ -74,12 +74,12 @@ def parse_line(line: str) -> IRCLine:
             tag, _, value = tag.partition("=")
             tags[tag] = value
 
-    line, _, arbitrary = line.partition(" :")
-    arbitrary = arbitrary or None
+    line, _, arbitrary_split = line.partition(" :")
+    arbitrary = arbitrary_split or None
 
     if line[0] == ":":
-        prefix, line = line[1:].split(" ", 1)
-        prefix = seperate_hostmask(prefix)
+        prefix_str, line = line[1:].split(" ", 1)
+        prefix = seperate_hostmask(prefix_str)
     command, _, line = line.partition(" ")
 
     args = line.split(" ")

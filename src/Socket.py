@@ -33,7 +33,7 @@ class Socket(object):
         data = self._read_buffer+data
         self._read_buffer = b""
         if not self.delimiter == None:
-            data_split = data.split(delimiter)
+            data_split = data.split(self.delimiter)
             if data_split[-1]:
                 self._read_buffer = data_split.pop(-1)
             return [self._decode(data) for data in data_split]

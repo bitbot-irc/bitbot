@@ -8,7 +8,7 @@ REGEX_HTTP = re.compile("https?://", re.I)
 
 RESPONSE_MAX = (1024*1024)*100
 
-class HTTPException:
+class HTTPException(Exception):
     pass
 class HTTPTimeoutException(HTTPException):
     pass
@@ -52,7 +52,7 @@ def get_url(url: str, method: str="GET", get_params: dict={},
     if soup:
         soup = bs4.BeautifulSoup(response_content, parser)
         if code:
-            return response.code, soup
+            return response.status_code, soup
         return soup
 
     data = response_content.decode(response.encoding or fallback_encoding)

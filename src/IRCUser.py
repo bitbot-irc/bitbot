@@ -29,7 +29,7 @@ class User(IRCObject.Object):
     def get_id(self)-> int:
         return (self.identified_account_id_override or
             self.identified_account_id or self._id)
-    def get_identified_account(self) -> str:
+    def get_identified_account(self) -> typing.Optional[str]:
         return (self.identified_account_override or self.identified_account)
 
     def set_nickname(self, nickname: str):

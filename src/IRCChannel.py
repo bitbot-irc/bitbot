@@ -9,9 +9,9 @@ class Channel(IRCObject.Object):
         self.server = server
         self.bot = bot
         self.topic = ""
-        self.topic_setter_nickname = None
-        self.topic_setter_username = None
-        self.topic_setter_hostname = None
+        self.topic_setter_nickname = None # type: typing.Optional[str]
+        self.topic_setter_username = None # type: typing.Optional[str]
+        self.topic_setter_hostname = None # type: typing.Optional[str]
         self.topic_time = 0
         self.users = set([])
         self.modes = {}
