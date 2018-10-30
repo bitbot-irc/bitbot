@@ -14,7 +14,7 @@ CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "batch", "draft/labeled-response"}
 
 class Module(ModuleManager.BaseModule):
-    def _handle(self, line):
+    def _handle(self, server, line):
         hooks = self.events.on("raw").on(line.command).get_hooks()
         default_events = []
         for hook in hooks:
@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
 
         kwargs = {"args": line.args, "arbitrary": line.arbitrary,
             "tags": line.tags, "last": line.last,
-            "server": line.server,  "prefix": line.prefix}
+            "server": server,  "prefix": line.prefix}
 
         self.events.on("raw").on(line.command).call_unsafe(**kwargs)
         if default_event or not hooks:
@@ -32,21 +32,22 @@ class Module(ModuleManager.BaseModule):
                     **kwargs)
             else:
                 self.events.on("received").on(line.command).call(**kwargs)
+
     @utils.hook("raw")
     def handle_raw(self, event):
-        line = utils.irc.parse_line(event["server"], event["line"])
+        line = utils.irc.parse_line(event["line"])
         if "batch" in line.tags and line.tags["batch"] in event[
                 "server"].batches:
             server.batches[tag["batch"]].append(line)
         else:
-            self._handle(line)
+            self._handle(event["server"], line)
 
     @utils.hook("preprocess.send")
     def handle_send(self, event):
-        line = utils.irc.parse_line(event["server"], event["line"])
+        line = utils.irc.parse_line(event["line"])
         self.events.on("send").on(line.command).call(
             args=line.args, arbitrary=line.arbitrary, tags=line.tags,
-            last=line.last, server=line.server)
+            last=line.last, server=event["server"])
 
     # ping from the server
     @utils.hook("raw.ping")
