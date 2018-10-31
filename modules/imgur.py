@@ -3,7 +3,7 @@
 import re
 from src import ModuleManager, utils
 
-REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w{7})")
+REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
 URL_IMAGE = "https://api.imgur.com/3/image/%s"
 
 class Module(ModuleManager.BaseModule):
