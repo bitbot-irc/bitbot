@@ -131,6 +131,8 @@ class Module(ModuleManager.BaseModule):
 
     def _coin_str(self, coins):
         return "{0:.2f}".format(coins)
+    def _coin_str_human(self, coins):
+        return "{0:,.2f}".format(coins)
     def _parse_coins(self, s, minimum=None):
         try:
             s = utils.parse_number(s)
@@ -336,7 +338,7 @@ class Module(ModuleManager.BaseModule):
         top_10 = utils.top_10(self._all_coins(event["server"]),
             convert_key=lambda nickname: utils.prevent_highlight(
                 event["server"].get_user(nickname).nickname),
-            value_format=lambda value: self._coin_str(value))
+            value_format=lambda value: self._coin_str_human(value))
         event["stdout"].write("Richest users: %s" % ", ".join(top_10))
 
     def _redeem_cache(self, server, user):
