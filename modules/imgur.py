@@ -4,9 +4,17 @@ import re
 from src import ModuleManager, utils
 
 REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
+REGEX_GALLERY = re.compile("https?://imgur.com/gallery/(\w+)")
 URL_IMAGE = "https://api.imgur.com/3/image/%s"
 
 class Module(ModuleManager.BaseModule):
+    def _prefix(self, data):
+        text = "%s: " % data["id"]
+        if data["nsfw"]:
+            text += "[NSFW] "
+        if data["account_url"]:
+            text += "%s " % data["account_url"]
+
     def _image_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
         result = utils.http.get_url(URL_IMAGE % hash,
@@ -15,14 +23,29 @@ class Module(ModuleManager.BaseModule):
 
         if result and result["success"]:
             data = result["data"]
-            text = "%s: " % data["id"]
-            if data["nsfw"]:
-                text += "[NSFW] "
+            text = self._prefix(data)
 
             text += "(%s %dx%d, %d views) " % (data["type"], data["width"],
                 data["height"], data["views"])
             if data["title"]:
-                text += " %s" % data["title"]
+                text += data["title"]
+            return text
+        else:
+            raise utils.EventsResultsError()
+
+    def _gallery_info(self, hash):
+        api_key = self.bot.config["imgur-api-key"]
+        result = utils.http.get_url(URL_IMAGE % hash,
+            headers={"Authorization": "Client-ID %s" % api_key},
+            json=True)
+
+        if result and result["success"]:
+            data = result["data"]
+            text = self._prefix(data)
+            text += "(%d views, %d▲▼%d)" % (event["views"],
+                event["ups"], event["downs"])
+            if data["title"]:
+                text += data["title"]
             return text
         else:
             raise utils.EventsResultsError()
@@ -36,3 +59,6 @@ class Module(ModuleManager.BaseModule):
         match = REGEX_IMAGE.match(event["args_split"][0])
         if match:
             event["stdout"].write(self._image_info(match.group(1)))
+        match = REGEX_GALLERY.match(event["args_split"][0])
+        if match:
+            event["stdout"].write(self._gallery_info(match.group(1)))
