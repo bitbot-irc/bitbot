@@ -5,7 +5,9 @@ from src import ModuleManager, utils
 
 REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
 REGEX_GALLERY = re.compile("https?://imgur.com/gallery/(\w+)")
+
 URL_IMAGE = "https://api.imgur.com/3/image/%s"
+URL_GALLERY = "https://api.imgur.com/3/gallery/%s"
 
 class Module(ModuleManager.BaseModule):
     def _prefix(self, data):
@@ -35,7 +37,7 @@ class Module(ModuleManager.BaseModule):
 
     def _gallery_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
-        result = utils.http.get_url(URL_IMAGE % hash,
+        result = utils.http.get_url(URL_GALLERY % hash,
             headers={"Authorization": "Client-ID %s" % api_key},
             json=True)
 
