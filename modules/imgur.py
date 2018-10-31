@@ -10,7 +10,7 @@ class Module(ModuleManager.BaseModule):
     def _image_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
         result = utils.http.get_url(URL_IMAGE % hash,
-            headers={"Authorization", "Client-ID %s" % api_key},
+            headers={"Authorization": "Client-ID %s" % api_key},
             json=True)
 
         if result and result["success"]:
