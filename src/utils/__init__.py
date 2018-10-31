@@ -52,6 +52,7 @@ def from_pretty_time(pretty_time: str) -> typing.Optional[int]:
         seconds += number
     if seconds > 0:
         return seconds
+    return None
 
 UNIT_MINIMUM = 6
 UNIT_SECOND = 5
@@ -117,10 +118,12 @@ def bool_or_none(s: str) -> typing.Optional[bool]:
         return True
     elif s in IS_FALSE:
         return False
+    return None
 def int_or_none(s: str) -> typing.Optional[int]:
     stripped_s = s.lstrip("0")
     if stripped_s.isdigit():
         return int(stripped_s)
+    return None
 
 def prevent_highlight(nickname: str) -> str:
     return nickname[0]+"\u200c"+nickname[1:]

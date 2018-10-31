@@ -40,6 +40,7 @@ class Buffer(object):
             if line.from_self and not from_self:
                 continue
             return line
+        return None
     def find(self, pattern: typing.Union[str, typing.Pattern[str]], **kwargs
             ) -> typing.Optional[BufferLine]:
         from_self = kwargs.get("from_self", True)
@@ -57,5 +58,6 @@ class Buffer(object):
                         line.sender) == for_user:
                     continue
                 return line
+        return None
     def skip_next(self):
         self._skip_next = True

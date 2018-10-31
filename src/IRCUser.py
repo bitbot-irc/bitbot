@@ -11,7 +11,7 @@ class User(IRCObject.Object):
         self.hostname = None
         self.realname = None
         self.bot = bot
-        self.channels = set([])
+        self.channels = set([]) # type: typing.Set[IRCChannel.Channel]
 
         self.identified_account = None
         self.identified_account_override = None

@@ -26,36 +26,36 @@ class Server(IRCObject.Object):
         self.original_nickname = nickname
         self.original_username = username or nickname
         self.original_realname = realname or nickname
-        self.name = None
+        self.name = None # type: typing.Optional[str]
 
-        self._capability_queue = set([])
-        self._capabilities_waiting = set([])
-        self.capabilities = set([])
-        self.server_capabilities = {}
-        self.batches = {}
+        self._capability_queue = set([]) # type: typing.Set[str]
+        self._capabilities_waiting = set([]) # type: typing.Set[str]
+        self.capabilities = set([]) # type: typing.Set[str]
+        self.server_capabilities = {} # type: typing.Dict[str, str]
+        self.batches = {} # type: typing.Dict[str, utils.irc.IRCLine]
 
         self.write_buffer = b""
-        self.buffered_lines = []
+        self.buffered_lines = [] # type: typing.List[bytes]
         self.read_buffer = b""
-        self.recent_sends = []
+        self.recent_sends = [] # type: typing.List[float]
 
-        self.users = {}
-        self.new_users = set([])
-        self.channels = {}
+        self.users = {} # type: typing.Dict[str, IRCUser.User]
+        self.new_users = set([]) #type: typing.Set[IRCUser.User]
+        self.channels = {} # type: typing.Dict[str, IRCChannel.Channel]
 
-        self.own_modes = {}
+        self.own_modes = {} # type: typing.Dict[str, typing.Optional[str]]
         self.prefix_symbols = collections.OrderedDict(
             (("@", "o"), ("+", "v")))
         self.prefix_modes = collections.OrderedDict(
             (("o", "@"), ("v", "+")))
-        self.channel_modes = []
+        self.channel_modes = [] # type: typing.List[str]
         self.channel_types = ["#"]
         self.case_mapping = "rfc1459"
 
         self.last_read = time.monotonic()
-        self.last_send = None
+        self.last_send = None # type: typing.Optional[float]
 
-        self.attempted_join = {}
+        self.attempted_join = {} # type: typing.Dict[str, typing.Optional[str]]
         self.ping_sent = False
 
         if ipv4:

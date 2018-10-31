@@ -3,7 +3,7 @@ import configparser, os, typing
 class Config(object):
     def __init__(self, location: str):
         self.location = location
-        self._config = {}
+        self._config = {} # type: typing.Dict[str, str]
         self.load()
 
     def load(self):

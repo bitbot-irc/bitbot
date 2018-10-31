@@ -62,6 +62,7 @@ class Bot(object):
         for server in self.servers.values():
             if server.id == id:
                 return server
+        return None
 
     def connect(self, server: IRCServer.Server) -> bool:
         try:
