@@ -16,6 +16,7 @@ class Module(ModuleManager.BaseModule):
             text += "[NSFW] "
         if data["account_url"]:
             text += "%s " % data["account_url"]
+        return text
 
     def _image_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
@@ -27,10 +28,10 @@ class Module(ModuleManager.BaseModule):
             data = result["data"]
             text = self._prefix(data)
 
-            text += "(%s %dx%d, %d views) " % (data["type"], data["width"],
+            text += "(%s %dx%d, %d views)" % (data["type"], data["width"],
                 data["height"], data["views"])
             if data["title"]:
-                text += data["title"]
+                text += " %s" % data["title"]
             return text
         else:
             raise utils.EventsResultsError()
@@ -44,10 +45,10 @@ class Module(ModuleManager.BaseModule):
         if result and result["success"]:
             data = result["data"]
             text = self._prefix(data)
-            text += "(%d views, %d▲▼%d)" % (event["views"],
-                event["ups"], event["downs"])
+            text += "(%d views, %d▲▼%d)" % (data["views"],
+                data["ups"], data["downs"])
             if data["title"]:
-                text += data["title"]
+                text += " %s" % data["title"]
             return text
         else:
             raise utils.EventsResultsError()
@@ -58,9 +59,11 @@ class Module(ModuleManager.BaseModule):
         :help: Get information about a given imgur image URL
         :usage: <url>
         """
-        match = REGEX_IMAGE.match(event["args_split"][0])
-        if match:
-            event["stdout"].write(self._image_info(match.group(1)))
         match = REGEX_GALLERY.match(event["args_split"][0])
         if match:
             event["stdout"].write(self._gallery_info(match.group(1)))
+            return
+        match = REGEX_IMAGE.match(event["args_split"][0])
+        if match:
+            event["stdout"].write(self._image_info(match.group(1)))
+            return
