@@ -217,7 +217,7 @@ class Module(ModuleManager.BaseModule):
             target = event["user"]
         coins = self._get_all_user_coins(target)
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
-            self._coin_str(coins), "" if coins == 1 else "s"))
+            self._coin_str_human(coins), "" if coins == 1 else "s"))
 
     @utils.hook("received.command.wallet")
     def wallet(self, event):
