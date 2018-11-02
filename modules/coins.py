@@ -6,9 +6,11 @@ DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
 DEFAULT_REDEEM_AMOUNT = "100.0"
 DEFAULT_INTEREST_RATE = "0.01"
 INTEREST_INTERVAL = 60*60 # 1 hour
-DECIMAL_ZERO = decimal.Decimal("0")
 REGEX_FLOAT = re.compile("(?:\d+(?:\.\d{1,2}|$)|\.\d{1,2})")
 DEFAULT_MARKET_CAP = str(1_000_000_000)
+
+DECIMAL_ZERO = decimal.Decimal("0")
+DECIMAL_BET_MINIMUM = decimal.Decimal("0.01")
 
 HOUR_SECONDS = (1*60)*60
 LOTTERY_INTERVAL = (60*60)*6 # 6 hours
@@ -397,7 +399,7 @@ class Module(ModuleManager.BaseModule):
                     event["user"].nickname)
         else:
             try:
-                coin_bet = self._parse_coins(coin_bet, DECIMAL_ZERO)
+                coin_bet = self._parse_coins(coin_bet, DECIMAL_BET_MINIMUM)
             except CoinParseException as e:
                 raise utils.EventError("%s: %s" % (event["user"].nickname,
                     str(e)))
@@ -541,7 +543,8 @@ class Module(ModuleManager.BaseModule):
 
         for i, bet_amount in enumerate(bet_amounts):
             try:
-                bet_amounts[i] = self._parse_coins(bet_amount, DECIMAL_ZERO)
+                bet_amounts[i] = self._parse_coins(bet_amount,
+                    DECIMAL_BET_MINIMUM)
             except CoinParseException as e:
                 raise utils.EventError("%s: %s" % (event["user"].nickname,
                     str(e)))
