@@ -98,7 +98,7 @@ FONT_BOLD, FONT_ITALIC, FONT_UNDERLINE, FONT_INVERT = ("\x02", "\x1D",
 FONT_COLOR, FONT_RESET = "\x03", "\x0F"
 REGEX_COLOR = re.compile("%s\d\d(?:,\d\d)?" % FONT_COLOR)
 
-def color(s: str, foreground: str, background: str=None) -> str:
+def color(s: str, foreground: int, background: int=None) -> str:
     foreground = str(foreground).zfill(2)
     if background:
         background = str(background).zfill(2)
