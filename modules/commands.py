@@ -75,8 +75,6 @@ def _command_method_validate(s):
     "help": "Set the command prefix used in this channel"})
 @utils.export("serverset", {"setting": "command-prefix",
     "help": "Set the command prefix used on this server"})
-@utils.export("serverset", {"setting": "identity-mechanism",
-    "help": "Set the identity mechanism for this server"})
 @utils.export("serverset", {"setting": "command-method",
     "help": "Set the method used to respond to commands",
     "validate": _command_method_validate})
