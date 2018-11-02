@@ -238,7 +238,7 @@ class Module(ModuleManager.BaseModule):
                     (event["user"].nickname, wallet))
             coins = self._get_user_coins(event["user"], wallet)
             event["stdout"].write("%s: you have %s coins in your '%s' wallet" %
-                (event["user"].nickname, self._coin_str(coins), wallet))
+                (event["user"].nickname, self._coin_str_human(coins), wallet))
 
     @utils.hook("received.command.addwallet", authenticated=True, min_args=1)
     def add_wallet(self, event):
