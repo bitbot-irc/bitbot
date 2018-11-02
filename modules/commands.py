@@ -141,7 +141,12 @@ class Module(ModuleManager.BaseModule):
                 hook=hook, user=event["user"], server=event["server"],
                 target=target, is_channel=is_channel, tags=event["tags"])
             for returned in returns:
+                if returned == False:
+                    # denotes a "silent failure"
+                    target.buffer.skip_next()
+                    return
                 if returned:
+                    # error message
                     stderr.write(returned).send()
                     target.buffer.skip_next()
                     return
