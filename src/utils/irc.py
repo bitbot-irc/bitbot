@@ -54,7 +54,7 @@ def seperate_hostmask(hostmask: str) -> IRCHostmask:
 
 class IRCLine(object):
     def __init__(self, tags: dict, prefix: typing.Optional[str], command: str,
-            args: IRCArgs,
+            args: IRCArgs):
         self.tags = tags
         self.prefix = prefix
         self.command = command
