@@ -54,14 +54,21 @@ def seperate_hostmask(hostmask: str) -> IRCHostmask:
 
 class IRCLine(object):
     def __init__(self, tags: dict, prefix: typing.Optional[str], command: str,
-            args: typing.List[str], arbitrary: typing.Optional[str],
-            last: str):
+            args: IRCArgs,
         self.tags = tags
         self.prefix = prefix
         self.command = command
         self.args = args
-        self.arbitrary = arbitrary
-        self.last = last
+
+class IRCArgs(object):
+    def __init__(self, args: typing.List[str]):
+        self._args = args
+    def __getitem__(self, index) -> str:
+        return self_args[index]
+    def get(self, index: int) -> typing.Optional[str]:
+        if len(self._args) > index:
+            return self._args[index]
+        return None
 
 def parse_line(line: str) -> IRCLine:
     tags = {}
@@ -83,9 +90,10 @@ def parse_line(line: str) -> IRCLine:
     command, _, line = line.partition(" ")
 
     args = line.split(" ")
-    last = arbitrary or args[-1]
+    if arbitrary:
+        args.append(arbitrary)
 
-    return IRCLine(tags, prefix, command, args, arbitrary, last)
+    return IRCLine(tags, prefix, command, IRCArgs(args))
 
 COLOR_WHITE, COLOR_BLACK, COLOR_BLUE, COLOR_GREEN = 0, 1, 2, 3
 COLOR_RED, COLOR_BROWN, COLOR_PURPLE, COLOR_ORANGE = 4, 5, 6, 7
