@@ -55,12 +55,17 @@ def seperate_hostmask(hostmask: str) -> IRCHostmask:
 class IRCArgs(object):
     def __init__(self, args: typing.List[str]):
         self._args = args
-    def __getitem__(self, index) -> str:
-        return self._args[index]
+
     def get(self, index: int) -> typing.Optional[str]:
         if len(self._args) > index:
             return self._args[index]
         return None
+
+    def __len__(self) -> int:
+        return len(self._args)
+    def __getitem__(self, index) -> str:
+        return self._args[index]
+
 
 class IRCLine(object):
     def __init__(self, tags: dict, prefix: typing.Optional[str], command: str,
