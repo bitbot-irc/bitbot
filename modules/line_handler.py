@@ -11,7 +11,7 @@ RE_MODES = re.compile(r"[-+]\w+")
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
     "draft/message-tags-0.2", "server-time", "cap-notify",
-    "batch", "draft/labeled-response"}
+    "batch", "draft/labeled-response", "draft/rename"}
 
 class Module(ModuleManager.BaseModule):
     def _handle(self, server, line):
@@ -566,3 +566,15 @@ class Module(ModuleManager.BaseModule):
         else:
             self.events.on("self.kick").call(channel=channel,
                 reason=reason, user=user, server=event["server"])
+
+    # a channel has been renamed
+    @utils.hook("raw.rename")
+    def rename(self, event):
+        old_name = event["args"][0]
+        new_name = event["args"][1]
+        channel = event["server"].get_channel(old_name)
+
+        event["server"].rename_channel(old_name, new_name)
+        self.events.on("received.rename").call(channel=channel,
+            old_name=old_name, new_name=new_name,
+            reason=event["arbitrary"] or events["args"][2]))

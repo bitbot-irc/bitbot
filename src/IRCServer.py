@@ -214,6 +214,11 @@ class Server(IRCObject.Object):
         for user in channel.users:
             user.part_channel(channel)
         del self.channels[channel.name]
+    def rename_channel(self, old_name, new_name):
+        channel = self.channels.pop(old_name.lower())
+        channel.name = new_name.lower()
+        self.channels[channel.name] = channel
+
     def parse_data(self, line: str):
         if not line:
             return
