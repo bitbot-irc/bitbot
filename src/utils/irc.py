@@ -56,7 +56,7 @@ class IRCArgs(object):
     def __init__(self, args: typing.List[str]):
         self._args = args
     def __getitem__(self, index) -> str:
-        return self_args[index]
+        return self._args[index]
     def get(self, index: int) -> typing.Optional[str]:
         if len(self._args) > index:
             return self._args[index]
