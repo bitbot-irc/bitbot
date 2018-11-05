@@ -21,7 +21,8 @@ def hashflags(filename: str) -> typing.List[typing.Tuple[str, str]]:
     return list(hashflags.items())
 
 class Docstring(object):
-    def __init__(self, description: str, items: dict, var_items: dict):
+    def __init__(self, description: str, items: typing.Dict[str, str],
+            var_items: typing.Dict[str, typing.List[str]]):
         self.description = description
         self.items = items
         self.var_items = var_items
@@ -29,8 +30,8 @@ class Docstring(object):
 def docstring(s: str) -> Docstring:
     description = ""
     last_item = None
-    items = {}
-    var_items = {}
+    items = {} # type: typing.Dict[str, str]
+    var_items = {} # type: typing.Dict[str, typing.List[str]]
     if s:
         for line in s.split("\n"):
             line = line.strip()
