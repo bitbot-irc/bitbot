@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
         expiration = None
         self._set_policy(server, {
             "port": port,
-            "from": time.time()
+            "from": time.time(),
             "duration": duration,
             "one-shot": one_shot})
     def _change_duration(self, server, info):
