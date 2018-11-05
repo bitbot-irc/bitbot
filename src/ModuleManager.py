@@ -23,11 +23,13 @@ class BaseModule(object):
             bot: "IRCBot.Bot",
             events: EventManager.EventHook,
             exports: Exports.Exports,
-            timers: Timers.Timers):
+            timers: Timers.Timers,
+            log: Logging.Log):
         self.bot = bot
         self.events = events
         self.exports = exports
         self.timers = timers
+        self.log = log
         self.on_load()
     def on_load(self):
         pass
@@ -99,7 +101,7 @@ class ModuleManager(object):
         context_exports = self.exports.new_context(context)
         context_timers = self.timers.new_context(context)
         module_object = module.Module(bot, context_events, context_exports,
-            context_timers)
+            context_timers, self.log)
 
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
