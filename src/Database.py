@@ -40,6 +40,9 @@ class Channels(Table):
             channels WHERE server_id=? AND name=?""",
             [server_id, name.lower()])
         return value if value == None else value[0]
+    def rename_channel(self, channel_id: int, new_name: str):
+        self.database.execute("UPDATE channels SET name=? where channel_id=?",
+            [new_name.lower(), channel_id])
 
 class Users(Table):
     def add(self, server_id: int, nickname: str):
