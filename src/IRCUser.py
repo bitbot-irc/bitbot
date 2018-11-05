@@ -4,6 +4,10 @@ from src import IRCBot, IRCChannel, IRCBuffer, IRCObject, IRCServer, utils
 class User(IRCObject.Object):
     def __init__(self, nickname: str, id: int, server: "IRCServer.Server",
             bot: "IRCBot.Bot"):
+        self.name = ""
+        self.nickname = ""
+        self.nickname_lower = ""
+
         self.server = server
         self.set_nickname(nickname)
         self._id = id
@@ -33,10 +37,10 @@ class User(IRCObject.Object):
         return (self.identified_account_override or self.identified_account)
 
     def set_nickname(self, nickname: str):
+        self.name = self.nickname_lower
         self.nickname = nickname
         self.nickname_lower = utils.irc.lower(self.server.case_mapping,
             nickname)
-        self.name = self.nickname_lower
     def join_channel(self, channel: "IRCChannel.Channel"):
         self.channels.add(channel)
     def part_channel(self, channel: "IRCChannel.Channel"):
