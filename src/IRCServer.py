@@ -100,9 +100,12 @@ class Server(IRCObject.Object):
         if self.connection_params.password:
             self.send_pass(self.connection_params.password)
 
-        self.send_user(self.connection_params.username,
-            self.connection_params.realname)
-        self.send_nick(self.connection_params.nickname)
+        nickname = self.connection_params.nicknamme
+        username = self.connection_params.username or nickname
+        realname = self.connection_params.realname or nickname
+
+        self.send_user(username, realname)
+        self.send_nick(nickname)
         self.connected = True
     def disconnect(self):
         self.cached_fileno = self.socket.fileno()
