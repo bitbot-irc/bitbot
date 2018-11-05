@@ -234,7 +234,7 @@ class Module(ModuleManager.BaseModule):
     # a user has disconnected!
     @utils.hook("raw.quit")
     def quit(self, event):
-        reason = event["args"][0]
+        reason = event["args"].get(0)
 
         if not event["server"].is_own_nickname(event["prefix"].nickname):
             user = event["server"].get_user(event["prefix"].nickname)
