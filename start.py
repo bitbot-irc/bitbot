@@ -45,14 +45,17 @@ bot = IRCBot.Bot(directory, args, cache, config, database, events,
 
 whitelist = bot.get_setting("module-whitelist", [])
 blacklist = bot.get_setting("module-blacklist", [])
-modules.load_modules(bot, whitelist=whitelist, blacklist=blacklist)
 
-servers = []
-for server_id, alias in bot.database.servers.get_all():
-    server = bot.add_server(server_id, connect=False)
-    if not server == None:
-        servers.append(server)
-if len(servers):
+server_configs = bot.database.servers.get_all()
+if len(server_configs):
+    modules.load_modules(bot, whitelist=whitelist, blacklist=blacklist)
+
+    servers = []
+    for server_id, alias in server_configs:
+        server = bot.add_server(server_id, connect=False)
+        if not server == None:
+            servers.append(server)
+
     bot._events.on("boot.done").call()
 
     timers.setup(bot.find_settings_prefix("timer-"))
