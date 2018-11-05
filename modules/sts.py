@@ -57,7 +57,7 @@ class Module(ModuleManager.BaseModule):
                 expiration = sts_policy["from"]+sts_policy
                 if not sts_policy["duration"] or time.time() <= (
                         sts_policy["from"]+sts_policy["duration"]):
-                    self.log.debug("Applying STS policy for '%s'",
+                    self.log.trace("Applying STS policy for '%s'",
                         [str(event["server"])])
                     event["server"].tls = True
                     event["server"].port = sts_policy["port"]
