@@ -61,6 +61,8 @@ class IRCArgs(object):
             return self._args[index]
         return None
 
+    def __repr__(self):
+        return "IRCArgs(%s)" % self._args
     def __len__(self) -> int:
         return len(self._args)
     def __getitem__(self, index) -> str:
