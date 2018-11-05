@@ -38,6 +38,7 @@ class Module(ModuleManager.BaseModule):
             if not event["server"].tls:
                 self._set_policy(event["server"], int(info["port"]),
                     None, True)
+                event["server"].disconnect()
                 self.bot.reconnect(event["server"].id,
                     event["server"].connection_params)
             else:
