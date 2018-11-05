@@ -5,16 +5,20 @@ class Module(ModuleManager.BaseModule):
     def _set_policy(self, server, port, duration, one_shot):
         expiration = None
         if duration:
-            expiration = time.time()+int(duration)
+            expiration = time.time()+duration
         server.set_setting("sts-policy", {
             "port": port,
             "expiration": expiration,
             "one-shot": one_shot})
     def _change_duration(self, server, info):
-        port = event["server"].port
-        if "port" in info:
-            port = int(info["port"])
-        self._set_policy(server, port, info["duration"], False)
+        duration = int(info["duration"])
+        if duration == 0:
+            server.del_setting("sts-policy")
+        else:
+            port = event["server"].port
+            if "port" in info:
+                port = int(info["port"])
+            self._set_policy(server, port, duration, False)
 
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
