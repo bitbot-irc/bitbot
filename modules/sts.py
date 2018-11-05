@@ -26,12 +26,14 @@ class Module(ModuleManager.BaseModule):
                 port = int(info["port"])
             self._set_policy(server, port, duration, False)
 
+    def _get_sts(self, capabilities):
+        return capabilities.get("sts", capabilities.get("draft/sts", None))
+
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
-        has_sts = "sts" in event["capabilities"]
-        if "sts" in event["capabilities"]:
-            info = utils.parse.keyvalue(event["capabilities"]["sts"],
-                delimiter=",")
+        sts = self._get_sts(event["capabilities"])
+        if sts:
+            info = utils.parse.keyvalue(sts, delimiter=",")
             if not event["server"].tls:
                 self._set_policy(event["server"], int(info["port"]),
                     None, True)
@@ -41,9 +43,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.cap.new")
     def on_cap_new(self, event):
-        if "sts" in event["capabilities"] and event["server"].tls:
-            info = utils.parse.keyvalue(event["capabilities"]["sts"],
-                delimiter=",")
+        sts = self._get_sts(event["capabilities"])
+        if sts and event["server"].tls:
+            info = utils.parse.keyvalue(sts, delimiter=",")
             if event["server"].tls:
                 self._change_duration(event["server"], info)
 
