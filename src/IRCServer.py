@@ -23,6 +23,7 @@ class Server(IRCObject.Object):
         self.tls = tls
         self.password = password
         self.ipv4 = ipv4
+        self.bindhost = bindhost
         self.original_nickname = nickname
         self.original_username = username or nickname
         self.original_realname = realname or nickname
@@ -91,8 +92,8 @@ class Server(IRCObject.Object):
         family = socket.AF_INET if self.ipv4 else socket.AF_INET6
         self.socket = socket.socket(family, socket.SOCK_STREAM)
         self.socket.settimeout(5.0)
-        if bindhost:
-            self.socket.bind((bindhost, 0))
+        if self.bindhost:
+            self.socket.bind((self.bindhost, 0))
         if self.tls:
             self.tls_wrap()
 
