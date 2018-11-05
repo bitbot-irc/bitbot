@@ -39,6 +39,7 @@ class Server(IRCObject.Object):
         self.buffered_lines = [] # type: typing.List[bytes]
         self.read_buffer = b""
         self.recent_sends = [] # type: typing.List[float]
+        self.cached_fileno = None # type: typing.Optional[int]
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
         self.new_users = set([]) #type: typing.Set[IRCUser.User]
@@ -69,7 +70,7 @@ class Server(IRCObject.Object):
         return "%s:%s%s" % (self.target_hostname, "+" if self.tls else "",
             self.port)
     def fileno(self):
-        return self.socket.fileno()
+        return self.cached_fileno or self.socket.fileno()
 
     def tls_wrap(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS)
@@ -107,6 +108,7 @@ class Server(IRCObject.Object):
         self.send_nick(self.original_nickname)
         self.connected = True
     def disconnect(self):
+        self.cached_fileno = self.socket.fileno()
         self.connected = False
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
