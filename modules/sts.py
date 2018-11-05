@@ -38,16 +38,13 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("new.server")
     def new_server(self, event):
         sts_policy = event["server"].get_setting("sts-policy")
-        if sts_policy and not event["server"].tls:
-            expiration = sts_policy["expiration"]
-            if not expiration or time.time() <= expiration:
-                self.log.debug("Applying STS policy for '%s'",
-                    [str(event["server"])])
-                event["server"].tls = True
-                event["server"].port = sts_policy["port"]
-
-    @utils.hook("received.numeric.001"):
-    def on_connect(self, event):
-        sts_policy = event["server"].get_setting("sts-policy")
-        if sts_policy and sts_policy["one-shot"]:
-            event["server"].del_setting("sts-policy")
+        if sts_policy:
+            if sts_policy["one-shot"]:
+                event["server"].del_setting("sts-policy")
+            if not event["server"].tls:
+                expiration = sts_policy["expiration"]
+                if not expiration or time.time() <= expiration:
+                    self.log.debug("Applying STS policy for '%s'",
+                        [str(event["server"])])
+                    event["server"].tls = True
+                    event["server"].port = sts_policy["port"]
