@@ -58,22 +58,6 @@ class Server(IRCObject.Object):
         self.attempted_join = {} # type: typing.Dict[str, typing.Optional[str]]
         self.ping_sent = False
 
-        if ipv4:
-            self.socket = socket.socket(socket.AF_INET,
-                socket.SOCK_STREAM)
-        else:
-            self.socket = socket.socket(socket.AF_INET6,
-                socket.SOCK_STREAM)
-
-        if bindhost:
-            self.socket.bind((bindhost, 0))
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        self.socket.settimeout(5.0)
-
-        if self.tls:
-            self.tls_wrap()
-        self.cached_fileno = self.socket.fileno()
         self.events.on("timer.rejoin").hook(self.try_rejoin)
 
     def __repr__(self):
@@ -84,8 +68,7 @@ class Server(IRCObject.Object):
         return "%s:%s%s" % (self.target_hostname, "+" if self.tls else "",
             self.port)
     def fileno(self):
-        fileno = self.socket.fileno()
-        return self.cached_fileno if fileno == -1 else fileno
+        return self.socket.fileno()
 
     def tls_wrap(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS)
@@ -105,6 +88,14 @@ class Server(IRCObject.Object):
         self.socket = context.wrap_socket(self.socket)
 
     def connect(self):
+        family = self.AF_INET if self.ipv4 else socket.AF_INET6
+        self.socket = socket.socket(family, socket.SOCK_STREAM)
+        self.socket.settimeout(5.0)
+        if bindhost:
+            self.socket.bind((bindhost, 0))
+        if self.tls:
+            self.tls_wrap()
+
         self.socket.connect((self.target_hostname, self.port))
         self.send_capibility_ls()
 
