@@ -134,10 +134,6 @@ class Bot(object):
             event["timer"].redo()
     def reconnect(self, server_id: int, connection_params: typing.Optional[
             utils.irc.IRCConnectionParameters]=None) -> bool:
-        old_server = self.get_server(server_id)
-        if old_server:
-            self.disconnect(old_server)
-
         server = self.add_server(server_id, False, connection_params)
         if self.connect(server):
             self.servers[server.fileno()] = server
@@ -208,13 +204,14 @@ class Bot(object):
                     self._events.on("server.disconnect").call(server=server)
                     self.disconnect(server)
 
-                    reconnect_delay = self.config.get("reconnect-delay", 10)
-                    self._timers.add("reconnect", reconnect_delay,
-                        server_id=server.id,
-                        connection_params=server.connection_params)
-
-                    print("disconnected from %s, reconnecting in %d seconds" % (
-                        str(server), reconnect_delay))
+                    if not self.get_server(server.id):
+                        reconnect_delay = self.config.get("reconnect-delay", 10)
+                        self._timers.add("reconnect", reconnect_delay,
+                            server_id=server.id,
+                            connection_params=server.connection_params)
+                        self.log.info(
+                            "Disconnected from %s, reconnecting in %d seconds",
+                            [str(server), reconnect_delay])
                 elif server.waiting_send() and server.throttle_done():
                     self.register_both(server)
 
