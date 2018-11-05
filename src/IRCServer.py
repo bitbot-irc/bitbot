@@ -10,23 +10,13 @@ class Server(IRCObject.Object):
     def __init__(self,
             bot: "IRCBot.Bot",
             events: EventManager.EventHook,
-            id: int, alias: str, hostname: str, port: int, password: str,
-            ipv4: bool, tls: bool, bindhost: str,
-            nickname: str, username: str, realname: str):
+            id: int,
+            connection_params: utils.irc.IRCConnectionParameters):
         self.connected = False
         self.bot = bot
         self.events = events
         self.id = id
-        self.alias = alias
-        self.target_hostname = hostname
-        self.port = port
-        self.tls = tls
-        self.password = password
-        self.ipv4 = ipv4
-        self.bindhost = bindhost
-        self.original_nickname = nickname
-        self.original_username = username or nickname
-        self.original_realname = realname or nickname
+        self.connection_params = connection_params
         self.name = None # type: typing.Optional[str]
 
         self._capability_queue = set([]) # type: typing.Set[str]
@@ -67,8 +57,8 @@ class Server(IRCObject.Object):
     def __str__(self):
         if self.alias:
             return self.alias
-        return "%s:%s%s" % (self.target_hostname, "+" if self.tls else "",
-            self.port)
+        return "%s:%s%s" % (self.connection_params.hostname,
+            "+" if self.tls else "", self.port)
     def fileno(self):
         return self.cached_fileno or self.socket.fileno()
 
@@ -90,22 +80,27 @@ class Server(IRCObject.Object):
         self.socket = context.wrap_socket(self.socket)
 
     def connect(self):
-        family = socket.AF_INET if self.ipv4 else socket.AF_INET6
+        ipv4 = self.connection_params.ipv4
+        family = socket.AF_INET if ipv4 else socket.AF_INET6
         self.socket = socket.socket(family, socket.SOCK_STREAM)
+
         self.socket.settimeout(5.0)
-        if self.bindhost:
+
+        if self.connection_params.bindhost:
             self.socket.bind((self.bindhost, 0))
-        if self.tls:
+        if self.connection_params.tls:
             self.tls_wrap()
 
-        self.socket.connect((self.target_hostname, self.port))
+        self.socket.connect((self.connection_params.hostname,
+            self.connection_params.port))
         self.send_capibility_ls()
 
         if self.password:
-            self.send_pass(self.password)
+            self.send_pass(self.connection_params.password)
 
-        self.send_user(self.original_username, self.original_realname)
-        self.send_nick(self.original_nickname)
+        self.send_user(self.connection_params.username,
+            self.connection_params.realname)
+        self.send_nick(self.connection_params.nickname)
         self.connected = True
     def disconnect(self):
         self.cached_fileno = self.socket.fileno()

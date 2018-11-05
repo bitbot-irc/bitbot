@@ -36,14 +36,15 @@ class Bot(object):
         self._trigger_client.send(b"TRIGGER")
         self.lock.release()
 
-    def add_server(self, server_id: int, connect: bool = True
-            ) -> IRCServer.Server:
-        (_, alias, hostname, port, password, ipv4, tls, bindhost, nickname,
-            username, realname) = self.database.servers.get(server_id)
+    def add_server(self, server_id: int, connect: bool = True,
+            connection_params: typing.Optional[
+            utils.irc.IRCConnectionParameters]=None) -> IRCServer.Server:
+        if not connection_params:
+            connection_params = utils.irc.IRCConnectionParameters(
+                *self.database.servers.get(server_id))
 
-        new_server = IRCServer.Server(self, self._events, server_id, alias,
-            hostname, port, password, ipv4, tls, bindhost, nickname, username,
-            realname)
+        new_server = IRCServer.Server(self, self._events,
+            connection_params.id, connection_params)
         self._events.on("new.server").call(server=new_server)
 
         if not connect or not new_server.get_setting("connect", True):
@@ -129,10 +130,15 @@ class Bot(object):
         del self.servers[server.fileno()]
 
     def _timed_reconnect(self, event: EventManager.Event):
-        if not self.reconnect(event["server_id"]):
+        if not self.reconnect(event["server_id"], event["connection_params"]):
             event["timer"].redo()
-    def reconnect(self, server_id: int) -> bool:
-        server = self.add_server(server_id, False)
+    def reconnect(self, server_id: int, connection_params: typing.Optional[
+            utils.irc.IRCConnectionParameters]=None) -> bool:
+        old_server = self.get_server(server_id)
+        if old_server:
+            self.disconnect(old_server)
+
+        server = self.add_server(server_id, False, connection_params)
         if self.connect(server):
             self.servers[server.fileno()] = server
             return True
@@ -204,7 +210,8 @@ class Bot(object):
 
                     reconnect_delay = self.config.get("reconnect-delay", 10)
                     self._timers.add("reconnect", reconnect_delay,
-                        server_id=server.id)
+                        server_id=server.id,
+                        connection_params=server.connection_params)
 
                     print("disconnected from %s, reconnecting in %d seconds" % (
                         str(server), reconnect_delay))

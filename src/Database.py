@@ -12,18 +12,20 @@ class Servers(Table):
         username = username or nickname
         realname = realname or nickname
         self.database.execute(
-            """INSERT INTO servers (alias, hostname, port, password, ipv4,
-            tls, bindhost, nickname, username, realname) VALUES (
+            """INSERT INTO servers (alias, hostname, port, password, tls,
+            ipv4, bindhost, nickname, username, realname) VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [alias, hostname, port, password, ipv4, tls, bindhost, nickname,
+            [alias, hostname, port, password, tls, ipv4, bindhost, nickname,
             username, realname])
     def get_all(self):
         return self.database.execute_fetchall(
             "SELECT server_id, alias FROM servers")
-    def get(self, id: int):
+    def get(self, id: int) -> typing.Tuple[int, typing.Optional[str], str,
+            int, typing.Optional[str], bool, bool, typing.Optional[str], str,
+            typing.Optional[str], typing.Optional[str]]:
         return self.database.execute_fetchone(
-            """SELECT server_id, alias, hostname, port, password, ipv4,
-            tls, bindhost, nickname, username, realname FROM servers WHERE
+            """SELECT server_id, alias, hostname, port, password, tls,
+            ipv4, bindhost, nickname, username, realname FROM servers WHERE
             server_id=?""",
             [id])
 
