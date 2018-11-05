@@ -44,7 +44,7 @@ class Bot(object):
                 *self.database.servers.get(server_id))
 
         new_server = IRCServer.Server(self, self._events,
-            connection_params.id, connection_params)
+            connection_params.id, connection_params.alias, connection_params)
         self._events.on("new.server").call(server=new_server)
 
         if not connect or not new_server.get_setting("connect", True):

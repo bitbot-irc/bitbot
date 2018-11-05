@@ -11,11 +11,13 @@ class Server(IRCObject.Object):
             bot: "IRCBot.Bot",
             events: EventManager.EventHook,
             id: int,
+            alias: typing.Optional[str],
             connection_params: utils.irc.IRCConnectionParameters):
         self.connected = False
         self.bot = bot
         self.events = events
         self.id = id
+        self.alias = alias
         self.connection_params = connection_params
         self.name = None # type: typing.Optional[str]
 
@@ -87,7 +89,7 @@ class Server(IRCObject.Object):
         self.socket.settimeout(5.0)
 
         if self.connection_params.bindhost:
-            self.socket.bind((self.bindhost, 0))
+            self.socket.bind((self.connection_params.bindhost, 0))
         if self.connection_params.tls:
             self.tls_wrap()
 
@@ -95,7 +97,7 @@ class Server(IRCObject.Object):
             self.connection_params.port))
         self.send_capibility_ls()
 
-        if self.password:
+        if self.connection_params.password:
             self.send_pass(self.connection_params.password)
 
         self.send_user(self.connection_params.username,

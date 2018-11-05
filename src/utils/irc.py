@@ -145,7 +145,7 @@ def strip_font(s: str) -> str:
 OPT_STR = typing.Optional[str]
 class IRCConnectionParameters(object):
     def __init__(self, id: int, alias: OPT_STR, hostname: str, port: int,
-            tls: bool, ipv4: bool, password: OPT_STR, bindhost: OPT_STR,
+            password: OPT_STR, tls: bool, ipv4: bool, bindhost: OPT_STR,
             nickname: str, username: OPT_STR, realname: OPT_STR):
         self.id = id
         self.alias = alias
