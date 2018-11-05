@@ -55,3 +55,13 @@ def docstring(s: str) -> Docstring:
                         description += line
     return Docstring(description, items, var_items)
 
+def keyvalue(s, delimiter: str=" ") -> typing.Dict[str, str]:
+    items = {}
+    pairs = s.split(delimiter)
+    for pair in pairs:
+        key, sep, value = pair.partition("=")
+        if sep:
+            items[key] = value
+        else:
+            items[key] = None
+    return items

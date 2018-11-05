@@ -247,14 +247,7 @@ class Module(ModuleManager.BaseModule):
     # the server is telling us about its capabilities!
     @utils.hook("raw.cap")
     def cap(self, event):
-        capabilities_list = event["args"][2].split(" ")
-        capabilities = {}
-        for capability in capabilities_list:
-            argument = None
-            if "=" in capability:
-                capability, argument = capability.split("=", 1)
-            capabilities[capability] = argument
-
+        capabilities = utils.parse.keyvalue(event["args"][2])
         subcommand = event["args"][1].lower()
         is_multiline = len(event["args"]) > 2 and event["args"][2] == "*"
 
