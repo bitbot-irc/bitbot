@@ -569,4 +569,4 @@ class Module(ModuleManager.BaseModule):
         event["server"].rename_channel(old_name, new_name)
         self.events.on("received.rename").call(channel=channel,
             old_name=old_name, new_name=new_name,
-            reason=event["args"].get(2))
+            reason=event["args"].get(2), server=event["server"])
