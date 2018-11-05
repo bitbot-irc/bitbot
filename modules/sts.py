@@ -68,6 +68,6 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("server.disconnect")
     def on_disconnect(self, event):
         sts_policy = self._get_policy(event["server"])
-        if sts_policy:
+        if sts_policy and sts_policy["duration"]:
             sts_policy["from"] = time.time()
             self._set_policy(event["server"], sts_policy)
