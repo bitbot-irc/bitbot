@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
         port = event["server"].port
         if "port" in info:
             port = int(info["port"])
-        self._set_policy(server, port, duration)
+        self._set_policy(server, port, info["duration"])
 
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
