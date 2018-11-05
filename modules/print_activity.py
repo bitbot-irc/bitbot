@@ -114,3 +114,8 @@ class Module(ModuleManager.BaseModule):
         self.print_line(event, "%s set mode %s%s" % (
             event["user"].nickname, "".join(event["modes"]),
             args), channel=event["channel"].name)
+
+    @utils.hook("received.rename")
+    def rename(self, event):
+        self.print_line(event, "%s was renamed to %s" % (
+            event["old_name"], event["new_name"]))
