@@ -101,7 +101,7 @@ class Server(IRCObject.Object):
         if self.connection_params.password:
             self.send_pass(self.connection_params.password)
 
-        nickname = self.connection_params.nicknamme
+        nickname = self.connection_params.nickname
         username = self.connection_params.username or nickname
         realname = self.connection_params.realname or nickname
 
