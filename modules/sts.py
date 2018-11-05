@@ -5,6 +5,7 @@ class Module(ModuleManager.BaseModule):
     def _get_policy(self, server):
         return server.get_setting("sts-policy", None)
     def _set_policy(self, server, policy):
+        self.log.trace("Setting STS policy for '%s': %s", [str(server), policy])
         server.set_setting("sts-policy", policy)
     def _remove_policy(self, server):
         server.del_setting("sts-policy")
