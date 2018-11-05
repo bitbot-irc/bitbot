@@ -1,4 +1,4 @@
-import string, re, typing
+import json, string, re, typing
 
 ASCII_UPPER = string.ascii_uppercase
 ASCII_LOWER = string.ascii_lowercase
