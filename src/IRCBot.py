@@ -27,7 +27,7 @@ class Bot(object):
         self.add_socket(Socket.Socket(self._trigger_server, lambda _, s: None))
 
         self._trigger_functions = []
-        self.events.hook("timer.reconnect", self._timed_reconnect)
+        self._events.hook("timer.reconnect", self._timed_reconnect)
 
     def trigger(self, func: typing.Callable[[], typing.Any]=None):
         self.lock.acquire()
