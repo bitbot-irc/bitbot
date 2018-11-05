@@ -199,6 +199,7 @@ class Bot(object):
                     server.send_ping()
                     server.ping_sent = True
                 if not server.connected:
+                    self._events.on("server.disconnect").call(server=server)
                     self.disconnect(server)
 
                     reconnect_delay = self.config.get("reconnect-delay", 10)
