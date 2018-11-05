@@ -27,6 +27,7 @@ class Bot(object):
         self.add_socket(Socket.Socket(self._trigger_server, lambda _, s: None))
 
         self._trigger_functions = []
+        self.events.hook("timer.reconnect", self._timed_reconnect)
 
     def trigger(self, func: typing.Callable[[], typing.Any]=None):
         self.lock.acquire()
@@ -127,13 +128,15 @@ class Bot(object):
             pass
         del self.servers[server.fileno()]
 
-    @utils.hook("timer.reconnect")
-    def reconnect(self, event: EventManager.Event):
-        server = self.add_server(event["server_id"], False)
+    def _timed_reconnect(self, event: EventManager.Event):
+        if not self.reconnect(event["server_id"]):
+            event["timer"].redo()
+    def reconnect(self, server_id: int) -> bool:
+        server = self.add_server(server_id, False)
         if self.connect(server):
             self.servers[server.fileno()] = server
-        else:
-            event["timer"].redo()
+            return True
+        return False
 
     def set_setting(self, setting: str, value: typing.Any):
         self.database.bot_settings.set(setting, value)
