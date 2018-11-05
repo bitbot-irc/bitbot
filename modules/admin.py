@@ -42,6 +42,8 @@ class Module(ModuleManager.BaseModule):
         :permission: reconnect
         """
         event["server"].send_quit("Reconnecting")
+        self.bot.reconnect(event["server"].id,
+            event["server"].connection_params)
 
     @utils.hook("received.command.connect", min_args=1)
     def connect(self, event):
