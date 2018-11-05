@@ -32,6 +32,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.new")
     def on_cap_new(self, event):
         if "sts" in event["capabilities"] and event["server"].tls:
+            info = utils.parse.keyvalue(event["capabilities"]["sts"],
+                delimiter=",")
             if event["server"].tls:
                 self._change_duration(event["server"], info)
 
