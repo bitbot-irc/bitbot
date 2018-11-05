@@ -67,4 +67,4 @@ class Module(ModuleManager.BaseModule):
         sts_policy = self._get_policy(event["server"])
         if sts_policy:
             sts_policy["from"] = time.time()
-            self._set_policy(event["server"], sts_policy
+            self._set_policy(event["server"], sts_policy)
