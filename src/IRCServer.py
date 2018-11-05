@@ -96,6 +96,7 @@ class Server(IRCObject.Object):
 
         self.socket.connect((self.connection_params.hostname,
             self.connection_params.port))
+        self.cached_fileno = self.socket.fileno()
         self.send_capibility_ls()
 
         if self.connection_params.password:
@@ -109,7 +110,6 @@ class Server(IRCObject.Object):
         self.send_nick(nickname)
         self.connected = True
     def disconnect(self):
-        self.cached_fileno = self.socket.fileno()
         self.connected = False
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
