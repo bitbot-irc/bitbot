@@ -10,8 +10,8 @@ RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
-    "draft/message-tags-0.2", "server-time", "cap-notify",
-    "batch", "draft/labeled-response", "draft/rename"}
+    "draft/message-tags-0.2", "draft/message-tags-0.3", "server-time",
+    "cap-notify", "batch", "draft/labeled-response", "draft/rename"}
 
 class Module(ModuleManager.BaseModule):
     def _handle(self, server, line):
