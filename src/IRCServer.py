@@ -212,6 +212,7 @@ class Server(IRCObject.Object):
         channel = self.channels.pop(old_name.lower())
         channel.name = new_name.lower()
         self.channels[channel.name] = channel
+        self.bot.database.channels.rename(channel.id, new_name)
 
     def parse_data(self, line: str):
         if not line:
