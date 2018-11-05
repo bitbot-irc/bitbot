@@ -60,7 +60,8 @@ class Server(IRCObject.Object):
         if self.alias:
             return self.alias
         return "%s:%s%s" % (self.connection_params.hostname,
-            "+" if self.tls else "", self.port)
+            "+" if self.connection_params.tls else "",
+            self.connection_params.port)
     def fileno(self):
         return self.cached_fileno or self.socket.fileno()
 
