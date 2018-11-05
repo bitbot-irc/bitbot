@@ -88,7 +88,7 @@ class Server(IRCObject.Object):
         self.socket = context.wrap_socket(self.socket)
 
     def connect(self):
-        family = self.AF_INET if self.ipv4 else socket.AF_INET6
+        family = socket.AF_INET if self.ipv4 else socket.AF_INET6
         self.socket = socket.socket(family, socket.SOCK_STREAM)
         self.socket.settimeout(5.0)
         if bindhost:
