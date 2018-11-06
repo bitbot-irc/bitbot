@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         reviewer = data["review"]["user"]["login"]
         url = data["review"]["html_url"]
-        return ["(%s) [pr#%d] %s %s a review: %s - %s" %
+        return ["(%s) [pr#%d] %s %s a review on: %s - %s" %
             (full_name, pr_number, reviewer, action, pr_title, url)]
 
     def pull_request_review_comment(self, event, full_name, data):
@@ -108,7 +108,7 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [pr#%d] %s %s a comment: %s - %s" %
+        return ["(%s) [pr#%d] %s %s a review comment on: %s - %s" %
             (full_name, pr_number, commenter, action, pr_title, url)]
 
     def issues(self, event, full_name, data):
@@ -126,6 +126,6 @@ class Module(ModuleManager.BaseModule):
         type = "pr" if "pull_request" in data["issue"] else "issue"
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [%s#%d] %s %s a comment: %s - %s" %
+        return ["(%s) [%s#%d] %s %s a comment on: %s - %s" %
             (full_name, type, issue_number, commenter, action, issue_title,
             url)]
