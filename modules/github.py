@@ -45,7 +45,7 @@ class Module(ModuleManager.BaseModule):
 
         if outputs:
             for server_id, channel_name, _ in hooks:
-                for output in output:
+                for output in outputs:
                     server = self.bot.get_server(server_id)
                     channel = server.get_channel(channel_name)
                     trigger = self._make_trigger(channel, server, output)
