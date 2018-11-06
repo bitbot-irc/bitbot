@@ -91,8 +91,6 @@ class Module(ModuleManager.BaseModule):
 
     def _get(self, event, setting, qualifier, value):
         if not value == None:
-            if array:
-                value = ", ".join(value)
             event["stdout"].write("'%s'%s: %s" % (setting,
                 qualifier, str(value)))
         else:
