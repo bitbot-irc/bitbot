@@ -30,8 +30,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     event_response = None
                     try:
                         event_response = _events.on("api").on(method).on(
-                            endpoint).call_unsafe_for_result(
-                            params=params, path=args, data=data)
+                            endpoint).call_unsafe_for_result(params=params,
+                            path=args, data=data, headers=dict(self.headers))
                     except:
                         code = 500
 
