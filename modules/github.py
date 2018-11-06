@@ -11,6 +11,10 @@ class Module(ModuleManager.BaseModule):
     def github(self, event):
         data = json.loads(event["data"])
 
+        github_event = event["headers"]["X-GitHub-Event"]
+        if github_event == "ping":
+            return True
+
         full_name = data["repository"]["full_name"]
         hooks = self.bot.database.channel_settings.find_by_setting(
             "github-hook")
@@ -20,8 +24,6 @@ class Module(ModuleManager.BaseModule):
                 hooks.pop(i)
         if not hooks:
             return None
-
-        github_event = event["headers"]["X-GitHub-Event"]
 
         outputs = None
         if github_event == "push":
