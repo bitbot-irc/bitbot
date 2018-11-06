@@ -18,8 +18,9 @@ class Module(ModuleManager.BaseModule):
         full_name = data["repository"]["full_name"]
         hooks = self.bot.database.channel_settings.find_by_setting(
             "github-hook")
-        for i, (server_id, channel_name, value) in list(enumerate(hooks))[::-1]:
-            if not value == full_name:
+        for i, (server_id, channel_name, values) in list(
+                enumerate(hooks))[::-1]:
+            if not full_name in values:
                 hooks.pop(i)
 
         github_event = event["headers"]["X-GitHub-Event"]
