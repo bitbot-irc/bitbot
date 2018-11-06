@@ -119,9 +119,17 @@ class Module(ModuleManager.BaseModule):
             (full_name, issue_number, author, action, issue_title, url)]
     def issue_comment(self, event, full_name, data):
         action = data["action"]
-        issue_number = data["issue"]["number"]
-        issue_title = data["issue"]["title"]
+
+        number = None
+        title = None
+        if "issue" in data:
+            number = data["issue"]["number"]
+            title = data["issue"]["title"]
+        elif "pull_request" in data:
+            number = data["pull_request"]["number"]
+            title = data["pull_request"]["title"]
+
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
         return ["(%s) [issue#%d] %s %s a comment: %s - %s" %
-            (full_name, issue_number, commenter, action, issue_title, url)]
+            (full_name, number, commenter, action, title, url)]
