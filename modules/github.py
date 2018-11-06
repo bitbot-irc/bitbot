@@ -22,7 +22,8 @@ class Module(ModuleManager.BaseModule):
             if not value == full_name:
                 hooks.pop(i)
 
-        github_event = event["headers"]
+        github_event = event["headers"]["X-GitHub-Event"]
+
         outputs = None
         if github_event == "push":
             outputs = self.push(event, full_name, data)
