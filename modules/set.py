@@ -62,7 +62,7 @@ class Module(ModuleManager.BaseModule):
         """
         :usage: <setting> <value>
         """
-        self._set("channelset", event, event["target"], False,
+        self._set("channelset", event, event["target"],
             event["command"].startswith("channelsetadd"))
 
     @utils.hook("received.command.serverset",
