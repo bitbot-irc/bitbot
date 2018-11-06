@@ -9,11 +9,7 @@ COMMIT_URL = "https://github.com/%s/commit/%s"
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.github")
     def github(self, event):
-        data = event["data"]
-        try:
-            data = json.loads(data)
-        except:
-            return
+        data = json.loads(event["data"])
 
         full_name = data["repository"]["full_name"]
         hooks = self.bot.database.channel_settings.find_by_setting(
