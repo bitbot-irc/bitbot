@@ -15,33 +15,111 @@ class Module(ModuleManager.BaseModule):
         except:
             return
 
-        if "commits" in data:
-            full_name = data["repository"]["full_name"]
-            hooks = self.bot.database.channel_settings.find_by_setting(
-                "github-hook")
-            for commit in data["commits"]:
-                id = commit["id"]
+        full_name = data["repository"]["full_name"]
+        hooks = self.bot.database.channel_settings.find_by_setting(
+            "github-hook")
+        for i, (server_id, channel_name, value) in list(enumerate(hooks))[::-1]:
+            if not value == full_name:
+                hooks.pop(i)
 
-                message = commit["message"].split("\n")
-                message = [line.strip() for line in message]
-                message = " ".join(message)
+        github_event = event["headers"]
+        outputs = None
+        if github_event == "push":
+            outputs = self.push(event, full_name, data)
+        elif github_event == "commit_comment":
+            outputs = self.commit_comment(event, full_name, data)
+        elif github_event == "pull_request":
+            outputs = self.pull_request(event, full_name, data)
+        elif github_event == "pull_request_review":
+            outputs = self.pull_request_review(event, full_name, data)
+        elif github_event == "pull_request_review_comment":
+            outputs = self.pull_request_review_comment(event, full_name, data)
+        elif github_event == "issue_comment":
+            outputs = self.issue_comment(event, full_name, data)
+        elif github_event == "issues":
+            outputs = self.issues(event, full_name, data)
 
-                author = "%s <%s>" % (commit["author"]["username"],
-                    commit["author"]["email"])
-                modified_count = len(commit["modified"])
-                added_count = len(commit["added"])
-                removed_count = len(commit["removed"])
-                url = COMMIT_URL % (full_name, id[:8])
-
-                line = ("(%s) [files: +%d ∆%d -%d] commit by '%s': %s - %s"
-                    % (full_name, added_count, modified_count,
-                    removed_count, author, message, url))
-                hooks = [hook for hook in hooks if hook[2]]
-                for server_id, channel_name, _ in hooks:
+        if outputs:
+            for server_id, channel_name, _ in hooks:
+                for output in output:
                     server = self.bot.get_server(server_id)
                     channel = server.get_channel(channel_name)
-                    self.bot.trigger(self._make_trigger(channel, server, line))
+                    trigger = self._make_trigger(channel, server, output)
+                    self.bot.trigger(trigger)
 
     def _make_trigger(self, channel, server, line):
         return lambda: self.events.on("send.stdout").call(
             target=channel, module_name="Github", server=server, message=line)
+
+    def push(self, event, full_name, data):
+        outputs = []
+        for commit in data["commits"]:
+            id = commit["id"]
+
+            message = commit["message"].split("\n")
+            message = [line.strip() for line in message]
+            message = " ".join(message)
+
+            author = "%s <%s>" % (commit["author"]["username"],
+                commit["author"]["email"])
+            modified_count = len(commit["modified"])
+            added_count = len(commit["added"])
+            removed_count = len(commit["removed"])
+            url = COMMIT_URL % (full_name, id[:8])
+
+            outputs.append("(%s) [files: +%d ∆%d -%d] commit by '%s': %s - %s"
+                % (full_name, added_count, modified_count, removed_count,
+                author, message, url))
+        return outputs
+
+    def commit_comment(self, event, full_name, data):
+        action = data["action"]
+        commit = data["commit_id"][:8]
+        commenter = data["comment"]["user"]["login"]
+        url = data["comment"]["html_url"]
+        return ["(%s) [commit/%s] %s %s a comment" %
+            (full_name, commit, commenter, action)]
+
+    def pull_request(self, event, full_name, data):
+        action = data["action"]
+        pr_number = data["pull_request"]["number"]
+        pr_title = data["pull_request"]["title"]
+        author = data["sender"]["login"]
+        url = data["pull_request"]["html_url"]
+        return ["(%s) [pr#%d] %s %s: %s - %s" %
+            (full_name, pr_number, author, action, pr_title, url)]
+
+    def pull_request_review(self, event, full_name, data):
+        action = data["action"]
+        pr_number = data["pull_request"]["number"]
+        pr_title = data["pull_request"]["title"]
+        reviewer = data["review"]["user"]["login"]
+        url = data["review"]["html_url"]
+        return ["(%s) [pr#%d] %s %s a review: %s - %s" %
+            (full_name, pr_number, reviewer, action, pr_title, url)]
+
+    def pull_request_review_comment(self, event, full_name, data):
+        action = data["action"]
+        pr_number = data["pull_request"]["number"]
+        pr_title = data["pull_request"]["title"]
+        commenter = data["comment"]["user"]["login"]
+        url = data["comment"]["html_url"]
+        return ["(%s) [pr#%d] %s %s a comment: %s - %s" %
+            (full_name, pr_number, commenter, action, pr_title, url)]
+
+    def issues(self, event, full_name, data):
+        action = data["action"]
+        issue_number = data["issue"]["number"]
+        issue_title = data["issue"]["title"]
+        author = data["sender"]["login"]
+        url = data["issue"]["html_url"]
+        return ["(%s) [issue#%d] %s %s: %s - %s" %
+            (full_name, issue_number, author, action, issue_title, url)]
+    def issue_comment(self, event, full_name, data):
+        action = data["action"]
+        issue_number = data["issue"]["number"]
+        issue_title = data["issue"]["title"]
+        commenter = data["comment"]["user"]["login"]
+        url = data["comment"]["html_url"]
+        return ["(%s) [issue#%d] %s %s a comment: %s - %s" %
+            (full_name, issue_number, commenter, action, issue_title, url)]
