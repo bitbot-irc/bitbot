@@ -75,7 +75,7 @@ class Module(ModuleManager.BaseModule):
         :permission: serverset
         """
         self._set("serverset", event, event["server"],
-            event["command"]="serversetadd")
+            event["command"]=="serversetadd")
 
     @utils.hook("received.command.botset", help="Set a specified bot setting")
     @utils.hook("received.command.botsetadd",
