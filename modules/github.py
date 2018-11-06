@@ -22,6 +22,8 @@ class Module(ModuleManager.BaseModule):
                 enumerate(hooks))[::-1]:
             if not full_name in values:
                 hooks.pop(i)
+        if not hooks:
+            return
 
         github_event = event["headers"]["X-GitHub-Event"]
 
