@@ -7,6 +7,7 @@ from src import ModuleManager, utils
 
 _bot = None
 _events = None
+_log = None
 class Handler(http.server.BaseHTTPRequestHandler):
     timeout = 10
     def _handle(self, method, path, data="", params={}):
@@ -32,7 +33,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         event_response = _events.on("api").on(method).on(
                             endpoint).call_unsafe_for_result(params=params,
                             path=args, data=data, headers=dict(self.headers))
-                    except:
+                    except Exception as e:
+                        _log.error("failed to call API endpoint \"%s\"",
+                            [path], exc_info=True)
                         code = 500
 
                     if not event_response == None:
@@ -79,6 +82,9 @@ class Module(ModuleManager.BaseModule):
 
         global _events
         _events = self.events
+
+        global _log
+        _log = self.log
 
         if self.bot.get_setting("rest-api", False):
             self.httpd = http.server.HTTPServer(("", 5000), Handler)
