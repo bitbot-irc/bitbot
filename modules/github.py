@@ -3,7 +3,7 @@ from src import ModuleManager, utils
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
 
-COMMENT_ACTION = {
+COMMENT_ACTIONS = {
     "created": "commented",
     "edited":  "edited a comment",
     "deleted": "deleted a comment"
