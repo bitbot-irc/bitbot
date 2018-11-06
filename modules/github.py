@@ -19,7 +19,7 @@ class Module(ModuleManager.BaseModule):
             if not full_name in values:
                 hooks.pop(i)
         if not hooks:
-            return
+            return None
 
         github_event = event["headers"]["X-GitHub-Event"]
 
@@ -46,6 +46,8 @@ class Module(ModuleManager.BaseModule):
                     channel = server.get_channel(channel_name)
                     trigger = self._make_trigger(channel, server, output)
                     self.bot.trigger(trigger)
+
+        return True
 
     def _make_trigger(self, channel, server, line):
         return lambda: self.events.on("send.stdout").call(

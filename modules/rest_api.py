@@ -35,7 +35,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     except:
                         code = 500
 
-                    if event_response:
+                    if not event_response == None:
                         response = json.dumps(event_response,
                             sort_keys=True, indent=4)
                         code = 200
