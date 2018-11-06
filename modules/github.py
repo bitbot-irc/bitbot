@@ -3,6 +3,12 @@ from src import ModuleManager, utils
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
 
+COMMENT_ACTION = {
+    "created": "commented",
+    "edited":  "edited a comment",
+    "deleted": "deleted a comment"
+}
+
 @utils.export("channelset", {"setting": "github-hook",
     "help": ("Disable/Enable showing BitBot's github commits in the "
     "current channel"), "hidden": True})
@@ -76,12 +82,13 @@ class Module(ModuleManager.BaseModule):
                 author, message, url))
         return outputs
 
+
     def commit_comment(self, event, full_name, data):
         action = data["action"]
         commit = data["commit_id"][:8]
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [commit/%s] %s %s a comment" %
+        return ["(%s) [commit/%s] %s commented" %
             (full_name, commit, commenter, action)]
 
     def pull_request(self, event, full_name, data):
@@ -108,8 +115,9 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [pr#%d] %s %s a review comment on: %s - %s" %
-            (full_name, pr_number, commenter, action, pr_title, url)]
+        return ["(%s) [pr#%d] %s %s on: %s - %s" %
+            (full_name, pr_number, commenter, COMMENT_ACTIONS[action], pr_title,
+            url)]
 
     def issues(self, event, full_name, data):
         action = data["action"]
@@ -126,6 +134,6 @@ class Module(ModuleManager.BaseModule):
         type = "pr" if "pull_request" in data["issue"] else "issue"
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [%s#%d] %s %s a comment on: %s - %s" %
-            (full_name, type, issue_number, commenter, action, issue_title,
-            url)]
+        return ["(%s) [%s#%d] %s %s on: %s - %s" %
+            (full_name, type, issue_number, commenter, COMMENT_ACTIONS[action],
+            issue_title, url)]
