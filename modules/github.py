@@ -101,50 +101,44 @@ class Module(ModuleManager.BaseModule):
                 action_desc = utils.irc.color("closed without merging",
                     utils.irc.COLOR_RED)
 
-        pr_number = data["pull_request"]["number"]
         pr_title = data["pull_request"]["title"]
         author = data["sender"]["login"]
         url = data["pull_request"]["html_url"]
-        return ["(%s) [pr#%d] %s %s: %s - %s" %
-            (full_name, pr_number, author, action_desc, pr_title, url)]
+        return ["(%s) [pr] %s %s: %s - %s" %
+            (full_name, author, action_desc, pr_title, url)]
 
     def pull_request_review(self, event, full_name, data):
         if data["review"]["state"] == "commented":
             return []
 
         action = data["action"]
-        pr_number = data["pull_request"]["number"]
         pr_title = data["pull_request"]["title"]
         reviewer = data["review"]["user"]["login"]
         url = data["review"]["html_url"]
-        return ["(%s) [pr#%d] %s %s a review on: %s - %s" %
-            (full_name, pr_number, reviewer, action, pr_title, url)]
+        return ["(%s) [pr] %s %s a review on: %s - %s" %
+            (full_name, reviewer, action, pr_title, url)]
 
     def pull_request_review_comment(self, event, full_name, data):
         action = data["action"]
-        pr_number = data["pull_request"]["number"]
         pr_title = data["pull_request"]["title"]
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [pr#%d] %s %s on a review: %s - %s" %
-            (full_name, pr_number, commenter, COMMENT_ACTIONS[action], pr_title,
-            url)]
+        return ["(%s) [pr] %s %s on a review: %s - %s" %
+            (full_name, commenter, COMMENT_ACTIONS[action], pr_title, url)]
 
     def issues(self, event, full_name, data):
         action = data["action"]
-        issue_number = data["issue"]["number"]
         issue_title = data["issue"]["title"]
         author = data["sender"]["login"]
         url = data["issue"]["html_url"]
-        return ["(%s) [issue#%d] %s %s: %s - %s" %
-            (full_name, issue_number, author, action, issue_title, url)]
+        return ["(%s) [issue] %s %s: %s - %s" %
+            (full_name, author, action, issue_title, url)]
     def issue_comment(self, event, full_name, data):
         action = data["action"]
-        issue_number = data["issue"]["number"]
         issue_title = data["issue"]["title"]
         type = "pr" if "pull_request" in data["issue"] else "issue"
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [%s#%d] %s %s on: %s - %s" %
-            (full_name, type, issue_number, commenter, COMMENT_ACTIONS[action],
-            issue_title, url)]
+        return ["(%s) [%s] %s %s on: %s - %s" %
+            (full_name, type, commenter, COMMENT_ACTIONS[action], issue_title,
+            url)]
