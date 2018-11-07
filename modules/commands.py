@@ -15,6 +15,7 @@ class Out(object):
     def __init__(self, server, module_name, target, msgid):
         self.server = server
         self.module_name = module_name
+        self._hide_prefix = False
         self.target = target
         self._text = ""
         self.written = False
@@ -41,7 +42,10 @@ class Out(object):
             if self._msgid:
                 tags["+draft/reply"] = self._msgid
 
-            prefix = utils.irc.FONT_RESET + "[%s] " % self.prefix()
+            prefix = ""
+            if not self._hide_prefix:
+                prefix = utils.irc.FONT_RESET + "[%s] " % self.prefix()
+
             method = self._get_method()
             if method == "PRIVMSG":
                 self.target.send_message(text, prefix=prefix, tags=tags)
@@ -54,9 +58,12 @@ class Out(object):
 
     def set_prefix(self, prefix):
         self.module_name = prefix
+    def hide_prefix(self):
+        self._hide_prefix = True
 
     def has_text(self):
         return bool(self._text)
+
 
 class StdOut(Out):
     def prefix(self):
@@ -81,6 +88,9 @@ def _command_method_validate(s):
 @utils.export("channelset", {"setting": "command-method",
     "help": "Set the method used to respond to commands",
     "validate": _command_method_validate})
+@utils.export("channelset", {"setting": "hide-prefix",
+    "help": "Disable/enable hiding prefix in command reponses",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.user|channel")
     def new(self, event):
@@ -317,6 +327,10 @@ class Module(ModuleManager.BaseModule):
     def send_stdout(self, event):
         stdout = StdOut(event["server"], event["module_name"],
             event["target"], event.get("msgid", None))
+
+        if event.get("hide_prefix", False):
+            stdout.hide_prefix()
+
         stdout.write(event["message"]).send()
         if stdout.has_text():
             event["target"].last_stdout = stdout
@@ -324,6 +338,10 @@ class Module(ModuleManager.BaseModule):
     def send_stderr(self, event):
         stderr = StdErr(event["server"], event["module_name"],
             event["target"], event.get("msgid", None))
+
+        if event.get("hide_prefix", False):
+            stderr.hide_prefix()
+
         stderr.write(event["message"]).send()
         if stderr.has_text():
             event["target"].last_stderr = stderr
