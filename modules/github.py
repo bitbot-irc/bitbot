@@ -95,8 +95,11 @@ class Module(ModuleManager.BaseModule):
         action = data["action"]
         action_desc = action
         if action == "closed":
-            merged = data["pull_request"]["merged"]
-            action_desc = "merged" if merged else "closed without merging"
+            if data["pull_request"]["merged"]:
+                action_desc = utils.irc.color("merged", utils.irc.COLOR_GREEN)
+            else:
+                action_desc = utils.irc.color("closed without merging",
+                    utils.irc.COLOR_RED)
 
         pr_number = data["pull_request"]["number"]
         pr_title = data["pull_request"]["title"]
