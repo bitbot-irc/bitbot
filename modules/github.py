@@ -126,7 +126,7 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [pr#%d] %s %s on: %s - %s" %
+        return ["(%s) [pr#%d] %s %s on a review: %s - %s" %
             (full_name, pr_number, commenter, COMMENT_ACTIONS[action], pr_title,
             url)]
 
