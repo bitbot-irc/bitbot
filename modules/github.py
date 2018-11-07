@@ -109,6 +109,9 @@ class Module(ModuleManager.BaseModule):
             (full_name, pr_number, author, action_desc, pr_title, url)]
 
     def pull_request_review(self, event, full_name, data):
+        if data["review"]["state"] == "commented":
+            return []
+
         action = data["action"]
         pr_number = data["pull_request"]["number"]
         pr_title = data["pull_request"]["title"]
