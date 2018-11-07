@@ -93,12 +93,17 @@ class Module(ModuleManager.BaseModule):
 
     def pull_request(self, event, full_name, data):
         action = data["action"]
+        action_desc = action
+        if action == "closed":
+            merged = data["pull_request"]["merged"]
+            action_desc = "merged" if merged else "closed without merging"
+
         pr_number = data["pull_request"]["number"]
         pr_title = data["pull_request"]["title"]
         author = data["sender"]["login"]
         url = data["pull_request"]["html_url"]
         return ["(%s) [pr#%d] %s %s: %s - %s" %
-            (full_name, pr_number, author, action, pr_title, url)]
+            (full_name, pr_number, author, action_desc, pr_title, url)]
 
     def pull_request_review(self, event, full_name, data):
         action = data["action"]
