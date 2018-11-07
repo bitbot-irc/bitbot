@@ -58,8 +58,8 @@ class Module(ModuleManager.BaseModule):
         return True
 
     def _make_trigger(self, channel, server, line):
-        return lambda: self.events.on("send.stdout").call(
-            target=channel, module_name="Github", server=server, message=line)
+        return lambda: self.events.on("send.stdout").call(target=channel,
+            module_name="Github", server=server, message=line, hide_prefix=True)
 
     def push(self, event, full_name, data):
         outputs = []
