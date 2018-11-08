@@ -5,7 +5,7 @@ class Module(ModuleManager.BaseModule):
     def _get_policy(self, server):
         return server.get_setting("sts-policy", None)
     def _set_policy(self, server, policy):
-        self.log.trace("Setting STS policy for '%s': %s", [str(server), policy])
+        self.log.info("Setting STS policy for '%s': %s", [str(server), policy])
         server.set_setting("sts-policy", policy)
     def _remove_policy(self, server):
         server.del_setting("sts-policy")
@@ -56,7 +56,7 @@ class Module(ModuleManager.BaseModule):
             if not event["server"].connection_params.tls:
                 if not sts_policy["duration"] or time.time() <= (
                         sts_policy["from"]+sts_policy["duration"]):
-                    self.log.trace("Applying STS policy for '%s'",
+                    self.log.info("Applying STS policy for '%s'",
                         [str(event["server"])])
                     event["server"].connection_params.tls = True
                     event["server"].connection_params.port = sts_policy["port"]
