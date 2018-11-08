@@ -1,11 +1,11 @@
-import re, threading
+import codecs, re, threading
 from src import ModuleManager, utils
 
-RE_PREFIXES = re.compile(r"\bPREFIX=\((\w+)\)(\W+)(?:\b|$)")
-RE_CHANMODES = re.compile(
-    r"\bCHANMODES=(\w*),(\w*),(\w*),(\w*)(?:\b|$)")
-RE_CHANTYPES = re.compile(r"\bCHANTYPES=(\W+)(?:\b|$)")
-RE_CASEMAPPING = re.compile(r"\bCASEMAPPING=(\S+)")
+RE_ISUPPORT_ESCAPE = re.compile(r"\\x(\d\d)", re.I)
+RE_PREFIXES = re.compile(r"\((\w+)\)(\W+)")
+RE_CHANMODES = re.compile(r"(\w*),(\w*),(\w*),(\w*)")
+RE_CHANTYPES = re.compile(r"(\W+)")
+RE_CASEMAPPING = re.compile(r"(\S+)")
 RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
@@ -22,7 +22,7 @@ class Module(ModuleManager.BaseModule):
         default_event = any(default_events)
 
         kwargs = {"args": line.args, "tags": line.tags, "server": server,
-            "prefix": line.prefix}
+            "prefix": line.prefix, "has_arbitrary": line.has_arbitrary}
 
         self.events.on("raw").on(line.command).call_unsafe(**kwargs)
         if default_event or not hooks:
@@ -62,33 +62,44 @@ class Module(ModuleManager.BaseModule):
     # server telling us what it supports
     @utils.hook("raw.005")
     def handle_005(self, event):
-        isupport_line = " ".join(event["args"][1:])
+        isupport_list = event["args"][1:]
+        if event["has_arbitrary"]:
+            isupport_list = isupport_list[:-1]
 
-        if "NAMESX" in isupport_line:
+        isupport = {}
+        for i, item in enumerate(isupport_list):
+            key, sep, value = item.partition("=")
+            if value:
+                for match in RE_ISUPPORT_ESCAPE.finditer(value):
+                    char = codecs.decode(match.group(1), "hex").decode("ascii")
+                    value.replace(match.group(0), char)
+
+            if sep:
+                isupport[key] = value
+            else:
+                isupport[key] = None
+
+        if "NAMESX" in isupport:
             event["server"].send("PROTOCTL NAMESX")
 
-        match = re.search(RE_PREFIXES, isupport_line)
-        if match:
+        if "PREFIX" in isupport:
+            modes, symbols = isupport["PREFIX"][1:].split(")", 1)
             event["server"].prefix_symbols.clear()
             event["server"].prefix_modes.clear()
-            modes = match.group(1)
-            symbols = match.group(2)
             for symbol, mode in zip(symbols, modes):
                 event["server"].prefix_symbols[symbol] = mode
                 event["server"].prefix_modes[mode] = symbol
-        match = re.search(RE_CHANMODES, isupport_line)
-        if match:
-            event["server"].channel_modes = list(match.group(4))
-        match = re.search(RE_CHANTYPES, isupport_line)
-        if match:
-            event["server"].channel_types = list(match.group(1))
 
-        match = re.search(RE_CASEMAPPING, isupport_line)
-        if match:
-            event["server"].case_mapping = match.group(1)
+        if "CHANMODES" in isupport:
+            chanmodes = list(isupport["CHANMODES"].split(",", 3)[3])
+            event["server"].channel_modes = chanmodes
+        if "CHANTYPES" in isupport:
+            event["server"].channel_types = list(isupport["CHANTYPES"])
+        if "CASEMAPPING" in isupport:
+            event["server"].case_mapping = isupport["CASEMAPPING"]
 
         self.events.on("received.numeric.005").call(
-            isupport=isupport_line, server=event["server"])
+            isupport=isupport, server=event["server"])
 
     # whois respose (nickname, username, realname, hostname)
     @utils.hook("raw.311", default_event=True)
