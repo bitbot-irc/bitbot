@@ -159,7 +159,8 @@ OPT_STR = typing.Optional[str]
 class IRCConnectionParameters(object):
     def __init__(self, id: int, alias: OPT_STR, hostname: str, port: int,
             password: OPT_STR, tls: bool, ipv4: bool, bindhost: OPT_STR,
-            nickname: str, username: OPT_STR, realname: OPT_STR):
+            nickname: str, username: OPT_STR, realname: OPT_STR,
+            args: typing.Dict[str, str]={}):
         self.id = id
         self.alias = alias
         self.hostname = hostname
@@ -171,3 +172,4 @@ class IRCConnectionParameters(object):
         self.nickname = nickname
         self.username = username
         self.realname = realname
+        self.args = args
