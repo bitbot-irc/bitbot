@@ -14,7 +14,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.cap.ack")
     def on_cap_ack(self, event):
-        username token = self._get_token(event["server"])
+        username, token = self._get_token(event["server"])
         if CAP in event["capabilities"] and username and token:
             event["server"].send("RESUME %s %s" % (username, token))
             return False
