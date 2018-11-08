@@ -32,6 +32,8 @@ class Server(IRCObject.Object):
         self.read_buffer = b""
         self.recent_sends = [] # type: typing.List[float]
         self.cached_fileno = None # type: typing.Optional[int]
+        self.bytes_written = 0
+        self.bytes_read = 0
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
         self.new_users = set([]) #type: typing.Set[IRCUser.User]
@@ -236,6 +238,7 @@ class Server(IRCObject.Object):
         if not data:
             self.disconnect()
             return None
+        self.bytes_read += len(data)
         data = self.read_buffer+data
         self.read_buffer = b""
 
@@ -294,8 +297,10 @@ class Server(IRCObject.Object):
     def _send(self):
         if not len(self.write_buffer):
             self.write_buffer = self.buffered_lines.pop(0)
-        self.write_buffer = self.write_buffer[self.socket.send(
-            self.write_buffer):]
+
+        bytes_written = self.socket.send(self.write_buffer)
+        self.bytes_written += bytes_written
+        self.write_buffer = self.write_buffer[bytes_written:]
 
         now = time.monotonic()
         self.recent_sends.append(now)
