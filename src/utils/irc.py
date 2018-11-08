@@ -92,12 +92,14 @@ def parse_line(line: str) -> IRCLine:
 
     if line[0] == "@":
         tags_prefix, line = line[1:].split(" ", 1)
-        tags_prefix = message_tag_unescape(tags_prefix)
 
         if tags_prefix[0] == "{":
+            tags_prefix = message_tag_unescape(tags_prefix)
             tags = json.loads(tags_prefix)
         else:
-            for tag in filter(None, tags_prefix.split(";")):
+            tags_split = list(filter(None, tags_prefix.split(";")))
+            tags_split = [message_tag_unescape(tag) for tag in tags_split]
+            for tag in tags_split:
                 tag, sep, value = tag.partition("=")
                 if sep:
                     tags[tag] = value
