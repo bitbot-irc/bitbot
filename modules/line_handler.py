@@ -80,7 +80,8 @@ class Module(ModuleManager.BaseModule):
                 isupport[key] = None
         event["server"].isupport.update(isupport)
 
-        if "NAMESX" in isupport:
+        if "NAMESX" in isupport and not "multi-prefix" in event[
+                "server"].capabilities:
             event["server"].send("PROTOCTL NAMESX")
 
         if "PREFIX" in isupport:
