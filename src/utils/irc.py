@@ -71,11 +71,12 @@ class IRCArgs(object):
 
 class IRCLine(object):
     def __init__(self, tags: dict, prefix: typing.Optional[str], command: str,
-            args: IRCArgs):
+            args: IRCArgs, has_arbitrary: bool):
         self.tags = tags
         self.prefix = prefix
         self.command = command
         self.args = args
+        self.has_arbitrary = has_arbitrary
 
 def parse_line(line: str) -> IRCLine:
     tags = {}
@@ -94,8 +95,11 @@ def parse_line(line: str) -> IRCLine:
                 else:
                     tags[tag] = None
 
-    line, _, arbitrary_split = line.partition(" :")
-    arbitrary = arbitrary_split or None
+    line, arb_sep, arbitrary_split = line.partition(" :")
+    has_arbitrary = bool(arb_sep)
+    arbitrary = None # type: typing.Optional[str]
+    if has_arbitrary:
+        arbitrary = arbitrary_split
 
     if line[0] == ":":
         prefix_str, line = line[1:].split(" ", 1)
@@ -109,7 +113,7 @@ def parse_line(line: str) -> IRCLine:
     if arbitrary:
         args.append(arbitrary)
 
-    return IRCLine(tags, prefix, command, IRCArgs(args))
+    return IRCLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
 
 COLOR_WHITE, COLOR_BLACK, COLOR_BLUE, COLOR_GREEN = 0, 1, 2, 3
 COLOR_RED, COLOR_BROWN, COLOR_PURPLE, COLOR_ORANGE = 4, 5, 6, 7
