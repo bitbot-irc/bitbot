@@ -78,6 +78,13 @@ class IRCLine(object):
         self.args = args
         self.has_arbitrary = has_arbitrary
 
+MESSAGE_TAG_ESCAPED = [r"\:", r"\s", r"\\", r"\r", r"\n"]
+MESSAGE_TAG_UNESCAPED = [";", " ", "\\", "\r", "\n"]
+def message_tag_escape(s):
+    return _multi_replace(s, MESSAGE_TAG_UNESCAPED, MESSAGE_TAG_ESCAPED)
+def message_tag_unescape(s):
+    return _multi_replace(s, MESSAGE_TAG_ESCAPED, MESSAGE_TAG_UNESCAPED)
+
 def parse_line(line: str) -> IRCLine:
     tags = {}
     prefix = typing.Optional[IRCHostmask]
@@ -85,6 +92,8 @@ def parse_line(line: str) -> IRCLine:
 
     if line[0] == "@":
         tags_prefix, line = line[1:].split(" ", 1)
+        tags_prefix = message_tag_unescape(tags_prefix)
+
         if tags_prefix[0] == "{":
             tags = json.loads(tags_prefix)
         else:
