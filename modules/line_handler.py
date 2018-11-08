@@ -78,6 +78,7 @@ class Module(ModuleManager.BaseModule):
                 isupport[key] = value
             else:
                 isupport[key] = None
+        event["server"].isupport.update(isupport)
 
         if "NAMESX" in isupport:
             event["server"].send("PROTOCTL NAMESX")

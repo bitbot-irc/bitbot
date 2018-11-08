@@ -36,8 +36,9 @@ class Server(IRCObject.Object):
         self.users = {} # type: typing.Dict[str, IRCUser.User]
         self.new_users = set([]) #type: typing.Set[IRCUser.User]
         self.channels = {} # type: typing.Dict[str, IRCChannel.Channel]
-
         self.own_modes = {} # type: typing.Dict[str, typing.Optional[str]]
+
+        self.isupport = {} # type: typing.Dict[str, typing.Optional[str]]
         self.prefix_symbols = collections.OrderedDict(
             (("@", "o"), ("+", "v")))
         self.prefix_modes = collections.OrderedDict(
