@@ -59,7 +59,7 @@ def docstring(s: str) -> Docstring:
 def keyvalue(s, delimiter: str=" ") -> typing.Dict[str, str]:
     items = {}
     pairs = s.split(delimiter)
-    for pair in pairs:
+    for pair in filter(None, pairs):
         key, sep, value = pair.partition("=")
         if sep:
             items[key] = value
