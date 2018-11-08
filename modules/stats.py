@@ -112,7 +112,7 @@ class Module(ModuleManager.BaseModule):
     def modules_api(self, event):
         return list(self.bot.modules.modules.keys())
 
-    @utils.hook("received.command.caps"
+    @utils.hook("received.command.caps")
     def capabilities(self, event):
         """
         :help: List negotiated IRCv3 capabilities
