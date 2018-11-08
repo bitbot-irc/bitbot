@@ -292,12 +292,13 @@ class Module(ModuleManager.BaseModule):
         elif subcommand == "ack":
             event["server"].capabilities.update(capabilities)
             if not is_multiline:
-                self.events.on("received.cap.ack").call(
+                results = self.events.on("received.cap.ack").call(
                    capabilities=event["server"].capabilities,
                    server=event["server"])
 
-                if not event["server"].waiting_for_capabilities():
-                    event["server"].send_capability_end()
+                if not False in results:
+                    if not event["server"].waiting_for_capabilities():
+                        event["server"].send_capability_end()
         elif subcommand == "nack":
             event["server"].send_capability_end()
 
