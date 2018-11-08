@@ -11,7 +11,10 @@ COMMENT_ACTIONS = {
 
 @utils.export("channelset", {"setting": "github-hook",
     "help": ("Disable/Enable showing BitBot's github commits in the "
-    "current channel"), "hidden": True})
+    "current channel")})
+@utils.export("channelset", {"setting": "github-hide-prefix",
+    "help": "Hide/show command-like prefix on Github hook outputs",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.github")
     def github(self, event):
@@ -59,7 +62,8 @@ class Module(ModuleManager.BaseModule):
 
     def _make_trigger(self, channel, server, line):
         return lambda: self.events.on("send.stdout").call(target=channel,
-            module_name="Github", server=server, message=line, hide_prefix=True)
+            module_name="Github", server=server, message=line,
+            hide_prefix=channel.get_setting("github-hide-prefix", False))
 
     def push(self, event, full_name, data):
         outputs = []
