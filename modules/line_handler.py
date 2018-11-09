@@ -265,6 +265,7 @@ class Module(ModuleManager.BaseModule):
         is_multiline = len(event["args"]) > 2 and event["args"][2] == "*"
 
         if subcommand == "ls":
+            event["server"].cap_started = True
             event["server"].server_capabilities.update(capabilities)
             if not is_multiline:
                 matched_capabilities = set(event["server"
@@ -292,13 +293,14 @@ class Module(ModuleManager.BaseModule):
         elif subcommand == "ack":
             event["server"].capabilities.update(capabilities)
             if not is_multiline:
-                results = self.events.on("received.cap.ack").call(
+                self.events.on("received.cap.ack").call(
                    capabilities=event["server"].capabilities,
                    server=event["server"])
 
-                if not False in results:
-                    if not event["server"].waiting_for_capabilities():
-                        event["server"].send_capability_end()
+                if event["server"].cap_started and not event["server"
+                        ].waiting_for_capabilities():
+                    event["server"].cap_started = False
+                    event["server"].send_capability_end()
         elif subcommand == "nack":
             event["server"].send_capability_end()
 

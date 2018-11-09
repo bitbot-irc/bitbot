@@ -17,7 +17,7 @@ class Module(ModuleManager.BaseModule):
         username, token = self._get_token(event["server"])
         if CAP in event["capabilities"] and username and token:
             event["server"].send("RESUME %s %s" % (username, token))
-            return False
+            event["server"].cap_started = False
 
     @utils.hook("received.resume")
     def on_resume(self, event):
