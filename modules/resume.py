@@ -10,7 +10,7 @@ class Module(ModuleManager.BaseModule):
     def on_cap_new(self, event):
         username, token = self._get_token(event["server"])
         if CAP in event["capabilities"] and (not username or not token):
-            event["server"].queue_capability("draft/resume-0.2")
+            event["server"].queue_capability(CAP)
 
     @utils.hook("received.cap.ack")
     def on_cap_ack(self, event):
