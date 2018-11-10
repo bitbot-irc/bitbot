@@ -51,11 +51,11 @@ class Module(ModuleManager.BaseModule):
         self._set("set", event, event["user"], event["command"]=="setadd")
 
     @utils.hook("received.command.channelset", channel_only=True,
-        require_mode="o", help=CHANNELSET_HELP)
+        require_mode="high", help=CHANNELSET_HELP)
     @utils.hook("received.command.channelsetoverride", channel_only=True,
         permission="channelsetoverride", help=CHANNELSET_HELP)
     @utils.hook("received.command.channelsetadd", channel_only=True,
-        require_mode="o", help=CHANNELSETADD_HELP)
+        require_mode="high", help=CHANNELSETADD_HELP)
     @utils.hook("received.command.channelsetaddoverride", channel_only=True,
         permission="channelsetoverride", help=CHANNELSETADD_HELP)
     def channel_set(self, event):
