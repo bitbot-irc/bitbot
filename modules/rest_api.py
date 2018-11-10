@@ -23,10 +23,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
             hook = hooks[0]
             authenticated = hook.get_kwarg("authenticated", True)
             key = params.get("key", None)
-            if authenticated and (not key or not _bot.get_setting(
-                    "api-key-%s" % key, False)):
-                code = 401
-            else:
+            permissions = _bot.get_setting("api-key-%s" % key, [])
+
+            if not authenticated or path in permimssions or "*" in permissions:
                 if path.startswith("/api/"):
                     event_response = None
                     try:
@@ -42,6 +41,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         response = json.dumps(event_response,
                             sort_keys=True, indent=4)
                         code = 200
+            else:
+                code = 401
 
         self.send_response(code)
         self.send_header("Content-type", "application/json")
