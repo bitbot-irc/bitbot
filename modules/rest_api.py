@@ -39,8 +39,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
                     if not event_response == None:
                         if _bot.get_setting("api-minify", False):
-                            resonse = json.dumps(event_response, sort_keys=True,
-                                separators=(",", ":"))
+                            response = json.dumps(event_response,
+                                sort_keys=True, separators=(",", ":"))
                         else:
                             response = json.dumps(event_response,
                                 sort_keys=True, indent=4)
