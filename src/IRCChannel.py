@@ -181,7 +181,7 @@ class Channels(object):
         return name[0] in self._server.channel_types and lower in self._channels
 
     def add(self, name: str) -> Channel:
-        id = self.get_channel_id(name)
+        id = self._get_id(name)
         lower = self._name_lower(name)
         new_channel = Channel(lower, id, self._server, self._bot)
         self._channels[lower] = new_channel
