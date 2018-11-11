@@ -1,5 +1,5 @@
 import collections, socket, ssl, sys, time, typing
-from src import EventManager, IRCBot, IRCChannel, IRCObject, IRCUser, utils
+from src import EventManager, IRCBot, IRCChannels, IRCObject, IRCUser, utils
 
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
@@ -38,7 +38,7 @@ class Server(IRCObject.Object):
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
         self.new_users = set([]) #type: typing.Set[IRCUser.User]
-        self.channels = IRCChannel.Channels(self, self.bot, self.events)
+        self.channels = IRCChannels.Channels(self, self.bot, self.events)
         self.own_modes = {} # type: typing.Dict[str, typing.Optional[str]]
 
         self.isupport = {} # type: typing.Dict[str, typing.Optional[str]]
