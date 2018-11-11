@@ -38,8 +38,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         code = 500
 
                     if not event_response == None:
-                        response = json.dumps(event_response,
-                            sort_keys=True, indent=4)
+                        if _bot.get_setting("api-minify", False):
+                            resonse = json.dumps(event_response, sort_keys=True
+                                separators=(",", ":"))
+                        else:
+                            response = json.dumps(event_response,
+                                sort_keys=True, indent=4)
                         code = 200
             else:
                 code = 401
