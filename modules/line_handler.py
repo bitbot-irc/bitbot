@@ -118,7 +118,7 @@ class Module(ModuleManager.BaseModule):
     # on-join channel topic line
     @utils.hook("raw.332")
     def handle_332(self, event):
-        channel = event["server"].get_channel(event["args"][1])
+        channel = event["server"].channels.get(event["args"][1])
         topic = event["args"].get(2)
         channel.set_topic(topic)
         self.events.on("received.numeric.332").call(channel=channel,
@@ -128,7 +128,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.topic")
     def topic(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
-        channel = event["server"].get_channel(event["args"][0])
+        channel = event["server"].channels.get(event["args"][0])
         topic = event["args"].get(1)
         channel.set_topic(topic)
         self.events.on("received.topic").call(channel=channel,
@@ -137,7 +137,7 @@ class Module(ModuleManager.BaseModule):
     # on-join channel topic set by/at
     @utils.hook("raw.333")
     def handle_333(self, event):
-        channel = event["server"].get_channel(event["args"][1])
+        channel = event["server"].channels.getl(event["args"][1])
 
         topic_setter_hostmask = event["args"][2]
         topic_setter = utils.irc.seperate_hostmask(topic_setter_hostmask)
@@ -154,7 +154,7 @@ class Module(ModuleManager.BaseModule):
     # /names response, also on-join user list
     @utils.hook("raw.353", default_event=True)
     def handle_353(self, event):
-        channel = event["server"].get_channel(event["args"][2])
+        channel = event["server"].channels.get(event["args"][2])
         nicknames = event["args"].get(3).split()
         for nickname in nicknames:
             modes = set([])
@@ -187,13 +187,12 @@ class Module(ModuleManager.BaseModule):
     def join(self, event):
         account = None
         realname = None
+        channel = event["server"].channels.get(event["args"][0])
+
         if len(event["args"]) == 2:
-            channel = event["server"].get_channel(event["args"][0])
             if not event["args"][1] == "*":
                 account = event["args"][1]
             realname = event["args"][2]
-        else:
-            channel = event["server"].get_channel(event["args"][0])
 
         if not event["server"].is_own_nickname(event["prefix"].nickname):
             user = event["server"].get_user(event["prefix"].nickname)
@@ -223,7 +222,7 @@ class Module(ModuleManager.BaseModule):
     # on user parting channel
     @utils.hook("raw.part")
     def part(self, event):
-        channel = event["server"].get_channel(event["args"][0])
+        channel = event["server"].channels.get(event["args"][0])
         reason = event["args"].get(1)
 
         if not event["server"].is_own_nickname(event["prefix"].nickname):
@@ -237,7 +236,7 @@ class Module(ModuleManager.BaseModule):
         else:
             self.events.on("self.part").call(channel=channel,
                 reason=reason, server=event["server"])
-            event["server"].remove_channel(channel)
+            event["server"].channels.remove(channel)
 
     # unknown command sent by us, oops!
     @utils.hook("raw.421", default_event=True)
@@ -336,7 +335,7 @@ class Module(ModuleManager.BaseModule):
         target = event["args"][0]
         is_channel = target[0] in event["server"].channel_types
         if is_channel:
-            channel = event["server"].get_channel(target)
+            channel = event["server"].channels.get(target)
             remove = False
             args  = event["args"][2:]
             _args = args[:]
@@ -395,7 +394,7 @@ class Module(ModuleManager.BaseModule):
             "action": action}
 
         if target[0] in event["server"].channel_types:
-            channel = event["server"].get_channel(event["args"][0])
+            channel = event["server"].channels.get(event["args"][0])
             self.events.on("received.message.channel").call(
                 user=user, channel=channel, **kwargs)
             channel.buffer.add_message(user.nickname, message, action,
@@ -425,7 +424,7 @@ class Module(ModuleManager.BaseModule):
             user = event["server"].get_user(event["prefix"].nickname)
 
             if target[0] in event["server"].channel_types:
-                channel = event["server"].get_channel(target)
+                channel = event["server"].channels.get(target)
                 self.events.on("received.notice.channel").call(
                     message=message, message_split=message_split, user=user,
                     server=event["server"], channel=channel,
@@ -442,7 +441,7 @@ class Module(ModuleManager.BaseModule):
         target = event["args"][0]
 
         if target[0] in event["server"].channel_types:
-            channel = event["server"].get_channel(target)
+            channel = event["server"].channels.get(target)
             self.events.on("received.tagmsg.channel").call(channel=channel,
                 user=user, tags=event["tags"], server=event["server"])
         elif event["server"].is_own_nickname(target):
@@ -530,7 +529,7 @@ class Module(ModuleManager.BaseModule):
     # response to an empty mode command
     @utils.hook("raw.324", default_event=True)
     def handle_324(self, event):
-        channel = event["server"].get_channel(event["args"][1])
+        channel = event["server"].channels.get(event["args"][1])
         modes = event["args"][2]
         if modes[0] == "+" and modes[1:]:
             for mode in modes[1:]:
@@ -540,7 +539,7 @@ class Module(ModuleManager.BaseModule):
     # channel creation unix timestamp
     @utils.hook("raw.329", default_event=True)
     def handle_329(self, event):
-        channel = event["server"].get_channel(event["args"][1])
+        channel = event["server"].channels.get(event["args"][1])
         channel.creation_timestamp = int(event["args"][2])
 
     # nickname already in use
@@ -563,7 +562,7 @@ class Module(ModuleManager.BaseModule):
     def kick(self, event):
         user = event["server"].get_user(event["prefix"].nickname)
         target = event["args"][1]
-        channel = event["server"].get_channel(event["args"][0])
+        channel = event["server"].channels.get(event["args"][0])
         reason = event["args"].get(2)
 
         if not event["server"].is_own_nickname(target):
@@ -580,9 +579,9 @@ class Module(ModuleManager.BaseModule):
     def rename(self, event):
         old_name = event["args"][0]
         new_name = event["args"][1]
-        channel = event["server"].get_channel(old_name)
+        channel = event["server"].channels.get(old_name)
 
-        event["server"].rename_channel(old_name, new_name)
+        event["server"].channels.rename(old_name, new_name)
         self.events.on("received.rename").call(channel=channel,
             old_name=old_name, new_name=new_name,
             reason=event["args"].get(2), server=event["server"])

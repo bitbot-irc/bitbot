@@ -38,7 +38,7 @@ class Server(IRCObject.Object):
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
         self.new_users = set([]) #type: typing.Set[IRCUser.User]
-        self.channels = {} # type: typing.Dict[str, IRCChannel.Channel]
+        self.channels = IRCChannel.Channels(self, self.bot, self.events)
         self.own_modes = {} # type: typing.Dict[str, typing.Optional[str]]
 
         self.isupport = {} # type: typing.Dict[str, typing.Optional[str]]
@@ -194,30 +194,6 @@ class Server(IRCObject.Object):
         user = self.users.pop(utils.irc.lower(self.case_mapping, old_nickname))
         user._id = self.get_user_id(new_nickname)
         self.users[utils.irc.lower(self.case_mapping, new_nickname)] = user
-    def has_channel(self, channel_name: str):
-        return channel_name[0] in self.channel_types and utils.irc.lower(
-            self.case_mapping, channel_name) in self.channels
-    def get_channel(self, channel_name: str):
-        if not self.has_channel(channel_name):
-            channel_id = self.get_channel_id(channel_name)
-            new_channel = IRCChannel.Channel(channel_name, channel_id,
-                self, self.bot)
-            self.events.on("new.channel").call(channel=new_channel,
-                server=self)
-            self.channels[new_channel.name] = new_channel
-        return self.channels[utils.irc.lower(self.case_mapping, channel_name)]
-    def get_channel_id(self, channel_name: str):
-        self.bot.database.channels.add(self.id, channel_name)
-        return self.bot.database.channels.get_id(self.id, channel_name)
-    def remove_channel(self, channel: IRCChannel.Channel):
-        for user in channel.users:
-            user.part_channel(channel)
-        del self.channels[channel.name]
-    def rename_channel(self, old_name, new_name):
-        channel = self.channels.pop(old_name.lower())
-        channel.name = new_name.lower()
-        self.channels[channel.name] = channel
-        self.bot.database.channels.rename(channel.id, new_name)
 
     def parse_data(self, line: str):
         if not line:
@@ -411,8 +387,8 @@ class Server(IRCObject.Object):
             message = full_message.split("\01ACTION ", 1)[1][:-1]
 
         full_message_split = full_message.split()
-        if self.has_channel(target):
-            channel = self.get_channel(target)
+        if target in self.channels:
+            channel = self.channels.get(target)
             channel.buffer.add_message(None, message, action, tags, True)
             self.events.on("self.message.channel").call(
                 message=full_message, message_split=full_message_split,
@@ -429,8 +405,8 @@ class Server(IRCObject.Object):
         full_message = message if not prefix else prefix+message
         self.send("%sNOTICE %s :%s" % (self._tag_str(tags), target,
             full_message))
-        if self.has_channel(target):
-            self.get_channel(target).buffer.add_notice(None, message, tags,
+        if target in self.channels:
+            self.channels.get(target).buffer.add_notice(None, message, tags,
                 True)
         else:
             self.get_user(target).buffer.add_notice(None, message, tags,

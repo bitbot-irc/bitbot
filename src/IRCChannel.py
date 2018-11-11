@@ -154,3 +154,54 @@ class Channel(IRCObject.Object):
 
     def get_user_status(self, user: IRCUser.User) -> typing.Set:
         return self.user_modes.get(user, [])
+
+class Channels(object):
+    def __init__(self, server: "IRCServer.Server", bot: "IRCBot.Bot",
+            events: EventManager.EventHook):
+        self._server = server
+        self._bot = bot
+        self._events = events
+        self._channels = {} # type: typing.Dict[str, Channel]
+
+    def __iter__(self) -> Iterable[Channel]:
+        return (channel for channel in self._channels.values())
+    def __contains__(self, name: str) -> bool
+        return self.contains(name)
+
+    def _get_id(self, channel_name: str) -> int:
+        self.bot.database.channels.add(self.id, channel_name)
+        return self.bot.database.channels.get_id(self.id, channel_name)
+
+    def _name_lower(self, channel_name: str) -> str:
+        return utils.irc.lower(self._server.case_mapping, channel_name)
+
+    def contains(self, name: str) -> bool:
+        lower = self._name_lower(name)
+        return name[0] in self._server.channel_types and lower in self._channels
+
+    def add(self, name: str) -> Channel:
+        id = self.get_channel_id(name)
+        lower = self._name_lower(name)
+        new_channel = Channel(lower, id, self._server, self._bot)
+        self._channels[lower] = new_channel
+        self._events.on("new.channel").call(channel=new_channel, server=self)
+        return new_channel
+
+    def remove(self, channel: Channel):
+        lower = self._name_lower(channel.name)
+        del self._channels[lower]
+
+    def get(self, name: str):
+        if not self.contains(name):
+            return self._add(name)
+        return self._channels[self._name_lower(name)]
+
+    def rename(self, old_name, new_name):
+        old_lower = self._name_lower(old_name)
+        new_lower = self._name_lower(new_name)
+
+        channel = self.channels.pop(old_lower)
+        channel.name = new_name
+        self._channels[new_name] = channel
+
+        self._bot.database.channels.rename(channel.id, new_lower)
