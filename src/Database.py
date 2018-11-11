@@ -274,6 +274,7 @@ class Database(object):
             check_same_thread=False, isolation_level=None)
         self.database.execute("PRAGMA foreign_keys = ON")
         self._cursor = None
+        self._lock = threading.Lock()
 
         self.make_servers_table()
         self.make_channels_table()
@@ -307,8 +308,8 @@ class Database(object):
         start = time.monotonic()
 
         cursor = self.cursor()
-        cursor.execute(query, params)
-        value = fetch_func(cursor)
+        with self._lock:
+            cursor.execute(query, params)
 
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
