@@ -50,10 +50,10 @@ class Module(ModuleManager.BaseModule):
 
     def _server_stats(self, server):
         return {
-            "hostname": server.target_hostname,
-            "port": server.port,
-            "tls": server.tls,
-            "alias": server.alias,
+            "hostname": server.connection_params.hostname,
+            "port": server.connection_params.port,
+            "tls": server.connection_params.tls,
+            "alias": server.connection_params.alias,
             "hostmask": "%s!%s@%s" % (
                 server.nickname, server.username, server.hostname),
             "users": len(server.users),
