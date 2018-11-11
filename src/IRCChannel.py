@@ -168,6 +168,8 @@ class Channels(object):
         return (channel for channel in self._channels.values())
     def __contains__(self, name: str) -> bool:
         return self.contains(name)
+    def __len__(self) -> int:
+        return len(self._channels)
 
     def _get_id(self, channel_name: str) -> int:
         self._bot.database.channels.add(self._server.id, channel_name)
