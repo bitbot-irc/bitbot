@@ -165,7 +165,7 @@ class Channels(object):
 
     def __iter__(self) -> Iterable[Channel]:
         return (channel for channel in self._channels.values())
-    def __contains__(self, name: str) -> bool
+    def __contains__(self, name: str) -> bool:
         return self.contains(name)
 
     def _get_id(self, channel_name: str) -> int:
