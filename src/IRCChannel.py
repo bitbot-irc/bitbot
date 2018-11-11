@@ -170,6 +170,8 @@ class Channels(object):
         return self.contains(name)
     def __len__(self) -> int:
         return len(self._channels)
+    def __getitem__(self, name: str):
+        return self.get(name)
 
     def _get_id(self, channel_name: str) -> int:
         self._bot.database.channels.add(self._server.id, channel_name)
@@ -195,8 +197,6 @@ class Channels(object):
         del self._channels[lower]
 
     def get(self, name: str):
-        if not self.contains(name):
-            return self.add(name)
         return self._channels[self._name_lower(name)]
 
     def rename(self, old_name, new_name):

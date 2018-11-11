@@ -187,7 +187,7 @@ class Module(ModuleManager.BaseModule):
     def join(self, event):
         account = None
         realname = None
-        channel = event["server"].channels.get(event["args"][0])
+        channel_name = event["args"][0]
 
         if len(event["args"]) == 2:
             if not event["args"][1] == "*":
@@ -195,6 +195,7 @@ class Module(ModuleManager.BaseModule):
             realname = event["args"][2]
 
         if not event["server"].is_own_nickname(event["prefix"].nickname):
+            channel = event["server"].channels.get(channel_name)
             user = event["server"].get_user(event["prefix"].nickname)
             if not user.username and not user.hostname:
                 user.username = event["prefix"].username
@@ -213,6 +214,7 @@ class Module(ModuleManager.BaseModule):
                 user=user, server=event["server"], account=account,
                 realname=realname)
         else:
+            channel = event["server"].channels.add(channel_name)
             if channel.name in event["server"].attempted_join:
                 del event["server"].attempted_join[channel.name]
             self.events.on("self.join").call(channel=channel,
