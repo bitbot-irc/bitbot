@@ -194,7 +194,7 @@ class Channels(object):
 
     def get(self, name: str):
         if not self.contains(name):
-            return self._add(name)
+            return self.add(name)
         return self._channels[self._name_lower(name)]
 
     def rename(self, old_name, new_name):
