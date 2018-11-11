@@ -137,7 +137,7 @@ class Module(ModuleManager.BaseModule):
     # on-join channel topic set by/at
     @utils.hook("raw.333")
     def handle_333(self, event):
-        channel = event["server"].channels.getl(event["args"][1])
+        channel = event["server"].channels.get(event["args"][1])
 
         topic_setter_hostmask = event["args"][2]
         topic_setter = utils.irc.seperate_hostmask(topic_setter_hostmask)
