@@ -15,7 +15,7 @@ class Buffer(object):
     def __init__(self, bot: "IRCBot.Bot", server: "IRCServer.Server"):
         self.bot = bot
         self.server = server
-        self.lines = []
+        self.lines = [] # type: typing.List[BufferLine]
         self.max_lines = 64
         self._skip_next = False
 

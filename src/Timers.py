@@ -37,8 +37,8 @@ class Timers(object):
         self.database = database
         self.events = events
         self.log = log
-        self.timers = []
-        self.context_timers = {}
+        self.timers = [] # type: typing.List[Timer]
+        self.context_timers = {} # type: typing.Dict[str, typing.List[Timer]]
 
     def new_context(self, context: str) -> "TimersContext":
         return TimersContext(self, context)
