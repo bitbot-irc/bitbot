@@ -108,9 +108,13 @@ class Module(ModuleManager.BaseModule):
     def api_key(self, event):
         """
         :help: Generate a new API key
+        :usage: [comment]
         :permission: api-key
         :prefix: APIKey
         """
         api_key = str(uuid.uuid4())
+        if event["args_split"]:
+            api_key = "%s-%s" % (event["args_split"][0], api_key)
+
         self.bot.set_setting("api-key-%s" % api_key, True)
         event["stdout"].write(api_key)
