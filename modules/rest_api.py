@@ -116,5 +116,5 @@ class Module(ModuleManager.BaseModule):
         if event["args_split"]:
             api_key = "%s-%s" % (event["args_split"][0], api_key)
 
-        self.bot.set_setting("api-key-%s" % api_key, True)
+        self.bot.set_setting("api-key-%s" % api_key, [])
         event["stdout"].write(api_key)
