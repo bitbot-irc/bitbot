@@ -310,6 +310,7 @@ class Database(object):
         cursor = self.cursor()
         with self._lock:
             cursor.execute(query, params)
+        value = fetch_func(cursor)
 
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
