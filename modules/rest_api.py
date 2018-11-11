@@ -25,7 +25,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             key = params.get("key", None)
             permissions = _bot.get_setting("api-key-%s" % key, [])
 
-            if not authenticated or path in permimssions or "*" in permissions:
+            if not authenticated or path in permissions or "*" in permissions:
                 if path.startswith("/api/"):
                     event_response = None
                     try:
