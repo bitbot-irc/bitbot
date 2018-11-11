@@ -170,8 +170,8 @@ class Channels(object):
         return self.contains(name)
 
     def _get_id(self, channel_name: str) -> int:
-        self.bot.database.channels.add(self.id, channel_name)
-        return self.bot.database.channels.get_id(self.id, channel_name)
+        self._bot.database.channels.add(self.id, channel_name)
+        return self._bot.database.channels.get_id(self.id, channel_name)
 
     def _name_lower(self, channel_name: str) -> str:
         return utils.irc.lower(self._server.case_mapping, channel_name)
