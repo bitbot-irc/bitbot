@@ -1,5 +1,6 @@
 import typing, uuid
-from src import IRCBot, IRCBuffer, IRCObject, IRCServer, IRCUser, utils
+from src import EventManager, IRCBot, IRCBuffer, IRCObject, IRCServer, IRCUser
+from src import utils
 
 class Channel(IRCObject.Object):
     def __init__(self, name: str, id, server: "IRCServer.Server",
