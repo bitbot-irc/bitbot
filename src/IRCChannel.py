@@ -164,7 +164,7 @@ class Channels(object):
         self._events = events
         self._channels = {} # type: typing.Dict[str, Channel]
 
-    def __iter__(self) -> Iterable[Channel]:
+    def __iter__(self) -> typing.Iterable[Channel]:
         return (channel for channel in self._channels.values())
     def __contains__(self, name: str) -> bool:
         return self.contains(name)
