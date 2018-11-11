@@ -1,4 +1,5 @@
-from src import EventManager, IRCBot, IRCChannel, IRCServer
+import typing
+from src import EventManager, IRCBot, IRCChannel, IRCServer, utils
 
 class Channels(object):
     def __init__(self, server: "IRCServer.Server", bot: "IRCBot.Bot",
@@ -6,9 +7,9 @@ class Channels(object):
         self._server = server
         self._bot = bot
         self._events = events
-        self._channels = {} # type: typing.Dict[str, Channel]
+        self._channels = {} # type: typing.Dict[str, IRCChannel.Channel]
 
-    def __iter__(self) -> typing.Iterable[Channel]:
+    def __iter__(self) -> typing.Iterable[IRCChannel.Channel]:
         return (channel for channel in self._channels.values())
     def __contains__(self, name: str) -> bool:
         return self.contains(name)
@@ -28,15 +29,15 @@ class Channels(object):
         lower = self._name_lower(name)
         return name[0] in self._server.channel_types and lower in self._channels
 
-    def add(self, name: str) -> Channel:
+    def add(self, name: str) -> IRCChannel.Channel:
         id = self._get_id(name)
         lower = self._name_lower(name)
-        new_channel = Channel(lower, id, self._server, self._bot)
+        new_channel = IRCChannel.Channel(lower, id, self._server, self._bot)
         self._channels[lower] = new_channel
         self._events.on("new.channel").call(channel=new_channel, server=self)
         return new_channel
 
-    def remove(self, channel: Channel):
+    def remove(self, channel: IRCChannel.Channel):
         lower = self._name_lower(channel.name)
         del self._channels[lower]
 
