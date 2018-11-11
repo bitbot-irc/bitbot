@@ -56,7 +56,9 @@ class Module(ModuleManager.BaseModule):
             "alias": server.alias,
             "hostmask": "%s!%s@%s" % (
                 server.nickname, server.username, server.hostname),
-            "users": len(server.users)
+            "users": len(server.users),
+            "bytes-written": server.bytes_written,
+            "bytes-read": server.bytes_read
         }
 
     @utils.hook("api.get.servers")
