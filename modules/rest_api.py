@@ -112,7 +112,7 @@ class Module(ModuleManager.BaseModule):
     def api_key(self, event):
         """
         :help: Generate a new API key
-        :usage: <comment> [permitted endpoints ...]
+        :usage: <comment> [endpoint [endpoint ...]]
         :permission: api-key
         :prefix: APIKey
         """
