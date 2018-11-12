@@ -7,11 +7,6 @@ STRICT_RFC1459_LOWER = ASCII_LOWER+r'|{}'
 RFC1459_UPPER = STRICT_RFC1459_UPPER+"^"
 RFC1459_LOWER = STRICT_RFC1459_LOWER+"~"
 
-def remove_colon(s: str) -> str:
-    if s.startswith(":"):
-        s = s[1:]
-    return s
-
 MULTI_REPLACE_ITERABLE = typing.Iterable[str]
 # case mapping lowercase/uppcase logic
 def _multi_replace(s: str,
@@ -47,7 +42,6 @@ class IRCHostmask(object):
         return self.hostmask
 
 def seperate_hostmask(hostmask: str) -> IRCHostmask:
-    hostmask = remove_colon(hostmask)
     nickname, _, username = hostmask.partition("!")
     username, _, hostname = username.partition("@")
     return IRCHostmask(nickname, username, hostname, hostmask)
@@ -112,7 +106,7 @@ def parse_line(line: str) -> IRCLine:
 
     if line[0] == ":":
         prefix_str, line = line[1:].split(" ", 1)
-        prefix = seperate_hostmask(prefix_str)
+        prefix = seperate_hostmask(prefix_str[1:])
 
     args = []
     command, sep, line = line.partition(" ")
