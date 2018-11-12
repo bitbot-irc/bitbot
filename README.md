@@ -23,4 +23,4 @@ Just run `./start.py`
 On first boot, he'll ask for a first server to connect to then exit. do `./start.py` again and he'll connect to that server and join #bitbot (to get him to join other channels, simply invite him to them.)
 
 ## Contact/Support
-Come say hi at `irc.freenode.net:+6697##bitbot`
+Come say hi at [##bitbot on freenode](https://webchat.freenode.net/?channels=##bitbot)
