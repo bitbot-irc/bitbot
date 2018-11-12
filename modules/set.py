@@ -86,8 +86,7 @@ class Module(ModuleManager.BaseModule):
         :usage: <setting> <value>
         :permission: botset
         """
-        self._set("botset", event, self.bot, False,
-            event["command"]=="botsetadd")
+        self._set("botset", event, self.bot, event["command"]=="botsetadd")
 
     def _get(self, event, setting, qualifier, value):
         if not value == None:
