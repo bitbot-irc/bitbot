@@ -89,7 +89,6 @@ class Module(ModuleManager.BaseModule):
             modified = utils.irc.color("±%d" % len(commit["modified"]),
                 utils.irc.COLOR_PURPLE)
             modified = utils.irc.bold(modified)
-                utils.irc.COLOR_PURPLE)
 
             outputs.append("(%s) [files: %s/%s/%s] commit by '%s': %s - %s"
                 % (full_name, added, removed, modified, author, message, url))
