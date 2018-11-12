@@ -91,6 +91,9 @@ def _command_method_validate(s):
 @utils.export("channelset", {"setting": "hide-prefix",
     "help": "Disable/enable hiding prefix in command reponses",
     "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "commands",
+    "help": "Disable/enable responding to commands in-channel",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.user|channel")
     def new(self, event):
@@ -197,6 +200,10 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
+        commands_enabled = event["channel"].get_setting("commands", True)
+        if not commands_enabled:
+            return
+
         command_prefix = event["channel"].get_setting("command-prefix",
             event["server"].get_setting("command-prefix", "!"))
         if event["message_split"][0].startswith(command_prefix):
