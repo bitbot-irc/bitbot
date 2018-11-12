@@ -120,6 +120,6 @@ class Module(ModuleManager.BaseModule):
         comment = event["args_split"][0]
         self.bot.set_setting("api-key-%s" % api_key, {
             "comment": comment,
-            "permissions": event["args_spit"][1:]
+            "permissions": event["args_split"][1:]
         })
         event["stdout"].write("New API key ('%s'): %s" % (comment, api_key))
