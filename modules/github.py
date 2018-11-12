@@ -76,6 +76,8 @@ class Module(ModuleManager.BaseModule):
 
             author = "%s <%s>" % (commit["author"]["username"],
                 commit["author"]["email"])
+            author = utils.irc.bold(author)
+
             url = COMMIT_URL % (full_name, id[:8])
 
             added = utils.irc.color("+%d" % len(commit["added"]),
@@ -98,7 +100,7 @@ class Module(ModuleManager.BaseModule):
     def commit_comment(self, event, full_name, data):
         action = data["action"]
         commit = data["commit_id"][:8]
-        commenter = data["comment"]["user"]["login"]
+        commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = data["comment"]["html_url"]
         return ["(%s) [commit/%s] %s commented" %
             (full_name, commit, commenter, action)]
@@ -115,7 +117,7 @@ class Module(ModuleManager.BaseModule):
             action_desc = utils.irc.bold(action_desc)
 
         pr_title = data["pull_request"]["title"]
-        author = data["sender"]["login"]
+        author = utils.irc.bold(data["sender"]["login"])
         url = data["pull_request"]["html_url"]
         return ["(%s) [pr] %s %s: %s - %s" %
             (full_name, author, action_desc, pr_title, url)]
@@ -126,7 +128,7 @@ class Module(ModuleManager.BaseModule):
 
         action = data["action"]
         pr_title = data["pull_request"]["title"]
-        reviewer = data["review"]["user"]["login"]
+        reviewer = utils.irc.bold(data["review"]["user"]["login"])
         url = data["review"]["html_url"]
         return ["(%s) [pr] %s %s a review on: %s - %s" %
             (full_name, reviewer, action, pr_title, url)]
@@ -142,7 +144,7 @@ class Module(ModuleManager.BaseModule):
     def issues(self, event, full_name, data):
         action = data["action"]
         issue_title = data["issue"]["title"]
-        author = data["sender"]["login"]
+        author = utils.irc.bold(data["sender"]["login"])
         url = data["issue"]["html_url"]
         return ["(%s) [issue] %s %s: %s - %s" %
             (full_name, author, action, issue_title, url)]
@@ -150,7 +152,7 @@ class Module(ModuleManager.BaseModule):
         action = data["action"]
         issue_title = data["issue"]["title"]
         type = "pr" if "pull_request" in data["issue"] else "issue"
-        commenter = data["comment"]["user"]["login"]
+        commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = data["comment"]["html_url"]
         return ["(%s) [%s] %s %s on: %s - %s" %
             (full_name, type, commenter, COMMENT_ACTIONS[action], issue_title,
