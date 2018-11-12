@@ -2,10 +2,6 @@ import codecs, re, threading
 from src import ModuleManager, utils
 
 RE_ISUPPORT_ESCAPE = re.compile(r"\\x(\d\d)", re.I)
-RE_PREFIXES = re.compile(r"\((\w+)\)(\W+)")
-RE_CHANMODES = re.compile(r"(\w*),(\w*),(\w*),(\w*)")
-RE_CHANTYPES = re.compile(r"(\W+)")
-RE_CASEMAPPING = re.compile(r"(\S+)")
 RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
