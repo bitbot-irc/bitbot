@@ -80,12 +80,18 @@ class Module(ModuleManager.BaseModule):
 
             added = utils.irc.color("+%d" % len(commit["added"]),
                 utils.irc.COLOR_GREEN)
+            added = utils.irc.bold(added)
+
             removed = utils.irc.color("-%d" % len(commit["removed"]),
                 utils.irc.COLOR_RED)
+            removed = utils.irc.bold(removed)
+
             modified = utils.irc.color("±%d" % len(commit["modified"]),
                 utils.irc.COLOR_PURPLE)
+            modified = utils.irc.bold(modified)
+                utils.irc.COLOR_PURPLE)
 
-            outputs.append("(%s) [files: %s%s%s] commit by '%s': %s - %s"
+            outputs.append("(%s) [files: %s/%s/%s] commit by '%s': %s - %s"
                 % (full_name, added, removed, modified, author, message, url))
         return outputs
 
