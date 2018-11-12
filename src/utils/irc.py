@@ -7,7 +7,6 @@ STRICT_RFC1459_LOWER = ASCII_LOWER+r'|{}'
 RFC1459_UPPER = STRICT_RFC1459_UPPER+"^"
 RFC1459_LOWER = STRICT_RFC1459_LOWER+"~"
 
-MULTI_REPLACE_ITERABLE = typing.Iterable[str]
 # case mapping lowercase/uppcase logic
 def _multi_replace(s: str,
         chars1: typing.Iterable[str],
