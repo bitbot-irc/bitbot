@@ -112,6 +112,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 action_desc = utils.irc.color("closed without merging",
                     utils.irc.COLOR_RED)
+            action_desc = utils.irc.bold(action_desc)
 
         pr_title = data["pull_request"]["title"]
         author = data["sender"]["login"]
