@@ -362,7 +362,7 @@ class Module(ModuleManager.BaseModule):
     # someone (maybe me!) has been invited somewhere
     @utils.hook("raw.invite")
     def invite(self, event):
-        target_channel = event["args"][0]
+        target_channel = event["args"][1]
         user = event["server"].get_user(event["prefix"].nickname)
         target_user = event["server"].get_user(event["args"][0])
         self.events.on("received.invite").call(user=user,
