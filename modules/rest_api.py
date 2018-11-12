@@ -23,7 +23,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             hook = hooks[0]
             authenticated = hook.get_kwarg("authenticated", True)
             key = params.get("key", None)
-            key_setting = = _bot.get_setting("api-key-%s" % key, {})
+            key_setting = _bot.get_setting("api-key-%s" % key, {})
             permissions = key_seting.get("permissions", [])
 
             if not authenticated or path in permissions or "*" in permissions:
