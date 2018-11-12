@@ -203,10 +203,13 @@ class Module(ModuleManager.BaseModule):
         commands_enabled = event["channel"].get_setting("commands", True)
         if not commands_enabled:
             return
+        prefixed_commands = event["channel"].get_setting("prefixed-commands", True)
 
         command_prefix = event["channel"].get_setting("command-prefix",
             event["server"].get_setting("command-prefix", "!"))
         if event["message_split"][0].startswith(command_prefix):
+            if not prefixed_commands:
+                return
             command = event["message_split"][0].replace(
                 command_prefix, "", 1).lower()
             self.message(event, command)
