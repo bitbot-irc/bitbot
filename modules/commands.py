@@ -94,6 +94,9 @@ def _command_method_validate(s):
 @utils.export("channelset", {"setting": "commands",
     "help": "Disable/enable responding to commands in-channel",
     "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "prefixed-commands",
+    "help": "Disable/enable responding to prefixed commands in-channel",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.user|channel")
     def new(self, event):
