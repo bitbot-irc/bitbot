@@ -90,7 +90,7 @@ class Module(ModuleManager.BaseModule):
                 utils.irc.COLOR_PURPLE)
             modified = utils.irc.bold(modified)
 
-            outputs.append("(%s) [files: %s/%s/%s] commit by '%s': %s - %s"
+            outputs.append("(%s) [%s/%s/%s files] commit by '%s': %s - %s"
                 % (full_name, added, removed, modified, author, message, url))
         return outputs
 
