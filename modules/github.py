@@ -76,14 +76,17 @@ class Module(ModuleManager.BaseModule):
 
             author = "%s <%s>" % (commit["author"]["username"],
                 commit["author"]["email"])
-            modified_count = len(commit["modified"])
-            added_count = len(commit["added"])
-            removed_count = len(commit["removed"])
             url = COMMIT_URL % (full_name, id[:8])
 
-            outputs.append("(%s) [files: +%d ∆%d -%d] commit by '%s': %s - %s"
-                % (full_name, added_count, modified_count, removed_count,
-                author, message, url))
+            added = utils.irc.color("+%d" % len(commit["added"]),
+                utils.irc.COLOR_GREEN)
+            removed = utils.irc.color("-%d" % len(commit["removed"]),
+                utils.irc.COLOR_RED)
+            modified = utils.irc.color("±%d" % len(commit["modified"]),
+                utils.irc.COLOR_YELLOW)
+
+            outputs.append("(%s) [files: %s %s %s] commit by '%s': %s - %s"
+                % (full_name, added, removed, modified, author, message, url))
         return outputs
 
 
