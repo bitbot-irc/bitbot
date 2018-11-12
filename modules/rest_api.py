@@ -39,7 +39,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         code = 500
 
                     if not event_response == None:
-                        if _bot.get_setting("api-minify", False):
+                        if _bot.get_setting("rest-api-minify", False):
                             response = json.dumps(event_response,
                                 sort_keys=True, separators=(",", ":"))
                         else:
@@ -80,6 +80,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
+    "validate": utils.bool_or_none})
+@utils.export("botset", {"setting": "rest-api-minify",
+    "help": "Enable/disable REST API minifying",
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def on_load(self):
