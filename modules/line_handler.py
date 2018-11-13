@@ -178,6 +178,14 @@ class Module(ModuleManager.BaseModule):
     def handle_366(self, event):
         event["server"].send_whox(event["args"][1], "n", "ahnrtu", "111")
 
+    @utils.hook("raw.375")
+    def motd_start(self, event):
+        event["server"].motd_lines.clear()
+
+    @utils.hook("raw.372")
+    def motd_line(self, event):
+        event["server"].motd_lines.append(event["args"][1])
+
     # on user joining channel
     @utils.hook("raw.join")
     def join(self, event):

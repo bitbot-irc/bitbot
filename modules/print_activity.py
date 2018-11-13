@@ -119,3 +119,8 @@ class Module(ModuleManager.BaseModule):
     def rename(self, event):
         self.print_line(event, "%s was renamed to %s" % (
             event["old_name"], event["new_name"]))
+
+    @utils.hook("received.numeric.376")
+    def motd_end(self, event):
+        for line in event["server"].motd_lines:
+            self.print_line(event, "[MOTD] %s" % line)

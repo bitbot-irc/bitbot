@@ -50,6 +50,9 @@ class Server(IRCObject.Object):
         self.channel_types = ["#"]
         self.case_mapping = "rfc1459"
 
+        self.motd_lines = [] # type: typing.List[str]
+        self.motd_done = False
+
         self.last_read = time.monotonic()
         self.last_send = None # type: typing.Optional[float]
 
