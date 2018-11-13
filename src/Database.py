@@ -36,6 +36,8 @@ class Channels(Table):
         self.database.execute("""INSERT OR IGNORE INTO channels
             (server_id, name) VALUES (?, ?)""",
             [server_id, name.lower()])
+        return self.database.execute_fetchone(
+            "SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1")[0]
     def delete(self, channel_id: int):
         self.database.execute("DELETE FROM channels WHERE channel_id=?",
             [channel_id])
