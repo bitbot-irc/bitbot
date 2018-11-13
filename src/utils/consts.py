@@ -43,6 +43,6 @@ RESET     = "\x0F"
 
 ANSI_FORMAT      = "\033[%sm"
 ANSI_RESET       = "\033[0m"
-ANSI_COLOR_RESET = "\033[22m"
+ANSI_COLOR_RESET = "\033[39m"
 ANSI_BOLD        = "\033[1m"
 ANSI_BOLD_RESET  = "\033[21m"
