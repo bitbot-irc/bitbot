@@ -118,7 +118,8 @@ def parse_line(line: str) -> IRCLine:
 
     return IRCLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
 
-REGEX_COLOR = re.compile("%s\d\d(?:,\d\d)?" % utils.consts.COLOR)
+
+REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % utils.consts.COLOR)
 
 def color(s: str, foreground: utils.consts.IRCColor,
         background: utils.consts.IRCColor=None) -> str:
@@ -142,6 +143,78 @@ def strip_font(s: str) -> str:
     s = REGEX_COLOR.sub("", s)
     s = s.replace(utils.consts.COLOR, "")
     return s
+
+def _color_tokenize(s):
+    is_color = False
+    foreground = ""
+    background = ""
+    matches = []
+
+    for char in s:
+        if char == utils.consts.COLOR:
+            if is_color:
+                matches.append(char)
+            else:
+                is_color = True
+        elif char == utils.consts.BOLD:
+            matches.append(char)
+        elif is_color:
+            if char.isdigit():
+                if background:
+                    background += char
+                else:
+                    foreground += char
+            elif char == ",":
+                background += char
+            else:
+                matches.append("\x03%s%s" % (foreground, background))
+                is_color = False
+                foreground = ""
+                background = ""
+    return matches
+
+def to_ansi_colors(s):
+    color = False
+    ansi_bold = False
+    bold = False
+
+    for token in _color_tokenize(s):
+        replace = ""
+        type = token[0]
+
+        if type == utils.consts.COLOR:
+            match = REGEX_COLOR.match(token)
+            foreground_match = match.group(1)
+            if foreground_match:
+                code = int(foreground_match.lstrip("0") or "0")
+                foreground = utils.consts.COLOR_CODES[code]
+
+                if ansi_bold and not foreground.ansi_bold and not bold:
+                    ansi_bold = False
+                    replace += utils.consts.ANSI_RESET
+
+                color = True
+                replace += utils.consts.ANSI_FORMAT % foreground.ansi
+                if foreground.ansi_bold:
+                    ansi_bold = True
+                    replace += utils.consts.ANSI_BOLD
+            else:
+                if color:
+                    replace += utils.consts.ANSI_COLOR_RESET
+                    if ansi_bold:
+                        replace += utils.consts.ANSI_BOLD_RESET
+                color = False
+                ansi_bold = False
+        elif type == utils.consts.BOLD:
+            if bold:
+                replace += utils.consts.ANSI_BOLD_RESET
+            if bold:
+                replace += utils.consts.ANSI_BOLD
+            bold = not bold
+
+        s = s.replace(token, replace, 1)
+
+    return s + utils.consts.ANSI_RESET
 
 OPT_STR = typing.Optional[str]
 class IRCConnectionParameters(object):
