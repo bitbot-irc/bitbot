@@ -2,11 +2,7 @@
 
 import argparse, os, sys, time
 from src import Cache, Config, Database, EventManager, Exports, IRCBot
-from src import Logging, ModuleManager, Timers
-
-def bool_input(s):
-    result = input("%s (Y/n): " % s)
-    return not result or result[0].lower() in ["", "y"]
+from src import Logging, ModuleManager, Timers, utils
 
 directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -25,15 +21,24 @@ arg_parser.add_argument("--log", "-l",
     help="Location of the main log file",
     default=os.path.join(directory, "logs", "bot.log"))
 
+arg_parser.add_argument("--add-server", "-a",
+    help="Add a new server", action="store_true")
+
 arg_parser.add_argument("--verbose", "-v", action="store_true")
 
 args = arg_parser.parse_args()
 
 log_level = "debug" if args.verbose else "info"
 log = Logging.Log(log_level, args.log)
+database = Database.Database(log, args.database)
+
+if args.add_server:
+    print("Adding a new server")
+    utils.cli.add_server(database)
+    sys.exit(0)
+
 cache = Cache.Cache()
 config = Config.Config(args.config)
-database = Database.Database(log, args.database)
 events = events = EventManager.EventHook(log)
 exports = exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
@@ -69,18 +74,7 @@ if len(server_configs):
 else:
     try:
         if bool_input("no servers found, add one?"):
-            alias = input("alias: ")
-            hostname = input("hostname: ")
-            port = int(input("port: "))
-            tls = bool_input("tls?")
-            password = input("password?: ")
-            ipv4 = bool_input("ipv4?")
-            nickname = input("nickname: ")
-            username = input("username: ")
-            realname = input("realname: ")
-            bindhost = input("bindhost?: ")
-            bot.database.servers.add(alias, hostname, port, password, ipv4,
-                tls, bindhost, nickname, username, realname)
+            utils.cli.add_server(database)
     except KeyboardInterrupt:
         print()
         pass
