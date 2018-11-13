@@ -207,8 +207,9 @@ def to_ansi_colors(s):
                 ansi_bold = False
         elif type == utils.consts.BOLD:
             if bold:
-                replace += utils.consts.ANSI_BOLD_RESET
-            if bold:
+                if not ansi_bold:
+                    replace += utils.consts.ANSI_BOLD_RESET
+            else:
                 replace += utils.consts.ANSI_BOLD
             bold = not bold
 
