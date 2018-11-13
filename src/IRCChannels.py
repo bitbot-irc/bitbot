@@ -18,6 +18,13 @@ class Channels(object):
     def __getitem__(self, name: str):
         return self.get(name)
 
+    def keys(self):
+        return self._channels.keys()
+    def values(self):
+        return self._channels.values()
+    def items(self):
+        return self._channels.items()
+
     def _get_id(self, channel_name: str) -> int:
         self._bot.database.channels.add(self._server.id, channel_name)
         return self._bot.database.channels.get_id(self._server.id, channel_name)
