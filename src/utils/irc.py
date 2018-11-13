@@ -105,7 +105,7 @@ def parse_line(line: str) -> IRCLine:
 
     if line[0] == ":":
         prefix_str, line = line[1:].split(" ", 1)
-        prefix = seperate_hostmask(prefix_str[1:])
+        prefix = seperate_hostmask(prefix_str)
 
     args = []
     command, sep, line = line.partition(" ")
