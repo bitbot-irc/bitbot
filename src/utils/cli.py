@@ -15,5 +15,6 @@ def add_server(database: Database.Database):
     username = input("username: ")
     realname = input("realname: ")
     bindhost = input("bindhost?: ")
-    database.servers.add(alias, hostname, port, password, ipv4, tls, bindhost, nickname, username, realname)
-
+    admin = input("admin nickname: ")
+    id = database.servers.add(alias, hostname, port, password, ipv4, tls,
+        bindhost, nickname, username, realname)

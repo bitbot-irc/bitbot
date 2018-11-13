@@ -17,6 +17,8 @@ class Servers(Table):
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             [alias, hostname, port, password, tls, ipv4, bindhost, nickname,
             username, realname])
+        return self.database.execute_fetchone(
+            "SELECT server_id FROM servers ORDER BY server_id DESC LIMIT 1")[0]
     def get_all(self):
         return self.database.execute_fetchall(
             "SELECT server_id, alias FROM servers")
