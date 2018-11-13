@@ -81,15 +81,15 @@ class Module(ModuleManager.BaseModule):
             url = COMMIT_URL % (full_name, id[:8])
 
             added = utils.irc.color("+%d" % len(commit["added"]),
-                utils.irc.COLOR_GREEN)
+                utils.consts.GREEN)
             added = utils.irc.bold(added)
 
             removed = utils.irc.color("-%d" % len(commit["removed"]),
-                utils.irc.COLOR_RED)
+                utils.consts.RED)
             removed = utils.irc.bold(removed)
 
             modified = utils.irc.color("±%d" % len(commit["modified"]),
-                utils.irc.COLOR_PURPLE)
+                utils.consts.PURPLE)
             modified = utils.irc.bold(modified)
 
             outputs.append("(%s) [%s/%s/%s files] commit by '%s': %s - %s"
@@ -110,10 +110,10 @@ class Module(ModuleManager.BaseModule):
         action_desc = action
         if action == "closed":
             if data["pull_request"]["merged"]:
-                action_desc = utils.irc.color("merged", utils.irc.COLOR_GREEN)
+                action_desc = utils.irc.color("merged", utils.consts.GREEN)
             else:
                 action_desc = utils.irc.color("closed without merging",
-                    utils.irc.COLOR_RED)
+                    utils.consts.RED)
             action_desc = utils.irc.bold(action_desc)
 
         pr_title = data["pull_request"]["title"]

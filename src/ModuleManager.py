@@ -138,7 +138,7 @@ class ModuleManager(object):
         if name in self.waiting_requirement:
             for requirement_name in self.waiting_requirement:
                 self.load_module(bot, requirement_name)
-        self.log.info("Module '%s' loaded", [name])
+        self.log.debug("Module '%s' loaded", [name])
 
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
             blacklist: typing.List[str]=[]):
@@ -173,8 +173,8 @@ class ModuleManager(object):
         references -= 1 # 'del module' removes one reference
         references -= 1 # one of the refs is from getrefcount
 
-        self.log.info("Module '%s' unloaded (%d reference%s)",
+        self.log.debug("Module '%s' unloaded (%d reference%s)",
             [name, references, "" if references == 1 else "s"])
         if references > 0:
-            self.log.info("References left for '%s': %s",
+            self.log.debug("References left for '%s': %s",
                 [name, ", ".join([str(referrer) for referrer in referrers])])

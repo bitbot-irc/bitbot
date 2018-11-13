@@ -20,7 +20,7 @@ CHOICES = [
     "Naturally",
     "Reply hazy, try again later",
     utils.irc.underline(utils.irc.color("DO NOT WASTE MY TIME",
-        utils.irc.COLOR_RED)),
+        utils.consts.RED)),
     "Hmm... Could be!",
     "I'm leaning towards no",
     "Without a doubt",

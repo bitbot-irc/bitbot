@@ -1,4 +1,5 @@
 import json, string, re, typing
+from src import utils
 
 ASCII_UPPER = string.ascii_uppercase
 ASCII_LOWER = string.ascii_lowercase
@@ -117,35 +118,29 @@ def parse_line(line: str) -> IRCLine:
 
     return IRCLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
 
-COLOR_WHITE, COLOR_BLACK, COLOR_BLUE, COLOR_GREEN = 0, 1, 2, 3
-COLOR_RED, COLOR_BROWN, COLOR_PURPLE, COLOR_ORANGE = 4, 5, 6, 7
-COLOR_YELLOW, COLOR_LIGHTGREEN, COLOR_CYAN, COLOR_LIGHTCYAN = (8, 9,
-    10, 11)
-COLOR_LIGHTBLUE, COLOR_PINK, COLOR_GREY, COLOR_LIGHTGREY = (12, 13,
-    14, 15)
-FONT_BOLD, FONT_ITALIC, FONT_UNDERLINE, FONT_INVERT = ("\x02", "\x1D",
-    "\x1F", "\x16")
-FONT_COLOR, FONT_RESET = "\x03", "\x0F"
-REGEX_COLOR = re.compile("%s\d\d(?:,\d\d)?" % FONT_COLOR)
+REGEX_COLOR = re.compile("%s\d\d(?:,\d\d)?" % utils.consts.COLOR)
 
-def color(s: str, foreground: int, background: int=None) -> str:
-    foreground = str(foreground).zfill(2)
+def color(s: str, foreground: utils.consts.IRCColor,
+        background: utils.consts.IRCColor=None) -> str:
+    foreground_s = str(foreground.irc).zfill(2)
+    background_s = ""
     if background:
-        background = str(background).zfill(2)
-    return "%s%s%s%s%s" % (FONT_COLOR, foreground,
-        "" if not background else ",%s" % background, s, FONT_COLOR)
+        background_s = ",%s" % str(background.irc).zfill(2)
+
+    return "%s%s%s%s%s" % (utils.consts.COLOR, foreground_s, background_s, s,
+        utils.consts.COLOR)
 
 def bold(s: str) -> str:
-    return "%s%s%s" % (FONT_BOLD, s, FONT_BOLD)
+    return "%s%s%s" % (utils.consts.BOLD, s, utils.consts.BOLD)
 
 def underline(s: str) -> str:
-    return "%s%s%s" % (FONT_UNDERLINE, s, FONT_UNDERLINE)
+    return "%s%s%s" % (utils.consts.UNDERLINE, s, utils.consts.UNDERLINE)
 
 def strip_font(s: str) -> str:
-    s = s.replace(FONT_BOLD, "")
-    s = s.replace(FONT_ITALIC, "")
+    s = s.replace(utils.consts.BOLD, "")
+    s = s.replace(utils.consts.ITALIC, "")
     s = REGEX_COLOR.sub("", s)
-    s = s.replace(FONT_COLOR, "")
+    s = s.replace(utils.consts.COLOR, "")
     return s
 
 OPT_STR = typing.Optional[str]

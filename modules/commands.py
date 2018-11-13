@@ -1,7 +1,7 @@
 import re
 from src import EventManager, ModuleManager, utils
 
-STR_MORE = "%s (more...)" % utils.irc.FONT_RESET
+STR_MORE = "%s (more...)" % utils.consts.RESET
 STR_CONTINUED = "(...continued) "
 
 COMMAND_METHOD = "command-method"
@@ -44,7 +44,7 @@ class Out(object):
 
             prefix = ""
             if not self._hide_prefix:
-                prefix = utils.irc.FONT_RESET + "[%s] " % self.prefix()
+                prefix = utils.consts.RESET + "[%s] " % self.prefix()
 
             method = self._get_method()
             if method == "PRIVMSG":
@@ -68,11 +68,11 @@ class Out(object):
 class StdOut(Out):
     def prefix(self):
         return utils.irc.color(utils.irc.bold(self.module_name),
-            utils.irc.COLOR_GREEN)
+            utils.consts.GREEN)
 class StdErr(Out):
     def prefix(self):
         return utils.irc.color(utils.irc.bold("!"+self.module_name),
-            utils.irc.COLOR_RED)
+            utils.consts.RED)
 
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:

@@ -19,9 +19,9 @@ class Module(ModuleManager.BaseModule):
     _client = None
 
     PASSENGER_ACTIVITIES = ["U", "P", "R"]
-    COLOURS = [utils.irc.COLOR_LIGHTBLUE, utils.irc.COLOR_GREEN,
-        utils.irc.COLOR_RED, utils.irc.COLOR_CYAN, utils.irc.COLOR_LIGHTGREY,
-        utils.irc.COLOR_ORANGE]
+    COLOURS = [utils.consts.LIGHTBLUE, utils.consts.GREEN,
+        utils.consts.RED, utils.consts.CYAN, utils.consts.LIGHTGREY,
+        utils.consts.ORANGE]
 
     @property
     def client(self):
@@ -184,7 +184,7 @@ class Module(ModuleManager.BaseModule):
             severe_summary = ""
             if nrcc_severe:
                 severe_summary += ", "
-                severe_summary += utils.irc.bold(utils.irc.color("%s severe messages" % nrcc_severe, utils.irc.COLOR_RED))
+                severe_summary += utils.irc.bold(utils.irc.color("%s severe messages" % nrcc_severe, utils.consts.RED))
             station_summary = "%s (%s, %s%s)" % (query["locationName"], query["crs"], query["stationManagerCode"], severe_summary)
 
         if not "trainServices" in query and not "busServices" in query and not "ferryServices" in query:
@@ -365,7 +365,7 @@ class Module(ModuleManager.BaseModule):
         if "delayReason" in query:
             disruptions.append("Delayed (%s%s)" % (query["delayReason"]["value"], " at " + query["delayReason"]["_tiploc"] if query["delayReason"]["_tiploc"] else ""))
         if disruptions and not external:
-            disruptions = utils.irc.color(", ".join(disruptions), utils.irc.COLOR_RED) + " "
+            disruptions = utils.irc.color(", ".join(disruptions), utils.consts.RED) + " "
         elif disruptions and external:
             disruptions = ", ".join(disruptions)
         else: disruptions = ""
@@ -490,7 +490,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("%s%s %s %s (%s/%s/%s): %s" % (disruptions, query["operatorCode"],
                 query["trainid"], query["serviceType"],
-                utils.irc.color(done_count, utils.irc.COLOR_LIGHTBLUE),
+                utils.irc.color(done_count, utils.consts.LIGHTBLUE),
                 len(stations_filtered), total_count,
                 ", ".join([s["summary"] for s in stations_filtered])))
 
