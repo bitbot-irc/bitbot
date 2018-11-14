@@ -73,7 +73,7 @@ if len(server_configs):
     bot.run()
 else:
     try:
-        if bool_input("no servers found, add one?"):
+        if utils.cli.bool_input("no servers found, add one?"):
             utils.cli.add_server(database)
     except KeyboardInterrupt:
         print()
