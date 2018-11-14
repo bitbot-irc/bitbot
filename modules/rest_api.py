@@ -78,6 +78,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         post_body = self.rfile.read(content_length)
         self._handle("post", parsed.path, data=post_body, params=post_params)
 
+    def log_message(self, format, *args):
+        _log.info(format, args)
+
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
     "validate": utils.bool_or_none})
