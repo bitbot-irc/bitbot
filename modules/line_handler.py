@@ -181,6 +181,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.375")
     def motd_start(self, event):
         event["server"].motd_lines.clear()
+        event["server"].motd_lines.append(event["args"][1])
 
     @utils.hook("raw.372")
     def motd_line(self, event):
