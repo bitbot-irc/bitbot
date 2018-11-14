@@ -221,7 +221,7 @@ def to_ansi_colors(s: str) -> str:
                 replace += utils.consts.ANSI_BOLD
             bold = not bold
         elif type == utils.consts.RESET:
-            resplace += utils.consts.ANSI_RESET
+            replace += utils.consts.ANSI_RESET
 
         s = s.replace(token, replace, 1)
 
