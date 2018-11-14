@@ -32,7 +32,7 @@ class Module(ModuleManager.BaseModule):
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         self._channel_message(event["user"], event)
-    @utils.hook("self.message.channel",
+    @utils.hook("send.message.channel",
         priority=EventManager.PRIORITY_MONITOR)
     def self_channel_message(self, event):
         self._channel_message(event["server"].get_user(

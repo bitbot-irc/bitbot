@@ -201,7 +201,7 @@ class Server(IRCObject.Object):
     def parse_data(self, line: str):
         if not line:
             return
-        self.events.on("raw").call_unsafe(server=self, line=line)
+        self.events.on("raw.received").call_unsafe(server=self, line=line)
         self.check_users()
     def check_users(self):
         for user in self.new_users:
@@ -383,37 +383,11 @@ class Server(IRCObject.Object):
         self.send("%sPRIVMSG %s :%s" % (self._tag_str(tags), target,
             full_message))
 
-        action = full_message.startswith("\01ACTION "
-            ) and full_message.endswith("\01")
-
-        if action:
-            message = full_message.split("\01ACTION ", 1)[1][:-1]
-
-        full_message_split = full_message.split()
-        if target in self.channels:
-            channel = self.channels.get(target)
-            channel.buffer.add_message(None, message, action, tags, True)
-            self.events.on("self.message.channel").call(
-                message=full_message, message_split=full_message_split,
-                channel=channel, action=action, server=self)
-        else:
-            user = self.get_user(target)
-            user.buffer.add_message(None, message, action, tags, True)
-            self.events.on("self.message.private").call(
-                message=full_message, message_split=full_message_split,
-                    user=user, action=action, server=self)
-
     def send_notice(self, target: str, message: str, prefix: str=None,
             tags: dict={}):
         full_message = message if not prefix else prefix+message
         self.send("%sNOTICE %s :%s" % (self._tag_str(tags), target,
             full_message))
-        if target in self.channels:
-            self.channels.get(target).buffer.add_notice(None, message, tags,
-                True)
-        else:
-            self.get_user(target).buffer.add_notice(None, message, tags,
-                True)
 
     def send_mode(self, target: str, mode: str=None, args: str=None):
         self.send("MODE %s%s%s" % (target, "" if mode == None else " %s" % mode,
