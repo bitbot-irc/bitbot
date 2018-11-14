@@ -151,6 +151,22 @@ def _color_tokens(s: str) -> typing.List[str]:
     matches = [] # type: typing.List[str]
 
     for char in s:
+        if is_color:
+            if char.isdigit():
+                if background:
+                    background += char
+                else:
+                    foreground += char
+                continue
+            elif char == ",":
+                background += char
+                continue
+            else:
+                matches.append("\x03%s%s" % (foreground, background))
+                is_color = False
+                foreground = ""
+                background = ""
+
         if char == utils.consts.COLOR:
             if is_color:
                 matches.append(char)
@@ -158,24 +174,11 @@ def _color_tokens(s: str) -> typing.List[str]:
                 is_color = True
         elif char == utils.consts.BOLD:
             matches.append(char)
-        elif is_color:
-            if char.isdigit():
-                if background:
-                    background += char
-                else:
-                    foreground += char
-            elif char == ",":
-                background += char
-            else:
-                matches.append("\x03%s%s" % (foreground, background))
-                is_color = False
-                foreground = ""
-                background = ""
     return matches
 
 def to_ansi_colors(s: str) -> str:
     color = False
-    ansi_bold = False
+    color_bold = False
     bold = False
 
     for token in _color_tokens(s):
@@ -189,25 +192,25 @@ def to_ansi_colors(s: str) -> str:
                 code = int(foreground_match.lstrip("0") or "0")
                 foreground = utils.consts.COLOR_CODES[code]
 
-                if ansi_bold and not foreground.ansi_bold and not bold:
-                    ansi_bold = False
-                    replace += utils.consts.ANSI_RESET
+                if color_bold and not foreground.color_bold and not bold:
+                    color_bold = False
+                    replace += utils.consts.ANSI_BOLD_RESET
 
                 color = True
                 replace += utils.consts.ANSI_FORMAT % foreground.ansi
-                if foreground.ansi_bold:
-                    ansi_bold = True
+                if foreground.color_bold:
+                    color_bold = True
                     replace += utils.consts.ANSI_BOLD
             else:
                 if color:
                     replace += utils.consts.ANSI_COLOR_RESET
-                    if ansi_bold and not bold:
+                    if color_bold and not bold:
                         replace += utils.consts.ANSI_BOLD_RESET
                 color = False
-                ansi_bold = False
+                color_bold = False
         elif type == utils.consts.BOLD:
             if bold:
-                if not ansi_bold:
+                if not color_bold:
                     replace += utils.consts.ANSI_BOLD_RESET
             else:
                 replace += utils.consts.ANSI_BOLD

@@ -4,15 +4,15 @@ BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
 BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
 
 class IRCColor(object):
-    def __init__(self, irc: int, ansi: int, ansi_bold: bool):
+    def __init__(self, irc: int, ansi: int, color_bold: bool):
         self.irc = irc
         self.ansi = ansi
-        self.ansi_bold = ansi_bold
+        self.color_bold = color_bold
 
 COLOR_NAMES = {}
 COLOR_CODES = {}
-def _color(name: str, irc: int, ansi: int, ansi_bold: bool):
-    color = IRCColor(irc, ansi, ansi_bold)
+def _color(name: str, irc: int, ansi: int, color_bold: bool):
+    color = IRCColor(irc, ansi, color_bold)
     COLOR_NAMES[name] = color
     COLOR_CODES[irc] = color
     return color
