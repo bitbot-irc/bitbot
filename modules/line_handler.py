@@ -460,7 +460,7 @@ class Module(ModuleManager.BaseModule):
 
             self._event(event, "server-notice", message=message,
                 message_split=message_split, server=event["server"])
-        elif "prefix" in event:
+        else:
             user = None
             user_nickname = None
             if "prefix" in event:
@@ -479,11 +479,11 @@ class Module(ModuleManager.BaseModule):
                 self._event(event, "notice.private", user=user, **kwargs)
                 user.buffer.add_notice(user.nickname, message, event["tags"],
                     False)
-        else:
-            # a notice we've sent to a user
-            user = event["server"].get_user(target)
-            user.buffer.add_message(None, message, event["tags"], True)
-            self._event(event, "notice.private", user=user, **kwargs)
+            elif not "prefix" in event:
+                # a notice we've sent to a user
+                user = event["server"].get_user(target)
+                user.buffer.add_message(None, message, event["tags"], True)
+                self._event(event, "notice.private", user=user, **kwargs)
 
     # IRCv3 TAGMSG, used to send tags without any other information
     @utils.hook("raw.received.tagmsg")
