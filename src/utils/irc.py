@@ -258,8 +258,8 @@ def parse_ctcp(s: str) -> typing.Optional[CTCPMessage]:
     ctcp = s.startswith("\x01")
     if s.startswith("\x01"):
         ctcp_command, sep, ctcp_message = s[1:].partition(" ")
-        if message.endswith("\x01"):
-            message = message[:-1]
+        if ctcp_message.endswith("\x01"):
+            ctcp_message = message[:-1]
         return CTCPMessage(ctcp_command, ctcp_message)
 
     return None
