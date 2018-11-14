@@ -429,7 +429,7 @@ class Module(ModuleManager.BaseModule):
             "server": event["server"], "tags": event["tags"],
             "action": action}
 
-        if is_channel:
+        if channel:
             self._event(event, "message.channel", user=user, channel=channel,
                 **kwargs)
             channel.buffer.add_message(user_nickname, message, action,
@@ -460,7 +460,7 @@ class Module(ModuleManager.BaseModule):
 
             self._event(event, "server-notice", message=message,
                 message_split=message_split, server=event["server"])
-        else:
+        elif "prefix" in event:
             user = None
             user_nickname = None
             if "prefix" in event:
@@ -473,13 +473,13 @@ class Module(ModuleManager.BaseModule):
                 channel = event["server"].channels.get(target)
                 self._event(event, "notice.channel", user=user, channel=channel,
                     **kwargs)
-                channel.buffer.add_notice(user_nickname, message, False,
-                    event["tags"], user==None)
+                channel.buffer.add_notice(user_nickname, message, event["tags"],
+                    user==None)
             elif event["server"].is_own_nickname(target):
                 self._event(event, "notice.private", user=user, **kwargs)
-                user.buffer.add_notice(user.nickname, message, False,
-                    event["tags"], False)
-        elif not "prefix" in event:
+                user.buffer.add_notice(user.nickname, message, event["tags"],
+                    False)
+        else:
             # a notice we've sent to a user
             user = event["server"].get_user(target)
             user.buffer.add_message(None, message, action, event["tags"], True)
