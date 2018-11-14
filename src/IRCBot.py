@@ -130,7 +130,8 @@ class Bot(object):
         del self.servers[server.fileno()]
 
     def _timed_reconnect(self, event: EventManager.Event):
-        if not self.reconnect(event["server_id"], event["connection_params"]):
+        if not self.reconnect(event["server_id"],
+                event.get("connection_params", None)):
             event["timer"].redo()
     def reconnect(self, server_id: int, connection_params: typing.Optional[
             utils.irc.IRCConnectionParameters]=None) -> bool:
