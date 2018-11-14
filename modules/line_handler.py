@@ -452,7 +452,7 @@ class Module(ModuleManager.BaseModule):
         message_split = message.split(" ")
         target = event["args"][0]
 
-        if "prefix" in event and (not event["prefix"]) or
+        if "prefix" in event and (not event["prefix"] or
                 event["prefix"].hostmask == event["server"].name or
                 target == "*" or
                 (not event["prefix"].hostname and not event["server"].name)):
