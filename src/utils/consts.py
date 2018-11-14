@@ -8,6 +8,8 @@ class IRCColor(object):
         self.irc = irc
         self.ansi = ansi
         self.color_bold = color_bold
+    def ansi_background(self):
+        return self.ansi+10
 
 COLOR_NAMES = {}
 COLOR_CODES = {}
@@ -43,6 +45,7 @@ RESET     = "\x0F"
 
 ANSI_FORMAT      = "\033[%sm"
 ANSI_RESET       = "\033[0m"
-ANSI_COLOR_RESET = "\033[39m"
+ANSI_FOREGROUND_RESET = "\033[39m"
+ANSI_BACKGROUND_RESET = "\033[49m"
 ANSI_BOLD        = "\033[1m"
 ANSI_BOLD_RESET  = "\033[22m"
