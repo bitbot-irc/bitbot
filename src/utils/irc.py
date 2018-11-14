@@ -144,11 +144,11 @@ def strip_font(s: str) -> str:
     s = s.replace(utils.consts.COLOR, "")
     return s
 
-def _color_tokenize(s):
+def _color_tokens(s: str) -> typing.List[str]:
     is_color = False
     foreground = ""
     background = ""
-    matches = []
+    matches = [] # type: typing.List[str]
 
     for char in s:
         if char == utils.consts.COLOR:
@@ -173,12 +173,12 @@ def _color_tokenize(s):
                 background = ""
     return matches
 
-def to_ansi_colors(s):
+def to_ansi_colors(s: str) -> str:
     color = False
     ansi_bold = False
     bold = False
 
-    for token in _color_tokenize(s):
+    for token in _color_tokens(s):
         replace = ""
         type = token[0]
 
