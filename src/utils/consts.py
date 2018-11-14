@@ -17,21 +17,21 @@ def _color(name: str, irc: int, ansi: int, color_bold: bool):
     COLOR_CODES[irc] = color
     return color
 
-WHITE      = _color("white",       0,  37, True)
+WHITE      = _color("white",       0,  97, False)
 BLACK      = _color("black",       1,  30, False)
 BLUE       = _color("blue",        2,  34, False)
 GREEN      = _color("green",       3,  32, False)
-RED        = _color("red",         4,  31, True)
+RED        = _color("red",         4,  91, False)
 BROWN      = _color("brown",       5,  31, False)
 PURPLE     = _color("purple",      6,  35, False)
 ORANGE     = _color("orange",      7,  33, False)
-YELLOW     = _color("yellow",      8,  33, True)
-LIGHTGREEN = _color("light green", 9,  32, True)
+YELLOW     = _color("yellow",      8,  93, False)
+LIGHTGREEN = _color("light green", 9,  92, False)
 CYAN       = _color("cyan",        10, 36, False)
-LIGHTCYAN  = _color("light cyan",  11, 36, True)
-LIGHTBLUE  = _color("light blue",  12, 34, True)
-PINK       = _color("pink",        13, 35, True)
-GREY       = _color("grey",        14, 30, True)
+LIGHTCYAN  = _color("light cyan",  11, 96, False)
+LIGHTBLUE  = _color("light blue",  12, 94, False)
+PINK       = _color("pink",        13, 95, False)
+GREY       = _color("grey",        14, 90, False)
 LIGHTGREY  = _color("light grey",  15, 37, False)
 
 BOLD      = "\x02"
