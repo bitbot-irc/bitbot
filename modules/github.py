@@ -82,11 +82,11 @@ class Module(ModuleManager.BaseModule):
 
             added = utils.irc.color("+%d" % len(commit["added"]),
                 utils.consts.GREEN)
-            added = utils.irc.bold(added)
+            added = added+utils.irc.bold("")
 
             removed = utils.irc.color("-%d" % len(commit["removed"]),
                 utils.consts.RED)
-            removed = utils.irc.bold(removed)
+            removed = removed+utils.irc.bold("")
 
             modified = utils.irc.color("±%d" % len(commit["modified"]),
                 utils.consts.PURPLE)
