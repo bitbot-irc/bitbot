@@ -482,7 +482,7 @@ class Module(ModuleManager.BaseModule):
         else:
             # a notice we've sent to a user
             user = event["server"].get_user(target)
-            user.buffer.add_message(None, message, action, event["tags"], True)
+            user.buffer.add_message(None, message, event["tags"], True)
             self._event(event, "notice.private", user=user, **kwargs)
 
     # IRCv3 TAGMSG, used to send tags without any other information
