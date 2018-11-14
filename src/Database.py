@@ -317,7 +317,7 @@ class Database(object):
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
         self.log.trace("executed query in %fms: \"%s\" (params: %s)",
-            [total_millisecons, printable_query, params])
+            [total_milliseconds, printable_query, params])
 
         return value
     def execute_fetchall(self, query: str, params: typing.List=[]):
