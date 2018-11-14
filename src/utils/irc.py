@@ -201,10 +201,11 @@ def to_ansi_colors(s: str) -> str:
                     replace += utils.consts.ANSI_BOLD_RESET
 
                 color = True
-                replace += utils.consts.ANSI_FORMAT % foreground.ansi
+                foreground_s = str(foreground.ansi).zfill(2)
                 if foreground.color_bold:
                     color_bold = True
-                    replace += utils.consts.ANSI_BOLD
+                    foreground_s = "%s;1" % foreground_s
+                replace += utils.consts.ANSI_FORMAT % foreground_s
             else:
                 if color:
                     replace += utils.consts.ANSI_COLOR_RESET
