@@ -178,8 +178,6 @@ class EventHook(object):
     def _call(self, kwargs: dict, safe: bool, maximum: typing.Optional[int]
             ) -> typing.List[typing.Any]:
         event_path = self._get_path()
-        self.log.trace("calling event: \"%s\" (params: %s)",
-            [event_path, kwargs])
         start = time.monotonic()
 
         event = self._make_event(kwargs)
@@ -197,8 +195,8 @@ class EventHook(object):
                     raise
 
         total_milliseconds = (time.monotonic() - start) * 1000
-        self.log.trace("event \"%s\" called in %fms", [
-            event_path, total_milliseconds])
+        self.log.trace("called event in %fms: \"%s\" (params: %s)",
+            [total_milliseconds, event_path, kwargs])
 
         self.check_purge()
 
