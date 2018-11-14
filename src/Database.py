@@ -307,8 +307,6 @@ class Database(object):
             fetch_func: typing.Callable[[sqlite3.Cursor], typing.Any],
             params: typing.List=[]):
         printable_query = " ".join(query.split())
-        self.log.trace("executing query: \"%s\" (params: %s)",
-            [printable_query, params])
         start = time.monotonic()
 
         cursor = self.cursor()
@@ -318,7 +316,8 @@ class Database(object):
 
         end = time.monotonic()
         total_milliseconds = (end - start) * 1000
-        self.log.trace("executed in %fms", [total_milliseconds])
+        self.log.trace("executed query in %fms: \"%s\" (params: %s)",
+            [total_millisecons, printable_query, params])
 
         return value
     def execute_fetchall(self, query: str, params: typing.List=[]):
