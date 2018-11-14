@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
         if not phrase:
             phrase = event["target"].buffer.get()
             if phrase:
-                phrase = phrase.message
+                phrase = utils.irc.strip_font(phrase.message)
         if not phrase:
             raise utils.EventError("No phrase provided.")
         source_language = "auto"
