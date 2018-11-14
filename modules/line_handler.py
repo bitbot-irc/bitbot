@@ -401,11 +401,24 @@ class Module(ModuleManager.BaseModule):
         message = event["args"][1]
         message_split = message.split(" ")
         target = event["args"][0]
-        action = message.startswith("\x01ACTION ")
-        if action:
-            message = message.replace("\x01ACTION ", "", 1)
-            if message.endswith("\x01"):
-                message = message[:-1]
+
+        channel = None
+        if target[0] in event["server"].channel_types:
+            channel = event["server"].channels.get(event["args"][0])
+
+        action = False
+        ctcp_message = utils.irc.parse_ctcp(message)
+        if ctcp_message:
+            if ctcp_message.command == "ACTION":
+                action = True
+                message = ctcp_message.message
+            else:
+                if channel:
+                    self._event(event, "ctcp.channel", channel=channel,
+                        ctcp=ctcp_message)
+                else:
+                    self._event(event, "ctcp.private", user=user,
+                        ctcp=ctcp_message)
 
         if user and "account" in event["tags"]:
             user.identified_account = event["tags"]["account"]
@@ -416,44 +429,61 @@ class Module(ModuleManager.BaseModule):
             "server": event["server"], "tags": event["tags"],
             "action": action}
 
-        if target[0] in event["server"].channel_types:
-            channel = event["server"].channels.get(event["args"][0])
+        if is_channel:
             self._event(event, "message.channel", user=user, channel=channel,
                 **kwargs)
             channel.buffer.add_message(user_nickname, message, action,
                 event["tags"], user==None)
         elif event["server"].is_own_nickname(target):
             self._event(event, "message.private", user=user, **kwargs)
-            user.buffer.add_message(user_nickname, message, action,
-                event["tags"], user=None)
+            user.buffer.add_message(user.nickname, message, action,
+                event["tags"], False)
+        elif not "prefix" in event:
+            # a message we've sent to a user
+            user = event["server"].get_user(target)
+            user.buffer.add_message(None, message, action, event["tags"], True)
+            self._event(event, "message.private", user=user, **kwargs)
 
-    # we've received a notice
+    # we've received/sent a notice
     @utils.hook("raw.received.notice")
+    @utils.hook("raw.send.notice")
     def notice(self, event):
         message = event["args"][1]
         message_split = message.split(" ")
         target = event["args"][0]
 
-        if not event["prefix"] or event["prefix"].hostmask == event["server"
-                ].name or target == "*" or (not event["prefix"].hostname and
-                not event["server"].name):
+        if (("prefix" in event and not event["prefix"]) or
+                event["prefix"].hostmask == event["server"].name or
+                target == "*" or
+                (not event["prefix"].hostname and not event["server"].name)):
             event["server"].name = event["prefix"].hostmask
 
             self._event(event, "server-notice", message=message,
                 message_split=message_split, server=event["server"])
         else:
-            user = event["server"].get_user(event["prefix"].nickname)
+            user = None
+            user_nickname = None
+            if "prefix" in event:
+                user = event["server"].get_user(event["prefix"].nickname)
+
+            kwargs = {"message": message, "message_split": message_split,
+                "server": event["server"], "tags": event["tags"]}
 
             if target[0] in event["server"].channel_types:
                 channel = event["server"].channels.get(target)
-                self._event(event, "notice.channel", message=message,
-                    message_split=message_split, user=user,
-                    server=event["server"], channel=channel,
-                    tags=event["tags"])
+                self._event(event, "notice.channel", user=user, channel=channel,
+                    **kwargs)
+                channel.buffer.add_notice(user_nickname, message, False,
+                    event["tags"], user==None)
             elif event["server"].is_own_nickname(target):
-                self._event(event, "notice.private", message=message,
-                    message_split=message_split, user=user,
-                    server=event["server"], tags=event["tags"])
+                self._event(event, "notice.private", user=user, **kwargs)
+                user.buffer.add_notice(user.nickname, message, False,
+                    event["tags"], False)
+        elif not "prefix" in event:
+            # a notice we've sent to a user
+            user = event["server"].get_user(target)
+            user.buffer.add_message(None, message, action, event["tags"], True)
+            self._event(event, "notice.private", user=user, **kwargs)
 
     # IRCv3 TAGMSG, used to send tags without any other information
     @utils.hook("raw.received.tagmsg")
