@@ -114,6 +114,8 @@ class Module(ModuleManager.BaseModule):
                 action_desc = utils.irc.color("closed without merging",
                     utils.consts.RED)
             action_desc = utils.irc.bold(action_desc)
+        elif action == "synchronize":
+            action_desc = "committed to"
 
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
