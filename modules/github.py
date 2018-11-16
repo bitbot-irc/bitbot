@@ -67,32 +67,32 @@ class Module(ModuleManager.BaseModule):
 
     def push(self, event, full_name, data):
         outputs = []
-        for commit in data["commits"]:
-            id = commit["id"]
+        if len(data["commits"]) <= 3:
+            for commit in data["commits"]:
+                id = commit["id"]
 
-            message = commit["message"].split("\n")
-            message = [line.strip() for line in message]
-            message = " ".join(message)
+                message = commit["message"].split("\n")
+                message = "".join(line.strip() for line in message)
+                author = commit["author"]["name"] or commit["author"]["login"]
+                author = utils.irc.bold(author)
 
-            author = "%s <%s>" % (commit["author"]["username"],
-                commit["author"]["email"])
-            author = utils.irc.bold(author)
+                url = COMMIT_URL % (full_name, id[:8])
 
-            url = COMMIT_URL % (full_name, id[:8])
+                added = utils.irc.color("+%d" % len(commit["added"]),
+                    utils.consts.GREEN)
+                added = added+utils.irc.bold("")
 
-            added = utils.irc.color("+%d" % len(commit["added"]),
-                utils.consts.GREEN)
-            added = added+utils.irc.bold("")
+                removed = utils.irc.color("-%d" % len(commit["removed"]),
+                    utils.consts.RED)
+                removed = removed+utils.irc.bold("")
 
-            removed = utils.irc.color("-%d" % len(commit["removed"]),
-                utils.consts.RED)
-            removed = removed+utils.irc.bold("")
+                modified = utils.irc.color("±%d" % len(commit["modified"]),
+                    utils.consts.PURPLE)
 
-            modified = utils.irc.color("±%d" % len(commit["modified"]),
-                utils.consts.PURPLE)
+                outputs.append("(%s) [%s/%s/%s files] commit by '%s': %s - %s"
+                    % (full_name, added, removed, modified, author, message,
+                    url))
 
-            outputs.append("(%s) [%s/%s/%s files] commit by '%s': %s - %s"
-                % (full_name, added, removed, modified, author, message, url))
         return outputs
 
 
