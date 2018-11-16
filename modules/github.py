@@ -2,6 +2,7 @@ import json
 from src import ModuleManager, utils
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
+COMMIT_RANGE_URL = "https://github.com/%s/compare/%s…%s"
 
 COMMENT_ACTIONS = {
     "created": "commented",
@@ -65,33 +66,50 @@ class Module(ModuleManager.BaseModule):
             module_name="Github", server=server, message=line,
             hide_prefix=channel.get_setting("github-hide-prefix", False))
 
+    def _change_count(self, n, symbol, color):
+        return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold()
+    def _added(self, n):
+        return self._change_count(n, "+", utils.const.GREEN)
+    def _removed(self, n):
+        return self._change_count(n, "-", utils.const.RED)
+    def _modified(self, n):
+        return self._change_count(n, "±", utils.const.PURPLE)
+
+    def _short_hash(self, hash):
+        return hash[:8]
+
     def push(self, event, full_name, data):
         outputs = []
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
-                id = commit["id"]
-
+                id = self._short_hash(commit["id"])
                 message = commit["message"].split("\n")
                 message = "".join(line.strip() for line in message)
                 author = commit["author"]["name"] or commit["author"]["login"]
                 author = utils.irc.bold(author)
+                url = COMMIT_URL % (full_name, id)
 
-                url = COMMIT_URL % (full_name, id[:8])
-
-                added = utils.irc.color("+%d" % len(commit["added"]),
-                    utils.consts.GREEN)
-                added = added+utils.irc.bold("")
-
-                removed = utils.irc.color("-%d" % len(commit["removed"]),
-                    utils.consts.RED)
-                removed = removed+utils.irc.bold("")
-
-                modified = utils.irc.color("±%d" % len(commit["modified"]),
-                    utils.consts.PURPLE)
+                added = self._added(len(commit["added"]))
+                removed = self._removed(len(commit["removed"]))
+                modified = self._modified(len(command["modified"]))
 
                 outputs.append("(%s) [%s/%s/%s files] commit by '%s': %s - %s"
                     % (full_name, added, removed, modified, author, message,
                     url))
+        else:
+            first_id = self._short_hash(data["commits"][0]["id"])
+            last_id = self._short_hash(data["commits"][-1]["id"])
+            pusher = data["pusher"]["name"]
+            url = COMMIT_RANGE_URL % (full_name, first_id, last_id)
+
+            added = self._added(sum(len(c["added"]) for c in data["commits"]))
+            removed = self._removed(
+                sum(len(c["removed"]) for c in data["commits"]))
+            modified = self._modified(
+                sum(len(c["modified"]) for c in data["commits"]))
+            outputs.append("(%s) [%s/%s/%s files] '%s' pushed %d commits - %s"
+                % (full_name, added, removed, modified, pusher,
+                len(data["commits"], url))
 
         return outputs
 
