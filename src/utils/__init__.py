@@ -98,7 +98,8 @@ def parse_number(s: str) -> str:
     try:
         number = decimal.Decimal(number_str)
     except:
-        raise ValueError("Invalid format '%s' passed to parse_number" % number)
+        raise ValueError("Invalid format '%s' passed to parse_number" %
+            number_str)
 
     if unit == "k":
         number *= decimal.Decimal("1_000")
