@@ -30,8 +30,10 @@ class Module(ModuleManager.BaseModule):
         for i in range(0, num_of_die):
             results.append(random.randint(1, sides_of_die))
 
-        total = sum(results)
+        total_n = sum(results)
         results = ', '.join(map(str, results))
-
-        event["stdout"].write("Rolled %s for a total of %d: %s" % (
-            str_roll, str(total), results))
+        total = ""
+        if len(results) > 1:
+            total = " (total: %d)" % total_n
+        event["stdout"].write("Rolled %s and got %s%s" % (
+            str_roll, str(total_n), total))
