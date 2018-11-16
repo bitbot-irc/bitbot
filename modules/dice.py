@@ -36,4 +36,4 @@ class Module(ModuleManager.BaseModule):
         if len(results) > 1:
             total = " (total: %d)" % total_n
         event["stdout"].write("Rolled %s and got %s%s" % (
-            str_roll, str(total_n), total))
+            str_roll, ", ".join(results), total))
