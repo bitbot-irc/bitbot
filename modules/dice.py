@@ -31,7 +31,6 @@ class Module(ModuleManager.BaseModule):
             results.append(random.randint(1, sides_of_die))
 
         total_n = sum(results)
-        results = ', '.join(map(str, results))
         total = ""
         if len(results) > 1:
             total = " (total: %d)" % total_n
