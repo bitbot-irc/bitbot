@@ -109,7 +109,7 @@ class Module(ModuleManager.BaseModule):
                 sum(len(c["modified"]) for c in data["commits"]))
             outputs.append("(%s) [%s/%s/%s files] '%s' pushed %d commits - %s"
                 % (full_name, added, removed, modified, pusher,
-                len(data["commits"], url))
+                len(data["commits"]), url))
 
         return outputs
 
