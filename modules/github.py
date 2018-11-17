@@ -2,7 +2,7 @@ import itertools, json
 from src import ModuleManager, utils
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
-COMMIT_RANGE_URL = "https://github.com/%s/compare/%s…%s"
+COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
 
 COMMENT_ACTIONS = {
