@@ -131,8 +131,7 @@ class Module(ModuleManager.BaseModule):
         commit = data["commit_id"][:8]
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = data["comment"]["html_url"]
-        return ["[commit/%s] %s commented" %
-            (commit, commenter, action)]
+        return ["[commit/%s] %s commented" % (commit, commenter, action)]
 
     def pull_request(self, event, full_name, data):
         action = data["action"]
@@ -150,8 +149,7 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = data["pull_request"]["html_url"]
-        return ["[pr] %s %s: %s - %s" %
-            (author, action_desc, pr_title, url)]
+        return ["[pr] %s %s: %s - %s" % (author, action_desc, pr_title, url)]
 
     def pull_request_review(self, event, full_name, data):
         if data["review"]["state"] == "commented":
@@ -161,8 +159,8 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["review"]["user"]["login"])
         url = data["review"]["html_url"]
-        return ["[pr] %s %s a review on: %s - %s" %
-            (reviewer, action, pr_title, url)]
+        return ["[pr] %s %s a review on: %s - %s" % (reviewer, action, pr_title,
+            url)]
 
     def pull_request_review_comment(self, event, full_name, data):
         action = data["action"]
@@ -177,8 +175,7 @@ class Module(ModuleManager.BaseModule):
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = data["issue"]["html_url"]
-        return ["[issue] %s %s: %s - %s" %
-            (author, action, issue_title, url)]
+        return ["[issue] %s %s: %s - %s" % (author, action, issue_title, url)]
     def issue_comment(self, event, full_name, data):
         action = data["action"]
         issue_title = data["issue"]["title"]
@@ -194,15 +191,13 @@ class Module(ModuleManager.BaseModule):
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = CREATE_URL % (full_name, ref)
-        return ["%s created a %s: %s - %s" %
-            (sender, type, ref, url)]
+        return ["%s created a %s: %s - %s" % (sender, type, ref, url)]
 
     def delete(self, event, full_name, data):
         ref = data["ref"]
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        return ["%s deleted a %s: %s" %
-            (sender, type, ref)]
+        return ["%s deleted a %s: %s" % (sender, type, ref)]
 
     def release(self, event, full_name, data):
         action = data["action"]
@@ -212,5 +207,4 @@ class Module(ModuleManager.BaseModule):
             name = ": %s"
         author = utils.irc.bold(data["release"]["author"]["login"])
         url = data["release"]["html_url"]
-        return ["%s %s a release%s - %s" %
-            (author, action, name, url)]
+        return ["%s %s a release%s - %s" % (author, action, name, url)]
