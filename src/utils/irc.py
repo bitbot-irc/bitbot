@@ -217,11 +217,11 @@ def to_ansi_colors(s: str) -> str:
                     replace += utils.consts.ANSI_FORMAT % background
             else:
                 if has_foreground:
+                    has_foreground = False
                     replace += utils.consts.ANSI_FOREGROUND_RESET
                 if has_background:
+                    has_background = False
                     replace += utils.consts.ANSI_BACKGROUND_RESET
-                has_foreground = False
-                has_background = False
         elif type == utils.consts.BOLD:
             if bold:
                 replace += utils.consts.ANSI_BOLD_RESET
