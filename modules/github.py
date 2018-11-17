@@ -3,6 +3,7 @@ from src import ModuleManager, utils
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s…%s"
+TAG_URL = "https://github.com/%s/releases/tag/%s"
 
 COMMENT_ACTIONS = {
     "created": "commented",
@@ -83,7 +84,13 @@ class Module(ModuleManager.BaseModule):
 
     def push(self, event, full_name, data):
         outputs = []
-        if len(data["commits"]) <= 3:
+        ref = data["ref"]
+        if ref.startswith("refs/tags/"):
+            tag = ref.split("refs/tags/", 1)[1]
+            pusher = utils.irc.bold(data["pusher"]["name"])
+            outputs.append("(%s) %s pushed new tag: %s - %s"
+                % (full_name, pusher, tag, TAG_URL % tag))
+        elif len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 id = self._short_hash(commit["id"])
                 message = commit["message"].split("\n")[0].strip()
