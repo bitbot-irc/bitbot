@@ -53,6 +53,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.issues(event, full_name, data)
         elif github_event == "create":
             outputs = self.create(event, full_name, data)
+        elif github_event == "delete":
+            outputs = self.delete(event, full_name, data)
 
         if outputs:
             for server_id, channel_name, _ in hooks:
@@ -190,3 +192,10 @@ class Module(ModuleManager.BaseModule):
         url = CREATE_URL % (full_name, ref)
         return ["(%s) %s created a %s: %s - %s" %
             (full_name, sender, type, ref, url)]
+
+    def delete(self, event, full_name, data):
+        ref = data["ref"]
+        type = data["ref_type"]
+        sender = utils.irc.bold(data["sender"]["login"])
+        return ["(%s) %s deleted a %s: %s - %s" %
+            (full_name, sender, type, ref)]
