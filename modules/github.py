@@ -1,4 +1,4 @@
-import json
+import itertools, json
 from src import ModuleManager, utils
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
