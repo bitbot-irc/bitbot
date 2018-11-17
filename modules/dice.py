@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
         :usage: [1-5]d[1-20]
         """
         roll = event["args_split"][0].lower()
-        count, sides = roll.partition("d")
+        count, _, sides = roll.partition("d")
         if not count.isdigit() or not sides.isdigit():
             raise utils.EventError(ERROR_FORMAT)
 
