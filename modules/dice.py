@@ -26,4 +26,4 @@ class Module(ModuleManager.BaseModule):
             total = " (total: %d)" % total_n
 
         event["stdout"].write("Rolled %s and got %s%s" % (
-            roll, total_n, ", ".join(results)))
+            roll, total_n, ", ".join(str(r) for r in results)))
