@@ -201,7 +201,7 @@ class Module(ModuleManager.BaseModule):
 
     def release(self, event, full_name, data):
         action = data["action"]
-        tag = data["release"]["tag"]
+        tag = data["release"]["tag_name"]
         name = data["release"]["name"] or ""
         if name:
             name = ": %s"
