@@ -81,11 +81,9 @@ class Module(ModuleManager.BaseModule):
             outputs = self.release(event, full_name, data)
 
         if outputs:
-            for server_id, channel_name, _ in hooks:
+            for server, channel in targets:
                 for output in outputs:
                     output = "(%s) %s" % (full_name, output)
-                    server = self.bot.get_server(server_id)
-                    channel = server.channels.get(channel_name)
                     trigger = self._make_trigger(channel, server, output)
                     self.bot.trigger(trigger)
 
