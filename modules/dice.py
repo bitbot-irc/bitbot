@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
         count_n = min(5, int(count))
         sides_n = min(20, int(sides))
 
-        reults = random.choices(range(1, sides_n), k=count_n)
+        results = random.choices(range(1, sides_n), k=count_n)
 
         total_n = sum(results)
         total = ""
