@@ -69,11 +69,11 @@ class Module(ModuleManager.BaseModule):
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold()
     def _added(self, n):
-        return self._change_count(n, "+", utils.const.GREEN)
+        return self._change_count(n, "+", utils.consts.GREEN)
     def _removed(self, n):
-        return self._change_count(n, "-", utils.const.RED)
+        return self._change_count(n, "-", utils.consts.RED)
     def _modified(self, n):
-        return self._change_count(n, "±", utils.const.PURPLE)
+        return self._change_count(n, "±", utils.consts.PURPLE)
 
     def _short_hash(self, hash):
         return hash[:8]
