@@ -67,7 +67,7 @@ class Module(ModuleManager.BaseModule):
             hide_prefix=channel.get_setting("github-hide-prefix", False))
 
     def _change_count(self, n, symbol, color):
-        return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold()
+        return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
     def _added(self, n):
         return self._change_count(n, "+", utils.consts.GREEN)
     def _removed(self, n):
