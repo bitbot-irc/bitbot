@@ -102,7 +102,7 @@ class Module(ModuleManager.BaseModule):
         else:
             first_id = self._short_hash(data["before"])
             last_id = self._short_hash(data["commits"][-1]["id"])
-            pusher = utils.irc.bol(data["pusher"]["name"])
+            pusher = utils.irc.bold(data["pusher"]["name"])
             url = COMMIT_RANGE_URL % (full_name, first_id, last_id)
 
             commits = data["commits"]
