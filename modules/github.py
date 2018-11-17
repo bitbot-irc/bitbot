@@ -94,7 +94,7 @@ class Module(ModuleManager.BaseModule):
 
                 added = self._added(len(commit["added"]))
                 removed = self._removed(len(commit["removed"]))
-                modified = self._modified(len(command["modified"]))
+                modified = self._modified(len(commit["modified"]))
 
                 outputs.append("(%s) [%s/%s/%s files] commit by '%s': %s - %s"
                     % (full_name, added, removed, modified, author, message,
