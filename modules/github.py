@@ -91,6 +91,7 @@ class Module(ModuleManager.BaseModule):
 
     def push(self, event, full_name, data):
         outputs = []
+        branch = data["ref"].split("/", 2)[2]
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 id = self._short_hash(commit["id"])
@@ -103,8 +104,8 @@ class Module(ModuleManager.BaseModule):
                 removed = self._removed(len(commit["removed"]))
                 modified = self._modified(len(commit["modified"]))
 
-                outputs.append("[%s/%s/%s files] commit by '%s': %s - %s"
-                    % (added, removed, modified, author, message, url))
+                outputs.append("[%s/%s/%s files] commit by %s to %s: %s - %s"
+                    % (added, removed, modified, author, branch, message, url))
         else:
             branch = data["ref"].split("/", 2)[2]
             first_id = self._short_hash(data["before"])
@@ -118,8 +119,9 @@ class Module(ModuleManager.BaseModule):
             modified = self._modified(len(self._flat_unique(commits,
                 "modified")))
 
-            outputs.append("[%s/%s/%s files] '%s' pushed %d commits - %s"
-                % (added, removed, modified, pusher, len(data["commits"]), url))
+            outputs.append("[%s/%s/%s files] %s pushed %d commits to %s - %s"
+                % (added, removed, modified, pusher, len(data["commits"]),
+                branch, url))
 
         return outputs
 
