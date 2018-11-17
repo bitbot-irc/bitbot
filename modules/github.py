@@ -55,6 +55,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.create(event, full_name, data)
         elif github_event == "delete":
             outputs = self.delete(event, full_name, data)
+        elif github_event == "release":
+            outputs = self.release(event, full_name, data)
 
         if outputs:
             for server_id, channel_name, _ in hooks:
@@ -199,3 +201,14 @@ class Module(ModuleManager.BaseModule):
         sender = utils.irc.bold(data["sender"]["login"])
         return ["(%s) %s deleted a %s: %s" %
             (full_name, sender, type, ref)]
+
+    def release(self, event, full_name, data):
+        action = data["action"]
+        tag = data["release"]["tag"]
+        name = data["release"]["name"] or ""
+        if name:
+            name = ": %s"
+        author = utils.irc.bold(data["release"]["author"]["login"])
+        url = data["release"]["html_url"]
+        return ["(%s) %s %s a release%s - %s" %
+            (full_name, author, action, name, url)]
