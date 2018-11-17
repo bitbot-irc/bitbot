@@ -15,8 +15,8 @@ class Module(ModuleManager.BaseModule):
         if not count.isdigit() or not sides.isdigit():
             raise utils.EventError(ERROR_FORMAT)
 
-        count_n = min(int(roll[0]), 5)
-        sides_n = min(int(roll[1]), 20)
+        count_n = min(5, int(count))
+        sides_n = min(20, int(sides))
 
         reults = random.choices(range(1, die_sides), k=die_count)
 
