@@ -36,5 +36,5 @@ class Module(ModuleManager.BaseModule):
         :help: Ask the mystic 8ball a question!
         :usage: <question>
         """
-        event["stdout"].write("You shake the magic ball... it "
-                              "says " + utils.irc.bold(random.choice(CHOICES)))
+        event["stdout"].write("You shake the magic ball... it says %s" %
+            utils.irc.bold(random.choice(CHOICES)))
