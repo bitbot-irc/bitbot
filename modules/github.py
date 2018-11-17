@@ -61,6 +61,7 @@ class Module(ModuleManager.BaseModule):
         if outputs:
             for server_id, channel_name, _ in hooks:
                 for output in outputs:
+                    output = "(%s) %s" % (full_name, output)
                     server = self.bot.get_server(server_id)
                     channel = server.channels.get(channel_name)
                     trigger = self._make_trigger(channel, server, output)
@@ -102,10 +103,10 @@ class Module(ModuleManager.BaseModule):
                 removed = self._removed(len(commit["removed"]))
                 modified = self._modified(len(commit["modified"]))
 
-                outputs.append("(%s) [%s/%s/%s files] commit by '%s': %s - %s"
-                    % (full_name, added, removed, modified, author, message,
-                    url))
+                outputs.append("[%s/%s/%s files] commit by '%s': %s - %s"
+                    % (added, removed, modified, author, message, url))
         else:
+            branch = data["ref"].split("/", 2)[2]
             first_id = self._short_hash(data["before"])
             last_id = self._short_hash(data["commits"][-1]["id"])
             pusher = utils.irc.bold(data["pusher"]["name"])
@@ -117,9 +118,8 @@ class Module(ModuleManager.BaseModule):
             modified = self._modified(len(self._flat_unique(commits,
                 "modified")))
 
-            outputs.append("(%s) [%s/%s/%s files] '%s' pushed %d commits - %s"
-                % (full_name, added, removed, modified, pusher,
-                len(data["commits"]), url))
+            outputs.append("[%s/%s/%s files] '%s' pushed %d commits - %s"
+                % (added, removed, modified, pusher, len(data["commits"]), url))
 
         return outputs
 
@@ -129,8 +129,8 @@ class Module(ModuleManager.BaseModule):
         commit = data["commit_id"][:8]
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = data["comment"]["html_url"]
-        return ["(%s) [commit/%s] %s commented" %
-            (full_name, commit, commenter, action)]
+        return ["[commit/%s] %s commented" %
+            (commit, commenter, action)]
 
     def pull_request(self, event, full_name, data):
         action = data["action"]
@@ -148,8 +148,8 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = data["pull_request"]["html_url"]
-        return ["(%s) [pr] %s %s: %s - %s" %
-            (full_name, author, action_desc, pr_title, url)]
+        return ["[pr] %s %s: %s - %s" %
+            (author, action_desc, pr_title, url)]
 
     def pull_request_review(self, event, full_name, data):
         if data["review"]["state"] == "commented":
@@ -159,32 +159,32 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["review"]["user"]["login"])
         url = data["review"]["html_url"]
-        return ["(%s) [pr] %s %s a review on: %s - %s" %
-            (full_name, reviewer, action, pr_title, url)]
+        return ["[pr] %s %s a review on: %s - %s" %
+            (reviewer, action, pr_title, url)]
 
     def pull_request_review_comment(self, event, full_name, data):
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         commenter = data["comment"]["user"]["login"]
         url = data["comment"]["html_url"]
-        return ["(%s) [pr] %s %s on a review: %s - %s" %
-            (full_name, commenter, COMMENT_ACTIONS[action], pr_title, url)]
+        return ["[pr] %s %s on a review: %s - %s" %
+            (commenter, COMMENT_ACTIONS[action], pr_title, url)]
 
     def issues(self, event, full_name, data):
         action = data["action"]
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = data["issue"]["html_url"]
-        return ["(%s) [issue] %s %s: %s - %s" %
-            (full_name, author, action, issue_title, url)]
+        return ["[issue] %s %s: %s - %s" %
+            (author, action, issue_title, url)]
     def issue_comment(self, event, full_name, data):
         action = data["action"]
         issue_title = data["issue"]["title"]
         type = "pr" if "pull_request" in data["issue"] else "issue"
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = data["comment"]["html_url"]
-        return ["(%s) [%s] %s %s on: %s - %s" %
-            (full_name, type, commenter, COMMENT_ACTIONS[action], issue_title,
+        return ["[%s] %s %s on: %s - %s" %
+            (type, commenter, COMMENT_ACTIONS[action], issue_title,
             url)]
 
     def create(self, event, full_name, data):
@@ -192,15 +192,15 @@ class Module(ModuleManager.BaseModule):
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = CREATE_URL % (full_name, ref)
-        return ["(%s) %s created a %s: %s - %s" %
-            (full_name, sender, type, ref, url)]
+        return ["%s created a %s: %s - %s" %
+            (sender, type, ref, url)]
 
     def delete(self, event, full_name, data):
         ref = data["ref"]
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        return ["(%s) %s deleted a %s: %s" %
-            (full_name, sender, type, ref)]
+        return ["%s deleted a %s: %s" %
+            (sender, type, ref)]
 
     def release(self, event, full_name, data):
         action = data["action"]
@@ -210,5 +210,5 @@ class Module(ModuleManager.BaseModule):
             name = ": %s"
         author = utils.irc.bold(data["release"]["author"]["login"])
         url = data["release"]["html_url"]
-        return ["(%s) %s %s a release%s - %s" %
-            (full_name, author, action, name, url)]
+        return ["%s %s a release%s - %s" %
+            (author, action, name, url)]
