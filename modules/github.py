@@ -5,6 +5,19 @@ COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
 
+DEFAULT_EVENTS = [
+    "push",
+    "commit_comment",
+    "pull_request",
+    "pull_request_review",
+    "pull_request_review_comment",
+    "issue_comment",
+    "issues",
+    "create",
+    "delete",
+    "release"
+]
+
 COMMENT_ACTIONS = {
     "created": "commented",
     "edited":  "edited a comment",
@@ -29,11 +42,20 @@ class Module(ModuleManager.BaseModule):
         full_name = data["repository"]["full_name"]
         hooks = self.bot.database.channel_settings.find_by_setting(
             "github-hook")
-        for i, (server_id, channel_name, values) in list(
+        targets = []
+
+        for i, (server_id, channel_name, hooked_repos) in list(
                 enumerate(hooks))[::-1]:
-            if not full_name in values:
-                hooks.pop(i)
-        if not hooks:
+            if full_name in hooked_repos:
+                server = self.bot.get_server(server_id)
+                if server and server.has_channel(channel_name):
+                    channel = server.get_channel(channel_name)
+                    github_events = channel.get_setting("github-events",
+                        DEFAULT_EVENTS)
+                    if github_event in github_events:
+                        targets.append(server, channel)
+
+        if not targets:
             return None
 
         outputs = None
