@@ -86,8 +86,7 @@ class Module(ModuleManager.BaseModule):
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 id = self._short_hash(commit["id"])
-                message = commit["message"].split("\n")
-                message = "".join(line.strip() for line in message)
+                message = commit["message"].split("\n")[0].strip()
                 author = commit["author"]["name"] or commit["author"]["login"]
                 author = utils.irc.bold(author)
                 url = COMMIT_URL % (full_name, id)
