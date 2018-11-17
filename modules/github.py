@@ -100,7 +100,7 @@ class Module(ModuleManager.BaseModule):
                     % (full_name, added, removed, modified, author, message,
                     url))
         else:
-            first_id = self._short_hash(data["commits"][0]["id"])
+            first_id = self._short_hash(data["before"])
             last_id = self._short_hash(data["commits"][-1]["id"])
             pusher = data["pusher"]["name"]
             url = COMMIT_RANGE_URL % (full_name, first_id, last_id)
