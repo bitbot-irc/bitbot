@@ -187,6 +187,6 @@ class Module(ModuleManager.BaseModule):
         ref = data["ref"]
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        url = CREATE_EVENT % (full_name, ref)
+        url = CREATE_URL % (full_name, ref)
         return ["(%s) %s created a %s: %s - %s" %
             (full_name, sender, type, ref, url)]
