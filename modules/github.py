@@ -49,7 +49,7 @@ class Module(ModuleManager.BaseModule):
             if full_name in hooked_repos:
                 server = self.bot.get_server(server_id)
                 if server and channel_name in server.channels:
-                    channel = server.get_channel(channel_name)
+                    channel = server.channels.get(channel_name)
                     github_events = channel.get_setting("github-events",
                         DEFAULT_EVENTS)
                     if github_event in github_events:
