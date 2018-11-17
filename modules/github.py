@@ -3,7 +3,7 @@ from src import ModuleManager, utils
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s…%s"
-TAG_URL = "https://github.com/%s/releases/tag/%s"
+CREATE_URL = "https://github.com/%s/tree/%s"
 
 COMMENT_ACTIONS = {
     "created": "commented",
@@ -51,6 +51,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.issue_comment(event, full_name, data)
         elif github_event == "issues":
             outputs = self.issues(event, full_name, data)
+        elif github_event == "create":
+            outputs = self.create(event, full_name, data)
 
         if outputs:
             for server_id, channel_name, _ in hooks:
@@ -84,13 +86,7 @@ class Module(ModuleManager.BaseModule):
 
     def push(self, event, full_name, data):
         outputs = []
-        ref = data["ref"]
-        if ref.startswith("refs/tags/"):
-            tag = ref.split("refs/tags/", 1)[1]
-            pusher = utils.irc.bold(data["pusher"]["name"])
-            outputs.append("(%s) %s pushed new tag: %s - %s"
-                % (full_name, pusher, tag, TAG_URL % tag))
-        elif len(data["commits"]) <= 3:
+        if len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 id = self._short_hash(commit["id"])
                 message = commit["message"].split("\n")[0].strip()
@@ -186,3 +182,11 @@ class Module(ModuleManager.BaseModule):
         return ["(%s) [%s] %s %s on: %s - %s" %
             (full_name, type, commenter, COMMENT_ACTIONS[action], issue_title,
             url)]
+
+    def create(self, event, full_name, data):
+        ref = data["ref"]
+        type = data["ref_type"]
+        sender = utils.irc.bold(data["pusher"]["name"])
+        url = CREATE_EVENT % (full_name, ref)
+        return ["(%s) %s created a %s: %s - %s" %
+            (full_name, sender, type, ref, url)]
