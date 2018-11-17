@@ -78,6 +78,9 @@ class Module(ModuleManager.BaseModule):
     def _short_hash(self, hash):
         return hash[:8]
 
+    def _flat_unique(self, commits, key):
+        return set(itertools.chain(*(commit[key] for commit in commits)))
+
     def push(self, event, full_name, data):
         outputs = []
         if len(data["commits"]) <= 3:
@@ -102,11 +105,12 @@ class Module(ModuleManager.BaseModule):
             pusher = data["pusher"]["name"]
             url = COMMIT_RANGE_URL % (full_name, first_id, last_id)
 
-            added = self._added(sum(len(c["added"]) for c in data["commits"]))
-            removed = self._removed(
-                sum(len(c["removed"]) for c in data["commits"]))
-            modified = self._modified(
-                sum(len(c["modified"]) for c in data["commits"]))
+            commits = data["commits"]
+            added = self._added(len(self._flat_unique(commits, "added")))
+            removed = self._removed(len(self._flat_unique(commits, "removed")))
+            modified = self._moddified(len(self._flat_unique(commits,
+                "modified")))
+
             outputs.append("(%s) [%s/%s/%s files] '%s' pushed %d commits - %s"
                 % (full_name, added, removed, modified, pusher,
                 len(data["commits"]), url))
