@@ -197,5 +197,5 @@ class Module(ModuleManager.BaseModule):
         ref = data["ref"]
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        return ["(%s) %s deleted a %s: %s - %s" %
+        return ["(%s) %s deleted a %s: %s" %
             (full_name, sender, type, ref)]
