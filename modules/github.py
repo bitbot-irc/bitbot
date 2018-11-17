@@ -108,7 +108,7 @@ class Module(ModuleManager.BaseModule):
             commits = data["commits"]
             added = self._added(len(self._flat_unique(commits, "added")))
             removed = self._removed(len(self._flat_unique(commits, "removed")))
-            modified = self._moddified(len(self._flat_unique(commits,
+            modified = self._modified(len(self._flat_unique(commits,
                 "modified")))
 
             outputs.append("(%s) [%s/%s/%s files] '%s' pushed %d commits - %s"
