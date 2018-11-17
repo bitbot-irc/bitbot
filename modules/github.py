@@ -53,7 +53,7 @@ class Module(ModuleManager.BaseModule):
                     github_events = channel.get_setting("github-events",
                         DEFAULT_EVENTS)
                     if github_event in github_events:
-                        targets.append(server, channel)
+                        targets.append([server, channel])
 
         if not targets:
             return None
