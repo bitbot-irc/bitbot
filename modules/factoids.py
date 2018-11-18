@@ -3,6 +3,10 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.factoid", min_args=1)
     def factoid(self, event):
+        """
+        :help: Set/get a factoid
+        :usage: <key> [= value]
+        """
         if "=" in event["args"]:
             key, _, value = event["args"].partition("=")
             factoid = key.lower().strip()
