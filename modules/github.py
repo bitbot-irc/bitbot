@@ -113,8 +113,9 @@ class Module(ModuleManager.BaseModule):
 
     def push(self, event, full_name, data):
         outputs = []
-        branch = utils.irc.color(data["ref"].split("/", 2)[2],
-            utils.consts.BLUE)
+        branch = data["ref"].split("/", 2)[2]
+        branch = utils.irc.bold(utils.irc.color(branch, utils.consts.BLUE))
+
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 id = self._short_hash(commit["id"])
