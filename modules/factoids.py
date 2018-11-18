@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
         match = REGEX_FACTOID.search(event["message"])
         if match:
             name, value = self._get_factoid(event["server"], match.group(1))
-            if not factoid == None:
+            if not value == None:
                 self.events.on("send.stdout").call(target=event["channel"],
                     module_name="Factoids", server=event["server"],
                     message="%s: %s" % (name, value))
