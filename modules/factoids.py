@@ -6,7 +6,7 @@ class Module(ModuleManager.BaseModule):
         if "=" in event["args"]:
             key, _, value = event["args"].partition("=")
             factoid = key.lower().strip()
-            event["server"].set_setting("factoid-" % factoid, value.strip())
+            event["server"].set_setting("factoid-%s" % factoid, value.strip())
 
             event["stdout"].write("Set factoid '%s'" % factoid)
         else:
