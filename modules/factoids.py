@@ -1,4 +1,4 @@
-from src import ModululeManager, utils
+from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.factoid", min_args=1)
