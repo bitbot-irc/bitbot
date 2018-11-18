@@ -1,6 +1,13 @@
+import re
 from src import ModuleManager, utils
 
+REGEX_FACTOID = re.compile("{!factoid ([^}]+)}", re.I)
+
 class Module(ModuleManager.BaseModule):
+    def _get_factoid(self, server, factoid):
+        name = factoid.lower().strip()
+        return name, server.get_setting("factoid-%s" % name, None)
+
     @utils.hook("received.command.factoid", min_args=1)
     def factoid(self, event):
         """
@@ -14,9 +21,17 @@ class Module(ModuleManager.BaseModule):
 
             event["stdout"].write("Set factoid '%s'" % factoid)
         else:
-            factoid = event["args"].lower().strip()
-            value = event["server"].get_setting("factoid-%s" % factoid, None)
-
+            name, value = self._get_factoid(event["server"], event["args"])
             if value == None:
-                raise utils.EventError("Unknown factoid '%s'" % factoid)
-            event["stdout"].write("%s: %s" % (factoid, value))
+                raise utils.EventError("Unknown factoid '%s'" % name)
+            event["stdout"].write("%s: %s" % (name, value))
+
+    @utils.hook("received.message.channel")
+    def channel_message(self, event):
+        match = REGEX_FACTOID.search(event["message"])
+        if match:
+            name, value = self._get_factoid(event["server"], match.group(1))
+            if not factoid == None:
+                self.events.on("send.stdout").call(target=event["channel"],
+                    module_name="Factoids", server=event["server"],
+                    message="%s: %s" % (name, value))
