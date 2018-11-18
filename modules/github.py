@@ -44,9 +44,11 @@ class Module(ModuleManager.BaseModule):
             "github-hook")
         targets = []
 
+        repo_hooked = False
         for i, (server_id, channel_name, hooked_repos) in list(
                 enumerate(hooks))[::-1]:
             if full_name in hooked_repos:
+                repo_hooked = True
                 server = self.bot.get_server(server_id)
                 if server and channel_name in server.channels:
                     channel = server.channels.get(channel_name)
@@ -56,7 +58,7 @@ class Module(ModuleManager.BaseModule):
                         targets.append([server, channel])
 
         if not targets:
-            return None
+            return True if repo_hooked else None
 
         outputs = None
         if github_event == "push":
