@@ -111,7 +111,8 @@ class Module(ModuleManager.BaseModule):
 
     def push(self, event, full_name, data):
         outputs = []
-        branch = data["ref"].split("/", 2)[2]
+        branch = utils.irc.color(data["ref"].split("/", 2)[2],
+            utils.consts.BLUE)
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 id = self._short_hash(commit["id"])
@@ -127,7 +128,6 @@ class Module(ModuleManager.BaseModule):
                 outputs.append("[%s/%s/%s files] commit by %s to %s: %s - %s"
                     % (added, removed, modified, author, branch, message, url))
         else:
-            branch = data["ref"].split("/", 2)[2]
             first_id = self._short_hash(data["before"])
             last_id = self._short_hash(data["commits"][-1]["id"])
             pusher = utils.irc.bold(data["pusher"]["name"])
