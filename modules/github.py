@@ -161,7 +161,10 @@ class Module(ModuleManager.BaseModule):
         action_desc = action
         if action == "closed":
             if data["pull_request"]["merged"]:
-                action_desc = utils.irc.color("merged", utils.consts.GREEN)
+                branch = data["pull_request"]["base"]["ref"]
+                action_desc = "%s into %s" %
+                    (utils.irc.color("merged", utils.consts.GREEN),
+                    utils.irc.color(branch, utils.consts.BLUE))
             else:
                 action_desc = utils.irc.color("closed without merging",
                     utils.consts.RED)
