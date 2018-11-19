@@ -168,7 +168,6 @@ class Module(ModuleManager.BaseModule):
             else:
                 action_desc = utils.irc.color("closed without merging",
                     utils.consts.RED)
-            action_desc = utils.irc.bold(action_desc)
         elif action == "synchronize":
             action_desc = "committed to"
 
