@@ -30,6 +30,7 @@ class Server(IRCObject.Object):
 
         self.write_buffer = b""
         self.buffered_lines = [] # type: typing.List[bytes]
+        self._write_throttling = False
         self.read_buffer = b""
         self.recent_sends = [] # type: typing.List[float]
         self.cached_fileno = None # type: typing.Optional[int]
@@ -290,7 +291,7 @@ class Server(IRCObject.Object):
     def throttle_done(self):
         return self.send_throttle_timeout() == 0
     def send_throttle_timeout(self):
-        if len(self.write_buffer):
+        if len(self.write_buffer) or not self._write_throttling:
             return 0
 
         now = time.monotonic()
@@ -307,6 +308,8 @@ class Server(IRCObject.Object):
         time_left = self.recent_sends[0]+THROTTLE_SECONDS
         time_left = time_left-now
         return time_left
+    def set_write_throttling(self, is_on: bool):
+        self._write_throttling = is_on
 
     def send_user(self, username: str, realname: str):
         self.send("USER %s 0 * :%s" % (username, realname))
