@@ -212,11 +212,12 @@ class Module(ModuleManager.BaseModule):
             url)]
 
     def create(self, event, full_name, data):
-        ref = utils.irc.color(data["ref"], utils.consts.BLUE)
+        ref = data["ref"]
+        ref_color = utils.irc.color(ref, utils.consts.BLUE)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = CREATE_URL % (full_name, ref)
-        return ["%s created a %s: %s - %s" % (sender, type, ref, url)]
+        return ["%s created a %s: %s - %s" % (sender, type, ref_color, url)]
 
     def delete(self, event, full_name, data):
         ref = data["ref"]
