@@ -213,7 +213,7 @@ class Module(ModuleManager.BaseModule):
 
     def create(self, event, full_name, data):
         ref = data["ref"]
-        type = data["ref_type"]
+        type = utils.irc.color(data["ref_type"], utils.consts.BLUE)
         sender = utils.irc.bold(data["sender"]["login"])
         url = CREATE_URL % (full_name, ref)
         return ["%s created a %s: %s - %s" % (sender, type, ref, url)]
