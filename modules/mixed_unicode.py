@@ -78,7 +78,7 @@ class Module(ModuleManager.BaseModule):
 
         score = len(reasons)
         reasons_s = []
-        for reason, count in collections.Counter(reasons).items:
+        for reason, count in collections.Counter(reasons).items():
             reasons_s.append("%s: %s" % (reason, count))
 
         if score > 0:
