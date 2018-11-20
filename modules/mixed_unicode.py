@@ -49,12 +49,14 @@ class Module(ModuleManager.BaseModule):
         last_script = None
         last_was_separator = False
         score = 0
+        scripts = set([])
 
         for char in event["message"]:
             if char in WORD_SEPERATORS:
                 last_was_separator = True
             else:
                 script = self._detect_script(char)
+                scripts.add(script)
                 if not script == Script.Unknown:
                     if last_script and not script == last_script:
                         score += 1
@@ -66,5 +68,6 @@ class Module(ModuleManager.BaseModule):
                 last_was_separator = False
 
         score = score/(len(event["message"])/SCORE_LENGTH)
+        score = round(score, 2)
         if score > 0:
-            self.log.trace("Message given a mixed-unicode score of %d", [score])
+            self.log.trace("Message given a mixed-unicode score of %f", [score])
