@@ -70,4 +70,4 @@ class Module(ModuleManager.BaseModule):
         score = score/(len(event["message"])/SCORE_LENGTH)
         score = round(score, 2)
         if score > 0:
-            self.log.trace("Message given a mixed-unicode score of %f", [score])
+            self.log.trace("Message given a mixed-unicode score of %s", [score])
