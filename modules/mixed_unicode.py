@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         last_script = None
         last_was_separator = False
-        score_reasons = []
+        reasons = []
         scripts = set([])
 
         for char in event["message"]:
@@ -65,20 +65,20 @@ class Module(ModuleManager.BaseModule):
                 scripts.add(script)
                 if not script == Script.Unknown:
                     if last_script and not script == last_script:
-                        score_reasons.append(ScoreReason.ScriptChange)
+                        reasons.append(ScoreReason.ScriptChange)
                         if not last_was_separator:
-                            score_reasons.append(ScoreReason.ScriptChangeInWord)
+                            reasons.append(ScoreReason.ScriptChangeInWord)
 
                     last_script = script
 
                 last_was_separator = False
 
         if len(scripts) > 1:
-            score_reasons.extend([ScoreReason.AdditonalScript]*(len(scripts)-1))
+            reasons.extend([ScoreReason.AdditionalScript]*(len(scripts)-1))
 
-        score = len(score_reasons)
+        score = len(reasons)
         reasons_s = []
-        for reason, group in itertools.groupby(score_reasons):
+        for reason, group in itertools.groupby(reasons):
             reasons_s.append("%s: %s" % (reason, len(list(group))))
 
         if score > 0:
