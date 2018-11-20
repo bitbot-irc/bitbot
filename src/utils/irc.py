@@ -64,8 +64,8 @@ class IRCArgs(object):
 
 
 class IRCLine(object):
-    def __init__(self, tags: dict, prefix: typing.Optional[str], command: str,
-            args: IRCArgs, has_arbitrary: bool):
+    def __init__(self, tags: dict, prefix: typing.Optional[IRCHostmask],
+            command: str, args: IRCArgs, has_arbitrary: bool):
         self.tags = tags
         self.prefix = prefix
         self.command = command
@@ -81,7 +81,7 @@ def message_tag_unescape(s):
 
 def parse_line(line: str) -> IRCLine:
     tags = {}
-    prefix = typing.Optional[IRCHostmask]
+    prefix = None # type: typing.Optional[IRCHostmask]
     command = None
 
     if line[0] == "@":
