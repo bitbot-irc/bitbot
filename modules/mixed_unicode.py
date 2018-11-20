@@ -7,19 +7,22 @@ class Script(enum.Enum):
     Cyrillic = 2
     Greek = 3
     Armenian = 4
+    FullWidth = 5
 WORD_SEPERATORS = [",", " ", "\t", "."]
 
 class Module(ModuleManager.BaseModule):
     def _detect_script(self, char):
         point = ord(char)
-        if   0    <= point <= 687:
+        if   0     <= point <= 687:
             return Script.Latin
-        elif 880  <= point <= 1023:
+        elif 880   <= point <= 1023:
             return Script.Greek
-        elif 1024 <= point <= 1327:
+        elif 1024  <= point <= 1327:
             return Script.Cyrillic
-        elif 1329 <= point <= 1418:
+        elif 1329  <= point <= 1418:
             return Script.Armenian
+        elif 65281 <= point <= 65376:
+            return Script.FullWidth
         return Script.Unknown
 
     @utils.hook("received.message.channel")
