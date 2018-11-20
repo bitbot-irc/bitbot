@@ -114,7 +114,7 @@ class Module(ModuleManager.BaseModule):
     def push(self, event, full_name, data):
         outputs = []
         branch = data["ref"].split("/", 2)[2]
-        branch = utils.irc.bold(utils.irc.color(branch, utils.consts.BLUE))
+        branch = utils.irc.color(branch, utils.consts.LIGHTBLUE)
 
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
@@ -217,7 +217,7 @@ class Module(ModuleManager.BaseModule):
 
     def create(self, event, full_name, data):
         ref = data["ref"]
-        ref_color = utils.irc.color(ref, utils.consts.BLUE)
+        ref_color = utils.irc.color(ref, utils.consts.LIGHTBLUE)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = CREATE_URL % (full_name, ref)
