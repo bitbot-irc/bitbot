@@ -9,6 +9,8 @@ class Script(enum.Enum):
     Armenian = 4
     FullWidth = 5
     Coptic = 6
+    Cherokee = 7
+    TaiLe = 8
 WORD_SEPERATORS = [",", " ", "\t", "."]
 
 class Module(ModuleManager.BaseModule):
@@ -32,6 +34,12 @@ class Module(ModuleManager.BaseModule):
         # COPTIC CAPITAL LETTER ALFA .. COPTIC MORPHOLOGICAL DIVIDER
         elif 0x2C80 <= point <= 0x2CFF:
             return Script.Coptic
+        # CHEROKEE LETTER A .. CHEROKEE SMALL LETTER MV
+        elif 0x13A0 <= point <= 0x13FD:
+            return Script.Cherokee
+        # TAI LE LETTER KA .. U+197F
+        elif 0x1950 <= point <= 0x197F:
+            return Script.TaiLe
         return Script.Unknown
 
     @utils.hook("received.message.channel")
