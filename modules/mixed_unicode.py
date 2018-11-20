@@ -62,8 +62,8 @@ class Module(ModuleManager.BaseModule):
                 last_was_separator = True
             else:
                 script = self._detect_script(char)
-                scripts.add(script)
                 if not script == Script.Unknown:
+                    scripts.add(script)
                     if last_script and not script == last_script:
                         reasons.append(ScoreReason.ScriptChange)
                         if not last_was_separator:
