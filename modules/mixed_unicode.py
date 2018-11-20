@@ -1,4 +1,4 @@
-import enum, itertools
+import collections, enum
 from src import ModuleManager, utils
 
 class Script(enum.Enum):
@@ -78,8 +78,8 @@ class Module(ModuleManager.BaseModule):
 
         score = len(reasons)
         reasons_s = []
-        for reason, group in itertools.groupby(reasons):
-            reasons_s.append("%s: %s" % (reason, len(list(group))))
+        for reason, count in collections.Counter(reasons).items:
+            reasons_s.append("%s: %s" % (reason, count))
 
         if score > 0:
             self.log.trace(
