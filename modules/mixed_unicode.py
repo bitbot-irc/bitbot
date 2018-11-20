@@ -77,11 +77,11 @@ class Module(ModuleManager.BaseModule):
             reasons.extend([ScoreReason.AdditionalScript]*(len(scripts)-1))
 
         score = len(reasons)
-        reasons_s = []
-        for reason, count in collections.Counter(reasons).items():
-            reasons_s.append("%s: %s" % (reason, count))
-
         if score > 0:
+            reasons_s = []
+            for reason, count in collections.Counter(reasons).items():
+                reasons_s.append("%s: %s" % (reason, count))
+
             self.log.trace(
                 "Message given a mixed-unicode score of %s (reasons: %s)",
                 [score, ", ".join(reasons_s)])
