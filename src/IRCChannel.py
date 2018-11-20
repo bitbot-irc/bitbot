@@ -14,9 +14,9 @@ class Channel(IRCObject.Object):
         self.topic_setter_username = None # type: typing.Optional[str]
         self.topic_setter_hostname = None # type: typing.Optional[str]
         self.topic_time = 0
-        self.users = set([])
-        self.modes = {}
-        self.user_modes = {}
+        self.users = set([]) # type: typing.Set[IRCUser.User]
+        self.modes = {} # type: typing.Dict[str, typing.Set]
+        self.user_modes = {} # type: typing.Dict[IRCUser.User, typing.Set]
         self.created_timestamp = None
         self.buffer = IRCBuffer.Buffer(bot, server)
 
@@ -154,4 +154,4 @@ class Channel(IRCObject.Object):
         return user in self.modes.get(mode, [])
 
     def get_user_status(self, user: IRCUser.User) -> typing.Set:
-        return self.user_modes.get(user, [])
+        return self.user_modes.get(user, set([]))
