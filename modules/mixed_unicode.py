@@ -13,6 +13,8 @@ class Script(enum.Enum):
     TaiLe = 8
 WORD_SEPERATORS = [",", " ", "\t", "."]
 
+SCORE_LENGTH = 100
+
 class Module(ModuleManager.BaseModule):
     def _detect_script(self, char):
         point = ord(char)
@@ -63,5 +65,6 @@ class Module(ModuleManager.BaseModule):
 
                 last_was_separator = False
 
+        score = score/(len(event["message"])/SCORE_LENGTH)
         if score > 0:
             self.log.trace("Message given a mixed-unicode score of %d", [score])
