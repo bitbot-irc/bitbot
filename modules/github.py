@@ -159,12 +159,16 @@ class Module(ModuleManager.BaseModule):
     def pull_request(self, event, full_name, data):
         action = data["action"]
         action_desc = action
-        if action == "closed":
+        branch = data["pull_request"]["base"]["ref"]
+        colored_branch = utils.irc.color(branch, utils.consts.LIGHTBLUE)
+
+        if action == "opened":
+            action_desc = "requested merge into %s" % colored_branch
+        elif action == "closed":
             if data["pull_request"]["merged"]:
-                branch = data["pull_request"]["base"]["ref"]
                 action_desc = "%s into %s" % (
                     utils.irc.color("merged", utils.consts.GREEN),
-                    utils.irc.color(branch, utils.consts.LIGHTBLUE))
+                    colored_branch)
             else:
                 action_desc = utils.irc.color("closed without merging",
                     utils.consts.RED)
