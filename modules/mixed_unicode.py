@@ -67,5 +67,7 @@ class Module(ModuleManager.BaseModule):
 
                 last_was_separator = False
 
+        if len(scripts) > 1:
+            score += len(scripts)-1
         if score > 0:
             self.log.trace("Message given a mixed-unicode score of %s", [score])
