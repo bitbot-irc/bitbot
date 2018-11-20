@@ -14,15 +14,20 @@ WORD_SEPERATORS = [",", " ", "\t", "."]
 class Module(ModuleManager.BaseModule):
     def _detect_script(self, char):
         point = ord(char)
-        if   0     <= point <= 687:
+        # NULL .. LATIN SMALL LETTER TURNED H WITH FISHHOOK AND TAIL
+        if   0x0000 <= point <= 0x02AF:
             return Script.Latin
-        elif 880   <= point <= 1023:
+        # GREEK CAPITAL LETTER HETA .. GREEK CAPITAL REVERSED DOTTED LUNATE SIGMA SYMBOL
+        elif 0x0370 <= point <= 0x03ff:
             return Script.Greek
-        elif 1024  <= point <= 1327:
+        # CYRILLIC CAPITAL LETTER IE WITH GRAVE .. CYRILLIC SMALL LETTER EL WITH DESCENDER
+        elif 0x0400 <= point <= 0x052F:
             return Script.Cyrillic
-        elif 1329  <= point <= 1418:
+        # ARMENIAN CAPITAL LETTER AYB .. ARMENIAN HYPHEN
+        elif 0x0531 <= point <= 0x058A:
             return Script.Armenian
-        elif 65281 <= point <= 65376:
+        # FULLWIDTH EXCLAMATION MARK .. FULLWIDTH RIGHT WHITE PARENTHESIS
+        elif 0xFF01 <= point <= 0xff60:
             return Script.FullWidth
         # COPTIC CAPITAL LETTER ALFA .. COPTIC MORPHOLOGICAL DIVIDER
         elif 0x2C80 <= point <= 0x2CFF:
