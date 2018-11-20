@@ -6,6 +6,7 @@ class Script(enum.Enum):
     Latin = 1
     Cyrillic = 2
     Greek = 3
+    Armenian = 4
 WORD_SEPERATORS = [",", " ", "\t", "."]
 
 class Module(ModuleManager.BaseModule):
@@ -17,6 +18,8 @@ class Module(ModuleManager.BaseModule):
             return Script.Greek
         elif 1024 <= point <= 1327:
             return Script.Cyrillic
+        elif 1329 <= point <= 1418:
+            return Script.Armenian
         return Script.Unknown
 
     @utils.hook("received.message.channel")
