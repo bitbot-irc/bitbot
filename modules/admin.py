@@ -42,12 +42,15 @@ class Module(ModuleManager.BaseModule):
         :permission: reconnect
         """
         event["server"].send_quit("Reconnecting")
+        self.bot.reconnect(event["server"].id,
+            event["server"].connection_params)
 
     @utils.hook("received.command.connect", min_args=1)
     def connect(self, event):
         """
         :help: Connect to a network
         :usage: <server id>
+        :permission: connect
         """
         id = event["args_split"][0]
         if not id.isdigit():
@@ -64,3 +67,23 @@ class Module(ModuleManager.BaseModule):
 
         server = self.bot.add_server(id)
         event["stdout"].write("Connecting to %s" % str(server))
+
+    @utils.hook("received.command.disconnect")
+    def disconnect(self, event):
+        """
+        :help: Disconnect from a server
+        :usage: [server id]
+        :permission: disconnect
+        """
+        id = event["server"].id
+        if event["args"]:
+            id = event["args_split"][0]
+            if not id.isdigit():
+                raise utils.EventError("Please provide a numeric server ID")
+
+            id = int(id)
+            if not self.bot.database.servers.get(id):
+                raise utils.EventError("Unknown server ID")
+        server = self.bot.get_server(id)
+        server.disconnect()
+        self.bot.disconnect(server)

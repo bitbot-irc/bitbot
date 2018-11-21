@@ -50,13 +50,15 @@ class Module(ModuleManager.BaseModule):
 
     def _server_stats(self, server):
         return {
-            "hostname": server.target_hostname,
-            "port": server.port,
-            "tls": server.tls,
-            "alias": server.alias,
+            "hostname": server.connection_params.hostname,
+            "port": server.connection_params.port,
+            "tls": server.connection_params.tls,
+            "alias": server.connection_params.alias,
             "hostmask": "%s!%s@%s" % (
                 server.nickname, server.username, server.hostname),
-            "users": len(server.users)
+            "users": len(server.users),
+            "bytes-written": server.bytes_written,
+            "bytes-read": server.bytes_read
         }
 
     @utils.hook("api.get.servers")
@@ -111,3 +113,11 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("api.get.modules")
     def modules_api(self, event):
         return list(self.bot.modules.modules.keys())
+
+    @utils.hook("received.command.caps")
+    def capabilities(self, event):
+        """
+        :help: List negotiated IRCv3 capabilities
+        """
+        event["stdout"].write("IRCv3 capabilities: %s" %
+            ", ".join(event["server"].capabilities))

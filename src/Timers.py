@@ -1,7 +1,9 @@
-import time, uuid
+import time, typing, uuid
+from src import Database, EventManager, Logging
 
 class Timer(object):
-    def __init__(self, id, context, name, delay, next_due, kwargs):
+    def __init__(self, id: str, context: typing.Optional[str], name: str,
+            delay: float, next_due: typing.Optional[float], kwargs: dict):
         self.id = id
         self.context = context
         self.name = name
@@ -15,9 +17,9 @@ class Timer(object):
 
     def set_next_due(self):
         self.next_due = time.time()+self.delay
-    def due(self):
+    def due(self) -> bool:
         return self.time_left() <= 0
-    def time_left(self):
+    def time_left(self) -> float:
         return self.next_due-time.time()
 
     def redo(self):
@@ -25,42 +27,33 @@ class Timer(object):
         self.set_next_due()
     def finish(self):
         self._done = True
-    def done(self):
+    def done(self) -> bool:
         return self._done
 
-class TimersContext(object):
-    def __init__(self, parent, context):
-        self._parent = parent
-        self.context = context
-    def add(self, name, delay, next_due=None, **kwargs):
-        self._parent._add(self.context, name, delay, next_due, None, False,
-            kwargs)
-    def add_persistent(self, name, delay, next_due=None, **kwargs):
-        self._parent._add(None, name, delay, next_due, None, True,
-            kwargs)
-
 class Timers(object):
-    def __init__(self, database, events, log):
+    def __init__(self, database: Database.Database,
+            events: EventManager.EventHook,
+            log: Logging.Log):
         self.database = database
         self.events = events
         self.log = log
-        self.timers = []
-        self.context_timers = {}
+        self.timers = [] # type: typing.List[Timer]
+        self.context_timers = {} # type: typing.Dict[str, typing.List[Timer]]
 
-    def new_context(self, context):
+    def new_context(self, context: str) -> "TimersContext":
         return TimersContext(self, context)
 
-    def setup(self, timers):
+    def setup(self, timers: typing.List[typing.Tuple[str, dict]]):
         for name, timer in timers:
             id = name.split("timer-", 1)[1]
-            self._add(timer["name"], None, timer["delay"], timer[
+            self._add(None, timer["name"], timer["delay"], timer[
                 "next-due"], id, False, timer["kwargs"])
 
-    def _persist(self, timer):
+    def _persist(self, timer: Timer):
         self.database.bot_settings.set("timer-%s" % timer.id, {
             "name": timer.name, "delay": timer.delay,
             "next-due": timer.next_due, "kwargs": timer.kwargs})
-    def _remove(self, timer):
+    def _remove(self, timer: Timer):
         if timer.context:
             self.context_timers[timer.context].remove(timer)
             if not self.context_timers[timer.context]:
@@ -69,12 +62,15 @@ class Timers(object):
             self.timers.remove(timer)
         self.database.bot_settings.delete("timer-%s" % timer.id)
 
-    def add(self, name, delay, next_due=None, **kwargs):
+    def add(self, name: str, delay: float, next_due: float=None, **kwargs):
         self._add(None, name, delay, next_due, None, False, kwargs)
-    def add_persistent(self, name, delay, next_due=None, **kwargs):
+    def add_persistent(self, name: str, delay: float, next_due: float=None,
+            **kwargs):
         self._add(None, name, delay, next_due, None, True, kwargs)
-    def _add(self, context, name, delay, next_due, id, persist, kwargs):
-        id = id or uuid.uuid4().hex
+    def _add(self, context: typing.Optional[str], name: str, delay: float,
+            next_due: typing.Optional[float], id: typing.Optional[str],
+            persist: bool, kwargs: dict):
+        id = id or str(uuid.uuid4())
         timer = Timer(id, context, name, delay, next_due, kwargs)
         if persist:
             self._persist(timer)
@@ -86,13 +82,13 @@ class Timers(object):
         else:
             self.timers.append(timer)
 
-    def next(self):
+    def next(self) -> typing.Optional[float]:
         times = filter(None, [timer.time_left() for timer in self.get_timers()])
         if not times:
             return None
         return max(min(times), 0)
 
-    def get_timers(self):
+    def get_timers(self) -> typing.List[Timer]:
         return self.timers + sum(self.context_timers.values(), [])
 
     def call(self):
@@ -104,6 +100,19 @@ class Timers(object):
                 if timer.done():
                     self._remove(timer)
 
-    def purge_context(self, context):
+    def purge_context(self, context: str):
         if context in self.context_timers:
             del self.context_timers[context]
+
+class TimersContext(object):
+    def __init__(self, parent: Timers, context: str):
+        self._parent = parent
+        self.context = context
+    def add(self, name: str, delay: float, next_due: float=None,
+            **kwargs):
+        self._parent._add(self.context, name, delay, next_due, None, False,
+            kwargs)
+    def add_persistent(self, name: str, delay: float, next_due: float=None,
+            **kwargs):
+        self._parent._add(None, name, delay, next_due, None, True,
+            kwargs)

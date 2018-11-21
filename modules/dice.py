@@ -10,28 +10,20 @@ class Module(ModuleManager.BaseModule):
         :help: Roll some dice, DND style!
         :usage: [1-5]d[1-20]
         """
-        raw_input = event["args_split"][0]
-        roll = raw_input.split("d")
-        results = []
-
-        if len(roll) is not 2:
+        roll = event["args_split"][0].lower()
+        count, _, sides = roll.partition("d")
+        if not count.isdigit() or not sides.isdigit():
             raise utils.EventError(ERROR_FORMAT)
 
-        if roll[0].isdigit() is False or roll[1].isdigit() is False:
-            raise utils.EventError(ERROR_FORMAT)
+        count_n = min(5, int(count))
+        sides_n = min(20, int(sides))
 
-        roll = [int(roll[0]), int(roll[1])]
+        results = random.choices(range(1, sides_n+1), k=count_n)
 
-        num_of_die = 5 if roll[0] > 5 else roll[0]
-        sides_of_die = 20 if roll[1] > 20 else roll[1]
+        total_n = sum(results)
+        total = ""
+        if len(results) > 1:
+            total = " (total: %d)" % total_n
 
-        str_roll = str(num_of_die) + "d" + str(sides_of_die)
-
-        for i in range(0, num_of_die):
-            results.append(random.randint(1, sides_of_die))
-
-        total = sum(results)
-        results = ', '.join(map(str, results))
-
-        event["stdout"].write("Rolled %s for a total of %d: %s" % (
-            str_roll, str(total), results))
+        event["stdout"].write("Rolled %s and got %s%s" % (
+            roll, ", ".join(str(r) for r in results), total))

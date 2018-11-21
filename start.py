@@ -2,11 +2,7 @@
 
 import argparse, os, sys, time
 from src import Cache, Config, Database, EventManager, Exports, IRCBot
-from src import Logging, ModuleManager, Timers
-
-def bool_input(s):
-    result = input("%s (Y/n): " % s)
-    return not result or result[0].lower() in ["", "y"]
+from src import Logging, ModuleManager, Timers, utils
 
 directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -25,15 +21,24 @@ arg_parser.add_argument("--log", "-l",
     help="Location of the main log file",
     default=os.path.join(directory, "logs", "bot.log"))
 
+arg_parser.add_argument("--add-server", "-a",
+    help="Add a new server", action="store_true")
+
 arg_parser.add_argument("--verbose", "-v", action="store_true")
 
 args = arg_parser.parse_args()
 
 log_level = "debug" if args.verbose else "info"
 log = Logging.Log(log_level, args.log)
+database = Database.Database(log, args.database)
+
+if args.add_server:
+    print("Adding a new server")
+    utils.cli.add_server(database)
+    sys.exit(0)
+
 cache = Cache.Cache()
 config = Config.Config(args.config)
-database = Database.Database(log, args.database)
 events = events = EventManager.EventHook(log)
 exports = exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
@@ -45,14 +50,17 @@ bot = IRCBot.Bot(directory, args, cache, config, database, events,
 
 whitelist = bot.get_setting("module-whitelist", [])
 blacklist = bot.get_setting("module-blacklist", [])
-modules.load_modules(bot, whitelist=whitelist, blacklist=blacklist)
 
-servers = []
-for server_id, alias in bot.database.servers.get_all():
-    server = bot.add_server(server_id, connect=False)
-    if not server == None:
-        servers.append(server)
-if len(servers):
+server_configs = bot.database.servers.get_all()
+if len(server_configs):
+    modules.load_modules(bot, whitelist=whitelist, blacklist=blacklist)
+
+    servers = []
+    for server_id, alias in server_configs:
+        server = bot.add_server(server_id, connect=False)
+        if not server == None:
+            servers.append(server)
+
     bot._events.on("boot.done").call()
 
     timers.setup(bot.find_settings_prefix("timer-"))
@@ -65,19 +73,8 @@ if len(servers):
     bot.run()
 else:
     try:
-        if bool_input("no servers found, add one?"):
-            alias = input("alias: ")
-            hostname = input("hostname: ")
-            port = int(input("port: "))
-            tls = bool_input("tls?")
-            password = input("password?: ")
-            ipv4 = bool_input("ipv4?")
-            nickname = input("nickname: ")
-            username = input("username: ")
-            realname = input("realname: ")
-            bindhost = input("bindhost?: ")
-            bot.database.servers.add(alias, hostname, port, password, ipv4,
-                tls, bindhost, nickname, username, realname)
+        if utils.cli.bool_input("no servers found, add one?"):
+            utils.cli.add_server(database)
     except KeyboardInterrupt:
         print()
         pass

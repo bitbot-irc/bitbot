@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
     def _load_scripts(self):
         for filename in glob.glob(os.path.join(self._directory, "*")):
             name = os.path.basename(filename)
-            for hashflag, value in utils.get_hashflags(filename):
+            for hashflag, value in utils.parse.hashflags(filename):
                 if hashflag == "name" and value:
                     name = value
                 elif hashflag == "hook" and value:

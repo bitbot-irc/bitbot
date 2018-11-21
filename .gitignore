@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# linters
+.mypy_cache/
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt

@@ -1,7 +1,7 @@
 import re
 from src import EventManager, ModuleManager, utils
 
-STR_MORE = "%s (more...)" % utils.irc.FONT_RESET
+STR_MORE = "%s (more...)" % utils.consts.RESET
 STR_CONTINUED = "(...continued) "
 
 COMMAND_METHOD = "command-method"
@@ -15,6 +15,7 @@ class Out(object):
     def __init__(self, server, module_name, target, msgid):
         self.server = server
         self.module_name = module_name
+        self._hide_prefix = False
         self.target = target
         self._text = ""
         self.written = False
@@ -41,7 +42,10 @@ class Out(object):
             if self._msgid:
                 tags["+draft/reply"] = self._msgid
 
-            prefix = utils.irc.FONT_RESET + "[%s] " % self.prefix()
+            prefix = ""
+            if not self._hide_prefix:
+                prefix = utils.consts.RESET + "[%s] " % self.prefix()
+
             method = self._get_method()
             if method == "PRIVMSG":
                 self.target.send_message(text, prefix=prefix, tags=tags)
@@ -54,18 +58,21 @@ class Out(object):
 
     def set_prefix(self, prefix):
         self.module_name = prefix
+    def hide_prefix(self):
+        self._hide_prefix = True
 
     def has_text(self):
         return bool(self._text)
 
+
 class StdOut(Out):
     def prefix(self):
         return utils.irc.color(utils.irc.bold(self.module_name),
-            utils.irc.COLOR_GREEN)
+            utils.consts.GREEN)
 class StdErr(Out):
     def prefix(self):
         return utils.irc.color(utils.irc.bold("!"+self.module_name),
-            utils.irc.COLOR_RED)
+            utils.consts.RED)
 
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
@@ -75,14 +82,21 @@ def _command_method_validate(s):
     "help": "Set the command prefix used in this channel"})
 @utils.export("serverset", {"setting": "command-prefix",
     "help": "Set the command prefix used on this server"})
-@utils.export("serverset", {"setting": "identity-mechanism",
-    "help": "Set the identity mechanism for this server"})
 @utils.export("serverset", {"setting": "command-method",
     "help": "Set the method used to respond to commands",
     "validate": _command_method_validate})
 @utils.export("channelset", {"setting": "command-method",
     "help": "Set the method used to respond to commands",
     "validate": _command_method_validate})
+@utils.export("channelset", {"setting": "hide-prefix",
+    "help": "Disable/enable hiding prefix in command reponses",
+    "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "commands",
+    "help": "Disable/enable responding to commands in-channel",
+    "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "prefixed-commands",
+    "help": "Disable/enable responding to prefixed commands in-channel",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.user|channel")
     def new(self, event):
@@ -143,7 +157,12 @@ class Module(ModuleManager.BaseModule):
                 hook=hook, user=event["user"], server=event["server"],
                 target=target, is_channel=is_channel, tags=event["tags"])
             for returned in returns:
+                if returned == False:
+                    # denotes a "silent failure"
+                    target.buffer.skip_next()
+                    return
                 if returned:
+                    # error message
                     stderr.write(returned).send()
                     target.buffer.skip_next()
                     return
@@ -154,10 +173,10 @@ class Module(ModuleManager.BaseModule):
 
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
-                usage = self._get_usage(hook)
+                usage = self._get_usage(hook, command)
                 if usage:
-                    stderr.write("Not enough arguments, usage: %s %s" % (
-                        command, usage)).send()
+                    stderr.write("Not enough arguments, usage: %s" %
+                        usage).send()
                 else:
                     stderr.write("Not enough arguments (minimum: %d)" %
                         min_args).send()
@@ -184,9 +203,16 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
+        commands_enabled = event["channel"].get_setting("commands", True)
+        if not commands_enabled:
+            return
+        prefixed_commands = event["channel"].get_setting("prefixed-commands", True)
+
         command_prefix = event["channel"].get_setting("command-prefix",
             event["server"].get_setting("command-prefix", "!"))
         if event["message_split"][0].startswith(command_prefix):
+            if not prefixed_commands:
+                return
             command = event["message_split"][0].replace(
                 command_prefix, "", 1).lower()
             self.message(event, command)
@@ -203,8 +229,15 @@ class Module(ModuleManager.BaseModule):
 
     def _get_help(self, hook):
         return hook.get_kwarg("help", None) or hook.docstring.description
-    def _get_usage(self, hook):
-        return hook.get_kwarg("usage", None)
+    def _get_usage(self, hook, command):
+        usage = hook.get_kwarg("usage", None)
+        if not usage:
+            usages = hook.docstring.var_items.get("usage", None)
+            if usages:
+                return " | ".join(
+                    "%s %s" % (command, usage) for usage in usages)
+        return usage
+
     def _get_prefix(self, hook):
         return hook.get_kwarg("prefix", None)
     def _get_alias_of(self, hook):
@@ -255,12 +288,12 @@ class Module(ModuleManager.BaseModule):
         command = event["args_split"][0].lower()
         if command in self.events.on("received").on(
                 "command").get_children():
+            command_str = "%s%s" % (command_prefix, command)
             hooks = self.events.on("received.command").on(command).get_hooks()
-            usage = self._get_usage(hooks[0])
+            usage = self._get_usage(hooks[0], command_str)
 
             if usage:
-                event["stdout"].write("Usage: %s%s %s" % (command_prefix,
-                    command, usage))
+                event["stdout"].write("Usage: %s" % usage)
             else:
                 event["stderr"].write("No usage help available for %s" % command)
         else:
@@ -307,6 +340,10 @@ class Module(ModuleManager.BaseModule):
     def send_stdout(self, event):
         stdout = StdOut(event["server"], event["module_name"],
             event["target"], event.get("msgid", None))
+
+        if event.get("hide_prefix", False):
+            stdout.hide_prefix()
+
         stdout.write(event["message"]).send()
         if stdout.has_text():
             event["target"].last_stdout = stdout
@@ -314,6 +351,10 @@ class Module(ModuleManager.BaseModule):
     def send_stderr(self, event):
         stderr = StdErr(event["server"], event["module_name"],
             event["target"], event.get("msgid", None))
+
+        if event.get("hide_prefix", False):
+            stderr.hide_prefix()
+
         stderr.write(event["message"]).send()
         if stderr.has_text():
             event["target"].last_stderr = stderr

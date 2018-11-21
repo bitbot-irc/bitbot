@@ -1,7 +1,11 @@
 from src import ModuleManager, utils
 
+CHANNELSET_HELP = "Get a specified channel setting for the current channel"
+CHANNELSETADD_HELP = ("Add to a specified channel setting for the "
+    "current channel")
+
 class Module(ModuleManager.BaseModule):
-    def _set(self, category, event, target):
+    def _set(self, category, event, target, array):
         settings = self.exports.get_all(category)
         settings_dict = dict([(setting["setting"], setting
             ) for setting in settings])
@@ -14,7 +18,13 @@ class Module(ModuleManager.BaseModule):
                     lambda x: x)(value)
 
                 if not value == None:
-                    target.set_setting(setting, value)
+                    if array:
+                        current_value = target.get_setting(setting, [])
+                        current_value.append(value)
+                        target.set_setting(setting, current_value)
+                    else:
+                        target.set_setting(setting, value)
+
                     self.events.on("set").on(category).on(setting).call(
                         value=value, target=target)
 
@@ -31,42 +41,52 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Available settings: %s" % (
                 ", ".join(shown_settings)))
 
-    @utils.hook("received.command.set")
+    @utils.hook("received.command.set", help="Set a specified user setting")
+    @utils.hook("received.command.setadd",
+        help="Add to a specified user setting")
     def set(self, event):
         """
-        :help: Set a specified user setting
         :usage: <setting> <value>
         """
-        self._set("set", event, event["user"])
+        self._set("set", event, event["user"], event["command"]=="setadd")
 
     @utils.hook("received.command.channelset", channel_only=True,
-        require_mode="o")
+        require_mode="high", help=CHANNELSET_HELP)
     @utils.hook("received.command.channelsetoverride", channel_only=True,
-        permission="channelsetoverride")
+        permission="channelsetoverride", help=CHANNELSET_HELP)
+    @utils.hook("received.command.channelsetadd", channel_only=True,
+        require_mode="high", help=CHANNELSETADD_HELP)
+    @utils.hook("received.command.channelsetaddoverride", channel_only=True,
+        permission="channelsetoverride", help=CHANNELSETADD_HELP)
     def channel_set(self, event):
         """
-        :help: Get a specified channel setting for the current channel
         :usage: <setting> <value>
         """
-        self._set("channelset", event, event["target"])
+        self._set("channelset", event, event["target"],
+            event["command"].startswith("channelsetadd"))
 
-    @utils.hook("received.command.serverset")
+    @utils.hook("received.command.serverset",
+        help="Set a specified server setting for the current server")
+    @utils.hook("received.command.serversetadd",
+        help="Add to a specified server setting for the current server")
     def server_set(self, event):
         """
-        :help: Set a specified server setting for the current server
         :usage: <setting> <value>
         :permission: serverset
         """
-        self._set("serverset", event, event["server"])
+        self._set("serverset", event, event["server"],
+            event["command"]=="serversetadd")
 
-    @utils.hook("received.command.botset")
+    @utils.hook("received.command.botset", help="Set a specified bot setting")
+    @utils.hook("received.command.botsetadd",
+        help="Add to a specified bot setting")
     def bot_set(self, event):
         """
         :help: Set a specified bot setting
         :usage: <setting> <value>
         :permission: botset
         """
-        self._set("botset", event, self.bot)
+        self._set("botset", event, self.bot, event["command"]=="botsetadd")
 
     def _get(self, event, setting, qualifier, value):
         if not value == None:

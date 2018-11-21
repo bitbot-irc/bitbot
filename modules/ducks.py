@@ -174,7 +174,7 @@ class Module(ModuleManager.BaseModule):
             # rare!
             message = random.choice(DUCK_MESSAGE_RARE)
             duck = utils.irc.color(utils.irc.bold(duck + message),
-                utils.irc.COLOR_RED)
+                utils.consts.RED)
         else:
             # not rare!
             duck += random.choice(DUCK_MESSAGE)

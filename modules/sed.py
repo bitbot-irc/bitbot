@@ -11,12 +11,16 @@ REGEX_SED = re.compile("^s/")
     "help": "Disable/Enable sed only looking at the messages sent by the user",
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
+    def _closest_setting(self, event, setting, default):
+        return event["channel"].get_setting(setting,
+            event["server"].get_setting(setting, default))
+
     @utils.hook("received.message.channel")
     def channel_message(self, event):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
         if event["message"].startswith("s/") and len(sed_split) > 2:
-            if event["action"] or not utils.get_closest_setting(
-                    event, "sed", False):
+            if event["action"] or not self._closest_setting(event, "sed",
+                    False):
                 return
 
             regex_flags = 0
@@ -48,9 +52,8 @@ class Module(ModuleManager.BaseModule):
                 return
             replace = sed_split[2].replace("\\/", "/")
 
-            for_user = event["user"].nickname if utils.get_closest_setting(
-                event, "sed-sender-only", False
-            ) else None
+            for_user = event["user"].nickname if self._closest_setting(event,
+                "sed-sender-only", False) else None
             line = event["channel"].buffer.find(pattern, from_self=False,
                 for_user=for_user, not_pattern=REGEX_SED)
             if line:

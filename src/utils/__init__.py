@@ -1,6 +1,5 @@
-import decimal, io, re
-from src import ModuleManager
-from . import irc, http
+import decimal, io, re, typing
+from src.utils import cli, consts, irc, http, parse
 
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60
@@ -8,7 +7,7 @@ TIME_HOUR = TIME_MINUTE*60
 TIME_DAY = TIME_HOUR*24
 TIME_WEEK = TIME_DAY*7
 
-def time_unit(seconds):
+def time_unit(seconds: int) -> typing.Tuple[int, str]:
     since = None
     unit = None
     if seconds >= TIME_WEEK:
@@ -29,7 +28,7 @@ def time_unit(seconds):
     since = int(since)
     if since > 1:
         unit = "%ss" % unit # pluralise the unit
-    return [since, unit]
+    return (since, unit)
 
 REGEX_PRETTYTIME = re.compile("\d+[wdhms]", re.I)
 
@@ -38,7 +37,7 @@ SECONDS_HOURS = SECONDS_MINUTES*60
 SECONDS_DAYS = SECONDS_HOURS*24
 SECONDS_WEEKS = SECONDS_DAYS*7
 
-def from_pretty_time(pretty_time):
+def from_pretty_time(pretty_time: str) -> typing.Optional[int]:
     seconds = 0
     for match in re.findall(REGEX_PRETTYTIME, pretty_time):
         number, unit = int(match[:-1]), match[-1].lower()
@@ -53,13 +52,16 @@ def from_pretty_time(pretty_time):
         seconds += number
     if seconds > 0:
         return seconds
+    return None
 
+UNIT_MINIMUM = 6
 UNIT_SECOND = 5
 UNIT_MINUTE = 4
 UNIT_HOUR = 3
 UNIT_DAY = 2
 UNIT_WEEK = 1
-def to_pretty_time(total_seconds, minimum_unit=UNIT_SECOND, max_units=6):
+def to_pretty_time(total_seconds: int, minimum_unit: int=UNIT_SECOND,
+        max_units: int=UNIT_MINIMUM) -> str:
     minutes, seconds = divmod(total_seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
@@ -84,7 +86,7 @@ def to_pretty_time(total_seconds, minimum_unit=UNIT_SECOND, max_units=6):
         units += 1
     return out
 
-def parse_number(s):
+def parse_number(s: str) -> str:
     try:
         decimal.Decimal(s)
         return s
@@ -92,11 +94,12 @@ def parse_number(s):
         pass
 
     unit = s[-1].lower()
-    number = s[:-1]
+    number_str = s[:-1]
     try:
-        number = decimal.Decimal(number)
+        number = decimal.Decimal(number_str)
     except:
-        raise ValueError("Invalid format '%s' passed to parse_number" % number)
+        raise ValueError("Invalid format '%s' passed to parse_number" %
+            number_str)
 
     if unit == "k":
         number *= decimal.Decimal("1_000")
@@ -110,28 +113,20 @@ def parse_number(s):
 
 IS_TRUE = ["true", "yes", "on", "y"]
 IS_FALSE = ["false", "no", "off", "n"]
-def bool_or_none(s):
+def bool_or_none(s: str) -> typing.Optional[bool]:
     s = s.lower()
     if s in IS_TRUE:
         return True
     elif s in IS_FALSE:
         return False
-def int_or_none(s):
+    return None
+def int_or_none(s: str) -> typing.Optional[int]:
     stripped_s = s.lstrip("0")
     if stripped_s.isdigit():
         return int(stripped_s)
+    return None
 
-def get_closest_setting(event, setting, default=None):
-    server = event["server"]
-    if "channel" in event:
-        closest = event["channel"]
-    elif "target" in event and "is_channel" in event and event["is_channel"]:
-        closest = event["target"]
-    else:
-        closest = event["user"]
-    return closest.get_setting(setting, server.get_setting(setting, default))
-
-def prevent_highlight(nickname):
+def prevent_highlight(nickname: str) -> str:
     return nickname[0]+"\u200c"+nickname[1:]
 
 class EventError(Exception):
@@ -139,78 +134,40 @@ class EventError(Exception):
 class EventsResultsError(EventError):
     def __init__(self):
         EventError.__init__(self, "Failed to load results")
+class EventsNotEnoughArgsError(EventError):
+    def __init__(self, n):
+        EventError.__init__(self, "Not enough arguments (minimum %d)" % n)
+class EventsUsageError(EventError):
+    def __init__(self, usage):
+        EventError.__init__(self, "Not enough arguments, usage: %s" % usage)
 
-def _set_get_append(obj, setting, item):
+def _set_get_append(obj: typing.Any, setting: str, item: typing.Any):
     if not hasattr(obj, setting):
         setattr(obj, setting, [])
     getattr(obj, setting).append(item)
-def hook(event, **kwargs):
+def hook(event: str, **kwargs):
     def _hook_func(func):
-        _set_get_append(func, ModuleManager.BITBOT_HOOKS_MAGIC,
+        _set_get_append(func, consts.BITBOT_HOOKS_MAGIC,
             {"event": event, "kwargs": kwargs})
         return func
     return _hook_func
-def export(setting, value):
+def export(setting: str, value: typing.Any):
     def _export_func(module):
-        _set_get_append(module, ModuleManager.BITBOT_EXPORTS_MAGIC,
+        _set_get_append(module, consts.BITBOT_EXPORTS_MAGIC,
             {"setting": setting, "value": value})
         return module
     return _export_func
 
-COMMENT_TYPES = ["#", "//"]
-def get_hashflags(filename):
-    hashflags = {}
-    with io.open(filename, mode="r", encoding="utf8") as f:
-        for line in f:
-            line = line.strip("\n")
-            found = False
-            for comment_type in COMMENT_TYPES:
-                if line.startswith(comment_type):
-                    line = line.replace(comment_type, "", 1).lstrip()
-                    found = True
-                    break
+TOP_10_CALLABLE = typing.Callable[[typing.Any], typing.Any]
+def top_10(items: typing.Dict[typing.Any, typing.Any],
+        convert_key: TOP_10_CALLABLE=lambda x: x,
+        value_format: TOP_10_CALLABLE=lambda x: x):
+    top_10 = sorted(items.keys())
+    top_10 = sorted(top_10, key=items.get, reverse=True)[:10]
 
-            if not found:
-                break
-            elif line.startswith("--"):
-                hashflag, sep, value = line[2:].partition(" ")
-                hashflags[hashflag] = value if sep else None
-    return hashflags.items()
+    top_10_items = []
+    for key in top_10:
+        top_10_items.append("%s (%s)" % (convert_key(key),
+            value_format(items[key])))
 
-class Docstring(object):
-    def __init__(self, description, items):
-        self.description = description
-        self.items = items
-
-def parse_docstring(s):
-    description = ""
-    last_item = None
-    items = {}
-    if s:
-        for line in s.split("\n"):
-            line = line.strip()
-
-            if line:
-                if line[0] == ":":
-                    key, _, value = line[1:].partition(": ")
-                    last_item = key
-                    items[key] = value
-                else:
-                    if last_item:
-                        items[last_item] += " %s" % line
-                    else:
-                        if description:
-                            description += " "
-                        description += line
-    return Docstring(description, items)
-
-def top_10(items, convert_key=lambda x: x, value_format=lambda x: x):
-        top_10 = sorted(items.keys())
-        top_10 = sorted(top_10, key=items.get, reverse=True)[:10]
-
-        top_10_items = []
-        for key in top_10:
-            top_10_items.append("%s (%s)" % (convert_key(key),
-                value_format(items[key])))
-
-        return top_10_items
+    return top_10_items

@@ -1,21 +1,21 @@
-import time, uuid
+import time, typing, uuid
 
 class Cache(object):
     def __init__(self):
         self._items = {}
         self._item_to_id = {}
 
-    def cache(self, item):
+    def cache(self, item: typing.Any) -> str:
         return self._cache(item, None)
-    def temporary_cache(self, item, timeout):
-        return self._cache(item, timeout)
-    def _cache(self, item, timeout):
+    def temporary_cache(self, item: typing.Any, timeout: float)-> str:
+        return self._cache(item, time.monotonic()+timeout)
+    def _cache(self, item: typing.Any, timeout: typing.Optional[float]) -> str:
         id = str(uuid.uuid4())
-        self._items[id] = [item, time.monotonic()+timeout]
+        self._items[id] = [item, timeout]
         self._item_to_id[item] = id
         return id
 
-    def next_expiration(self):
+    def next_expiration(self) -> typing.Optional[float]:
         expirations = [self._items[id][1] for id in self._items]
         expirations = list(filter(None, expirations))
         if not expirations:
@@ -35,17 +35,17 @@ class Cache(object):
             del self._items[id]
             del self._item_to_id[item]
 
-    def has_item(self, item):
+    def has_item(self, item: typing.Any) -> bool:
         return item in self._item_to_id
 
-    def get(self, id):
+    def get(self, id: str) -> typing.Any:
         item, expiration = self._items[id]
         return item
 
-    def get_expiration(self, item):
+    def get_expiration(self, item: typing.Any) -> float:
         id = self._item_to_id[item]
         item, expiration = self._items[id]
         return expiration
-    def until_expiration(self, item):
+    def until_expiration(self, item: typing.Any) -> float:
         expiration = self.get_expiration(item)
         return expiration-time.monotonic()

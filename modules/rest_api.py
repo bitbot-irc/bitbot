@@ -7,6 +7,7 @@ from src import ModuleManager, utils
 
 _bot = None
 _events = None
+_log = None
 class Handler(http.server.BaseHTTPRequestHandler):
     timeout = 10
     def _handle(self, method, path, data="", params={}):
@@ -22,23 +23,31 @@ class Handler(http.server.BaseHTTPRequestHandler):
             hook = hooks[0]
             authenticated = hook.get_kwarg("authenticated", True)
             key = params.get("key", None)
-            if authenticated and (not key or not _bot.get_setting(
-                    "api-key-%s" % key, False)):
-                code = 401
-            else:
+            key_setting = _bot.get_setting("api-key-%s" % key, {})
+            permissions = key_setting.get("permissions", [])
+
+            if not authenticated or path in permissions or "*" in permissions:
                 if path.startswith("/api/"):
                     event_response = None
                     try:
                         event_response = _events.on("api").on(method).on(
-                            endpoint).call_unsafe_for_result(
-                            params=params, path=args, data=data)
-                    except:
+                            endpoint).call_unsafe_for_result(params=params,
+                            path=args, data=data, headers=dict(self.headers))
+                    except Exception as e:
+                        _log.error("failed to call API endpoint \"%s\"",
+                            [path], exc_info=True)
                         code = 500
 
-                    if event_response:
-                        response = json.dumps(event_response,
-                            sort_keys=True, indent=4)
+                    if not event_response == None:
+                        if _bot.get_setting("rest-api-minify", False):
+                            response = json.dumps(event_response,
+                                sort_keys=True, separators=(",", ":"))
+                        else:
+                            response = json.dumps(event_response,
+                                sort_keys=True, indent=4)
                         code = 200
+            else:
+                code = 401
 
         self.send_response(code)
         self.send_header("Content-type", "application/json")
@@ -69,8 +78,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
         post_body = self.rfile.read(content_length)
         self._handle("post", parsed.path, data=post_body, params=post_params)
 
+    def log_message(self, format, *args):
+        _log.info("[HTTP] " + format, args)
+
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
+    "validate": utils.bool_or_none})
+@utils.export("botset", {"setting": "rest-api-minify",
+    "help": "Enable/disable REST API minifying",
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def on_load(self):
@@ -79,6 +94,9 @@ class Module(ModuleManager.BaseModule):
 
         global _events
         _events = self.events
+
+        global _log
+        _log = self.log
 
         if self.bot.get_setting("rest-api", False):
             self.httpd = http.server.HTTPServer(("", 5000), Handler)
@@ -97,9 +115,14 @@ class Module(ModuleManager.BaseModule):
     def api_key(self, event):
         """
         :help: Generate a new API key
+        :usage: <comment> [endpoint [endpoint ...]]
         :permission: api-key
         :prefix: APIKey
         """
-        api_key = str(uuid.uuid4())
-        self.bot.set_setting("api-key-%s" % api_key, True)
-        event["stdout"].write(api_key)
+        api_key = uuid.uuid4().hex
+        comment = event["args_split"][0]
+        self.bot.set_setting("api-key-%s" % api_key, {
+            "comment": comment,
+            "permissions": event["args_split"][1:]
+        })
+        event["stdout"].write("New API key ('%s'): %s" % (comment, api_key))

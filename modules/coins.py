@@ -6,9 +6,11 @@ DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
 DEFAULT_REDEEM_AMOUNT = "100.0"
 DEFAULT_INTEREST_RATE = "0.01"
 INTEREST_INTERVAL = 60*60 # 1 hour
-DECIMAL_ZERO = decimal.Decimal("0")
 REGEX_FLOAT = re.compile("(?:\d+(?:\.\d{1,2}|$)|\.\d{1,2})")
 DEFAULT_MARKET_CAP = str(1_000_000_000)
+
+DECIMAL_ZERO = decimal.Decimal("0")
+DECIMAL_BET_MINIMUM = decimal.Decimal("0.01")
 
 HOUR_SECONDS = (1*60)*60
 LOTTERY_INTERVAL = (60*60)*6 # 6 hours
@@ -131,6 +133,8 @@ class Module(ModuleManager.BaseModule):
 
     def _coin_str(self, coins):
         return "{0:.2f}".format(coins)
+    def _coin_str_human(self, coins):
+        return "{0:,.2f}".format(coins)
     def _parse_coins(self, s, minimum=None):
         try:
             s = utils.parse_number(s)
@@ -215,7 +219,7 @@ class Module(ModuleManager.BaseModule):
             target = event["user"]
         coins = self._get_all_user_coins(target)
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
-            self._coin_str(coins), "" if coins == 1 else "s"))
+            self._coin_str_human(coins), "" if coins == 1 else "s"))
 
     @utils.hook("received.command.wallet")
     def wallet(self, event):
@@ -234,7 +238,7 @@ class Module(ModuleManager.BaseModule):
                     (event["user"].nickname, wallet))
             coins = self._get_user_coins(event["user"], wallet)
             event["stdout"].write("%s: you have %s coins in your '%s' wallet" %
-                (event["user"].nickname, self._coin_str(coins), wallet))
+                (event["user"].nickname, self._coin_str_human(coins), wallet))
 
     @utils.hook("received.command.addwallet", authenticated=True, min_args=1)
     def add_wallet(self, event):
@@ -336,7 +340,7 @@ class Module(ModuleManager.BaseModule):
         top_10 = utils.top_10(self._all_coins(event["server"]),
             convert_key=lambda nickname: utils.prevent_highlight(
                 event["server"].get_user(nickname).nickname),
-            value_format=lambda value: self._coin_str(value))
+            value_format=lambda value: self._coin_str_human(value))
         event["stdout"].write("Richest users: %s" % ", ".join(top_10))
 
     def _redeem_cache(self, server, user):
@@ -395,7 +399,7 @@ class Module(ModuleManager.BaseModule):
                     event["user"].nickname)
         else:
             try:
-                coin_bet = self._parse_coins(coin_bet, DECIMAL_ZERO)
+                coin_bet = self._parse_coins(coin_bet, DECIMAL_BET_MINIMUM)
             except CoinParseException as e:
                 raise utils.EventError("%s: %s" % (event["user"].nickname,
                     str(e)))
@@ -539,7 +543,8 @@ class Module(ModuleManager.BaseModule):
 
         for i, bet_amount in enumerate(bet_amounts):
             try:
-                bet_amounts[i] = self._parse_coins(bet_amount, DECIMAL_ZERO)
+                bet_amounts[i] = self._parse_coins(bet_amount,
+                    DECIMAL_BET_MINIMUM)
             except CoinParseException as e:
                 raise utils.EventError("%s: %s" % (event["user"].nickname,
                     str(e)))

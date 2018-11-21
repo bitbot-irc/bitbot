@@ -8,6 +8,6 @@ class Module(ModuleManager.BaseModule):
             command = command.split("%%")
             for j, part in enumerate(command[:]):
                 command[j] = part.replace("%nick%", event["server"
-                    ].original_nickname)
+                    ].nickname)
             command = "%".join(command)
             event["server"].send(command)

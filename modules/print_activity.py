@@ -7,7 +7,7 @@ class Module(ModuleManager.BaseModule):
         target = str(event["server"])
         if not channel == None:
             target += channel
-        self.bot.log.info("%s | %s", [target, line])
+        self.bot.log.info("%s | %s", [target, utils.irc.to_ansi_colors(line)])
 
     def _mode_symbols(self, user, channel, server):
         modes = channel.get_user_status(user)
@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
         priority=EventManager.PRIORITY_HIGH)
     def channel_message(self, event):
         self._on_message(event, event["user"])
-    @utils.hook("self.message.channel")
+    @utils.hook("send.message.channel")
     def self_channel_message(self, event):
         self._on_message(event, event["server"].get_user(
             event["server"].nickname))
@@ -114,3 +114,13 @@ class Module(ModuleManager.BaseModule):
         self.print_line(event, "%s set mode %s%s" % (
             event["user"].nickname, "".join(event["modes"]),
             args), channel=event["channel"].name)
+
+    @utils.hook("received.rename")
+    def rename(self, event):
+        self.print_line(event, "%s was renamed to %s" % (
+            event["old_name"], event["new_name"]))
+
+    @utils.hook("received.numeric.376")
+    def motd_end(self, event):
+        for line in event["server"].motd_lines:
+            self.print_line(event, "[MOTD] %s" % line)
