@@ -33,6 +33,8 @@ class Module(ModuleManager.BaseModule):
     def timer_due(self, event):
         server = self.bot.get_server(event["server_id"])
         if server:
-            server.send_message(event["target"],
-                "%s, this is your reminder: %s" % (
-                event["nickname"], event["message"]))
+            message = "%s: this is your reminder: %s" % (
+                event["nickname"], event["message"])
+            target = server.get_target(event["target"])
+            self.events.on("send.stdout").call(target=target, module_name="In",
+                server=server, message=message)
