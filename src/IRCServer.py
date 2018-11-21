@@ -162,7 +162,7 @@ class Server(IRCObject.Object):
     def set_own_nickname(self, nickname: str):
         self.nickname = nickname
         self.nickname_lower = utils.irc.lower(self.case_mapping, nickname)
-    def is_own_nickname(self, nickname: str):
+    def is_own_nickname(self, nickname: str) -> bool:
         return utils.irc.equals(self.case_mapping, nickname, self.nickname)
 
     def add_own_mode(self, mode: str, arg: str=None):
@@ -175,9 +175,9 @@ class Server(IRCObject.Object):
         else:
             self.add_own_mode(mode, arg)
 
-    def has_user(self, nickname: str):
+    def has_user(self, nickname: str) -> bool:
         return utils.irc.lower(self.case_mapping, nickname) in self.users
-    def get_user(self, nickname: str, create: bool=True):
+    def get_user(self, nickname: str, create: bool=True) -> IRCUser.User:
         if not self.has_user(nickname) and create:
             user_id = self.get_user_id(nickname)
             new_user = IRCUser.User(nickname, user_id, self, self.bot)
@@ -186,7 +186,7 @@ class Server(IRCObject.Object):
             self.new_users.add(new_user)
         return self.users.get(utils.irc.lower(self.case_mapping, nickname),
             None)
-    def get_user_id(self, nickname: str):
+    def get_user_id(self, nickname: str) -> int:
         self.bot.database.users.add(self.id, nickname)
         return self.bot.database.users.get_id(self.id, nickname)
     def remove_user(self, user: IRCUser.User):
