@@ -182,7 +182,8 @@ class Server(IRCObject.Object):
 
     def has_user(self, nickname: str) -> bool:
         return utils.irc.lower(self.case_mapping, nickname) in self.users
-    def get_user(self, nickname: str, create: bool=True) -> IRCUser.User:
+    def get_user(self, nickname: str, create: bool=True
+            ) -> typing.Optional[IRCUser.User]:
         if not self.has_user(nickname) and create:
             user_id = self.get_user_id(nickname)
             new_user = IRCUser.User(nickname, user_id, self, self.bot)
