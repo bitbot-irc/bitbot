@@ -273,7 +273,7 @@ class Server(IRCObject.Object):
     def ping_due(self) -> bool:
         return self.until_next_ping() == 0
 
-    def until_read_timeout(self) -> typing.float:
+    def until_read_timeout(self) -> float:
         return max(0, (self.last_read+READ_TIMEOUT_SECONDS
             )-time.monotonic())
     def read_timed_out(self) -> bool:
