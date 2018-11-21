@@ -14,22 +14,25 @@ CHOICES = [
     "The answer is unclear",
     "Absolutely",
     "Dubious at best",
-    "I'm on a break, ask again later",
     "As I see it, yes",
+    "Without a doube, it's a certainty",
+    "Yep.",
     "It is certain",
     "Naturally",
     "Reply hazy, try again later",
     utils.irc.underline(utils.irc.color("DO NOT WASTE MY TIME",
         utils.consts.RED)),
     "Hmm... Could be!",
-    "I'm leaning towards no",
     "Without a doubt",
     "Sources say no",
     "Sources say yes",
-    "Sources say maybe"
+    "Sources say maybe",
+    "For sure",
+    "It's guaranteed"
 ]
 
 class Module(ModuleManager.BaseModule):
+    _name = "8-ball"
     @utils.hook("received.command.8ball", min_args=1)
     def decide(selfs, event):
         """
