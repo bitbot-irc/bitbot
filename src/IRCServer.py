@@ -194,6 +194,15 @@ class Server(IRCObject.Object):
         for channel in user.channels:
             channel.remove_user(user)
 
+    def get_target(self, name: str
+            ) -> typing.Union[IRCChannel.Channel, IRCUser.User]:
+        if name[0] in self.channel_types:
+            if name in self.channels:
+                return self.channels.get(name)
+        else:
+            return self.get_user(name)
+        return None
+
     def change_user_nickname(self, old_nickname: str, new_nickname: str):
         user = self.users.pop(utils.irc.lower(self.case_mapping, old_nickname))
         user._id = self.get_user_id(new_nickname)
