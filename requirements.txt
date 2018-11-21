@@ -4,4 +4,4 @@ requests
 scrypt
 suds-jurko
 twitter
-
+pyopenssl
