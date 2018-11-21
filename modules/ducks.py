@@ -7,8 +7,7 @@ DUCK_TAIL = "・゜゜・。。・゜゜"
 DUCK_HEAD = ["\_o< ", "\_O< ", "\_0< ", "\_\u00f6< ", "\_\u00f8< ",
              "\_\u00f3< "]
 DUCK_MESSAGE = ["QUACK!", "FLAP FLAP!", "quack!", "squawk!"]
-DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!", "HONK!",
-    utils.irc.underline("I AM THE METAL DUCK")]
+DUCK_MESSAGE_RARE = ["beep boop!", "QUACK QUACK QUACK QUACK QUACK!!", "HONK!"]
 
 DUCK_MINIMUM_MESSAGES = 10
 DUCK_MINIMUM_UNIQUE = 3
