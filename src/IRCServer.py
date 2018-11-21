@@ -1,5 +1,6 @@
 import collections, socket, ssl, sys, time, typing
-from src import EventManager, IRCBot, IRCChannels, IRCObject, IRCUser, utils
+from src import EventManager, IRCBot, IRCChannel, IRCChannels, IRCObject
+from src import IRCUser, utils
 
 THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
@@ -62,15 +63,15 @@ class Server(IRCObject.Object):
 
         self.events.on("timer.rejoin").hook(self.try_rejoin)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "IRCServer.Server(%s)" % self.__str__()
-    def __str__(self):
+    def __str__(self) -> str:
         if self.alias:
             return self.alias
         return "%s:%s%s" % (self.connection_params.hostname,
             "+" if self.connection_params.tls else "",
             self.connection_params.port)
-    def fileno(self):
+    def fileno(self) -> int:
         return self.cached_fileno or self.socket.fileno()
 
     def tls_wrap(self):
@@ -131,38 +132,42 @@ class Server(IRCObject.Object):
     def set_setting(self, setting: str, value: typing.Any):
         self.bot.database.server_settings.set(self.id, setting,
             value)
-    def get_setting(self, setting: str, default: typing.Any=None):
+    def get_setting(self, setting: str, default: typing.Any=None
+            ) -> typing.Any:
         return self.bot.database.server_settings.get(self.id,
             setting, default)
-    def find_settings(self, pattern: str, default: typing.Any=[]):
+    def find_settings(self, pattern: str, default: typing.Any=[]
+            ) -> typing.List[typing.Any]:
         return self.bot.database.server_settings.find(self.id,
             pattern, default)
-    def find_settings_prefix(self, prefix: str, default: typing.Any=[]):
+    def find_settings_prefix(self, prefix: str, default: typing.Any=[]
+            ) -> typing.List[typing.Any]:
         return self.bot.database.server_settings.find_prefix(
             self.id, prefix, default)
     def del_setting(self, setting: str):
         self.bot.database.server_settings.delete(self.id, setting)
 
     def get_user_setting(self, nickname: str, setting: str,
-            default: typing.Any=None):
+            default: typing.Any=None) -> typing.Any:
         user_id = self.get_user_id(nickname)
         return self.bot.database.user_settings.get(user_id, setting, default)
     def set_user_setting(self, nickname: str, setting: str, value: typing.Any):
         user_id = self.get_user_id(nickname)
         self.bot.database.user_settings.set(user_id, setting, value)
 
-    def get_all_user_settings(self, setting: str, default: typing.Any=[]):
+    def get_all_user_settings(self, setting: str, default: typing.Any=[]
+            ) -> typing.List[typing.Any]:
         return self.bot.database.user_settings.find_all_by_setting(
             self.id, setting, default)
     def find_all_user_channel_settings(self, setting: str,
-            default: typing.Any=[]):
+            default: typing.Any=[]) -> typing.List[typing.Any]:
         return self.bot.database.user_channel_settings.find_all_by_setting(
             self.id, setting, default)
 
     def set_own_nickname(self, nickname: str):
         self.nickname = nickname
         self.nickname_lower = utils.irc.lower(self.case_mapping, nickname)
-    def is_own_nickname(self, nickname: str):
+    def is_own_nickname(self, nickname: str) -> bool:
         return utils.irc.equals(self.case_mapping, nickname, self.nickname)
 
     def add_own_mode(self, mode: str, arg: str=None):
@@ -175,9 +180,10 @@ class Server(IRCObject.Object):
         else:
             self.add_own_mode(mode, arg)
 
-    def has_user(self, nickname: str):
+    def has_user(self, nickname: str) -> bool:
         return utils.irc.lower(self.case_mapping, nickname) in self.users
-    def get_user(self, nickname: str, create: bool=True):
+    def get_user(self, nickname: str, create: bool=True
+            ) -> typing.Optional[IRCUser.User]:
         if not self.has_user(nickname) and create:
             user_id = self.get_user_id(nickname)
             new_user = IRCUser.User(nickname, user_id, self, self.bot)
@@ -186,13 +192,23 @@ class Server(IRCObject.Object):
             self.new_users.add(new_user)
         return self.users.get(utils.irc.lower(self.case_mapping, nickname),
             None)
-    def get_user_id(self, nickname: str):
+    def get_user_id(self, nickname: str) -> int:
         self.bot.database.users.add(self.id, nickname)
         return self.bot.database.users.get_id(self.id, nickname)
     def remove_user(self, user: IRCUser.User):
         del self.users[user.nickname_lower]
         for channel in user.channels:
             channel.remove_user(user)
+
+    def get_target(self, name: str
+            ) -> typing.Optional[
+            typing.Union[IRCChannel.Channel, IRCUser.User]]:
+        if name[0] in self.channel_types:
+            if name in self.channels:
+                return self.channels.get(name)
+        else:
+            return self.get_user(name)
+        return None
 
     def change_user_nickname(self, old_nickname: str, new_nickname: str):
         user = self.users.pop(utils.irc.lower(self.case_mapping, old_nickname))
@@ -209,7 +225,7 @@ class Server(IRCObject.Object):
             if not len(user.channels):
                 self.remove_user(user)
         self.new_users.clear()
-    def read(self):
+    def read(self) -> typing.Optional[typing.List[str]]:
         data = b""
         try:
             data = self.socket.recv(4096)
@@ -235,33 +251,33 @@ class Server(IRCObject.Object):
         for line in data_lines:
             encoding = self.get_setting("encoding", "utf8")
             try:
-                line = line.decode(encoding)
+                decoded_line = line.decode(encoding)
             except:
                 self.bot.log.trace("can't decode line with '%s', falling back",
                     [encoding])
                 try:
-                    line = line.decode(self.get_setting(
+                    decoded_line = line.decode(self.get_setting(
                         "fallback-encoding", "latin-1"))
                 except:
                     continue
-            decoded_lines.append(line)
+            decoded_lines.append(decoded_line)
 
         self.last_read = time.monotonic()
         self.ping_sent = False
         return decoded_lines
 
-    def until_next_ping(self):
+    def until_next_ping(self) -> typing.Optional[float]:
         if self.ping_sent:
             return None
         return max(0, (self.last_read+PING_INTERVAL_SECONDS
             )-time.monotonic())
-    def ping_due(self):
+    def ping_due(self) -> bool:
         return self.until_next_ping() == 0
 
-    def until_read_timeout(self):
+    def until_read_timeout(self) -> float:
         return max(0, (self.last_read+READ_TIMEOUT_SECONDS
             )-time.monotonic())
-    def read_timed_out(self):
+    def read_timed_out(self) -> bool:
         return self.until_read_timeout == 0
 
     def send(self, data: str):
@@ -286,11 +302,11 @@ class Server(IRCObject.Object):
         now = time.monotonic()
         self.recent_sends.append(now)
         self.last_send = now
-    def waiting_send(self):
+    def waiting_send(self) -> bool:
         return bool(len(self.write_buffer)) or bool(len(self.buffered_lines))
-    def throttle_done(self):
+    def throttle_done(self) -> bool:
         return self.send_throttle_timeout() == 0
-    def send_throttle_timeout(self):
+    def send_throttle_timeout(self) -> float:
         if len(self.write_buffer) or not self._write_throttling:
             return 0
 
@@ -338,7 +354,7 @@ class Server(IRCObject.Object):
     def send_starttls(self):
         self.send("STARTTLS")
 
-    def waiting_for_capabilities(self):
+    def waiting_for_capabilities(self) -> bool:
         return bool(len(self._capabilities_waiting))
     def wait_for_capability(self, capability: str):
         self._capabilities_waiting.add(capability)
@@ -368,7 +384,7 @@ class Server(IRCObject.Object):
     def send_quit(self, reason: str="Leaving"):
         self.send("QUIT :%s" % reason)
 
-    def _tag_str(self, tags: dict):
+    def _tag_str(self, tags: dict) -> str:
         tag_str = ""
         for tag, value in tags.items():
             if tag_str:
