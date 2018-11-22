@@ -38,14 +38,14 @@ class Module(ModuleManager.BaseModule):
         # getset
         ducks_enabled = channel.get_setting("ducks-enabled", False)
 
-        if ducks_enabled == True:
+        if ducks_enabled:
             self.start_game(channel)
 
     def is_duck_channel(self, channel):
-        if channel.get_setting("ducks-enabled", False) == False:
+        if not channel.get_setting("ducks-enabled", False):
             return False
 
-        if hasattr(channel, 'games') == False:
+        if not hasattr(channel, 'games'):
             return False
 
         if "ducks" not in channel.games.keys():
@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
         return True
 
     def init_game_var(self, channel):
-        if hasattr(channel, 'games') == False:
+        if not hasattr(channel, 'games'):
             channel.games = {}
 
     def clear_ducks(self, channel):
@@ -96,7 +96,6 @@ class Module(ModuleManager.BaseModule):
 
     def should_kick(self, event):
         channel = event["target"]
-
         return channel.get_setting("ducks-kick", False)
 
     def kick_bef(self, event):
@@ -119,7 +118,7 @@ class Module(ModuleManager.BaseModule):
         :help: Prepare a decoy duck
         """
         channel = event["target"]
-        if self.is_duck_channel(channel) == False:
+        if not self.is_duck_channel(channel):
             return
 
         if self.is_duck_visible(event):
@@ -129,7 +128,6 @@ class Module(ModuleManager.BaseModule):
         game["decoy_requested"] = 1
 
         event.eat()
-
 
     def should_generate_duck(self, event):
         channel = event["channel"]
@@ -142,7 +140,7 @@ class Module(ModuleManager.BaseModule):
         next_duck = game["next_decoy_time"] if decoy else game["next_duck_time"]
 
         min_unique = 1 if decoy else channel.get_setting("ducks-min-unique",
-                                          DUCK_MINIMUM_UNIQUE)
+                                                         DUCK_MINIMUM_UNIQUE)
         min_messages = channel.get_setting("ducks-min-messages", DUCK_MINIMUM_MESSAGES)
 
         requirement = (unique >= min_unique and messages >= min_messages)
@@ -151,10 +149,7 @@ class Module(ModuleManager.BaseModule):
         # DUCK_MINIMUM_UNIQUE = 3
 
         if spawned == 0 and next_duck < time():
-            if requirement:
-                return True
-            else:
-                return False
+            return bool(requirement)
         else:
             return False
 
@@ -203,7 +198,7 @@ class Module(ModuleManager.BaseModule):
         game = channel.games["ducks"]
 
         if game["decoy_spawned"] == 1 or game["duck_spawned"] == 1 or \
-                channel.has_user(event["user"]) == False:
+                not channel.has_user(event["user"]):
             return
 
         unique = game["unique_users"]
@@ -217,7 +212,7 @@ class Module(ModuleManager.BaseModule):
 
         game["messages"] = messages + messages_increment
 
-        if self.should_generate_duck(event) == True:
+        if self.should_generate_duck(event):
             self.show_duck(event)
 
     @utils.hook("received.command.bef")
@@ -229,10 +224,10 @@ class Module(ModuleManager.BaseModule):
         user = event["user"]
         nick = user.nickname
         uid = user.get_id()
-        if self.is_duck_channel(channel) == False:
+        if not self.is_duck_channel(channel):
             return
 
-        if self.is_duck_visible(event, False) == False:
+        if not self.is_duck_visible(event, False):
             if self.should_kick(event):
                 self.kick_bef(event)
                 event.eat()
@@ -268,10 +263,10 @@ class Module(ModuleManager.BaseModule):
         nick = user.nickname
         uid = user.get_id()
 
-        if self.is_duck_channel(channel) == False:
+        if not self.is_duck_channel(channel):
             return
 
-        if self.is_duck_visible(event, False) == False:
+        if not self.is_duck_visible(event, False):
             if self.should_kick(event):
                 self.kick_bang(event)
                 event.eat()
