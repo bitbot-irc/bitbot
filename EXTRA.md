@@ -27,4 +27,4 @@ If the server supports account-notify, you can use services to keep track of use
 | --- | --- | --- |
 | 1 | identity-mechanism | "ircv3-account" |
 
-* Note: Users will still be assigned a unique id, which is used for word tracking, permissions, etc.
+* Note: Users will still be assigned a unique id, which is used for word tracking, permissions, etc. Internal user IDs do not correlate with registrations, so changing from ircv3-account to internal will not affect user tracking.
