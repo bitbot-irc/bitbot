@@ -9,12 +9,16 @@ Add to the server_settings table in bot.db:
 | --- | --- | --- |
 | 1 | ssl-verify  | false |
 
+---
+
 ## SASL Authentication
 Add to the server_settings table in bot.db:
 
 | server_id | setting | value |
 | --- | --- | --- |
 | 1 | sasl | {"mechanism": "PLAIN", "args": "username:password"} |
+
+---
 
 ## User Identification (IRCv3)
 If the server supports account-notify, you can use services to keep track of users, instead of having them register to your bot. To do that, insert the following into server_settings
