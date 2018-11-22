@@ -36,19 +36,14 @@ class Module(ModuleManager.BaseModule):
     def bootstrap(self, channel):
         self.init_game_var(channel)
         # getset
-        ducks_enabled = channel.get_setting("ducks-enabled", False)
 
-        if ducks_enabled:
+        if channel.get_setting("ducks-enabled", False):
             self.start_game(channel)
 
     def is_duck_channel(self, channel):
-        if not channel.get_setting("ducks-enabled", False):
-            return False
-
-        if not hasattr(channel, 'games'):
-            return False
-
-        if "ducks" not in channel.games.keys():
+        if not channel.get_setting("ducks-enabled", False) or not \
+                hasattr(channel, 'games') or "ducks" not in \
+                channel.games.keys():
             return False
 
         return True
@@ -77,10 +72,10 @@ class Module(ModuleManager.BaseModule):
         min_unique = channel.get_setting("ducks-min-unique", 0)
         min_messages = channel.get_setting("ducks-min-messages", 0)
 
-        if min_unique == 0:
+        if not min_unique:
             channel.set_setting("ducks-min-unique", DUCK_MINIMUM_UNIQUE)
 
-        if min_messages == 0:
+        if not min_messages:
             channel.set_setting("ducks-min-messages", DUCK_MINIMUM_MESSAGES)
 
     def generate_next_duck_time(self):
@@ -89,10 +84,9 @@ class Module(ModuleManager.BaseModule):
 
     def is_duck_visible(self, event, decoy=False):
         channel = event["target"]
+        ducks = channel.games["ducks"]
 
-        visible = channel.games["ducks"]["decoy_spawned"] if \
-            decoy else channel.games["ducks"]["duck_spawned"]
-        return visible
+        return bool(ducks["decoy_spawned"] if decoy else ducks["duck_spawned"])
 
     def should_kick(self, event):
         channel = event["target"]
@@ -118,10 +112,7 @@ class Module(ModuleManager.BaseModule):
         :help: Prepare a decoy duck
         """
         channel = event["target"]
-        if not self.is_duck_channel(channel):
-            return
-
-        if self.is_duck_visible(event):
+        if not self.is_duck_channel(channel) or self.is_duck_visible(event):
             return
 
         game = channel.games["ducks"]
@@ -148,7 +139,7 @@ class Module(ModuleManager.BaseModule):
         # DUCK_MINIMUM_MESSAGES = 10
         # DUCK_MINIMUM_UNIQUE = 3
 
-        if spawned == 0 and next_duck < time():
+        if not spawned and next_duck < time():
             return bool(requirement)
         else:
             return False
@@ -158,7 +149,7 @@ class Module(ModuleManager.BaseModule):
         game = channel.games["ducks"]
         duck = ""
 
-        if game["duck_spawned"] == 1 or game["decoy_spawned"] == 1:
+        if game["duck_spawned"] or game["decoy_spawned"]:
             return
 
         duck += DUCK_TAIL
@@ -187,18 +178,16 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
-        if not event["channel"].get_setting("ducks-enabled", False):
-            return
         channel = event["channel"]
-
-        if "ducks" not in channel.games.keys():
+        
+        if not channel.get_setting("ducks-enabled", False) or "ducks" not in channel.games.keys():
             return
 
         user = event["user"]
         game = channel.games["ducks"]
+        spawned = game["decoy_spawned"] or game["duck_spawned"]
 
-        if game["decoy_spawned"] == 1 or game["duck_spawned"] == 1 or \
-                not channel.has_user(event["user"]):
+        if spawned or not channel.has_user(user):
             return
 
         unique = game["unique_users"]
@@ -239,13 +228,11 @@ class Module(ModuleManager.BaseModule):
             "next_duck_time"] = self.generate_next_duck_time()
         channel.games["ducks"]["duck_spawned"] = 0
 
-        total_befriended = channel.get_user_setting(uid, "ducks-befriended", 0)
-        total_befriended = total_befriended + 1
-
-        channel.set_user_setting(uid, "ducks-befriended", total_befriended)
+        total_befriended = channel.get_user_setting(uid, "ducks-befriended", 0 )
+        channel.set_user_setting(uid, "ducks-befriended", total_befriended + 1)
 
         msg = "Aww! %s befriended a duck! You've befriended %s ducks in %s!" \
-              % (utils.irc.bold(nick), utils.irc.bold(total_befriended),
+              % (utils.irc.bold(nick), utils.irc.bold(total_befriended + 1),
                  utils.irc.bold(channel.name))
 
         event["stdout"].write(msg)
@@ -279,12 +266,11 @@ class Module(ModuleManager.BaseModule):
         channel.games["ducks"]["duck_spawned"] = 0
 
         total_shot = channel.get_user_setting(uid, "ducks-shot", 0)
-        total_shot = total_shot + 1
 
-        channel.set_user_setting(uid, "ducks-shot", total_shot)
+        channel.set_user_setting(uid, "ducks-shot", total_shot + 1)
 
         msg = "Pow! %s shot a duck! You've shot %s ducks in %s!" \
-              % (utils.irc.bold(nick), utils.irc.bold(total_shot),
+              % (utils.irc.bold(nick), utils.irc.bold(total_shot + 1),
                  utils.irc.bold(channel.name))
 
         event["stdout"].write(msg)
@@ -305,11 +291,7 @@ class Module(ModuleManager.BaseModule):
         poached = user.get_channel_settings_per_setting("ducks-shot", [])
         friends = user.get_channel_settings_per_setting("ducks-befriended", [])
 
-        channel_friends = 0
-        channel_poached = 0
-
-        total_friends = 0
-        total_poached = 0
+        channel_friends = channel_poached = total_friends = total_poached = 0
 
         for room, number in friends:
             if room == channel:
