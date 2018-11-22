@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
                 post_data={
                     "lang": lang,
                     "code": event["args"],
-                    "execute": "%s main.php" % lang,
+                    "execute": "php main.php",
                     "mainfile": "main.php",
                     "stdinput": event["args"]
                 },
