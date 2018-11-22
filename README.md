@@ -8,6 +8,7 @@ Python3 event-driven modular IRC bot!
 * [scrypt](https://pypi.python.org/pypi/scrypt)
 * [suds](https://pypi.python.org/pypi/suds-jurko)
 * [twitter](https://pypi.python.org/pypi/twitter)
+* [pyopenssl](https://pypi.org/project/pyOpenSSL/)
 
 Use `pip3 install -r requirements.txt` to install them all at once.
 
