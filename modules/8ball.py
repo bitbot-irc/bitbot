@@ -15,7 +15,7 @@ CHOICES = [
     "Absolutely",
     "Dubious at best",
     "As I see it, yes",
-    "Without a doube, it's a certainty",
+    "Without a doubt, it's a certainty",
     "Yep.",
     "It is certain",
     "Naturally",
