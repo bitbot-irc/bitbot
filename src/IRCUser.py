@@ -37,10 +37,10 @@ class User(IRCObject.Object):
         return (self.identified_account_override or self.identified_account)
 
     def set_nickname(self, nickname: str):
-        self.name = self.nickname_lower
         self.nickname = nickname
         self.nickname_lower = utils.irc.lower(self.server.case_mapping,
             nickname)
+        self.name = self.nickname_lower
     def join_channel(self, channel: "IRCChannel.Channel"):
         self.channels.add(channel)
     def part_channel(self, channel: "IRCChannel.Channel"):
