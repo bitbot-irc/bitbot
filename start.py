@@ -58,7 +58,7 @@ if len(server_configs):
     servers = []
     for server_id, alias in server_configs:
         server = bot.add_server(server_id, connect=False)
-        if not server == None:
+        if not server == None and server.get_setting("connect", True):
             servers.append(server)
 
     bot._events.on("boot.done").call()

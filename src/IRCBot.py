@@ -47,7 +47,7 @@ class Bot(object):
             connection_params.id, connection_params.alias, connection_params)
         self._events.on("new.server").call(server=new_server)
 
-        if not connect or not new_server.get_setting("connect", True):
+        if not connect:
             return new_server
 
         self.connect(new_server)
