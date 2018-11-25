@@ -152,28 +152,35 @@ def _color_tokens(s: str) -> typing.List[str]:
     is_color = False
     foreground = ""
     background = ""
+    is_background = False
     matches = [] # type: typing.List[str]
 
     for char in s:
         if is_color:
-            if char.isdigit():
-                if background:
+            can_add = True
+            current_color = background if is_background else foreground
+            if current_color:
+                can_add = int(current_color) == 1
+
+            if char.isdigit() and can_add:
+                if is_background:
                     background += char
                 else:
                     foreground += char
                 continue
-            elif char == "," and not background:
-                background += char
+            elif char == "," and not is_background:
+                is_background = True
                 continue
             else:
                 color = foreground
-                if len(background) > 1:
-                    color += background
+                if background:
+                    color += ","+background
 
                 matches.append("\x03%s" % color)
                 is_color = False
                 foreground = ""
                 background = ""
+                is_background = False
 
         if char == utils.consts.COLOR:
             if is_color:
