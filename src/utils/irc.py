@@ -160,7 +160,7 @@ def _color_tokens(s: str) -> typing.List[str]:
             can_add = True
             current_color = background if is_background else foreground
             if current_color:
-                can_add = int(current_color) == 1
+                can_add = int(current_color) < 2
 
             if char.isdigit() and can_add:
                 if is_background:
