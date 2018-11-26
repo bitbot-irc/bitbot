@@ -103,7 +103,7 @@ class Module(ModuleManager.BaseModule):
     def _removed(self, n):
         return self._change_count(n, "-", utils.consts.RED)
     def _modified(self, n):
-        return self._change_count(n, "±", utils.consts.PURPLE)
+        return self._change_count(n, "~", utils.consts.PURPLE)
 
     def _short_hash(self, hash):
         return hash[:8]
