@@ -17,9 +17,9 @@ arg_parser.add_argument("--database", "-d",
     help="Location of the sqlite3 database file",
     default=os.path.join(directory, "databases", "bot.db"))
 
-arg_parser.add_argument("--log", "-l",
-    help="Location of the main log file",
-    default=os.path.join(directory, "logs", "bot.log"))
+arg_parser.add_argument("--log-dir", "-l",
+    help="Location of the log directory",
+    default=os.path.join(directory, "logs"))
 
 arg_parser.add_argument("--add-server", "-a",
     help="Add a new server", action="store_true")

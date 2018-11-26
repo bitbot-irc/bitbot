@@ -43,11 +43,16 @@ class Log(object):
         stdout_handler.setFormatter(formatter)
         self.logger.addHandler(stdout_handler)
 
-        file_handler = logging.handlers.TimedRotatingFileHandler(
-            location, when="midnight", backupCount=5)
-        file_handler.setLevel(LEVELS["trace"])
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
+        trace_handler = logging.handlers.TimedRotatingFileHandler(
+            os.path.join(location, "trace.log"), when="midnight", backupCount=5)
+        trace_handler.setLevel(LEVELS["trace"])
+        trace_handler.setFormatter(formatter)
+        self.logger.addHandler(trace_handler)
+
+        warn_handler = logging.FileHandler(os.path.join(location, "warn.log"))
+        warn_handler.setLevel(LEVELS["warn"])
+        warn_handler.setFormatter(formatter)
+        self.logger.addHandler(warn_handler)
 
     def trace(self, message: str, params: typing.List, **kwargs):
         self._log(message, params, LEVELS["trace"], kwargs)
