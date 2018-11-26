@@ -77,7 +77,7 @@ class Channel(IRCObject.Object):
                             del self.user_modes[user]
             else:
                 self.modes[mode].discard(arg.lower())
-            if not len(self.modes[mode]):
+            if mode in self.modes and not len(self.modes[mode]):
                 del self.modes[mode]
     def change_mode(self, remove: bool, mode: str, arg: str=None):
         if remove:
