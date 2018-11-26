@@ -127,7 +127,7 @@ class ModuleManager(object):
         try:
             module = self._load_module(bot, name)
         except ModuleWarning as warning:
-            self.log.error("Module '%s' not loaded", [name])
+            self.log.warn("Module '%s' not loaded", [name])
             raise
         except Exception as e:
             self.log.error("Failed to load module \"%s\": %s",
