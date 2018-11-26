@@ -70,7 +70,12 @@ if len(server_configs):
             sys.stderr.write("failed to connect to '%s', exiting\r\n" % (
                 str(server)))
             sys.exit(1)
-    bot.run()
+
+    try:
+        bot.run()
+    except Exception as e:
+        log.critical("Unhandled exception: %s", [str(e)], exc_info=True)
+        sys.exit(1)
 else:
     try:
         if utils.cli.bool_input("no servers found, add one?"):
