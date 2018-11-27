@@ -86,15 +86,12 @@ class Module(ModuleManager.BaseModule):
             for server, channel in targets:
                 for output in outputs:
                     output = "(%s) %s" % (full_name, output)
-                    trigger = self._make_trigger(channel, server, output)
-                    self.bot.trigger(trigger)
+                    self.events.on("send.stdout").call(target=channel,
+                        module_name="Github", server=server, message=line,
+                        hide_prefix=channel.get_setting(
+                        "github-hide-prefix", False))
 
         return True
-
-    def _make_trigger(self, channel, server, line):
-        return lambda: self.events.on("send.stdout").call(target=channel,
-            module_name="Github", server=server, message=line,
-            hide_prefix=channel.get_setting("github-hide-prefix", False))
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")

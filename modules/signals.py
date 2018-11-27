@@ -11,7 +11,10 @@ class Module(ModuleManager.BaseModule):
 
     def SIGINT(self, signum, frame):
         print()
-        self.events.on("signal.interrupt").call(signum=signum, frame=frame)
+        self.bot.trigger(lambda: self._kill(signum))
+
+    def _kill(self, signum):
+        self.events.on("signal.interrupt").call(signum=signum)
 
         for server in self.bot.servers.values():
             reason = "Leaving"
@@ -19,7 +22,6 @@ class Module(ModuleManager.BaseModule):
                 reason = self.events.on("get.quit-quote"
                     ).call_for_result(default=reason)
             server.send_quit(reason)
-            self.bot.trigger()
 
         self.events.on("writebuffer.empty").hook(
             lambda event: self.bot.disconnect(event["server"]))

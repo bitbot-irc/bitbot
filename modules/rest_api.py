@@ -30,9 +30,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 if path.startswith("/api/"):
                     event_response = None
                     try:
-                        event_response = _events.on("api").on(method).on(
+                        event_response = _bot.trigger(lambda:
+                            _events.on("api").on(method).on(
                             endpoint).call_unsafe_for_result(params=params,
-                            path=args, data=data, headers=dict(self.headers))
+                            path=args, data=data, headers=dict(self.headers)))
                     except Exception as e:
                         _log.error("failed to call API endpoint \"%s\"",
                             [path], exc_info=True)

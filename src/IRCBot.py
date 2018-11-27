@@ -1,4 +1,4 @@
-import os, select, socket, sys, threading, time, traceback, typing, uuid
+import queue, os, select, socket, sys, threading, time, traceback, typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
 
@@ -29,12 +29,23 @@ class Bot(object):
         self._trigger_functions = []
         self._events.on("timer.reconnect").hook(self._timed_reconnect)
 
-    def trigger(self, func: typing.Callable[[], typing.Any]=None):
+    def trigger(self,
+            func: typing.Optional[typing.Callable[[], typing.Any]]=None):
+        func = func or (lambda: None)
+        if threading.current_thread() is threading.main_thread():
+            returned = func()
+            self._trigger_client.send(b"TRIGGER")
+            return returned
+
         self.lock.acquire()
-        if func:
-            self._trigger_functions.append(func)
-        self._trigger_client.send(b"TRIGGER")
+
+        func_queue = queue.Queue(1)
+        self._trigger_functions.append([func, func_queue])
+
         self.lock.release()
+        self._trigger_client.send(b"TRIGGER")
+
+        return func_queue.get(True)
 
     def add_server(self, server_id: int, connect: bool = True,
             connection_params: typing.Optional[
@@ -165,8 +176,9 @@ class Bot(object):
             self._timers.call()
             self.cache.expire()
 
-            for func in self._trigger_functions:
-                func()
+            for func, func_queue in self._trigger_functions:
+                returned = func()
+                func_queue.put(returned)
             self._trigger_functions.clear()
 
             for fd, event in events:
