@@ -27,6 +27,9 @@ class Module(ModuleManager.BaseModule):
             lambda event: self.bot.disconnect(event["server"]))
 
     def SIGUSR1(self, signum, frame):
+        self.bot.trigger(self._reload_config)
+
+    def _reload_config(self):
         self.bot.log.info("Reloading config file", [])
         self.bot.config.load()
         self.bot.log.info("Reloaded config file", [])
