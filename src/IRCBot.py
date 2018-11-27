@@ -2,6 +2,9 @@ import queue, os, select, socket, sys, threading, time, traceback, typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
 
+TRIGGER_RETURN = 1
+TRIGGER_EXCEPTION = 2
+
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
             exports, log, modules, timers):
@@ -45,7 +48,11 @@ class Bot(object):
         self.lock.release()
         self._trigger_client.send(b"TRIGGER")
 
-        return func_queue.get(True)
+        type, returned = func_queue.get(True)
+        if type == TRIGGER_EXCEPTION:
+            raise returned
+        elif type == TRIGGER_RETURN:
+            return returned
 
     def add_server(self, server_id: int, connect: bool = True,
             connection_params: typing.Optional[
@@ -177,8 +184,13 @@ class Bot(object):
             self.cache.expire()
 
             for func, func_queue in self._trigger_functions:
-                returned = func()
-                func_queue.put(returned)
+                try:
+                    returned = func()
+                    type = TRIGGER_RETURN
+                except Exception as e:
+                    returned = e
+                    type = TRIGGER_EXCEPTION
+                func_queue.put([type, returned])
             self._trigger_functions.clear()
 
             for fd, event in events:
