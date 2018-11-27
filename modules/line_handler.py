@@ -236,7 +236,7 @@ class Module(ModuleManager.BaseModule):
             channel = event["server"].channels.add(channel_name)
             if channel.name in event["server"].attempted_join:
                 del event["server"].attempted_join[channel.name]
-            self._event(event, "self.join", channel=channel,
+            self.events.on("self.join").call(channel=channel,
                 server=event["server"], account=account, realname=realname)
             channel.send_mode()
 
@@ -255,7 +255,7 @@ class Module(ModuleManager.BaseModule):
             if not len(user.channels):
                 event["server"].remove_user(user)
         else:
-            self._event(event, "self.part", channel=channel, reason=reason,
+            self.events.on("self.part").call(channel=channel, reason=reason,
                 server=event["server"])
             event["server"].channels.remove(channel)
 
@@ -346,7 +346,7 @@ class Module(ModuleManager.BaseModule):
             old_nickname = event["server"].nickname
             event["server"].set_own_nickname(new_nickname)
 
-            self._event(event, "self.nick", server=event["server"],
+            self.events.on("self.nick").call(server=event["server"],
                 new_nickname=new_nickname, old_nickname=old_nickname)
 
     # something's mode has changed
@@ -378,7 +378,8 @@ class Module(ModuleManager.BaseModule):
                 remove = chunk[0] == "-"
                 for mode in chunk[1:]:
                     event["server"].change_own_mode(remove, mode)
-            self._event(event, "self.mode", modes=modes, server=event["server"])
+            self.events.on("self.mode").call(modes=modes,
+                server=event["server"])
             event["server"].send_who(event["server"].nickname)
 
     # someone (maybe me!) has been invited somewhere
@@ -632,7 +633,7 @@ class Module(ModuleManager.BaseModule):
             self._event(event, "kick", channel=channel, reason=reason,
                 target_user=target_user, user=user, server=event["server"])
         else:
-            self._event(event, "self.kick", channel=channel, reason=reason,
+            self.events.on("self.kick").call(channel=channel, reason=reason,
                 user=user, server=event["server"])
 
     # a channel has been renamed
