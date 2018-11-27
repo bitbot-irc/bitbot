@@ -22,6 +22,11 @@ class Server(IRCObject.Object):
         self.connection_params = connection_params
         self.name = None # type: typing.Optional[str]
 
+        self.nickname = None # type: typing.Optional[str]
+        self.username = None # type: typing.Optional[str]
+        self.realname = None # type: typing.Optional[str]
+        self.hostname = None # type: typing.Optional[str]
+
         self._capability_queue = set([]) # type: typing.Set[str]
         self._capabilities_waiting = set([]) # type: typing.Set[str]
         self.capabilities = set([]) # type: typing.Set[str]
