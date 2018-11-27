@@ -557,25 +557,35 @@ class Module(ModuleManager.BaseModule):
     # response to a WHO command for user information
     @utils.hook("raw.received.352", default_event=True)
     def handle_352(self, event):
-        user = event["server"].get_user(event["args"][5])
-        user.username = event["args"][2]
-        user.hostname = event["args"][3]
+        nickname = event["args"][5]
+        if not event["server"].is_own_nickname(nickname):
+            target = event["server"].get_user(nickname)
+        else:
+            target = event["server"]
+        target.username = event["args"][2]
+        target.hostname = event["args"][3]
+
     # response to a WHOX command for user information, including account name
     @utils.hook("raw.received.354", default_event=True)
     def handle_354(self, event):
         if event["args"][1] == "111":
-            username = event["args"][2]
-            hostname = event["args"][3]
             nickname = event["args"][4]
-            account = event["args"][5]
-            realname = event["args"][6]
 
-            user = event["server"].get_user(nickname)
-            user.username = username
-            user.hostname = hostname
-            user.realname = realname
-            if not account == "0":
-                user.identified_account = account
+            if not event["server"].is_own_nickname(nickname):
+                target = event["server"].get_user(nickname)
+
+                account = event["args"][5]
+                if not account == "0":
+                    target.identified_account = account
+                else:
+                    target.identified_account = None
+            else:
+                target = event["server"]
+
+            target.username = event["args"][2]
+            target.hostname = event["args"][3]
+            target.realname = event["args"][6]
+
 
     # response to an empty mode command
     @utils.hook("raw.received.324", default_event=True)
