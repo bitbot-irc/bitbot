@@ -21,7 +21,8 @@ class Module(ModuleManager.BaseModule):
             server.send_quit(reason)
             self.bot.trigger()
 
-        self.bot.running = False
+        self.events.on("writebuffer.empty").hook(
+            lambda event: self.bot.disconnect(event["server"]))
 
     def SIGUSR1(self, signum, frame):
         self.bot.log.info("Reloading config file", [])

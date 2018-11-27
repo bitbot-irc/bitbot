@@ -157,6 +157,9 @@ class Bot(object):
 
     def run(self):
         while self.running:
+            if not self.servers:
+                break
+
             events = self.poll.poll(self.get_poll_timeout())
             self.lock.acquire()
             self._timers.call()
@@ -189,7 +192,8 @@ class Bot(object):
                             sock.parse_data(piece)
                     elif event & select.EPOLLOUT:
                         sock._send()
-                        self.register_read(sock)
+                        if sock.fileno() in self.servers:
+                            self.register_read(sock)
                     elif event & select.EPULLHUP:
                         print("hangup")
                         sock.disconnect()
