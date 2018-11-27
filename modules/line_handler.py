@@ -379,6 +379,7 @@ class Module(ModuleManager.BaseModule):
                 for mode in chunk[1:]:
                     event["server"].change_own_mode(remove, mode)
             self._event(event, "self.mode", modes=modes, server=event["server"])
+            event["server"].send_who(event["server"].nickname)
 
     # someone (maybe me!) has been invited somewhere
     @utils.hook("raw.received.invite")
