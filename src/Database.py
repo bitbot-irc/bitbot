@@ -1,6 +1,8 @@
 import json, os, sqlite3, threading, time, typing
 from src import Logging
 
+sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
+
 class Table(object):
     def __init__(self, database):
         self.database = database
@@ -275,7 +277,8 @@ class Database(object):
         self.log = log
         self.location = location
         self.database = sqlite3.connect(self.location,
-            check_same_thread=False, isolation_level=None)
+            check_same_thread=False, isolation_level=None,
+            detect_types=sqlite3.PARSE_DECLTYPES)
         self.database.execute("PRAGMA foreign_keys = ON")
         self._cursor = None
         self._lock = threading.Lock()
