@@ -83,7 +83,7 @@ class Module(ModuleManager.BaseModule):
 
     def _channel_stats(self, channel):
         return {
-            "users": len(channel.users),
+            "users": [user.nickname for user in channel.users],
             "topic": channel.topic,
             "topic-set-at": channel.topic_time,
             "topic-set-by": channel.topic_setter_nickname
