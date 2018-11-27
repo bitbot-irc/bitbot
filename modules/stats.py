@@ -59,7 +59,8 @@ class Module(ModuleManager.BaseModule):
             "users": len(server.users),
             "bytes-written": server.bytes_written,
             "bytes-read": server.bytes_read,
-            "channels": [self._channel_stats(c) for c in server.channels]
+            "channels": {
+                c.name: self._channel_stats(c) for c in server.channels}
         }
 
     @utils.hook("api.get.servers")
