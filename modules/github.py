@@ -87,7 +87,7 @@ class Module(ModuleManager.BaseModule):
                 for output in outputs:
                     output = "(%s) %s" % (full_name, output)
                     self.events.on("send.stdout").call(target=channel,
-                        module_name="Github", server=server, message=line,
+                        module_name="Github", server=server, message=output,
                         hide_prefix=channel.get_setting(
                         "github-hide-prefix", False))
 
