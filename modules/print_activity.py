@@ -127,5 +127,6 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.invite")
     def invite(self, event):
-        self.print_line(event, "%s was invited to %s" % (
-            event["user"].nickname, event["target_channel"]))
+        self.print_line(event, "%s invited %s to %s" % (
+            event["user"].nickname, event["target_user"].nickname,
+            event["target_channel"]))
