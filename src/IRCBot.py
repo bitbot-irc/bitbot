@@ -33,7 +33,8 @@ class Bot(object):
         self._events.on("timer.reconnect").hook(self._timed_reconnect)
 
     def trigger(self,
-            func: typing.Optional[typing.Callable[[], typing.Any]]=None):
+            func: typing.Optional[typing.Callable[[], typing.Any]]=None
+            ) -> typing.Any:
         func = func or (lambda: None)
         if threading.current_thread() is threading.main_thread():
             returned = func()
