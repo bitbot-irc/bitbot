@@ -118,7 +118,7 @@ class ServerSettings(Table):
             return values
         return default
     def find_prefix(self, server_id: int, prefix: str, default: typing.Any=[]):
-        return self.find_server_settings(server_id, "%s%%" % prefix, default)
+        return self.find(server_id, "%s%%" % prefix, default)
     def delete(self, server_id: int, setting: str):
         self.database.execute(
             "DELETE FROM server_settings WHERE server_id=? AND setting=?",
@@ -146,7 +146,7 @@ class ChannelSettings(Table):
             return values
         return default
     def find_prefix(self, channel_id: int, prefix: str, default: typing.Any=[]):
-        return self.find_channel_settings(channel_id, "%s%%" % prefix,
+        return self.find(channel_id, "%s%%" % prefix,
             default)
     def delete(self, channel_id: int, setting: str):
         self.database.execute(
@@ -201,7 +201,7 @@ class UserSettings(Table):
             return values
         return default
     def find_prefix(self, user_id: int, prefix: str, default: typing.Any=[]):
-        return self.find_user_settings(user_id, "%s%%" % prefix, default)
+        return self.find(user_id, "%s%%" % prefix, default)
     def delete(self, user_id: int, setting: str):
         self.database.execute(
             """DELETE FROM user_settings WHERE
@@ -236,7 +236,7 @@ class UserChannelSettings(Table):
         return default
     def find_prefix(self, user_id: int, channel_id: int, prefix: str,
             default: typing.Any=[]):
-        return self.find_user_settings(user_id, channel_id, "%s%%" % prefix,
+        return self.find(user_id, channel_id, "%s%%" % prefix,
             default)
     def find_by_setting(self, user_id: int, setting: str,
             default: typing.Any=[]):
