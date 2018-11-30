@@ -33,7 +33,7 @@ COMMENT_ACTIONS = {
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.github")
     def github(self, event):
-        data = json.loads(event["data"])
+        data = json.loads(event["data"].decode("utf8"))
 
         github_event = event["headers"]["X-GitHub-Event"]
         if github_event == "ping":
