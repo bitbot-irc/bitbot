@@ -54,14 +54,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-type", "application/json")
         self.end_headers()
         self.wfile.write(response.encode("utf8"))
-    def _safe_handle(self, method, path, params):
-        _bot.lock.acquire()
-        try:
-            self._handle(method, path, params)
-        except:
-            pass
-        finally:
-            _bot.lock.release()
 
     def _decode_params(self, s):
         params = urllib.parse.parse_qs(s)
