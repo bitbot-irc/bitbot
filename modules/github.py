@@ -1,6 +1,8 @@
 import itertools, json
 from src import ModuleManager, utils
 
+FORM_ENCODED = "application/x-www-form-urlencoded"
+
 COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
@@ -33,7 +35,11 @@ COMMENT_ACTIONS = {
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.github")
     def github(self, event):
-        data = json.loads(event["data"].decode("utf8"))
+        payload = event["data"].decode("utf8")
+        if event["headers"]["content-type"] == FORM_ENCODED:
+            payload = urllib.parse.parse_qs(urllib.parse.unquote(payload)
+                )["payload"][0]
+        data = json.loads(payload)
 
         github_event = event["headers"]["X-GitHub-Event"]
         if github_event == "ping":
