@@ -146,7 +146,8 @@ def strip_font(s: str) -> str:
 
 FORMAT_TOKENS = [
     utils.consts.BOLD,
-    utils.consts.RESET
+    utils.consts.RESET,
+    utils.consts.UNDERLINE
 ]
 def _color_tokens(s: str) -> typing.List[str]:
     is_color = False
@@ -205,6 +206,7 @@ def to_ansi_colors(s: str) -> str:
     has_foreground = False
     has_background = False
     bold = False
+    uderline = False
 
     for token in _color_tokens(s):
         replace = ""
@@ -238,6 +240,12 @@ def to_ansi_colors(s: str) -> str:
             bold = not bold
         elif type == utils.consts.RESET:
             replace += utils.consts.ANSI_RESET
+        elif type == utils.consts.UNDERLINE:
+            if underline:
+                replace += utils.consts.ANSI_UNDERLINE_RESET
+            else:
+                replace += utils.consts.ANSI_UNDERLINE
+            underline = not underline
 
         s = s.replace(token, replace, 1)
 
