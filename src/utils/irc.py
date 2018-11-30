@@ -206,7 +206,7 @@ def to_ansi_colors(s: str) -> str:
     has_foreground = False
     has_background = False
     bold = False
-    uderline = False
+    underline = False
 
     for token in _color_tokens(s):
         replace = ""
