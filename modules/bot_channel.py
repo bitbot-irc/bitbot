@@ -7,7 +7,7 @@ class Module(ModuleManager.BaseModule):
     def do_join(self, event):
         try:
             event["server"].send_join(event["server"].get_setting("bot-channel",
-                "#bitbot"))
+                self.bot.config['bot-channel']))
         except KeyError:
             event["server"].send_join(event["server"].get_setting("bot-channel",
-                self.bot.config['bot-channel']))
+                "#bitbot"))
