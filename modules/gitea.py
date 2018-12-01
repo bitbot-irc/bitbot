@@ -3,9 +3,6 @@ import itertools, json, urllib.parse
 from src import ModuleManager, utils
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
-COMMIT_URL = ""
-COMMIT_RANGE_URL = ""
-CREATE_URL = ""
 
 DEFAULT_EVENTS = [
     "push",
@@ -35,9 +32,9 @@ COMMENT_ACTIONS = {
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.gitea")
     def gitea(self, event):
-        COMMIT_URL = "{url}/%s/commit/%s".format(url=self.bot.config['gitea-base-url'])
-        COMMIT_RANGE_URL = "{url}/%s/compare/%s...%s".format(url=self.bot.config['gitea-base-url'])
-        CREATE_URL = "{url}/%s/tree/%s".format(url=self.bot.config['gitea-base-url'])
+        self.COMMIT_URL = "{url}/%s/commit/%s".format(url=self.bot.config['gitea-base-url'])
+        self.COMMIT_RANGE_URL = "{url}/%s/compare/%s...%s".format(url=self.bot.config['gitea-base-url'])
+        self.CREATE_URL = "{url}/%s/tree/%s".format(url=self.bot.config['gitea-base-url'])
 
         payload = event["data"].decode("utf8")
         if event["headers"]["content-type"] == FORM_ENCODED:
@@ -129,7 +126,7 @@ class Module(ModuleManager.BaseModule):
                 message = commit["message"].split("\n")[0].strip()
                 author = commit["author"]["name"] or commit["author"]["login"]
                 author = utils.irc.bold(author)
-                url = COMMIT_URL % (full_name, id)
+                url = self.COMMIT_URL % (full_name, id)
 
                 outputs.append(("Commit by {author} to {branch}: {msg} - {url}"
                                ).format(author=author, branch=branch, msg=message, url=url))
@@ -137,7 +134,7 @@ class Module(ModuleManager.BaseModule):
             first_id = self._short_hash(data["before"])
             last_id = self._short_hash(data["commits"][-1]["id"])
             pusher = utils.irc.bold(data["pusher"]["name"])
-            url = COMMIT_RANGE_URL % (full_name, first_id, last_id)
+            url = self.COMMIT_RANGE_URL % (full_name, first_id, last_id)
 
             commits = data["commits"]
             added = self._added(len(self._flat_unique(commits, "added")))
@@ -222,7 +219,7 @@ class Module(ModuleManager.BaseModule):
         ref_color = utils.irc.color(ref, utils.consts.LIGHTBLUE)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        url = CREATE_URL % (full_name, ref)
+        url = self.CREATE_URL % (full_name, ref)
         return ["%s created a %s: %s - %s" % (sender, type, ref_color, url)]
 
     def delete(self, event, full_name, data):
