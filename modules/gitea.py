@@ -35,9 +35,9 @@ COMMENT_ACTIONS = {
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.gitea")
     def gitea(self, event):
-        COMMIT_URL = "{url}/%s/commit/%s".format(self.bot.config['gitea-base-url'])
-        COMMIT_RANGE_URL = "{url}/%s/compare/%s...%s".format(self.bot.config['gitea-base-url'])
-        CREATE_URL = "{url}/%s/tree/%s".format(self.bot.config['gitea-base-url'])
+        COMMIT_URL = "{url}/%s/commit/%s".format(url=self.bot.config['gitea-base-url'])
+        COMMIT_RANGE_URL = "{url}/%s/compare/%s...%s".format(url=self.bot.config['gitea-base-url'])
+        CREATE_URL = "{url}/%s/tree/%s".format(url=self.bot.config['gitea-base-url'])
 
         payload = event["data"].decode("utf8")
         if event["headers"]["content-type"] == FORM_ENCODED:
