@@ -42,3 +42,4 @@ omdbapi-api-key          =
 virustotal-api-key       =
 # https://apidocs.imgur.com/
 imgur-api-key            =
+gitea-base-url           =
