@@ -37,7 +37,7 @@ class Module(ModuleManager.BaseModule):
         self.CREATE_URL = "{url}/%s/tree/%s".format(url=self.bot.config['gitea-base-url'])
 
         payload = event["data"].decode("utf8")
-        if event["headers"]["content-type"] == FORM_ENCODED:
+        if event["headers"]["Content-Type"] == FORM_ENCODED:
             payload = urllib.parse.parse_qs(urllib.parse.unquote(payload)
                 )["payload"][0]
         data = json.loads(payload)
