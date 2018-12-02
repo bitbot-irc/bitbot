@@ -223,6 +223,8 @@ class Server(IRCObject.Object):
     def parse_data(self, line: str):
         if not line:
             return
+
+        self.bot.log.debug("%s (raw recv) | %s", [str(self), line])
         self.events.on("raw.received").call_unsafe(server=self, line=line)
         self.check_users()
     def check_users(self):
@@ -285,16 +287,16 @@ class Server(IRCObject.Object):
     def read_timed_out(self) -> bool:
         return self.until_read_timeout == 0
 
-    def send(self, data: str):
+    def send(self, line: str):
         returned = self.events.on("preprocess.send").call_unsafe_for_result(
             server=self, line=data)
-        line = returned or data
+        line = returned or line
 
         encoded = line.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
             encoded = encoded[:450]
         self.buffered_lines.append(encoded + b"\r\n")
-        self.bot.log.debug(">%s | %s", [str(self), encoded.decode("utf8")])
+        self.bot.log.debug("%s (raw send) | %s", [str(self), line])
 
     def _send(self):
         if not len(self.write_buffer):

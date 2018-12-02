@@ -211,21 +211,18 @@ class Bot(object):
                             continue
 
                         for piece in data:
-                            if irc:
-                                self.log.debug("%s (raw) | %s",
-                                    [str(sock), piece])
                             sock.parse_data(piece)
                     elif event & select.EPOLLOUT:
                         sock._send()
                         if sock.fileno() in self.servers:
                             self.register_read(sock)
                     elif event & select.EPULLHUP:
-                        print("hangup")
+                        self.log.info("Recieved EPOLLHUP for %s", [str(sock)])
                         sock.disconnect()
 
             for server in list(self.servers.values()):
                 if server.read_timed_out():
-                    print("pingout from %s" % str(server))
+                    self.log.info("Pinged out from %s", [str(server)])
                     server.disconnect()
                 elif server.ping_due() and not server.ping_sent:
                     server.send_ping()
