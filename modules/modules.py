@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
         """
         name = event["args_split"][0].lower()
 
-        self._catch(name, lambda: _reload(name))
+        self._catch(name, lambda: self._reload(name))
         event["stdout"].write("Reloaded '%s'" % name)
 
     @utils.hook("received.command.reloadallmodules")
