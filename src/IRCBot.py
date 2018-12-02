@@ -43,7 +43,7 @@ class Bot(object):
 
         self.lock.acquire()
 
-        func_queue = queue.Queue(1)
+        func_queue = queue.Queue(1) # type: queue.Queue[str]
         self._trigger_functions.append([func, func_queue])
 
         self.lock.release()
