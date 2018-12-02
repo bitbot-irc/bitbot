@@ -289,7 +289,7 @@ class Server(IRCObject.Object):
 
     def send(self, line: str):
         returned = self.events.on("preprocess.send").call_unsafe_for_result(
-            server=self, line=data)
+            server=self, line=line)
         line = returned or line
 
         encoded = line.split("\n")[0].strip("\r").encode("utf8")
