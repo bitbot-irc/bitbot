@@ -173,7 +173,10 @@ class Server(IRCObject.Object):
         self.nickname = nickname
         self.nickname_lower = utils.irc.lower(self.case_mapping, nickname)
     def is_own_nickname(self, nickname: str) -> bool:
-        return utils.irc.equals(self.case_mapping, nickname, self.nickname)
+        if self.nickname == None:
+            return False
+        return utils.irc.equals(self.case_mapping, nickname,
+            typing.cast(str, self.nickname))
 
     def add_own_mode(self, mode: str, arg: str=None):
         self.own_modes[mode] = arg

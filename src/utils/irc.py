@@ -80,7 +80,7 @@ def message_tag_unescape(s):
     return _multi_replace(s, MESSAGE_TAG_ESCAPED, MESSAGE_TAG_UNESCAPED)
 
 def parse_line(line: str) -> IRCLine:
-    tags = {}
+    tags = {} # type: typing.Dict[str, typing.Any]
     prefix = None # type: typing.Optional[IRCHostmask]
     command = None
 
@@ -108,10 +108,8 @@ def parse_line(line: str) -> IRCLine:
         prefix_str, line = line[1:].split(" ", 1)
         prefix = seperate_hostmask(prefix_str)
 
-    args = []
     command, sep, line = line.partition(" ")
-    if sep:
-        args = line.split(" ")
+    args = line.split(" ")
 
     if arbitrary:
         args.append(arbitrary)

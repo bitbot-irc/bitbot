@@ -3,6 +3,7 @@ from src import EventManager, IRCBot, IRCBuffer, IRCObject, IRCServer, IRCUser
 from src import utils
 
 class Channel(IRCObject.Object):
+    name = ""
     def __init__(self, name: str, id, server: "IRCServer.Server",
             bot: "IRCBot.Bot"):
         self.name = utils.irc.lower(server.case_mapping, name)
