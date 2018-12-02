@@ -1,7 +1,7 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    def _catch(self, func):
+    def _catch(self, name, func):
         try:
             func()
         except ModuleManager.ModuleNotFoundException:
@@ -24,7 +24,7 @@ class Module(ModuleManager.BaseModule):
         if name in self.bot.modules.modules:
             raise utils.EventError("Module '%s' is already loaded" % name)
 
-        self._catch(lambda: self.bot.modules.load_module(self.bot, name))
+        self._catch(name, lambda: self.bot.modules.load_module(self.bot, name))
         event["stdout"].write("Loaded '%s'" % name)
 
     @utils.hook("received.command.unloadmodule", min_args=1)
@@ -38,7 +38,7 @@ class Module(ModuleManager.BaseModule):
         if not name in self.bot.modules.modules:
             raise utils.EventError("Module '%s' isn't loaded" % name)
 
-        self._catch(lambda: self.bot.modules.unload_module(name))
+        self._catch(name, lambda: self.bot.modules.unload_module(name))
         event["stdout"].write("Unloaded '%s'" % name)
 
     def _reload(self, name):
@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
         """
         name = event["args_split"][0].lower()
 
-        self._catch(lambda: _reload(name))
+        self._catch(name, lambda: _reload(name))
         event["stdout"].write("Reloaded '%s'" % name)
 
     @utils.hook("received.command.reloadallmodules")
