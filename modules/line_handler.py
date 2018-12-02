@@ -262,7 +262,7 @@ class Module(ModuleManager.BaseModule):
     # unknown command sent by us, oops!
     @utils.hook("raw.received.421", default_event=True)
     def handle_421(self, event):
-        print("warning: unknown command '%s'." % event["args"][1])
+        self.bot.log.warn("We sent an unknown command: %s", [event["args"][1]])
 
     # a user has disconnected!
     @utils.hook("raw.received.quit")
