@@ -89,10 +89,11 @@ class ModuleManager(object):
 
         module = imp.load_source(self._import_name(name), path)
 
-        if not hasattr(module, "Module"):
+        module_object_pointer = getattr(module, "Module", None)
+        if not module_object_pointer:
             raise ModuleLoadException("module '%s' doesn't have a "
                 "'Module' class." % name)
-        if not inspect.isclass(module.Module):
+        if not inspect.isclass(module_object_pointer):
             raise ModuleLoadException("module '%s' has a 'Module' attribute "
                 "but it is not a class." % name)
 
@@ -100,8 +101,8 @@ class ModuleManager(object):
         context_events = self.events.new_context(context)
         context_exports = self.exports.new_context(context)
         context_timers = self.timers.new_context(context)
-        module_object = module.Module(bot, context_events, context_exports,
-            context_timers, self.log)
+        module_object = module_object_pointer(bot, context_events,
+            context_exports, context_timers, self.log)
 
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
