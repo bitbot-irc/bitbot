@@ -19,6 +19,7 @@ class ModuleNotLoadedWarning(ModuleWarning):
     pass
 
 class BaseModule(object):
+    _context = ""
     def __init__(self,
             bot: "IRCBot.Bot",
             events: EventManager.EventHook,
@@ -32,6 +33,8 @@ class BaseModule(object):
         self.log = log
         self.on_load()
     def on_load(self):
+        pass
+    def unload(self):
         pass
 
 class ModuleManager(object):
@@ -49,8 +52,8 @@ class ModuleManager(object):
         self.log = log
         self.directory = directory
 
-        self.modules = {}
-        self.waiting_requirement = {}
+        self.modules = {} # type: typing.Dict[str, BaseModule]
+        self.waiting_requirement = {} # type: typing.Dict[str, typing.Set[str]]
 
     def list_modules(self) -> typing.List[str]:
         return sorted(glob.glob(os.path.join(self.directory, "*.py")))
