@@ -1,4 +1,4 @@
-import queue, os, select, socket, sys, threading, time, traceback, typing, uuid
+import queue, os, select, socket, threading, time, traceback, typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
 
@@ -91,8 +91,8 @@ class Bot(object):
         try:
             server.connect()
         except:
-            sys.stderr.write("Failed to connect to %s\n" % str(server))
-            traceback.print_exc()
+            self.log.warn("Failed to connect to %s", [str(server)],
+                exc_info=True)
             return False
         self.servers[server.fileno()] = server
         self.poll.register(server.fileno(), select.EPOLLOUT)
@@ -217,12 +217,12 @@ class Bot(object):
                         if sock.fileno() in self.servers:
                             self.register_read(sock)
                     elif event & select.EPULLHUP:
-                        self.log.info("Recieved EPOLLHUP for %s", [str(sock)])
+                        self.log.warn("Recieved EPOLLHUP for %s", [str(sock)])
                         sock.disconnect()
 
             for server in list(self.servers.values()):
                 if server.read_timed_out():
-                    self.log.info("Pinged out from %s", [str(server)])
+                    self.log.warn("Pinged out from %s", [str(server)])
                     server.disconnect()
                 elif server.ping_due() and not server.ping_sent:
                     server.send_ping()
@@ -235,7 +235,7 @@ class Bot(object):
                         reconnect_delay = self.config.get("reconnect-delay", 10)
                         self._timers.add("reconnect", reconnect_delay,
                             server_id=server.id)
-                        self.log.info(
+                        self.log.warn(
                             "Disconnected from %s, reconnecting in %d seconds",
                             [str(server), reconnect_delay])
                 elif server.waiting_send() and server.throttle_done():
