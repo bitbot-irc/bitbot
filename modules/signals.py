@@ -6,6 +6,7 @@ from src import Config, ModuleManager, utils
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def on_load(self):
+        self._exited = False
         signal.signal(signal.SIGINT, self.SIGINT)
         signal.signal(signal.SIGUSR1, self.SIGUSR1)
 
@@ -14,6 +15,10 @@ class Module(ModuleManager.BaseModule):
         self.bot.trigger(lambda: self._kill(signum))
 
     def _kill(self, signum):
+        if self._exited:
+            return
+        self._exited = True
+
         self.events.on("signal.interrupt").call(signum=signum)
 
         for server in self.bot.servers.values():
