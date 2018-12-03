@@ -109,7 +109,10 @@ def parse_line(line: str) -> IRCLine:
         prefix = seperate_hostmask(prefix_str)
 
     command, sep, line = line.partition(" ")
-    args = line.split(" ")
+    args = [] # type: typing.List[str]
+    if line:
+        # this is so that `args` is empty if `line` is empty
+        args = line.split(" ")
 
     if arbitrary:
         args.append(arbitrary)
