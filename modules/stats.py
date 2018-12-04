@@ -58,7 +58,9 @@ class Module(ModuleManager.BaseModule):
                 server.nickname, server.username, server.hostname),
             "users": len(server.users),
             "bytes-written": server.bytes_written,
-            "bytes-read": server.bytes_read
+            "bytes-read": server.bytes_read,
+            "channels": {
+                c.name: self._channel_stats(c) for c in server.channels}
         }
 
     @utils.hook("api.get.servers")
@@ -81,7 +83,7 @@ class Module(ModuleManager.BaseModule):
 
     def _channel_stats(self, channel):
         return {
-            "users": len(channel.users),
+            "users": [user.nickname for user in channel.users],
             "topic": channel.topic,
             "topic-set-at": channel.topic_time,
             "topic-set-by": channel.topic_setter_nickname

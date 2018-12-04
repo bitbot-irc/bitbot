@@ -1,6 +1,18 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
+    def _catch(self, name, func):
+        try:
+            func()
+        except ModuleManager.ModuleNotFoundException:
+            raise utils.EventError("Module '%s' isn't loaded" % name)
+        except ModuleManager.ModuleWarning as warning:
+            raise utils.EventError("Module '%s' not loaded: %s" % (
+                name, str(warning)))
+        except Exception as e:
+            raise utils.EventError("Failed to reload module '%s': %s" % (
+                name, str(e)))
+
     @utils.hook("received.command.loadmodule", min_args=1)
     def load(self, event):
         """
@@ -11,7 +23,8 @@ class Module(ModuleManager.BaseModule):
         name = event["args_split"][0].lower()
         if name in self.bot.modules.modules:
             raise utils.EventError("Module '%s' is already loaded" % name)
-        self.bot.modules.load_module(self.bot, name)
+
+        self._catch(name, lambda: self.bot.modules.load_module(self.bot, name))
         event["stdout"].write("Loaded '%s'" % name)
 
     @utils.hook("received.command.unloadmodule", min_args=1)
@@ -24,7 +37,8 @@ class Module(ModuleManager.BaseModule):
         name = event["args_split"][0].lower()
         if not name in self.bot.modules.modules:
             raise utils.EventError("Module '%s' isn't loaded" % name)
-        self.bot.modules.unload_module(name)
+
+        self._catch(name, lambda: self.bot.modules.unload_module(name))
         event["stdout"].write("Unloaded '%s'" % name)
 
     def _reload(self, name):
@@ -39,16 +53,8 @@ class Module(ModuleManager.BaseModule):
         :permission: reload-module
         """
         name = event["args_split"][0].lower()
-        try:
-            self._reload(name)
-        except ModuleManager.ModuleNotFoundException:
-            raise utils.EventError("Module '%s' isn't loaded" % name)
-        except ModuleManager.ModuleWarning as warning:
-            raise utils.EventError("Module '%s' not loaded: %s" % (
-                name, str(warning)))
-        except Exception as e:
-            raise utils.EventError("Failed to reload module '%s': %s" % (
-                name, str(e)))
+
+        self._catch(name, lambda: self._reload(name))
         event["stdout"].write("Reloaded '%s'" % name)
 
     @utils.hook("received.command.reloadallmodules")

@@ -124,3 +124,9 @@ class Module(ModuleManager.BaseModule):
     def motd_end(self, event):
         for line in event["server"].motd_lines:
             self.print_line(event, "[MOTD] %s" % line)
+
+    @utils.hook("received.invite")
+    def invite(self, event):
+        self.print_line(event, "%s invited %s to %s" % (
+            event["user"].nickname, event["target_user"].nickname,
+            event["target_channel"]))

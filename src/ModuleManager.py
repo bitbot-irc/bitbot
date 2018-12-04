@@ -19,6 +19,7 @@ class ModuleNotLoadedWarning(ModuleWarning):
     pass
 
 class BaseModule(object):
+    _context = ""
     def __init__(self,
             bot: "IRCBot.Bot",
             events: EventManager.EventHook,
@@ -32,6 +33,8 @@ class BaseModule(object):
         self.log = log
         self.on_load()
     def on_load(self):
+        pass
+    def unload(self):
         pass
 
 class ModuleManager(object):
@@ -49,8 +52,8 @@ class ModuleManager(object):
         self.log = log
         self.directory = directory
 
-        self.modules = {}
-        self.waiting_requirement = {}
+        self.modules = {} # type: typing.Dict[str, BaseModule]
+        self.waiting_requirement = {} # type: typing.Dict[str, typing.Set[str]]
 
     def list_modules(self) -> typing.List[str]:
         return sorted(glob.glob(os.path.join(self.directory, "*.py")))
@@ -89,10 +92,11 @@ class ModuleManager(object):
 
         module = imp.load_source(self._import_name(name), path)
 
-        if not hasattr(module, "Module"):
+        module_object_pointer = getattr(module, "Module", None)
+        if not module_object_pointer:
             raise ModuleLoadException("module '%s' doesn't have a "
                 "'Module' class." % name)
-        if not inspect.isclass(module.Module):
+        if not inspect.isclass(module_object_pointer):
             raise ModuleLoadException("module '%s' has a 'Module' attribute "
                 "but it is not a class." % name)
 
@@ -100,8 +104,8 @@ class ModuleManager(object):
         context_events = self.events.new_context(context)
         context_exports = self.exports.new_context(context)
         context_timers = self.timers.new_context(context)
-        module_object = module.Module(bot, context_events, context_exports,
-            context_timers, self.log)
+        module_object = module_object_pointer(bot, context_events,
+            context_exports, context_timers, self.log)
 
         if not hasattr(module_object, "_name"):
             module_object._name = name.title()
@@ -127,7 +131,7 @@ class ModuleManager(object):
         try:
             module = self._load_module(bot, name)
         except ModuleWarning as warning:
-            self.log.error("Module '%s' not loaded", [name])
+            self.log.warn("Module '%s' not loaded", [name])
             raise
         except Exception as e:
             self.log.error("Failed to load module \"%s\": %s",

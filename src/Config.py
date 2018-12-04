@@ -11,7 +11,7 @@ class Config(object):
             with open(self.location) as config_file:
                 parser = configparser.ConfigParser()
                 parser.read_string(config_file.read())
-                self._config = dict(parser["bot"].items())
+                self._config = {k: v for k, v in parser["bot"].items() if v}
 
     def __getitem__(self, key: str) -> typing.Any:
         return self._config[key]

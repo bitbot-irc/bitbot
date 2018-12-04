@@ -80,7 +80,7 @@ def message_tag_unescape(s):
     return _multi_replace(s, MESSAGE_TAG_ESCAPED, MESSAGE_TAG_UNESCAPED)
 
 def parse_line(line: str) -> IRCLine:
-    tags = {}
+    tags = {} # type: typing.Dict[str, typing.Any]
     prefix = None # type: typing.Optional[IRCHostmask]
     command = None
 
@@ -108,9 +108,10 @@ def parse_line(line: str) -> IRCLine:
         prefix_str, line = line[1:].split(" ", 1)
         prefix = seperate_hostmask(prefix_str)
 
-    args = []
     command, sep, line = line.partition(" ")
-    if sep:
+    args = [] # type: typing.List[str]
+    if line:
+        # this is so that `args` is empty if `line` is empty
         args = line.split(" ")
 
     if arbitrary:
@@ -146,34 +147,43 @@ def strip_font(s: str) -> str:
 
 FORMAT_TOKENS = [
     utils.consts.BOLD,
-    utils.consts.RESET
+    utils.consts.RESET,
+    utils.consts.UNDERLINE
 ]
 def _color_tokens(s: str) -> typing.List[str]:
     is_color = False
     foreground = ""
     background = ""
+    is_background = False
     matches = [] # type: typing.List[str]
 
     for char in s:
         if is_color:
-            if char.isdigit():
-                if background:
+            can_add = char.isdigit()
+            if can_add:
+                current_color = background if is_background else foreground
+                if current_color:
+                    can_add = int(current_color + char) <= 15
+
+            if can_add:
+                if is_background:
                     background += char
                 else:
                     foreground += char
                 continue
-            elif char == "," and not background:
-                background += char
+            elif char == "," and not is_background:
+                is_background = True
                 continue
             else:
                 color = foreground
-                if len(background) > 1:
-                    color += background
+                if background:
+                    color += ","+background
 
                 matches.append("\x03%s" % color)
                 is_color = False
                 foreground = ""
                 background = ""
+                is_background = False
 
         if char == utils.consts.COLOR:
             if is_color:
@@ -197,6 +207,7 @@ def to_ansi_colors(s: str) -> str:
     has_foreground = False
     has_background = False
     bold = False
+    underline = False
 
     for token in _color_tokens(s):
         replace = ""
@@ -230,6 +241,12 @@ def to_ansi_colors(s: str) -> str:
             bold = not bold
         elif type == utils.consts.RESET:
             replace += utils.consts.ANSI_RESET
+        elif type == utils.consts.UNDERLINE:
+            if underline:
+                replace += utils.consts.ANSI_UNDERLINE_RESET
+            else:
+                replace += utils.consts.ANSI_UNDERLINE
+            underline = not underline
 
         s = s.replace(token, replace, 1)
 

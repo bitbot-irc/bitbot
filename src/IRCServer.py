@@ -22,6 +22,11 @@ class Server(IRCObject.Object):
         self.connection_params = connection_params
         self.name = None # type: typing.Optional[str]
 
+        self.nickname = None # type: typing.Optional[str]
+        self.username = None # type: typing.Optional[str]
+        self.realname = None # type: typing.Optional[str]
+        self.hostname = None # type: typing.Optional[str]
+
         self._capability_queue = set([]) # type: typing.Set[str]
         self._capabilities_waiting = set([]) # type: typing.Set[str]
         self.capabilities = set([]) # type: typing.Set[str]
@@ -168,7 +173,10 @@ class Server(IRCObject.Object):
         self.nickname = nickname
         self.nickname_lower = utils.irc.lower(self.case_mapping, nickname)
     def is_own_nickname(self, nickname: str) -> bool:
-        return utils.irc.equals(self.case_mapping, nickname, self.nickname)
+        if self.nickname == None:
+            return False
+        return utils.irc.equals(self.case_mapping, nickname,
+            typing.cast(str, self.nickname))
 
     def add_own_mode(self, mode: str, arg: str=None):
         self.own_modes[mode] = arg
@@ -218,6 +226,8 @@ class Server(IRCObject.Object):
     def parse_data(self, line: str):
         if not line:
             return
+
+        self.bot.log.debug("%s (raw recv) | %s", [str(self), line])
         self.events.on("raw.received").call_unsafe(server=self, line=line)
         self.check_users()
     def check_users(self):
@@ -280,16 +290,16 @@ class Server(IRCObject.Object):
     def read_timed_out(self) -> bool:
         return self.until_read_timeout == 0
 
-    def send(self, data: str):
+    def send(self, line: str):
         returned = self.events.on("preprocess.send").call_unsafe_for_result(
-            server=self, line=data)
-        line = returned or data
+            server=self, line=line)
+        line = returned or line
 
         encoded = line.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
             encoded = encoded[:450]
         self.buffered_lines.append(encoded + b"\r\n")
-        self.bot.log.debug(">%s | %s", [str(self), encoded.decode("utf8")])
+        self.bot.log.debug("%s (raw send) | %s", [str(self), line])
 
     def _send(self):
         if not len(self.write_buffer):
@@ -298,6 +308,9 @@ class Server(IRCObject.Object):
         bytes_written = self.socket.send(self.write_buffer)
         self.bytes_written += bytes_written
         self.write_buffer = self.write_buffer[bytes_written:]
+
+        if not self.waiting_send():
+            self.events.on("writebuffer.empty").call(server=self)
 
         now = time.monotonic()
         self.recent_sends.append(now)

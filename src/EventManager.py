@@ -47,11 +47,11 @@ class EventHook(object):
         self.log = log
         self.name = name
         self.parent = parent
-        self._children = {}
-        self._hooks = []
+        self._children = {} # type: typing.Dict[str, EventHook]
+        self._hooks = [] # type: typing.List[EventCallback]
         self._replayed = False
-        self._stored_events = []
-        self._context_hooks = {}
+        self._stored_events = [] # type: typing.List[typing.Dict]
+        self._context_hooks = {} # type: typing.Dict[str, typing.List[EventCallback]]
 
     def _make_event(self, kwargs: dict) -> Event:
         return Event(self._get_path(), **kwargs)
@@ -84,9 +84,10 @@ class EventHook(object):
         if context == None:
             self._hooks.append(callback)
         else:
+            context_str = typing.cast(str, context)
             if not context in self._context_hooks:
-                self._context_hooks[context] = []
-            self._context_hooks[context].append(callback)
+                self._context_hooks[context_str] = []
+            self._context_hooks[context_str].append(callback)
 
         if replay and not self._replayed:
             for kwargs in self._stored_events:
@@ -94,7 +95,7 @@ class EventHook(object):
         self._replayed = True
         return callback
 
-    def unhook(self, callback: "EventHook"):
+    def unhook(self, callback: "EventCallback"):
         if callback in self._hooks:
             self._hooks.remove(callback)
 
@@ -178,6 +179,8 @@ class EventHook(object):
     def _call(self, kwargs: dict, safe: bool, maximum: typing.Optional[int]
             ) -> typing.List[typing.Any]:
         event_path = self._get_path()
+        self.log.trace("calling event: \"%s\" (params: %s)",
+            [event_path,kwargs])
         start = time.monotonic()
 
         event = self._make_event(kwargs)
@@ -195,8 +198,8 @@ class EventHook(object):
                     raise
 
         total_milliseconds = (time.monotonic() - start) * 1000
-        self.log.trace("called event in %fms: \"%s\" (params: %s)",
-            [total_milliseconds, event_path, kwargs])
+        self.log.trace("event \"%s\" called in %fms",
+            [event_path, total_milliseconds])
 
         self.check_purge()
 

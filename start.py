@@ -17,9 +17,9 @@ arg_parser.add_argument("--database", "-d",
     help="Location of the sqlite3 database file",
     default=os.path.join(directory, "databases", "bot.db"))
 
-arg_parser.add_argument("--log", "-l",
-    help="Location of the main log file",
-    default=os.path.join(directory, "logs", "bot.log"))
+arg_parser.add_argument("--log-dir", "-l",
+    help="Location of the log directory",
+    default=os.path.join(directory, "logs"))
 
 arg_parser.add_argument("--add-server", "-a",
     help="Add a new server", action="store_true")
@@ -29,7 +29,7 @@ arg_parser.add_argument("--verbose", "-v", action="store_true")
 args = arg_parser.parse_args()
 
 log_level = "debug" if args.verbose else "info"
-log = Logging.Log(log_level, args.log)
+log = Logging.Log(log_level, args.log_dir)
 database = Database.Database(log, args.database)
 
 if args.add_server:
@@ -58,7 +58,7 @@ if len(server_configs):
     servers = []
     for server_id, alias in server_configs:
         server = bot.add_server(server_id, connect=False)
-        if not server == None:
+        if not server == None and server.get_setting("connect", True):
             servers.append(server)
 
     bot._events.on("boot.done").call()
@@ -70,7 +70,12 @@ if len(server_configs):
             sys.stderr.write("failed to connect to '%s', exiting\r\n" % (
                 str(server)))
             sys.exit(1)
-    bot.run()
+
+    try:
+        bot.run()
+    except Exception as e:
+        log.critical("Unhandled exception: %s", [str(e)], exc_info=True)
+        sys.exit(1)
 else:
     try:
         if utils.cli.bool_input("no servers found, add one?"):

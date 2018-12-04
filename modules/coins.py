@@ -1,4 +1,4 @@
-import datetime, decimal, functools, math, random, re, secrets, time
+import datetime, decimal, functools, math, random, re, time
 from src import ModuleManager, utils
 
 SIDES = {"heads": 0, "tails": 1}
@@ -7,7 +7,7 @@ DEFAULT_REDEEM_AMOUNT = "100.0"
 DEFAULT_INTEREST_RATE = "0.01"
 INTEREST_INTERVAL = 60*60 # 1 hour
 REGEX_FLOAT = re.compile("(?:\d+(?:\.\d{1,2}|$)|\.\d{1,2})")
-DEFAULT_MARKET_CAP = str(1_000_000_000)
+DEFAULT_MARKET_CAP = str(1000000000)
 
 DECIMAL_ZERO = decimal.Decimal("0")
 DECIMAL_BET_MINIMUM = decimal.Decimal("0.01")
@@ -413,7 +413,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
 
-        chosen_side = secrets.choice(list(SIDES.keys()))
+        chosen_side = random.SystemRandom().choice(list(SIDES.keys()))
         win = side_name == chosen_side
 
         coin_bet_str = self._coin_str(coin_bet)
@@ -561,7 +561,7 @@ class Module(ModuleManager.BaseModule):
         # black, red, odds, evens, low (1-18), high (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
         # 1column (1,4..34), 2column (2,5..35), 3column (3,6..36)
-        choice = secrets.randbelow(37)
+        choice = random.SystemRandom().randint(0, 36)
         winnings = {}
         losses = {}
         if choice == 0:

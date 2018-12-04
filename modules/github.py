@@ -1,5 +1,7 @@
-import itertools, json
+import itertools, json, urllib.parse
 from src import ModuleManager, utils
+
+FORM_ENCODED = "application/x-www-form-urlencoded"
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
@@ -33,7 +35,11 @@ COMMENT_ACTIONS = {
 class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.github")
     def github(self, event):
-        data = json.loads(event["data"])
+        payload = event["data"].decode("utf8")
+        if event["headers"]["content-type"] == FORM_ENCODED:
+            payload = urllib.parse.parse_qs(urllib.parse.unquote(payload)
+                )["payload"][0]
+        data = json.loads(payload)
 
         github_event = event["headers"]["X-GitHub-Event"]
         if github_event == "ping":
@@ -86,15 +92,12 @@ class Module(ModuleManager.BaseModule):
             for server, channel in targets:
                 for output in outputs:
                     output = "(%s) %s" % (full_name, output)
-                    trigger = self._make_trigger(channel, server, output)
-                    self.bot.trigger(trigger)
+                    self.events.on("send.stdout").call(target=channel,
+                        module_name="Github", server=server, message=output,
+                        hide_prefix=channel.get_setting(
+                        "github-hide-prefix", False))
 
         return True
-
-    def _make_trigger(self, channel, server, line):
-        return lambda: self.events.on("send.stdout").call(target=channel,
-            module_name="Github", server=server, message=line,
-            hide_prefix=channel.get_setting("github-hide-prefix", False))
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
@@ -103,7 +106,7 @@ class Module(ModuleManager.BaseModule):
     def _removed(self, n):
         return self._change_count(n, "-", utils.consts.RED)
     def _modified(self, n):
-        return self._change_count(n, "±", utils.consts.PURPLE)
+        return self._change_count(n, "~", utils.consts.PURPLE)
 
     def _short_hash(self, hash):
         return hash[:8]

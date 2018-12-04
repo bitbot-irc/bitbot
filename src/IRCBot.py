@@ -1,6 +1,9 @@
-import os, select, socket, sys, threading, time, traceback, typing, uuid
+import queue, os, select, socket, threading, time, traceback, typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
+
+TRIGGER_RETURN = 1
+TRIGGER_EXCEPTION = 2
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
@@ -29,12 +32,28 @@ class Bot(object):
         self._trigger_functions = []
         self._events.on("timer.reconnect").hook(self._timed_reconnect)
 
-    def trigger(self, func: typing.Callable[[], typing.Any]=None):
+    def trigger(self,
+            func: typing.Optional[typing.Callable[[], typing.Any]]=None
+            ) -> typing.Any:
+        func = func or (lambda: None)
+        if threading.current_thread() is threading.main_thread():
+            returned = func()
+            self._trigger_client.send(b"TRIGGER")
+            return returned
+
         self.lock.acquire()
-        if func:
-            self._trigger_functions.append(func)
-        self._trigger_client.send(b"TRIGGER")
+
+        func_queue = queue.Queue(1) # type: queue.Queue[str]
+        self._trigger_functions.append([func, func_queue])
+
         self.lock.release()
+        self._trigger_client.send(b"TRIGGER")
+
+        type, returned = func_queue.get(True)
+        if type == TRIGGER_EXCEPTION:
+            raise returned
+        elif type == TRIGGER_RETURN:
+            return returned
 
     def add_server(self, server_id: int, connect: bool = True,
             connection_params: typing.Optional[
@@ -47,7 +66,7 @@ class Bot(object):
             connection_params.id, connection_params.alias, connection_params)
         self._events.on("new.server").call(server=new_server)
 
-        if not connect or not new_server.get_setting("connect", True):
+        if not connect:
             return new_server
 
         self.connect(new_server)
@@ -72,8 +91,8 @@ class Bot(object):
         try:
             server.connect()
         except:
-            sys.stderr.write("Failed to connect to %s\n" % str(server))
-            traceback.print_exc()
+            self.log.warn("Failed to connect to %s", [str(server)],
+                exc_info=True)
             return False
         self.servers[server.fileno()] = server
         self.poll.register(server.fileno(), select.EPOLLOUT)
@@ -157,13 +176,22 @@ class Bot(object):
 
     def run(self):
         while self.running:
+            if not self.servers:
+                break
+
             events = self.poll.poll(self.get_poll_timeout())
             self.lock.acquire()
             self._timers.call()
             self.cache.expire()
 
-            for func in self._trigger_functions:
-                func()
+            for func, func_queue in self._trigger_functions:
+                try:
+                    returned = func()
+                    type = TRIGGER_RETURN
+                except Exception as e:
+                    returned = e
+                    type = TRIGGER_EXCEPTION
+                func_queue.put([type, returned])
             self._trigger_functions.clear()
 
             for fd, event in events:
@@ -183,20 +211,18 @@ class Bot(object):
                             continue
 
                         for piece in data:
-                            if irc:
-                                self.log.debug("%s (raw) | %s",
-                                    [str(sock), piece])
                             sock.parse_data(piece)
                     elif event & select.EPOLLOUT:
                         sock._send()
-                        self.register_read(sock)
+                        if sock.fileno() in self.servers:
+                            self.register_read(sock)
                     elif event & select.EPULLHUP:
-                        print("hangup")
+                        self.log.warn("Recieved EPOLLHUP for %s", [str(sock)])
                         sock.disconnect()
 
             for server in list(self.servers.values()):
                 if server.read_timed_out():
-                    print("pingout from %s" % str(server))
+                    self.log.warn("Pinged out from %s", [str(server)])
                     server.disconnect()
                 elif server.ping_due() and not server.ping_sent:
                     server.send_ping()
@@ -209,7 +235,7 @@ class Bot(object):
                         reconnect_delay = self.config.get("reconnect-delay", 10)
                         self._timers.add("reconnect", reconnect_delay,
                             server_id=server.id)
-                        self.log.info(
+                        self.log.warn(
                             "Disconnected from %s, reconnecting in %d seconds",
                             [str(server), reconnect_delay])
                 elif server.waiting_send() and server.throttle_done():

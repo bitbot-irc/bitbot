@@ -1,4 +1,5 @@
 beautifulsoup4
+Flask
 python-telegram-bot
 requests
 scrypt

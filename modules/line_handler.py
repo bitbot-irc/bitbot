@@ -236,7 +236,7 @@ class Module(ModuleManager.BaseModule):
             channel = event["server"].channels.add(channel_name)
             if channel.name in event["server"].attempted_join:
                 del event["server"].attempted_join[channel.name]
-            self._event(event,"self.join", channel=channel,
+            self.events.on("self.join").call(channel=channel,
                 server=event["server"], account=account, realname=realname)
             channel.send_mode()
 
@@ -255,14 +255,14 @@ class Module(ModuleManager.BaseModule):
             if not len(user.channels):
                 event["server"].remove_user(user)
         else:
-            self._event(event,"self.part", channel=channel, reason=reason,
+            self.events.on("self.part").call(channel=channel, reason=reason,
                 server=event["server"])
             event["server"].channels.remove(channel)
 
     # unknown command sent by us, oops!
     @utils.hook("raw.received.421", default_event=True)
     def handle_421(self, event):
-        print("warning: unknown command '%s'." % event["args"][1])
+        self.bot.log.warn("We sent an unknown command: %s", [event["args"][1]])
 
     # a user has disconnected!
     @utils.hook("raw.received.quit")
@@ -346,7 +346,7 @@ class Module(ModuleManager.BaseModule):
             old_nickname = event["server"].nickname
             event["server"].set_own_nickname(new_nickname)
 
-            self._event(event,"self.nick", server=event["server"],
+            self.events.on("self.nick").call(server=event["server"],
                 new_nickname=new_nickname, old_nickname=old_nickname)
 
     # something's mode has changed
@@ -378,7 +378,9 @@ class Module(ModuleManager.BaseModule):
                 remove = chunk[0] == "-"
                 for mode in chunk[1:]:
                     event["server"].change_own_mode(remove, mode)
-            self._event(event,"self.mode", modes=modes, server=event["server"])
+            self.events.on("self.mode").call(modes=modes,
+                server=event["server"])
+            event["server"].send_who(event["server"].nickname)
 
     # someone (maybe me!) has been invited somewhere
     @utils.hook("raw.received.invite")
@@ -557,25 +559,35 @@ class Module(ModuleManager.BaseModule):
     # response to a WHO command for user information
     @utils.hook("raw.received.352", default_event=True)
     def handle_352(self, event):
-        user = event["server"].get_user(event["args"][5])
-        user.username = event["args"][2]
-        user.hostname = event["args"][3]
+        nickname = event["args"][5]
+        if not event["server"].is_own_nickname(nickname):
+            target = event["server"].get_user(nickname)
+        else:
+            target = event["server"]
+        target.username = event["args"][2]
+        target.hostname = event["args"][3]
+
     # response to a WHOX command for user information, including account name
     @utils.hook("raw.received.354", default_event=True)
     def handle_354(self, event):
         if event["args"][1] == "111":
-            username = event["args"][2]
-            hostname = event["args"][3]
             nickname = event["args"][4]
-            account = event["args"][5]
-            realname = event["args"][6]
 
-            user = event["server"].get_user(nickname)
-            user.username = username
-            user.hostname = hostname
-            user.realname = realname
-            if not account == "0":
-                user.identified_account = account
+            if not event["server"].is_own_nickname(nickname):
+                target = event["server"].get_user(nickname)
+
+                account = event["args"][5]
+                if not account == "0":
+                    target.identified_account = account
+                else:
+                    target.identified_account = None
+            else:
+                target = event["server"]
+
+            target.username = event["args"][2]
+            target.hostname = event["args"][3]
+            target.realname = event["args"][6]
+
 
     # response to an empty mode command
     @utils.hook("raw.received.324", default_event=True)
@@ -621,7 +633,7 @@ class Module(ModuleManager.BaseModule):
             self._event(event, "kick", channel=channel, reason=reason,
                 target_user=target_user, user=user, server=event["server"])
         else:
-            self._event(event,"self.kick", channel=channel, reason=reason,
+            self.events.on("self.kick").call(channel=channel, reason=reason,
                 user=user, server=event["server"])
 
     # a channel has been renamed
