@@ -113,7 +113,6 @@ class Module(ModuleManager.BaseModule):
 
     def reduced_activities(self, string): return [a for a in self.activities(string) if a in self.PASSENGER_ACTIVITIES]
 
-    @utils.hook("telegram.command.nrtrains")
     @utils.hook("received.command.nrtrains", min_args=1)
     def trains(self, event):
         """
@@ -298,7 +297,6 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("%s%s: %s" % (station_summary, " departures calling at %s" % filter["inter"] if filter["inter"] else '', trains_string))
 
-    @utils.hook("telegram.command.nrservice")
     @utils.hook("received.command.nrservice", min_args=1)
     def service(self, event):
         """
@@ -494,7 +492,6 @@ class Module(ModuleManager.BaseModule):
                 len(stations_filtered), total_count,
                 ", ".join([s["summary"] for s in stations_filtered])))
 
-    @utils.hook("telegram.command.nrhead")
     @utils.hook("received.command.nrhead", min_args=1)
     def head(self, event):
         """
@@ -517,7 +514,6 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write(", ".join(["h/%s r/%s u/%s rs/%s %s (%s) -> %s (%s)" % (a["trainid"], a["rid"], a["uid"], a["rsid"], a["originName"], a["originCrs"], a["destinationName"], a["destinationCrs"]) for a in services]))
 
-    @utils.hook("telegram.command.nrcode")
     @utils.hook("received.command.nrcode", min_args=1)
     def service_code(self, event):
         """
