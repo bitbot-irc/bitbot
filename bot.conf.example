@@ -1,6 +1,9 @@
 [bot]
+# client-side tls key/cert for IRC connections
 tls-key                  =
 tls-certificate          =
+
+# key/cert used for REST API
 tls-api-key              =
 tls-api-certificate      =
 
