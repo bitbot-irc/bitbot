@@ -184,11 +184,11 @@ class EventHook(object):
 
         if not hooks:
             self.log.trace("not calling non-hooked event \"%s\" (params: %s)",
-                [event, path, kwargs])
+                [event_path, kwargs])
             return returns
 
         self.log.trace("calling event: \"%s\" (params: %s)",
-            [event_path,kwargs])
+            [event_path, kwargs])
         start = time.monotonic()
 
         event = self._make_event(kwargs)
