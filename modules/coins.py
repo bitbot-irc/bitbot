@@ -696,7 +696,7 @@ class Module(ModuleManager.BaseModule):
             wallet_in, _ = self._parse_wallets(event["user"],
                 event["args_split"][0])
 
-        amount = 1
+        amount = "1"
         if event["args_split"]:
             amount = event["args_split"][0]
         if not amount.isdigit():
