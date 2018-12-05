@@ -179,13 +179,20 @@ class EventHook(object):
     def _call(self, kwargs: dict, safe: bool, maximum: typing.Optional[int]
             ) -> typing.List[typing.Any]:
         event_path = self._get_path()
+        hooks = self.get_hooks()
+        returns = []
+
+        if not hooks:
+            self.log.trace("not calling non-hooked event \"%s\" (params: %s)",
+                [event, path, kwargs]
+            return returns
+
         self.log.trace("calling event: \"%s\" (params: %s)",
             [event_path,kwargs])
         start = time.monotonic()
 
         event = self._make_event(kwargs)
-        returns = []
-        for hook in self.get_hooks()[:maximum]:
+        for hook in hooks[:maximum]:
             if event.eaten:
                 break
             try:
