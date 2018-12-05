@@ -3,42 +3,58 @@ tls-key                  =
 tls-certificate          =
 tls-api-key              =
 tls-api-certificate      =
+
 # https://openweathermap.org/api
 openweathermap-api-key   =
+
 # https://products.wolframalpha.com/api/
 wolframalpha-api-key     =
+
 # https://developers.google.com/
 google-api-key           =
 google-search-id         =
+
 # https://words.bighugelabs.com/api.php
 bighugethesaurus-api-key =
+
 # https://developer.wordnik.com/
 wordnik-api-key          =
+
 # https://www.last.fm/api
 lastfm-api-key           =
+
 # https://trakt.docs.apiary.io/#
 trakt-api-key            =
+
 # https://developers.soundcloud.com/docs/api/guide
 soundcloud-api-key       =
+
 # https://developer.twitter.com/en/docs.html
 twitter-api-key          =
 twitter-api-secret       =
 twitter-access-token     =
 twitter-access-secret    =
+
 # https://api.tfl.gov.uk/
 tfl-api-id               =
 tfl-api-key              =
+
 # http://openldbsv.nationalrail.co.uk/
 nre-api-key              =
+
 # https://github.com/EvelynSubarrow/Eagle
 eagle-api-key            =
 eagle-api-url            =
+
 # https://docs.pushbullet.com/
 pushbullet-api-key       =
 pushbullet-channel-tag   =
+
 # http://www.omdbapi.com/
 omdbapi-api-key          =
+
 # https://www.virustotal.com/en/documentation/public-api/
 virustotal-api-key       =
+
 # https://apidocs.imgur.com/
 imgur-api-key            =
