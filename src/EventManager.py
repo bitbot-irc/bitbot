@@ -184,7 +184,7 @@ class EventHook(object):
 
         if not hooks:
             self.log.trace("not calling non-hooked event \"%s\" (params: %s)",
-                [event, path, kwargs]
+                [event, path, kwargs])
             return returns
 
         self.log.trace("calling event: \"%s\" (params: %s)",
