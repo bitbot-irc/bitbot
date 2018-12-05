@@ -7,15 +7,22 @@ CHANNELSETADD_HELP = ("Add to a specified channel setting for the "
 class Module(ModuleManager.BaseModule):
     def _set(self, category, event, target, array):
         settings = self.exports.get_all(category)
-        settings_dict = dict([(setting["setting"], setting
-            ) for setting in settings])
+        settings_dict = {setting["setting"]: setting for setting in settings}
 
         if len(event["args_split"]) > 1:
             setting = event["args_split"][0].lower()
             if setting in settings_dict:
+                setting_options = settings_dict[setting]
+                if not setting_options.get("array", False) == array:
+                    if array:
+                        raise utils.EventError(
+                            "Can't add to a non-array setting")
+                    else:
+                        raise utils.EventError(
+                            "You can only 'add' to an array setting")
+
                 value = " ".join(event["args_split"][1:])
-                value = settings_dict[setting].get("validate",
-                    lambda x: x)(value)
+                value = setting_options.get("validate", lambda x: x)(value)
 
                 if not value == None:
                     if array:

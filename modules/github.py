@@ -28,7 +28,7 @@ COMMENT_ACTIONS = {
 
 @utils.export("channelset", {"setting": "github-hook",
     "help": ("Disable/Enable showing BitBot's github commits in the "
-    "current channel")})
+    "current channel"), "array": True})
 @utils.export("channelset", {"setting": "github-hide-prefix",
     "help": "Hide/show command-like prefix on Github hook outputs",
     "validate": utils.bool_or_none})
