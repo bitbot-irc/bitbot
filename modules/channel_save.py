@@ -23,8 +23,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("self.join")
     def on_join(self, event):
         channels = event["server"].get_setting("autojoin", [])
-        if not event["channel"].name in channels:
-            channels.append(event["channel"].name)
+        channel_name = utils.irc.lower(event["server"].case_mapping,
+            event["channel"].name)
+        if not channel_name in channels:
+            channels.append(channel_name)
             event["server"].set_setting("autojoin", channels)
 
     def _remove_channel(self, server, channel_name):
