@@ -189,7 +189,7 @@ class Module(ModuleManager.BaseModule):
 
         action = data["action"]
         pr_title = data["pull_request"]["title"]
-        reviewer = utils.irc.bold(data["review"]["user"]["login"])
+        reviewer = utils.irc.bold(data["sender"]["login"])
         url = data["review"]["html_url"]
         return ["[pr] %s %s a review on: %s - %s" % (reviewer, action, pr_title,
             url)]
