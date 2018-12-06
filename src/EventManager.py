@@ -180,7 +180,7 @@ class EventHook(object):
             ) -> typing.List[typing.Any]:
         event_path = self._get_path()
         hooks = self.get_hooks()
-        returns = []
+        returns = [] # type: typing.List[typing.Any]
 
         if not hooks:
             self.log.trace("not calling non-hooked event \"%s\" (params: %s)",
