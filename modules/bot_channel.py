@@ -5,5 +5,6 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.numeric.001")
     def do_join(self, event):
-        event["server"].send_join(event["server"].get_setting("bot-channel",
-            "#bitbot"))
+        bot_channel = event["server"].get_setting("bot-channel",
+            self.bot.config.get("bot-channel", "#bitbot"))
+        event["server"].send_join(bot_channel)

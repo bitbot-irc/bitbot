@@ -7,6 +7,9 @@ tls-certificate          =
 tls-api-key              =
 tls-api-certificate      =
 
+# the default channel BitBot automatically joins
+bot-channel              =
+
 # https://openweathermap.org/api
 openweathermap-api-key   =
 
