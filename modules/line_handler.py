@@ -104,8 +104,10 @@ class Module(ModuleManager.BaseModule):
                 event["server"].prefix_modes[mode] = symbol
 
         if "CHANMODES" in isupport:
-            chanmodes = list(isupport["CHANMODES"].split(",", 3)[3])
-            event["server"].channel_modes = chanmodes
+            modes = isupport["CHANMODES"].split(",", 3)
+            event["server"].channel_list_modes = list(modes[0])
+            event["server"].channel_paramatered_modes = list(modes[1])
+            event["server"].channel_modes = list(modes[3])
         if "CHANTYPES" in isupport:
             event["server"].channel_types = list(isupport["CHANTYPES"])
         if "CASEMAPPING" in isupport:
@@ -368,7 +370,10 @@ class Module(ModuleManager.BaseModule):
                         channel.change_mode(remove, mode)
                     elif mode in event["server"].prefix_modes and len(args):
                         channel.change_mode(remove, mode, args.pop(0))
-                    else:
+                    elif (mode in event["server"].channel_list_modes or
+                            mode in event["server"].channel_paramatered_modes):
+                        args.pop(0)
+                    elif not remove:
                         args.pop(0)
             self._event(event, "mode.channel", modes=modes, mode_args=_args,
                 channel=channel, server=event["server"], user=user)
