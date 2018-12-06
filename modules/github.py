@@ -41,7 +41,7 @@ class Module(ModuleManager.BaseModule):
                 )["payload"][0]
         data = json.loads(payload)
 
-        github_event = event["headers"]["X-GitHub-Event"]
+        github_event = event["headers"]["X-Github-Event"]
         if github_event == "ping":
             return True
 
