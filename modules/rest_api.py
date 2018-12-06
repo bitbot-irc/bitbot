@@ -14,6 +14,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         _, _, endpoint = path[1:].partition("/")
         endpoint, _, args = endpoint.partition("/")
         args = list(filter(None, args.split("/")))
+        headers = {key.title(): value for key, value in self.headers}
 
         response = ""
         code = 404
@@ -33,7 +34,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         event_response = _bot.trigger(lambda:
                             _events.on("api").on(method).on(
                             endpoint).call_unsafe_for_result(params=params,
-                            path=args, data=data, headers=dict(self.headers)))
+                            path=args, data=data, headers=headers))
                     except Exception as e:
                         _log.error("failed to call API endpoint \"%s\"",
                             [path], exc_info=True)
