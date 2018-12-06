@@ -14,7 +14,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         _, _, endpoint = path[1:].partition("/")
         endpoint, _, args = endpoint.partition("/")
         args = list(filter(None, args.split("/")))
-        headers = {key.title(): value for key, value in self.headers}
+        headers = {key.title(): value for key, value in self.headers.items()}
 
         response = ""
         code = 404
