@@ -173,9 +173,9 @@ def top_10(items: typing.Dict[typing.Any, typing.Any],
     return top_10_items
 
 class CaseInsensitiveDict(dict):
-    def __init__(self, other):
-        dict.__init__(self, ((k.lower(), v) for k, v in other))
-    def __getitem__(self, key):
+    def __init__(self, other: typing.Dict[str, typing.Any]):
+        dict.__init__(self, ((k.lower(), v) for k, v in other.items()))
+    def __getitem__(self, key: str) -> typing.Any:
         return dict.__getitem__(self, key.lower())
-    def __setitem__(self, key):
-        return dict.__setitem__(self, key.lower())
+    def __setitem__(self, key: str, value: typing.Any) -> typing.Any:
+        return dict.__setitem__(self, key.lower(), value)
