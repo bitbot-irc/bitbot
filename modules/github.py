@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
 
         github_event = event["headers"]["X-GitHub-Event"]
         if github_event == "ping":
-            return True
+            return ""
 
         full_name = data["repository"]["full_name"]
         hooks = self.bot.database.channel_settings.find_by_setting(
@@ -64,7 +64,7 @@ class Module(ModuleManager.BaseModule):
                         targets.append([server, channel])
 
         if not targets:
-            return True if repo_hooked else None
+            return "" if repo_hooked else None
 
         outputs = None
         if github_event == "push":
@@ -97,7 +97,7 @@ class Module(ModuleManager.BaseModule):
                         hide_prefix=channel.get_setting(
                         "github-hide-prefix", False))
 
-        return True
+        return ""
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
