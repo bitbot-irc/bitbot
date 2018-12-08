@@ -171,3 +171,11 @@ def top_10(items: typing.Dict[typing.Any, typing.Any],
             value_format(items[key])))
 
     return top_10_items
+
+class CaseInsensitiveDict(dict):
+    def __init__(self, other):
+        dict.__init__(self, ((k.lower(), v) for k, v in other))
+    def __getitem__(self, key):
+        return dict.__getitem__(self, key.lower())
+    def __setitem__(self, key):
+        return dict.__setitem__(self, key.lower())
