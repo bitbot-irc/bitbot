@@ -92,6 +92,7 @@ class Module(ModuleManager.BaseModule):
         global _log
         _log = self.log
 
+        self.httpd = None
         if self.bot.get_setting("rest-api", False):
             self.httpd = http.server.HTTPServer(("", 5000), Handler)
             self.httpd.socket = ssl.wrap_socket(self.httpd.socket,
@@ -103,7 +104,8 @@ class Module(ModuleManager.BaseModule):
             self.thread.start()
 
     def unload(self):
-        self.httpd.shutdown()
+        if self.httpd:
+            self.httpd.shutdown()
 
     @utils.hook("received.command.apikey", private_only=True)
     def api_key(self, event):
