@@ -167,7 +167,7 @@ class ModuleManager(object):
         if not name in self.modules:
             raise ModuleNotFoundException()
         loaded_module = self.modules[name]
-        if hasattr(module, "unload"):
+        if hasattr(loaded_module.module, "unload"):
             try:
                 loaded_module.module.unload()
             except:
