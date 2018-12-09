@@ -178,7 +178,9 @@ class Module(ModuleManager.BaseModule):
         elif action == "synchronize":
             action_desc = "committed to"
         elif action == "labeled":
-            action_desc = "labeled as '%s'" % data["pull_request"]["labels"][-1]
+            action_desc = "labeled as '%s'" % data["label"]["name"]
+        elif action == "unlabeled":
+            action_desc = "unlabeled as '%s'" % data["label"]["name"]
 
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
@@ -206,6 +208,12 @@ class Module(ModuleManager.BaseModule):
 
     def issues(self, event, full_name, data):
         action = data["action"]
+        action_desc = action
+        if action == "labeled":
+            action_desc = "labeled as '%s'" % data["label"]["name"]
+        elif action == "unlabeled":
+            action_desc = "unlabeled as '%s'" % data["label"]["name"]
+
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = data["issue"]["html_url"]
