@@ -19,7 +19,6 @@ class ModuleNotLoadedWarning(ModuleWarning):
     pass
 
 class BaseModule(object):
-    _context = ""
     def __init__(self,
             bot: "IRCBot.Bot",
             events: EventManager.EventHook,
@@ -36,6 +35,13 @@ class BaseModule(object):
         pass
     def unload(self):
         pass
+def LoadedModule(object):
+    def __init__(self, name: str, module: BaseModule, context: str,
+            import_name: str):
+        self.name = name
+        self.module = module
+        self.context = context
+        self.import_name = import_name
 
 class ModuleManager(object):
     def __init__(self,
@@ -69,7 +75,7 @@ class ModuleManager(object):
             ) -> typing.Any:
         return getattr(obj, magic) if hasattr(obj, magic) else default
 
-    def _load_module(self, bot: "IRCBot.Bot", name: str):
+    def _load_module(self, bot: "IRCBot.Bot", name: str) -> LoadedModule:
         path = self._module_path(name)
 
         for hashflag, value in utils.parse.hashflags(path):
@@ -90,7 +96,8 @@ class ModuleManager(object):
                         self.waiting_requirement[requirement].add(path)
                     raise ModuleNotLoadedWarning("waiting for requirement")
 
-        module = imp.load_source(self._import_name(name), path)
+        import_name = self._import_name(name)
+        module = imp.load_source(import_name, path)
 
         module_object_pointer = getattr(module, "Module", None)
         if not module_object_pointer:
@@ -119,17 +126,15 @@ class ModuleManager(object):
                 utils.consts.BITBOT_EXPORTS_MAGIC, []):
             context_exports.add(export["setting"], export["value"])
 
-        module_object._context = context
-        module_object._import_name = name
-
         if name in self.modules:
             raise ModuleNameCollisionException("Module name '%s' "
                 "attempted to be used twice")
-        return module_object
+
+        return LoadedModule(name, module_object, context, import_name)
 
     def load_module(self, bot: "IRCBot.Bot", name: str):
         try:
-            module = self._load_module(bot, name)
+            loaded_module = self._load_module(bot, name)
         except ModuleWarning as warning:
             self.log.warn("Module '%s' not loaded", [name])
             raise
@@ -138,11 +143,12 @@ class ModuleManager(object):
                 [name, str(e)])
             raise
 
-        self.modules[module._import_name] = module
-        if name in self.waiting_requirement:
-            for requirement_name in self.waiting_requirement:
+        self.modules[loaded_module.name] = loaded_module.module
+        if loaded_module.name in self.waiting_requirement:
+            for requirement_name in self.waiting_requirement[
+                    loaded_module.name]:
                 self.load_module(bot, requirement_name)
-        self.log.debug("Module '%s' loaded", [name])
+        self.log.debug("Module '%s' loaded", [loaded_module.name])
 
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
             blacklist: typing.List[str]=[]):
@@ -157,28 +163,32 @@ class ModuleManager(object):
     def unload_module(self, name: str):
         if not name in self.modules:
             raise ModuleNotFoundException()
-        module = self.modules[name]
+        loaded_module = self.modules[name]
         if hasattr(module, "unload"):
             try:
-                module.unload()
+                loaded_module.module.unload()
             except:
                 pass
-        del self.modules[name]
+        del self.modules[loaded_module.name]
 
-        context = module._context
+        context = loaded_module.context
         self.events.purge_context(context)
         self.exports.purge_context(context)
         self.timers.purge_context(context)
 
-        del sys.modules[self._import_name(name)]
-        references = sys.getrefcount(module)
-        referrers = gc.get_referrers(module)
+        module = loaded_module.module
+        del loaded_module.module
+        del sys.modules[loaded_module.import_name]
+        references = sys.getrefcount(loaded_module.module)
+        referrers = gc.get_referrers(loaded_module.module)
         del module
         references -= 1 # 'del module' removes one reference
         references -= 1 # one of the refs is from getrefcount
 
         self.log.debug("Module '%s' unloaded (%d reference%s)",
-            [name, references, "" if references == 1 else "s"])
+            [loaded_module.name, references,
+            "" if references == 1 else "s"])
         if references > 0:
             self.log.debug("References left for '%s': %s",
-                [name, ", ".join([str(referrer) for referrer in referrers])])
+                [loaded_module.name,
+                ", ".join([str(referrer) for referrer in referrers])])
