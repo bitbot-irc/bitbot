@@ -182,8 +182,8 @@ class ModuleManager(object):
         module = loaded_module.module
         del loaded_module.module
         del sys.modules[loaded_module.import_name]
-        references = sys.getrefcount(loaded_module.module)
-        referrers = gc.get_referrers(loaded_module.module)
+        references = sys.getrefcount(module)
+        referrers = gc.get_referrers(module)
         del module
         references -= 1 # 'del module' removes one reference
         references -= 1 # one of the refs is from getrefcount
