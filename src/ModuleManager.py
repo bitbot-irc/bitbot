@@ -61,7 +61,7 @@ class ModuleManager(object):
         self.log = log
         self.directory = directory
 
-        self.modules = {} # type: typing.Dict[str, BaseModule]
+        self.modules = {} # type: typing.Dict[str, LoadedModule]
         self.waiting_requirement = {} # type: typing.Dict[str, typing.Set[str]]
 
     def list_modules(self) -> typing.List[str]:
@@ -146,7 +146,7 @@ class ModuleManager(object):
                 [name, str(e)])
             raise
 
-        self.modules[loaded_module.name] = loaded_module.module
+        self.modules[loaded_module.name] = loaded_module
         if loaded_module.name in self.waiting_requirement:
             for requirement_name in self.waiting_requirement[
                     loaded_module.name]:
