@@ -13,8 +13,8 @@ URL_YOUTUBEVIDEO = "https://www.googleapis.com/youtube/v3/videos"
 
 URL_YOUTUBESHORT = "https://youtu.be/%s"
 
-ARROW_UP = "▲"
-ARROW_DOWN = "▼"
+ARROW_UP = "↑"
+ARROW_DOWN = "↓"
 
 @utils.export("channelset", {"setting": "auto-youtube",
     "help": "Disable/Enable automatically getting info from youtube URLs",
