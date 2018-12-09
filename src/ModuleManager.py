@@ -35,8 +35,11 @@ class BaseModule(object):
         pass
     def unload(self):
         pass
-def LoadedModule(object):
-    def __init__(self, name: str, module: BaseModule, context: str,
+class LoadedModule(object):
+    def __init__(self,
+            name: str,
+            module: BaseModule,
+            context: str,
             import_name: str):
         self.name = name
         self.module = module
