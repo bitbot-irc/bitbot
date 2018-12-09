@@ -177,6 +177,8 @@ class Module(ModuleManager.BaseModule):
                     utils.consts.RED)
         elif action == "synchronize":
             action_desc = "committed to"
+        elif action == "labeled":
+            action_desc = "labeled as '%s'" % data["pull_request"]["labels"][-1]
 
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
