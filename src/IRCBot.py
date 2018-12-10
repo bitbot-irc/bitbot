@@ -49,7 +49,7 @@ class Bot(object):
         self.lock.release()
         self._trigger_client.send(b"TRIGGER")
 
-        type, returned = func_queue.get(True)
+        type, returned = func_queue.get(block=True)
         if type == TRIGGER_EXCEPTION:
             raise returned
         elif type == TRIGGER_RETURN:
