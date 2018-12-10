@@ -54,7 +54,7 @@ class Log(object):
         warn_handler.setFormatter(formatter)
         self.logger.addHandler(warn_handler)
 
-        self._queue = queue.Queue()
+        self._queue = queue.Queue() # type: queue.Queue[typing.Tuple[str, typing.List, int, typing.Dict]]
         self._thread = threading.Thread(target=self._loop)
         self._thread.daemon = True
         self._thread.start()
