@@ -87,6 +87,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.delete(event, full_name, data)
         elif github_event == "release":
             outputs = self.release(event, full_name, data)
+        elif github_event == "status":
+            outputs = self.status(event, full_name, data)
 
         if outputs:
             for server, channel in targets:
@@ -251,3 +253,11 @@ class Module(ModuleManager.BaseModule):
         author = utils.irc.bold(data["release"]["author"]["login"])
         url = data["release"]["html_url"]
         return ["%s %s a release%s - %s" % (author, action, name, url)]
+
+    def status(self, event, full_name, data):
+        context = data["context"]
+        state = data["state"]
+        url = data["target_url"]
+        commit = self._short_id(data["sha"])
+        return ["[%s status] %s is '%s' - %s" %
+            (commit, context, state, url)]
