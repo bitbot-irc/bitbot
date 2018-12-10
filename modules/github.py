@@ -222,7 +222,8 @@ class Module(ModuleManager.BaseModule):
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = data["issue"]["html_url"]
-        return ["[issue] %s %s: %s - %s" % (author, action, issue_title, url)]
+        return ["[issue] %s %s: %s - %s" %
+            (author, action_desc, issue_title, url)]
     def issue_comment(self, event, full_name, data):
         action = data["action"]
         issue_title = data["issue"]["title"]
