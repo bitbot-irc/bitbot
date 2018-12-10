@@ -1,4 +1,4 @@
-import logging, logging.handlers, os, sys, time, typing
+import logging, logging.handlers, os, queue, sys, threading, time, typing
 
 LEVELS = {
     "trace": logging.DEBUG-1,
@@ -54,6 +54,16 @@ class Log(object):
         warn_handler.setFormatter(formatter)
         self.logger.addHandler(warn_handler)
 
+        self._queue = queue.Queue()
+        self._thread = threading.Thread(target=self._loop)
+        self._thread.daemon = True
+        self._thread.start()
+
+    def _loop(self):
+        while True:
+            message, params, level, kwargs = self._queue.get(block=True)
+            self.logger.log(level, message, *params, **kwargs)
+
     def trace(self, message: str, params: typing.List, **kwargs):
         self._log(message, params, LEVELS["trace"], kwargs)
     def debug(self, message: str, params: typing.List, **kwargs):
@@ -67,4 +77,4 @@ class Log(object):
     def critical(self, message: str, params: typing.List, **kwargs):
         self._log(message, params, logging.CRITICAL, kwargs)
     def _log(self, message: str, params: typing.List, level: int, kwargs: dict):
-        self.logger.log(level, message, *params, **kwargs)
+        self._queue.put((message, params, level, kwargs))
