@@ -17,7 +17,8 @@ DEFAULT_EVENTS = [
     "issues",
     "create",
     "delete",
-    "release"
+    "release",
+    "fork"
 ]
 
 COMMENT_ACTIONS = {
@@ -89,6 +90,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.release(event, full_name, data)
         elif github_event == "status":
             outputs = self.status(event, full_name, data)
+        elif github_event == "fork":
+            outputs = self.fork(event, full_name, data)
 
         if outputs:
             for server, channel in targets:
@@ -261,3 +264,11 @@ class Module(ModuleManager.BaseModule):
         commit = self._short_id(data["sha"])
         return ["[%s status] %s is '%s' - %s" %
             (commit, context, state, url)]
+
+    def fork(self, event, full_name, data):
+        forker = utils.irc.bold(data["sender"]["login"])
+        fork_full_name = utils.irc.color(data["forkee"]["full_name"],
+            utils.consts.LIGHTBLUE)
+        url = data["forkee"]["html_url"]
+        return ["%s forked into %s - %s" %
+            (forker, fork_full_name, url)]
