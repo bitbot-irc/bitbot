@@ -62,7 +62,7 @@ def request(url: str, method: str="GET", get_params: dict={},
 
     if soup:
         soup = bs4.BeautifulSoup(response_content, parser)
-        return Response(response.status_code, soup, response_heders)
+        return Response(response.status_code, soup, response_headers)
 
     data = response_content.decode(response.encoding or fallback_encoding)
     if json and data:
