@@ -105,7 +105,7 @@ class Module(ModuleManager.BaseModule):
         return ""
 
     def _short_url(self, url):
-        page = utils.http.get_url("https://git.io", method="POST",
+        page = utils.http.request("https://git.io", method="POST",
             post_data={"url": url})
         return page.headers["Location"]
 
