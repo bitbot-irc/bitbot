@@ -21,16 +21,15 @@ class Module(ModuleManager.BaseModule):
         if not url:
             raise utils.EventError("No URL provided/found.")
 
-        soup = None
         try:
-            soup = utils.http.get_url(url, soup=True)
+            page = utils.http.request(url, soup=True)
         except:
             pass
 
-        if not soup:
+        if not page:
             raise utils.EventError("Failed to get URL.")
 
-        title = soup.title
+        title = page.data.title
         if title:
             title = title.text.replace("\n", " ").replace("\r", ""
                 ).replace("  ", " ").strip()

@@ -12,7 +12,7 @@ class Module(ModuleManager.BaseModule):
     _last_called = 0
 
     def _get_definition(self, word):
-        page = utils.http.get_url(URL_WORDNIK % word, get_params={
+        page = utils.http.request(URL_WORDNIK % word, get_params={
             "useCanonical": "true", "limit": 1,
             "sourceDictionaries": "wiktionary", "api_key": self.bot.config[
             "wordnik-api-key"]}, json=True)
@@ -33,9 +33,9 @@ class Module(ModuleManager.BaseModule):
 
         page = self._get_definition(word)
         if page:
-            if len(page):
-                event["stdout"].write("%s: %s" % (page[0]["word"],
-                    page[0]["text"]))
+            if len(page.data):
+                event["stdout"].write("%s: %s" % (page.data[0]["word"],
+                    page.data[0]["text"]))
             else:
                 event["stderr"].write("No definitions found")
         else:
@@ -50,13 +50,13 @@ class Module(ModuleManager.BaseModule):
                 RANDOM_DELAY_SECONDS):
             self._last_called = time.time()
 
-            page = utils.http.get_url(URL_WORDNIK_RANDOM, get_params={
+            page = utils.http.request(URL_WORDNIK_RANDOM, get_params={
                 "api_key":self.bot.config["wordnik-api-key"],
                 "min_dictionary_count":1},json=True)
-            if page and len(page):
-                definition = self._get_definition(page["word"])
-                if len(definition):
-                    definition = definition[0]
+            if page and len(page.data):
+                definition = self._get_definition(page.data["word"])
+                if definition and len(definition.data):
+                    definition = definition.data[0]
                 else:
                     raise utils.EventError("Try again in a couple of seconds")
 

@@ -12,19 +12,19 @@ class Module(ModuleManager.BaseModule):
         :usage: <location>
         """
         api_key = self.bot.config["openweathermap-api-key"]
-        page = utils.http.get_url(URL_WEATHER, get_params={
+        page = utils.http.request(URL_WEATHER, get_params={
             "q": event["args"], "units": "metric",
             "APPID": api_key},
             json=True)
         if page:
-            if "weather" in page:
-                location = "%s, %s" % (page["name"], page["sys"][
+            if "weather" in page.data:
+                location = "%s, %s" % (page.data["name"], page.data["sys"][
                     "country"])
-                celsius = "%dC" % page["main"]["temp"]
-                fahrenheit = "%dF" % ((page["main"]["temp"]*(9/5))+32)
-                description = page["weather"][0]["description"].title()
-                humidity = "%s%%" % page["main"]["humidity"]
-                wind_speed = "%sKM/h" % page["wind"]["speed"]
+                celsius = "%dC" % page.data["main"]["temp"]
+                fahrenheit = "%dF" % ((page.data["main"]["temp"]*(9/5))+32)
+                description = page.data["weather"][0]["description"].title()
+                humidity = "%s%%" % page.data["main"]["humidity"]
+                wind_speed = "%sKM/h" % page.data["wind"]["speed"]
 
                 event["stdout"].write(
                     "(%s) %s/%s | %s | Humidity: %s | Wind: %s" % (

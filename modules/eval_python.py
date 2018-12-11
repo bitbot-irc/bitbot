@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
     def _eval(self, lang, event):
         page = None
         try:
-            page = utils.http.get_url(EVAL_URL,
+            page = utils.http.request(EVAL_URL,
                 post_data={
                     "lang": lang,
                     "code": EVAL_TEMPLATE,
@@ -47,8 +47,8 @@ class Module(ModuleManager.BaseModule):
         except:
             pass
 
-        if page:
-            out = page.split("</b></span><br>", 1)[1]
+        if page.data:
+            out = page.data.split("</b></span><br>", 1)[1]
             out = html.unescape(out)
             out = json.loads(out)
 

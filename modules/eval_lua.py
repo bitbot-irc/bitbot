@@ -8,7 +8,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.lua", min_args=1)
     def eval(self, event):
         try:
-            page = utils.http.get_url(EVAL_URL,
+            page = utils.http.request(EVAL_URL,
                 post_data={"input": event["args"]},
                 method="POST",
                 soup=True)
@@ -17,7 +17,7 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickname)
 
         if page:
-            textareas = page.find_all("textarea")
+            textareas = page.data.find_all("textarea")
             if len(textareas) > 1:
                 out = textareas[1].text.strip("\n")
                 event["stdout"].write("%s: %s" % (event["user"].nickname, out))

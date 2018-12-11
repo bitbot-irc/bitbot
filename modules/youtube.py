@@ -21,13 +21,13 @@ ARROW_DOWN = "↓"
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def get_video_page(self, video_id, part):
-        return utils.http.get_url(URL_YOUTUBEVIDEO, get_params={"part": part,
+        return utils.http.request(URL_YOUTUBEVIDEO, get_params={"part": part,
             "id": video_id, "key": self.bot.config["google-api-key"]},
             json=True)
     def video_details(self, video_id):
         snippet = self.get_video_page(video_id, "snippet")
-        if snippet["items"]:
-            snippet = snippet["items"][0]["snippet"]
+        if snippet.data["items"]:
+            snippet = snippet.data["items"][0]["snippet"]
             statistics = self.get_video_page(video_id, "statistics")[
                 "items"][0]["statistics"]
             content = self.get_video_page(video_id, "contentDetails")[
@@ -60,15 +60,15 @@ class Module(ModuleManager.BaseModule):
         search = event["query"]
         video_id = ""
 
-        search_page = utils.http.get_url(URL_YOUTUBESEARCH,
+        search_page = utils.http.request(URL_YOUTUBESEARCH,
             get_params={"q": search, "part": "snippet",
             "maxResults": "1", "type": "video",
             "key": self.bot.config["google-api-key"]},
              json=True)
 
         if search_page:
-            if search_page["pageInfo"]["totalResults"] > 0:
-                video_id = search_page["items"][0]["id"]["videoId"]
+            if search_page.data["pageInfo"]["totalResults"] > 0:
+                video_id = search_page.data["items"][0]["id"]["videoId"]
                 return "https://youtu.be/%s" % video_id
 
     @utils.hook("received.command.yt", alias_of="youtube")
@@ -93,14 +93,14 @@ class Module(ModuleManager.BaseModule):
 
         if search or video_id:
             if not video_id:
-                search_page = utils.http.get_url(URL_YOUTUBESEARCH,
+                search_page = utils.http.request(URL_YOUTUBESEARCH,
                     get_params={"q": search, "part": "snippet",
                     "maxResults": "1", "type": "video",
                     "key": self.bot.config["google-api-key"]},
                     json=True)
                 if search_page:
-                    if search_page["pageInfo"]["totalResults"] > 0:
-                        video_id = search_page["items"][0]["id"]["videoId"]
+                    if search_page.data["pageInfo"]["totalResults"] > 0:
+                        video_id = search_page.data["items"][0]["id"]["videoId"]
                     else:
                         event["stderr"].write("No videos found")
                 else:

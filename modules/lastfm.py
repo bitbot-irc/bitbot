@@ -24,14 +24,14 @@ class Module(ModuleManager.BaseModule):
             lastfm_username = event["user"].get_setting("lastfm",
                 event["user"].nickname)
             shown_username = event["user"].nickname
-        page = utils.http.get_url(URL_SCROBBLER, get_params={
+        page = utils.http.request(URL_SCROBBLER, get_params={
             "method": "user.getrecenttracks", "user": lastfm_username,
             "api_key": self.bot.config["lastfm-api-key"],
             "format": "json", "limit": "1"}, json=True)
         if page:
-            if "recenttracks" in page and len(page["recenttracks"
+            if "recenttracks" in page.data and len(page.data["recenttracks"
                     ]["track"]):
-                now_playing = page["recenttracks"]["track"][0]
+                now_playing = page.data["recenttracks"]["track"][0]
                 track_name = now_playing["name"]
                 artist = now_playing["artist"]["#text"]
 
@@ -53,14 +53,14 @@ class Module(ModuleManager.BaseModule):
 
                 short_url = " -- " + short_url if short_url else ""
 
-                info_page = utils.http.get_url(URL_SCROBBLER, get_params={
+                info_page = utils.http.request(URL_SCROBBLER, get_params={
                     "method": "track.getInfo", "artist": artist,
                     "track": track_name, "autocorrect": "1",
                     "api_key": self.bot.config["lastfm-api-key"],
                     "user": lastfm_username, "format": "json"}, json=True)
                 tags = []
-                if "toptags" in info_page.get("track", []):
-                    for tag in info_page["track"]["toptags"]["tag"]:
+                if "toptags" in info_page.data.get("track", []):
+                    for tag in info_page.data["track"]["toptags"]["tag"]:
                         tags.append(tag["name"])
                 if tags:
                     tags = " (%s)" % ", ".join(tags)
@@ -68,8 +68,8 @@ class Module(ModuleManager.BaseModule):
                     tags = ""
 
                 play_count = ""
-                if "userplaycount" in info_page.get("track", []):
-                    play_count = int(info_page["track"]["userplaycount"])
+                if "userplaycount" in info_page.data.get("track", []):
+                    play_count = int(info_page.data["track"]["userplaycount"])
                     play_count = " (%d play%s)" % (play_count,
                         "s" if play_count > 1 else "")
 

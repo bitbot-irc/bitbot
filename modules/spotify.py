@@ -10,12 +10,12 @@ class Module(ModuleManager.BaseModule):
         :help: Search for a track on spotify
         :usage: <term>
         """
-        page = utils.http.get_url(URL_SPOTIFY, get_params=
+        page = utils.http.request(URL_SPOTIFY, get_params=
             {"type": "track", "limit": 1, "q": event["args"]},
             json=True)
         if page:
-            if len(page["tracks"]["items"]):
-                item = page["tracks"]["items"][0]
+            if len(page.data["tracks"]["items"]):
+                item = page.data["tracks"]["items"][0]
                 title = item["name"]
                 artist_name = item["artists"][0]["name"]
                 url = item["external_urls"]["spotify"]

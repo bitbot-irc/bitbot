@@ -10,13 +10,13 @@ class Module(ModuleManager.BaseModule):
         :help: Get information from wikipedia
         :usage: <term>
         """
-        page = utils.http.get_url(URL_WIKIPEDIA, get_params={
+        page = utils.http.request(URL_WIKIPEDIA, get_params={
             "action": "query", "prop": "extracts",
             "titles": event["args"], "exintro": "",
             "explaintext": "", "exchars": "500",
             "redirects": "", "format": "json"}, json=True)
         if page:
-            pages = page["query"]["pages"]
+            pages = page.data["query"]["pages"]
             article = list(pages.items())[0][1]
             if not "missing" in article:
                 title, info = article["title"], article["extract"]

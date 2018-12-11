@@ -15,16 +15,16 @@ class Module(ModuleManager.BaseModule):
         :help: Search for a given title on IMDb
         :usage: <movie/tv title>
         """
-        page = utils.http.get_url(URL_OMDB, get_params={
+        page = utils.http.request(URL_OMDB, get_params={
             "t": event["args"],
             "apikey": self.bot.config["omdbapi-api-key"]},
             json=True)
         if page:
-            if "Title" in page:
+            if "Title" in page.data:
                 event["stdout"].write("%s, %s (%s) %s (%s/10.0) %s" % (
-                    page["Title"], page["Year"], page["Runtime"],
-                    page["Plot"], page["imdbRating"],
-                    URL_IMDBTITLE % page["imdbID"]))
+                    page.data["Title"], page.data["Year"], page.data["Runtime"],
+                    page.data["Plot"], page.data["imdbRating"],
+                    URL_IMDBTITLE % page.data["imdbID"]))
             else:
                 event["stderr"].write("Title not found")
         else:

@@ -11,11 +11,11 @@ class Module(ModuleManager.BaseModule):
         if not re.match(REGEX_URL, url):
             url = "http://%s" % url
 
-        data = utils.http.get_url(ISGD_API_URL, get_params=
+        page = utils.http.request(ISGD_API_URL, get_params=
             {"format": "json", "url": url}, json=True)
 
-        if data and data["shorturl"]:
-            return data["shorturl"]
+        if page and page.data["shorturl"]:
+            return page.data["shorturl"]
 
     @utils.hook("received.command.shorten", min_args=1)
     def shorten(self, event):

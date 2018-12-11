@@ -15,13 +15,13 @@ class Module(ModuleManager.BaseModule):
         if not arg_len == 12 and not arg_len == 13:
             raise utils.EventError("Invalid UPC/EAN/GTIN provided")
 
-        page = utils.http.get_url(UPCITEMDB_URL,
+        page = utils.http.request(UPCITEMDB_URL,
             get_params={"upc": event["args_split"][0]},
             json=True)
         if page:
-            if not len(page["items"]):
+            if not len(page.data["items"]):
                 raise utils.EventError("UPC/EAN not found")
-            item = page["items"][0]
+            item = page.data["items"][0]
 
             brand = item.get("brand", None)
             brand = "" if not brand else "%s - " % brand

@@ -19,30 +19,29 @@ class Module(ModuleManager.BaseModule):
         else:
             username = event["user"].get_setting("trakt",
                 event["user"].nickname)
-        page = utils.http.get_url(URL_TRAKT % username, headers={
+        page = utils.http.request(URL_TRAKT % username, headers={
             "Content-Type": "application/json",
             "trakt-api-version": "2", "trakt-api-key":
             self.bot.config["trakt-api-key"]}, json=True,
             code=True)
-        if page[0]:
-            code, page = page
-            if code == 200:
-                type = page["type"]
+        if page
+            if page.code == 200:
+                type = page.data["type"]
                 if type == "movie":
-                    title = page["movie"]["title"]
-                    year = page["movie"]["year"]
-                    slug = page["movie"]["ids"]["slug"]
+                    title = page.data["movie"]["title"]
+                    year = page.data["movie"]["year"]
+                    slug = page.data["movie"]["ids"]["slug"]
                     event["stdout"].write(
                         "%s is now watching %s (%s) %s" % (
                         username, title, year,
                         URL_TRAKTSLUG % ("movie", slug)))
                 elif type == "episode":
-                    season = page["episode"]["season"]
-                    episode_number = page["episode"]["number"]
-                    episode_title = page["episode"]["title"]
-                    show_title = page["show"]["title"]
-                    show_year = page["show"]["year"]
-                    slug = page["show"]["ids"]["slug"]
+                    season = page.data["episode"]["season"]
+                    episode_number = page.data["episode"]["number"]
+                    episode_title = page.data["episode"]["title"]
+                    show_title = page.data["show"]["title"]
+                    show_year = page.data["show"]["year"]
+                    slug = page.data["show"]["ids"]["slug"]
                     event["stdout"].write(
                         "%s is now watching %s s%se%s - %s %s" % (
                         username, show_title, str(season).zfill(2),

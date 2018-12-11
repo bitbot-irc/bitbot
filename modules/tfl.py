@@ -63,26 +63,26 @@ class Module(ModuleManager.BaseModule):
         real_stop_id = ""
         stop_name = ""
         if stop_id.isdigit():
-            bus_search = utils.http.get_url(URL_BUS_SEARCH % stop_id,
+            bus_search = utils.http.request(URL_BUS_SEARCH % stop_id,
                 get_params={"app_id": app_id, "app_key": app_key},
                 json=True)
-            bus_stop = bus_search["matches"][0]
-            real_stop_id = bus_stop["id"]
-            stop_name = bus_stop["name"]
+            bus_stop = bus_search.data["matches"][0]
+            real_stop_id = bus_stop.data["id"]
+            stop_name = bus_stop.data["name"]
         else:
-            bus_stop = utils.http.get_url(URL_STOP % stop_id,
+            bus_stop = utils.http.request(URL_STOP % stop_id,
                 get_params={"app_id": app_id, "app_key": app_key},
                 json=True)
             if bus_stop:
                 real_stop_id = stop_id
-                stop_name = bus_stop["commonName"]
+                stop_name = bus_stop.data["commonName"]
 
         if real_stop_id:
-            bus_stop = utils.http.get_url(URL_BUS % real_stop_id,
+            bus_stop = utils.http.request(URL_BUS % real_stop_id,
                 get_params={"app_id": app_id, "app_key": app_key},
                 json=True)
             busses = []
-            for bus in bus_stop:
+            for bus in bus_stop.data:
                 bus_number = bus["lineName"]
                 human_time = self.vehicle_span(bus["expectedArrival"])
                 time_until = self.vehicle_span(bus["expectedArrival"], human=False)
@@ -135,10 +135,10 @@ class Module(ModuleManager.BaseModule):
         app_id = self.bot.config["tfl-api-id"]
         app_key = self.bot.config["tfl-api-key"]
 
-        lines = utils.http.get_url(URL_LINE, get_params={
+        lines = utils.http.request(URL_LINE, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)
         statuses = []
-        for line in lines:
+        for line in lines.data:
             for status in line["lineStatuses"]:
                 entry = {
                         "id": line["id"],
@@ -182,13 +182,13 @@ class Module(ModuleManager.BaseModule):
         #As awful as this is, it also makes it ~work~.
         stop_name = event["args"].replace(" ", "%20")
 
-        stop_search = utils.http.get_url(URL_STOP_SEARCH % stop_name, get_params={
+        stop_search = utils.http.request(URL_STOP_SEARCH % stop_name, get_params={
             "app_id": app_id, "app_key": app_key, "maxResults": "6", "faresOnly": "False"}, json=True)
         if stop_search:
-            for stop in stop_search["matches"]:
+            for stop in stop_search.data["matches"]:
                 pass
-            results = ["%s (%s): %s" % (stop["name"], ", ".join(stop["modes"]), stop["id"]) for stop in stop_search["matches"]]
-            event["stdout"].write("[%s results] %s" % (stop_search["total"], "; ".join(results)))
+            results = ["%s (%s): %s" % (stop["name"], ", ".join(stop["modes"]), stop["id"]) for stop in stop_search.data["matches"]]
+            event["stdout"].write("[%s results] %s" % (stop_search.data["total"], "; ".join(results)))
         else:
             event["stderr"].write("No results")
 
@@ -203,15 +203,15 @@ class Module(ModuleManager.BaseModule):
 
         vehicle_id = event["args_split"][0]
 
-        vehicle = utils.http.get_url(URL_VEHICLE % vehicle_id, get_params={
+        vehicle = utils.http.request(URL_VEHICLE % vehicle_id, get_params={
                 "app_id": app_id, "app_key": app_key}, json=True)[0]
 
-        arrival_time = self.vehicle_span(vehicle["expectedArrival"], human=False)
-        platform = self.platform(vehicle["platformName"])
+        arrival_time = self.vehicle_span(vehicle.data["expectedArrival"], human=False)
+        platform = self.platform(vehicle.data["platformName"])
 
         event["stdout"].write("%s (%s) to %s. %s. Arrival at %s (%s) in %s minutes on %s" % (
-            vehicle["vehicleId"], vehicle["lineName"], vehicle["destinationName"], vehicle["currentLocation"],
-                vehicle["stationName"], vehicle["naptanId"], arrival_time, platform))
+            vehicle.data["vehicleId"], vehicle.data["lineName"], vehicle.data["destinationName"], vehicle.data["currentLocation"],
+                vehicle.data["stationName"], vehicle.data["naptanId"], arrival_time, platform))
 
     @utils.hook("received.command.tflservice", min_args=1)
     def service(self, event):
@@ -233,10 +233,10 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write("%s is too high. Remember that the first arrival is 0" % service_id)
                 return
             service = results[int(service_id)]
-        arrivals = utils.http.get_url(URL_LINE_ARRIVALS % service["route"],
+        arrivals = utils.http.request(URL_LINE_ARRIVALS % service["route"],
             get_params={"app_id": app_id, "app_key": app_key}, json=True)
 
-        arrivals = [a for a in arrivals if a["vehicleId"] == service["id"]]
+        arrivals = [a for a in arrivals.data if a["vehicleId"] == service["id"]]
         arrivals = sorted(arrivals, key=lambda b: b["timeToStation"])
 
         event["stdout"].write(
@@ -257,7 +257,7 @@ class Module(ModuleManager.BaseModule):
 
         stop_id = event["args_split"][0]
 
-        stop = utils.http.get_url(URL_STOP % stop_id, get_params={
+        stop = utils.http.requesst(URL_STOP % stop_id, get_params={
             "app_id": app_id, "app_key": app_key}, json=True)
 
     def route(self, event):
@@ -266,7 +266,7 @@ class Module(ModuleManager.BaseModule):
 
         route_id = event["args_split"][0]
 
-        route = utils.http.get_url(URL_ROUTE % route_id, get_params={
+        route = utils.http.request(URL_ROUTE % route_id, get_params={
             "app_id": app_id, "app_key": app_key}, json=True)
 
         event["stdout"].write("")

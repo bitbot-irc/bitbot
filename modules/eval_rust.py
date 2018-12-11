@@ -30,12 +30,12 @@ class Module(ModuleManager.BaseModule):
         args = API_ARGS.copy()
         args["code"] = FN_TEMPLATE % event["args"]
         try:
-            page = utils.http.get_url(EVAL_URL, json_data=args,
+            page = utils.http.request(EVAL_URL, json_data=args,
                 method="POST", json=True)
         except socket.timeout:
             raise utils.EventError("%s: eval timed out" %
                 event["user"].nickname)
 
-        err_or_out = "stdout" if page["success"] else "stderr"
+        err_or_out = "stdout" if page.data["success"] else "stderr"
         event[err_or_out].write("%s: %s" % (event["user"].nickname,
-            page[err_or_out].strip("\n")))
+            page.data[err_or_out].strip("\n")))

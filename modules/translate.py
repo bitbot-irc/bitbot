@@ -32,11 +32,12 @@ class Module(ModuleManager.BaseModule):
                 target_language = language_match.group(2)
             phrase = phrase.split(" ", 1)[1]
 
-        data = utils.http.get_url(URL_TRANSLATE, get_params={
+        page = utils.http.request(URL_TRANSLATE, get_params={
             "client": "gtx", "sl": source_language,
             "tl": target_language, "dt": "t", "q": phrase})
 
-        if data and not data == "[null,null,\"\"]":
+        if page and not page.data == "[null,null,\"\"]":
+            data = page.data
             while ",," in data:
                 data = data.replace(",,", ",null,")
                 data = data.replace("[,", "[null,")

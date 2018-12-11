@@ -18,12 +18,12 @@ class Module(ModuleManager.BaseModule):
         if match:
             number = int(match.group(1))
             term = term.split(" ", 1)[1]
-        page = utils.http.get_url(URL_URBANDICTIONARY,
+        page = utils.http.request(URL_URBANDICTIONARY,
             get_params={"term": term}, json=True)
         if page:
-            if len(page["list"]):
-                if number > 0 and len(page["list"]) > number-1:
-                    definition = page["list"][number-1]
+            if len(page.data["list"]):
+                if number > 0 and len(page.data["list"]) > number-1:
+                    definition = page.data["list"][number-1]
                     event["stdout"].write("%s: %s" % (definition["word"],
                         definition["definition"].replace("\n", " ").replace(
                         "\r", "").replace("  ", " ")))

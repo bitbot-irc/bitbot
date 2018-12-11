@@ -11,11 +11,10 @@ class Module(ModuleManager.BaseModule):
             hacked databases
         :usage: <username/email>
         """
-        page = utils.http.get_url(URL_HAVEIBEENPWNEDAPI % event["args"],
+        page = utils.http.request(URL_HAVEIBEENPWNEDAPI % event["args"],
             json=True, code=True)
         if page:
-            code, page = page
-            if code == 200:
+            if page.code == 200:
                 event["stdout"].write(
                     "It seems '%s' has been pwned. check on %s." % (event["args"],
                     URL_HAVEIBEENPWNED))

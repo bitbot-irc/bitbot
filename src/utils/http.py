@@ -18,10 +18,18 @@ class HTTPParsingException(HTTPException):
 def throw_timeout():
     raise HTTPTimeoutException()
 
-def get_url(url: str, method: str="GET", get_params: dict={},
+class Response(object):
+    def __init__(self, code: int, data: typing.Any,
+            headers: typing.Dict[str, str]):
+        self.code = code
+        self.data = data
+        self.headers = headers
+
+def request(url: str, method: str="GET", get_params: dict={},
         post_data: typing.Any=None, headers: dict={},
         json_data: typing.Any=None, code: bool=False, json: bool=False,
-        soup: bool=False, parser: str="lxml", fallback_encoding: str="utf8"):
+        soup: bool=False, parser: str="lxml", fallback_encoding: str="utf8",
+        ) -> Response:
 
     if not urllib.parse.urlparse(url).scheme:
         url = "http://%s" % url
@@ -49,23 +57,21 @@ def get_url(url: str, method: str="GET", get_params: dict={},
     finally:
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
+    response_headers = utils.CaseInsensitiveDict(response.headers)
+
     if soup:
         soup = bs4.BeautifulSoup(response_content, parser)
-        if code:
-            return response.status_code, soup
-        return soup
+        return Response(response.status_code, soup, response_heders)
 
     data = response_content.decode(response.encoding or fallback_encoding)
     if json and data:
         try:
-            data = _json.loads(data)
+            return Response(response.status_code, _json.loads(data),
+                response_headers)
         except _json.decoder.JSONDecodeError as e:
             raise HTTPParsingException(str(e))
 
-    if code:
-        return response.status_code, data
-    else:
-        return data
+    return Response(response.status_code, data, response_headers)
 
 def strip_html(s: str) -> str:
     return bs4.BeautifulSoup(s, "lxml").get_text()

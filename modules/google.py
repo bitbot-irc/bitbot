@@ -17,15 +17,15 @@ class Module(ModuleManager.BaseModule):
         """
         phrase = event["args"] or event["target"].buffer.get()
         if phrase:
-            page = utils.http.get_url(URL_GOOGLESEARCH, get_params={
+            page = utils.http.request(URL_GOOGLESEARCH, get_params={
                 "q": phrase, "key": self.bot.config[
                 "google-api-key"], "cx": self.bot.config[
                 "google-search-id"], "prettyPrint": "true",
                 "num": 1, "gl": "gb"}, json=True)
             if page:
-                if "items" in page and len(page["items"]):
+                if "items" in page.data and len(page.data["items"]):
                     event["stdout"].write(
-                        "(%s) %s" % (phrase, page["items"][0]["link"]))
+                        "(%s) %s" % (phrase, page.data["items"][0]["link"]))
                 else:
                     event["stderr"].write("No results found")
             else:
@@ -41,11 +41,11 @@ class Module(ModuleManager.BaseModule):
         """
         phrase = event["args"] or event["target"].buffer.get()
         if phrase:
-            page = utils.http.get_url(URL_GOOGLESUGGEST, get_params={
+            page = utils.http.request(URL_GOOGLESUGGEST, get_params={
                 "output": "json", "client": "hp", "gl": "gb", "q": phrase})
             if page:
                 # google gives us jsonp, so we need to unwrap it.
-                page = page.split("(", 1)[1][:-1]
+                page = page.data.split("(", 1)[1][:-1]
                 page = json.loads(page)
                 suggestions = page[1]
                 suggestions = [utils.http.strip_html(s[0]) for s in suggestions]
