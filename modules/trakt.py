@@ -24,7 +24,7 @@ class Module(ModuleManager.BaseModule):
             "trakt-api-version": "2", "trakt-api-key":
             self.bot.config["trakt-api-key"]}, json=True,
             code=True)
-        if page
+        if page:
             if page.code == 200:
                 type = page.data["type"]
                 if type == "movie":
