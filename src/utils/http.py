@@ -58,7 +58,7 @@ def request(url: str, method: str="GET", get_params: dict={},
     finally:
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
-    response_headers = utils.CaseInsensitiveDict(response.headers)
+    response_headers = utils.CaseInsensitiveDict(dict(response.headers))
 
     if soup:
         soup = bs4.BeautifulSoup(response_content, parser)
