@@ -77,4 +77,8 @@ class Log(object):
     def critical(self, message: str, params: typing.List, **kwargs):
         self._log(message, params, logging.CRITICAL, kwargs)
     def _log(self, message: str, params: typing.List, level: int, kwargs: dict):
+        if kwargs.get("exc_info") == True:
+            # because we're doing the actual logging on another thread,
+            # we need to catch actual exception information here.
+            kwargs["exc_info"] = sys.exc_info()
         self._queue.put((message, params, level, kwargs))
