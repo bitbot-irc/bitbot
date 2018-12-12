@@ -28,9 +28,9 @@ class Module(ModuleManager.BaseModule):
         snippet = self.get_video_page(video_id, "snippet")
         if snippet.data["items"]:
             snippet = snippet.data["items"][0]["snippet"]
-            statistics = self.get_video_page(video_id, "statistics")[
+            statistics = self.get_video_page(video_id, "statistics").data[
                 "items"][0]["statistics"]
-            content = self.get_video_page(video_id, "contentDetails")[
+            content = self.get_video_page(video_id, "contentDetails").data[
                 "items"][0]["contentDetails"]
             video_uploader = snippet["channelTitle"]
             video_title = snippet["title"]
