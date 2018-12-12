@@ -14,7 +14,7 @@ class Module(ModuleManager.BaseModule):
         :help: Evauate a given string on Wolfram|Alpha
         :usage: <query>
         """
-        page = utils.http.requestl(URL_WA,
+        page = utils.http.request(URL_WA,
             get_params={"i": event["args"],
             "appid": self.bot.config["wolframalpha-api-key"],
             "reinterpret": "true", "units": "metric"}, code=True)
