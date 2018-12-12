@@ -164,7 +164,7 @@ def _color_tokens(s: str) -> typing.List[str]:
                 current_color = background if is_background else foreground
                 if current_color:
                     next_color = int(current_color + char)
-                    can_add = next_color <= 15 or next_color = 99
+                    can_add = next_color <= 15 or next_color == 99
 
             if can_add:
                 if is_background:
