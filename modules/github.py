@@ -105,9 +105,12 @@ class Module(ModuleManager.BaseModule):
         return ""
 
     def _short_url(self, url):
-        page = utils.http.request("https://git.io", method="POST",
-            post_data={"url": url})
-        return page.headers["Location"]
+        try:
+            page = utils.http.request("https://git.io", method="POST",
+                post_data={"url": url})
+            return page.headers["Location"]
+        except utils.http.HTTPTimeoutException:
+            return url
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
