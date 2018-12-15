@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
 
         phrase = event["args"] or event["target"].buffer.get()
         if phrase:
-            safe_setting = event["channel"].get_setting("google-safesearch",
+            safe_setting = event["target"].get_setting("google-safesearch",
                 True)
             safe = "active" if safe_setting else "off"
 
