@@ -61,7 +61,7 @@ class Module(ModuleManager.BaseModule):
                     raise utils.EventError("Try again in a couple of seconds")
 
                 event["stdout"].write("Random Word: %s - Definition: %s" % (
-                    page["word"], definition["text"]))
+                    page.data["word"], definition["text"]))
             else:
                 raise utils.EventsResultsError()
         else:
