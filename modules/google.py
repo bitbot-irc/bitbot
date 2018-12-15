@@ -7,6 +7,9 @@ from src import ModuleManager, utils
 URL_GOOGLESEARCH = "https://www.googleapis.com/customsearch/v1"
 URL_GOOGLESUGGEST = "http://google.com/complete/search"
 
+@utils.export("channelset", {"setting": "google-safesearch",
+    "help": "Turn safe search off/on",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.g", alias_of="google")
     @utils.hook("received.command.google")
@@ -15,13 +18,18 @@ class Module(ModuleManager.BaseModule):
         :help: Get first Google result for a given search term
         :usage: [search term]
         """
+
         phrase = event["args"] or event["target"].buffer.get()
         if phrase:
+            safe_setting = event["channel"].get_setting("google-safesearch",
+                True)
+            safe = "active" if safe_setting else "off"
+
             page = utils.http.request(URL_GOOGLESEARCH, get_params={
                 "q": phrase, "key": self.bot.config[
                 "google-api-key"], "cx": self.bot.config[
                 "google-search-id"], "prettyPrint": "true",
-                "num": 1, "gl": "gb"}, json=True)
+                "num": 1, "gl": "gb", "safe": safe}, json=True)
             if page:
                 if "items" in page.data and len(page.data["items"]):
                     event["stdout"].write(
