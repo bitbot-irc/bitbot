@@ -16,6 +16,9 @@ class Module(ModuleManager.BaseModule):
             "bighugethesaurus-api-key"], phrase), json=True)
         syn_ant = event["command"][:3]
         if page:
+            if page.code == 404:
+                raise utils.EventError("Word not found")
+
             if not len(event["args_split"]) > 1:
                 word_types = []
                 for word_type in page.data.keys():
