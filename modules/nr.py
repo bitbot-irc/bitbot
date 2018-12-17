@@ -238,11 +238,12 @@ class Module(ModuleManager.BaseModule):
             summary_query = utils.http.request("%s/json/summaries/%s?uids=%s" % (eagle_url, now.date().isoformat(), "%20".join([a["uid"] for a in trains])), json=True, headers={"x-eagle-key": self.bot.config["eagle-api-key"]})
             if summary_query:
                 for t in trains:
-                    summary = summary_query.data[t["uid"]]
-                    t.update(summary)
-                    summary_plat = summary.get("platforms", {}).get(query["crs"])
-                    if summary_plat and t["platform"]=="?":
-                        t["platform"], t["platform_prefix"] = summary_plat, "s"
+                    summary = summary_query.data.get(t["uid"])
+                    if summary:
+                        t.update(summary)
+                        summary_plat = summary.get("platforms", {}).get(query["crs"])
+                        if summary_plat and t["platform"]=="?":
+                            t["platform"], t["platform_prefix"] = summary_plat, "s"
 
         for t in trains:
             t["dest_summary"] = "/".join(["%s%s" %(a["code"]*filter["crs"] or a["name"], " " + a["via"]
