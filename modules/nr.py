@@ -142,7 +142,7 @@ class Module(ModuleManager.BaseModule):
             "time": ("", lambda x: len(x)==4 and x.isdigit()),
             "date": ("", lambda x: len(x)==10),
             "tops": (None, lambda x: len(x)<4 and x.isdigit()),
-            "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST", "D", "E"], lambda x: x.upper()),
+            "power": (None, lambda x: x.upper() in ["EMU", "DMU", "HST", "D", "E", "DEM"], lambda x: x.upper()),
             "crs": (False, lambda x: type(x)==type(True)),
             "st": (False, lambda x: type(x)==type(True))
             })
@@ -351,7 +351,7 @@ class Module(ModuleManager.BaseModule):
             if schedule:
                 sources.append("Eagle/SCHEDULE")
                 if not query: query = {"trainid": schedule["signalling_id"] or "0000", "operator": schedule["operator_name"] or schedule["atoc_code"]}
-                stype = "%s %s" % (schedule_query["tops_inferred"], schedule["power_type"]) if schedule_query["tops_inferred"] else schedule["power_type"]
+                stype = "%s %s" % (schedule_query.data["tops_inferred"], schedule["power_type"]) if schedule_query.data["tops_inferred"] else schedule["power_type"]
                 for k,v in {
                     "operatorCode": schedule["atoc_code"],
                     "serviceType": stype if stype else SCHEDULE_STATUS[schedule["status"]],
