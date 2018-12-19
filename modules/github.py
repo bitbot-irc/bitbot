@@ -215,10 +215,10 @@ class Module(ModuleManager.BaseModule):
     def pull_request_review_comment(self, event, full_name, data):
         action = data["action"]
         pr_title = data["pull_request"]["title"]
-        commenter = data["comment"]["user"]["login"]
+        sender = data["sender"]["login"]
         url = self._short_url(data["comment"]["html_url"])
         return ["[pr] %s %s on a review: %s - %s" %
-            (commenter, COMMENT_ACTIONS[action], pr_title, url)]
+            (sender, COMMENT_ACTIONS[action], pr_title, url)]
 
     def issues(self, event, full_name, data):
         action = data["action"]
