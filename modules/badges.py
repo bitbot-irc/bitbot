@@ -69,7 +69,7 @@ class Module(ModuleManager.BaseModule):
         if found_badge:
             del badges[found_badge]
             self._set_badges(event["user"], badges)
-            event["stdout"].write("Removed '%s' badge" % badge)
+            event["stdout"].write("Removed '%s' badge" % found_badge)
         else:
             event["stderr"].write("You have no '%s' badge" % badge)
 
@@ -88,7 +88,7 @@ class Module(ModuleManager.BaseModule):
         if found_badge:
             badges[found_badge] = self._format_datetime(self._now())
             self._set_badges(event["user"], badges)
-            event["stdout"].write("Reset badge '%s'" % badge)
+            event["stdout"].write("Reset badge '%s'" % found_badge)
         else:
             event["stderr"].write("You have no '%s' badge" % badge)
 
@@ -120,4 +120,4 @@ class Module(ModuleManager.BaseModule):
 
         badges[found_badge] = self._format_datetime(value)
         self._set_badges(event["user"], badges)
-        event["stdout"].write("Updated '%s' badge" % badge)
+        event["stdout"].write("Updated '%s' badge" % found_badge)
