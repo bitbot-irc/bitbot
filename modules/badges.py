@@ -55,6 +55,7 @@ class Module(ModuleManager.BaseModule):
         self._set_badges(event["user"], badges)
         event["stdout"].write("Added '%s' badge" % badge)
 
+    @utils.hook("received.command.removebadge", min_args=1)
     def remove_badge(self, event):
         badge = event["args"]
         badge_lower = badge.lower()
