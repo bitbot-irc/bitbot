@@ -9,7 +9,7 @@ class Module(ModuleManager.BaseModule):
     def _del_timer(self, user):
         user.del_setting("timer")
 
-    @utils.hook("recevied.command.starttimer")
+    @utils.hook("received.command.starttimer")
     def start_timer(self, event):
         if self._get_timer(event["user"]):
             raise utils.EventError("You already have a timer")
