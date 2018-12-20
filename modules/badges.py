@@ -1,6 +1,8 @@
-import datetime
+import datetime, re
 from src import ModuleManager, utils
 
+RE_HUMAN_FORMAT = re.compile(r"(\d\d\d\d)-(\d?\d)-(\d?\d)")
+HUMAN_FORMAT_HELP = "year-month-day (e.g. 2018-12-29)"
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 class Module(ModuleManager.BaseModule):
@@ -87,3 +89,29 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Reset badge '%s'" % badge)
         else:
             event["stderr"].write("You have no '%s' badge" % badge)
+
+    @utils.hook("received.command.updatebadge", min_args=2)
+    def update_badge(self, event):
+        badge = " ".join(event["args_split"][:-1])
+        badge_lower = badge.lower()
+        badges = self._get_badges(event["user"])
+
+        found_badge = None
+        for badge_name in badges.keys():
+            if badge_name.lower() == badge_lower:
+                found_badge = badge_name
+                break
+
+        value = event["args_split"][-1]
+        if value.lower() == "today":
+            value = self._now()
+        else:
+            match = RE_HUMAN_FORMAT.match(value)
+            if not match:
+                raise utils.EventError("Invalid date format, please use %s" %
+                    HUMAN_FORMAT_HELP)
+            value = datetime.datetime(
+                year=match.group(1), month=match.group(2), day=match.group(3))
+
+        badges[found_badge] = self._format_datetime(value)
+        self._set_badges(event["user"], badges)
