@@ -26,6 +26,27 @@ class Module(ModuleManager.BaseModule):
     def _day_str(self, count: int):
         return "day" + ("" if count == 1 else "s")
 
+    @utils.hook("received.command.badge", min_args=1)
+    def badge(self, event):
+        badge = event["args"]
+        badge_lower = badge.lower()
+        badges = self._get_badges(event["user"])
+
+        found_badge = None
+        for badge_name in badges.keys():
+            if badge_name.lower() == badge_lower:
+                found_badge = badge_name
+                break
+
+        if found_badge:
+            days_since = self._days_since(now,
+                self._parse_datetime(badges[found_badge]))
+            event["stdout"].write("(%s) %s: %s %s" % (
+                event["user"].nickname, found_Badge, days_since,
+                self._day_str(days_since)))
+        else:
+            event["stderr"].write("You have no '%s' badge" % badge)
+
     @utils.hook("received.command.badges")
     def badges(self, event):
         user = event["user"]
