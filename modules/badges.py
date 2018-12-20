@@ -44,7 +44,7 @@ class Module(ModuleManager.BaseModule):
             days_since = self._days_since(now,
                 self._parse_datetime(badges[found_badge]))
             event["stdout"].write("(%s) %s: %s %s" % (
-                event["user"].nickname, found_Badge, days_since,
+                event["user"].nickname, found_badge, days_since,
                 self._day_str(days_since)))
         else:
             event["stderr"].write("You have no '%s' badge" % badge)
