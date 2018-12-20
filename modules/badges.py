@@ -119,4 +119,4 @@ class Module(ModuleManager.BaseModule):
 
         badges[found_badge] = self._format_datetime(value)
         self._set_badges(event["user"], badges)
-        event["stdout"].write("Updated '%s' badge")
+        event["stdout"].write("Updated '%s' badge" % badge)
