@@ -127,6 +127,9 @@ class Module(ModuleManager.BaseModule):
                 found_badge = badge_name
                 break
 
+        if not found_badge:
+            raise utils.EventError("You have no '%s' badge" % badge)
+
         value = event["args_split"][-1]
         if value.lower() == "today":
             value = self._now()
