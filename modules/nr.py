@@ -487,10 +487,9 @@ class Module(ModuleManager.BaseModule):
                 "\n".join([s["summary_external"] for s in stations_filtered])
                 ))
         else:
-            event["stdout"].write("%s%s %s %s (%s/%s/%s): %s" % (disruptions, query["operatorCode"],
+            event["stdout"].write("%s%s %s %s (%s/%s): %s" % (disruptions, query["operatorCode"],
                 query["trainid"], query["serviceType"],
-                utils.irc.color(done_count, utils.consts.LIGHTBLUE),
-                len(stations_filtered), total_count,
+                done_count, total_count,
                 ", ".join([s["summary"] for s in stations_filtered])))
 
     @utils.hook("received.command.nrhead", min_args=1)
