@@ -11,6 +11,8 @@ class Module(ModuleManager.BaseModule):
     def _parse_datetime(self, dt: str):
         return datetime.datetime.strptime(dt, DATETIME_FORMAT)
 
+    def _round_up_day(self, dt: datetime.datetime):
+        return dt.date()+datetime.timedelta(days=1)
     def _days_since(self, now: datetime.datetime, dt: datetime.datetime):
         return (now.date()-dt.date()).days
 
@@ -25,7 +27,7 @@ class Module(ModuleManager.BaseModule):
         if event["args"]:
             user = event["server"].get_user(event["args_split"][0])
 
-        now = self._now()
+        now = self._round_up_day(self._now())
         badges = []
         for badge, date in self._get_badges(user).items():
             days_since = self._days_since(now, self._parse_datetime(date))
