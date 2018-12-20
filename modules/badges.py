@@ -27,7 +27,7 @@ class Module(ModuleManager.BaseModule):
 
         now = self._now()
         badges = []
-        for badge, date in self._get_badges(user):
+        for badge, date in self._get_badges(user).items():
             days_since = self._days_since(now, self._parse_datettime(date))
             badges.append("%s: %s" % (badge, days_since))
 
