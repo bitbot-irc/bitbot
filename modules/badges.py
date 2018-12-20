@@ -13,8 +13,8 @@ class Module(ModuleManager.BaseModule):
 
     def _round_up_day(self, dt: datetime.datetime):
         return dt.date()+datetime.timedelta(days=1)
-    def _days_since(self, now: datetime.datetime, dt: datetime.datetime):
-        return (now.date()-dt.date()).days
+    def _days_since(self, now: datetime.date, dt: datetime.datetime):
+        return (now-dt.date()).days
 
     def _get_badges(self, user):
         return user.get_setting("badges", {})
