@@ -32,6 +32,8 @@ class Module(ModuleManager.BaseModule):
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
 
+        now = self._round_up_day(self._now())
+
         found_badge = None
         for badge_name in badges.keys():
             if badge_name.lower() == badge_lower:
