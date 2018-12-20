@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
         for badge_name in badges.keys():
             if badge_name.lower() == badge_lower:
                 raise utils.EventError("You already have a '%s' badge" % badge)
-        badges[badge] = self._now()
+        badges[badge] = self._format_datetime(self._now())
         self._set_badges(event["user"], badges)
         event["stdout"].write("Added '%s' badge" % badge)
 
