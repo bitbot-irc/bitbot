@@ -72,7 +72,8 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("You have no '%s' badge" % badge)
 
-    def resetbadge(self, event):
+    @utils.hook("received.command.resetbadge", min_args=1)
+    def reset_badge(self, event):
         badge = event["args"]
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
@@ -84,7 +85,7 @@ class Module(ModuleManager.BaseModule):
                 break
 
         if found_badge:
-            badges[found_badge] = self._now()
+            badges[found_badge] = self._format_datetime(self._now())
             self._set_badges(event["user"], badges)
             event["stdout"].write("Reset badge '%s'" % badge)
         else:
