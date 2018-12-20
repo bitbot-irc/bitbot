@@ -12,7 +12,7 @@ class Module(ModuleManager.BaseModule):
         return datetime.datetime.strptime(dt, DATETIME_FORMAT)
 
     def _days_since(self, now: datetime.datetime, dt: datetime.datetime):
-        return (now-dt).days
+        return (now.date()-dt.date()).days
 
     def _get_badges(self, user):
         return user.get_setting("badges", {})
