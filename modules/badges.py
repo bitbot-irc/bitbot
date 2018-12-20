@@ -112,7 +112,10 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Invalid date format, please use %s" %
                     HUMAN_FORMAT_HELP)
             value = datetime.datetime(
-                year=match.group(1), month=match.group(2), day=match.group(3))
+                year=int(match.group(1)),
+                month=int(match.group(2)),
+                day=int(match.group(3))
+            )
 
         badges[found_badge] = self._format_datetime(value)
         self._set_badges(event["user"], badges)
