@@ -5,7 +5,7 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 class Module(ModuleManager.BaseModule):
     def _now(self):
-        return datetime.datetime.isonow()
+        return datetime.datetime.utcnow()
     def _format_datetime(self, dt: datetime.datetime):
         return datetime.datetime.strftime(dt, DATETIME_FORMAT)
     def _parse_datetime(self, dt: str):
