@@ -54,6 +54,7 @@ QUOTES = {
     "He had to download the entire iOS system on his computer, he had to decrypt it, he had to do all of these things I don't even understand" : "Glenn Moramarco, as assistant U.S. attorney",
     "I don’t need to understand how encryption works" : "Amber Rudd",
     "Life's but a walking shadow, a poor player that struts and frets his hour upon the stage and then is heard no more. It is a tale told by an idiot, full of sound and fury, signifying nothing" : "",
+    "We're getting there" : "",
 }
 
 class Module(ModuleManager.BaseModule):
