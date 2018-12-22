@@ -29,6 +29,10 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.badge", min_args=1)
     def badge(self, event):
+        """
+        :help: Show a badge
+        :usage: <badge>
+        """
         badge = event["args"]
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
@@ -52,6 +56,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.badges")
     def badges(self, event):
+        """
+        :help: Show all badges for you or a given user
+        """
         user = event["user"]
         if event["args"]:
             user = event["server"].get_user(event["args_split"][0])
@@ -68,6 +75,10 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.addbadge", min_args=1)
     def add_badge(self, event):
+        """
+        :help: Add a badge with today's date
+        :usage: <badge>
+        """
         badge = event["args"]
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
@@ -81,6 +92,10 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.removebadge", min_args=1)
     def remove_badge(self, event):
+        """
+        :help: Remove a badge
+        :usage: <badge>
+        """
         badge = event["args"]
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
@@ -99,6 +114,10 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.resetbadge", min_args=1)
     def reset_badge(self, event):
+        """
+        :help: Reset a badge to today's date
+        :usage: <badge>
+        """
         badge = event["args"]
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
@@ -118,6 +137,10 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.updatebadge", min_args=2)
     def update_badge(self, event):
+        """
+        :help: Change the date of a badge
+        :usage: <badge> today|<date>
+        """
         badge = " ".join(event["args_split"][:-1])
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
