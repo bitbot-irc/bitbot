@@ -135,7 +135,7 @@ class Module(ModuleManager.BaseModule):
     def update_badge(self, event):
         """
         :help: Change the date of a badge
-        :usage: <badge> today|<date>
+        :usage: <badge> today|<yyyy-mm-dd>
         """
         badge = " ".join(event["args_split"][:-1])
         badge_lower = badge.lower()
