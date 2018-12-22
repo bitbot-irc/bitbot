@@ -405,5 +405,5 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("No '%s' alias" % alias)
 
         del aliases[alias]
-        self._set_aliases(event["server"], aliase)
+        self._set_aliases(event["server"], aliases)
         event["stdout"].write("Removed '%s' alias" % alias)
