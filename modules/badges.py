@@ -173,7 +173,7 @@ class Module(ModuleManager.BaseModule):
         :help: Add or update a badge
         :usage: <badge> today|<yyyy-mm-dd>
         """
-        badge == " ".join(event["args_split"][:-1])
+        badge = " ".join(event["args_split"][:-1])
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
 
