@@ -390,3 +390,20 @@ class Module(ModuleManager.BaseModule):
         aliases[alias] = command
         self._set_aliases(event["server"], aliases)
         event["stdout"].write("Added '%s' alias" % alias)
+
+    @utils.hook("received.command.removealias", min_args=1)
+    def remove_alias(self, event):
+        """
+        :help: Remove a command alias
+        :usage: <alias>
+        :permission: command-alias
+        """
+        alias = event["args_split"][0].lower()
+        aliases = self._get_aliases(event["server"])
+
+        if not alias in aliases:
+            raise utils.EventError("No '%s' alias" % alias)
+
+        del aliases[alias]
+        self._set_aliases(event["server"], aliase)
+        event["stdout"].write("Removed '%s' alias" % alias)
