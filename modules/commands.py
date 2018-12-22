@@ -10,6 +10,7 @@ COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 OUT_CUTOFF = 400
 
 REGEX_CUTOFF = re.compile(r"^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
+REGEX_ARG_NUMBER = re.compile(r"\$(\d+)")
 
 class Out(object):
     def __init__(self, server, module_name, target, msgid):
@@ -119,7 +120,24 @@ class Module(ModuleManager.BaseModule):
             s = s[:-1]
         return server.is_own_nickname(s)
 
+    def _get_aliases(self, server):
+        return server.get_setting("command-aliases", {})
+    def _set_aliases(self, server, aliases):
+        server.set_setting("command-aliases", aliases)
+
     def message(self, event, command, args_index=1):
+        args_split = event["message_split"][args_index:]
+        if not self.has_command(command):
+            aliases = self._get_aliases(event["server"])
+            if command.lower() in aliases:
+                command, new_args = aliases[command.lower()].partition(" ")
+                for match in REGEX_ARG_NUMBER.finditer(new_args):
+                    index = int(match.group(1))
+                    if index >= len(args_split):
+                        return
+                    new_args = new_args.replace(match.group(0),
+                        args_split[index])
+
         if self.has_command(command):
             ignore = event["user"].get_setting("ignore", False)
             if ignore:
@@ -133,8 +151,8 @@ class Module(ModuleManager.BaseModule):
                 else:
                     raise ValueError("'%s' is an alias of unknown command '%s'"
                         % (command.lower(), alias_of.lower()))
-            is_channel = False
 
+            is_channel = False
             if "channel" in event:
                 target = event["channel"]
                 is_channel = True
@@ -167,7 +185,6 @@ class Module(ModuleManager.BaseModule):
                     target.buffer.skip_next()
                     return
 
-            args_split = event["message_split"][args_index:]
             if hook.kwargs.get("remove_empty", True):
                 args_split = list(filter(None, args_split))
 
@@ -358,3 +375,17 @@ class Module(ModuleManager.BaseModule):
         stderr.write(event["message"]).send()
         if stderr.has_text():
             event["target"].last_stderr = stderr
+
+    @utils.hook("received.command.alias", min_args=2)
+    def add_alias(self, event):
+        """
+        :help: Add a command alias
+        :usage: <alias> <command> <args...>
+        :permission: command-alias
+        """
+        alias = event["args_split"][0].lower()
+        command = " ".join(event["args_split"][1:])
+        aliases = self._get_aliases(event["server"])
+        aliases[alias] = command
+        self._set_aliases(event["server"], aliases)
+        event["stdout"].write("Added '%s' alias" % alias)
