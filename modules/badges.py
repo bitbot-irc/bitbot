@@ -22,6 +22,12 @@ class Module(ModuleManager.BaseModule):
     def _days_since(self, now: datetime.date, dt: datetime.datetime):
         return (now-dt.date()).days
 
+    def _find_badge(self, badges, badge):
+        badge_lower = badge.lower()
+        for badge_name in badges.keys():
+            if badge_name.lower() == badge_lower:
+                return badge_name
+
     def _get_badges(self, user):
         return user.get_setting("badges", {})
     def _set_badges(self, user, badges):
@@ -39,11 +45,7 @@ class Module(ModuleManager.BaseModule):
 
         now = self._round_up_day(self._now())
 
-        found_badge = None
-        for badge_name in badges.keys():
-            if badge_name.lower() == badge_lower:
-                found_badge = badge_name
-                break
+        found_badge = self._find_badge(badges, badge)
 
         if found_badge:
             dt = self._parse_datetime(badges[found_badge])
@@ -86,6 +88,7 @@ class Module(ModuleManager.BaseModule):
         for badge_name in badges.keys():
             if badge_name.lower() == badge_lower:
                 raise utils.EventError("You already have a '%s' badge" % badge)
+
         badges[badge] = self._format_datetime(self._now())
         self._set_badges(event["user"], badges)
         event["stdout"].write("Added '%s' badge" % badge)
@@ -100,11 +103,8 @@ class Module(ModuleManager.BaseModule):
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
 
-        found_badge = None
-        for badge_name in badges.keys():
-            if badge_name.lower() == badge_lower:
-                found_badge = badge_name
-                break
+        found_badge = self._find_badge(badges, badge)
+
         if found_badge:
             del badges[found_badge]
             self._set_badges(event["user"], badges)
@@ -122,11 +122,7 @@ class Module(ModuleManager.BaseModule):
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
 
-        found_badge = None
-        for badge_name in badges.keys():
-            if badge_name.lower() == badge_lower:
-                found_badge = badge_name
-                break
+        found_badge = self._find_badge(badges, badge)
 
         if found_badge:
             badges[found_badge] = self._format_datetime(self._now())
@@ -145,11 +141,7 @@ class Module(ModuleManager.BaseModule):
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
 
-        found_badge = None
-        for badge_name in badges.keys():
-            if badge_name.lower() == badge_lower:
-                found_badge = badge_name
-                break
+        found_badge = self._find_badge(badges, badge)
 
         if not found_badge:
             raise utils.EventError("You have no '%s' badge" % badge)
