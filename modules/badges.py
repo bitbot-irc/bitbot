@@ -4,6 +4,7 @@ from src import ModuleManager, utils
 RE_HUMAN_FORMAT = re.compile(r"(\d\d\d\d)-(\d?\d)-(\d?\d)")
 HUMAN_FORMAT_HELP = "year-month-day (e.g. 2018-12-29)"
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+DATE_FORMAT = "%Y-%m-%d"
 
 class Module(ModuleManager.BaseModule):
     def _now(self):
@@ -12,6 +13,9 @@ class Module(ModuleManager.BaseModule):
         return datetime.datetime.strftime(dt, DATETIME_FORMAT)
     def _parse_datetime(self, dt: str):
         return datetime.datetime.strptime(dt, DATETIME_FORMAT)
+
+    def _date_str(self, dt: datetime.datetime):
+        return datetime.datetime.strftime(dt, DATE_FORMAT)
 
     def _round_up_day(self, dt: datetime.datetime):
         return dt.date()+datetime.timedelta(days=1)
@@ -38,10 +42,11 @@ class Module(ModuleManager.BaseModule):
                 break
 
         if found_badge:
-            days_since = self._days_since(now,
-                self._parse_datetime(badges[found_badge]))
-            event["stdout"].write("(%s) %s on day %s" % (
-                event["user"].nickname, found_badge, days_since))
+            dt = self._parse_datetime(badges[found_badge])
+            days_since = self._days_since(now, dt)
+            event["stdout"].write("(%s) %s on day %s (%s)" % (
+                event["user"].nickname, found_badge, days_since,
+                self._date_str(dt)))
         else:
             event["stderr"].write("You have no '%s' badge" % badge)
 
