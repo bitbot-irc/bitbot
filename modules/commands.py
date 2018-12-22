@@ -137,6 +137,7 @@ class Module(ModuleManager.BaseModule):
                         return
                     new_args = new_args.replace(match.group(0),
                         args_split[index])
+                args_split = new_args.split(" ")
 
         if self.has_command(command):
             ignore = event["user"].get_setting("ignore", False)
