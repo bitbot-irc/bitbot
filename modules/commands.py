@@ -130,7 +130,7 @@ class Module(ModuleManager.BaseModule):
         if not self.has_command(command):
             aliases = self._get_aliases(event["server"])
             if command.lower() in aliases:
-                command, new_args = aliases[command.lower()].partition(" ")
+                command, _, new_args = aliases[command.lower()].partition(" ")
                 for match in REGEX_ARG_NUMBER.finditer(new_args):
                     index = int(match.group(1))
                     if index >= len(args_split):
