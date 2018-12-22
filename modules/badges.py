@@ -14,6 +14,20 @@ class Module(ModuleManager.BaseModule):
     def _parse_datetime(self, dt: str):
         return datetime.datetime.strptime(dt, DATETIME_FORMAT)
 
+    def _parse_date(self, dt: str):
+        if value.lower() == "today":
+            return self._now()
+        else:
+            match = RE_HUMAN_FORMAT.match(value)
+            if not match:
+                raise utils.EventError("Invalid date format, please use %s" %
+                    HUMAN_FORMAT_HELP)
+            return datetime.datetime(
+                year=int(match.group(1)),
+                month=int(match.group(2)),
+                day=int(match.group(3))
+            )
+
     def _date_str(self, dt: datetime.datetime):
         return datetime.datetime.strftime(dt, DATE_FORMAT)
 
@@ -146,20 +160,29 @@ class Module(ModuleManager.BaseModule):
         if not found_badge:
             raise utils.EventError("You have no '%s' badge" % badge)
 
-        value = event["args_split"][-1]
-        if value.lower() == "today":
-            value = self._now()
-        else:
-            match = RE_HUMAN_FORMAT.match(value)
-            if not match:
-                raise utils.EventError("Invalid date format, please use %s" %
-                    HUMAN_FORMAT_HELP)
-            value = datetime.datetime(
-                year=int(match.group(1)),
-                month=int(match.group(2)),
-                day=int(match.group(3))
-            )
+        dt = self._parse_date(event["args_split"][-1])
 
-        badges[found_badge] = self._format_datetime(value)
+        badges[found_badge] = self._format_datetime(dt)
         self._set_badges(event["user"], badges)
-        event["stdout"].write("Updated '%s' badge" % found_badge)
+        event["stdout"].write("Updated '%s' badge to %s" % (
+            found_badge, self._date_str(dt)))
+
+    @utils.hook("received.command.upsertbadge", min_args=2)
+    def upsert_badge(self, event):
+        """
+        :help: Add or update a badge
+        :usage: <badge> today|<yyyy-mm-dd>
+        """
+        badge == " ".join(event["args_split"][:-1])
+        badge_lower = badge.lower()
+        badges = self._get_badges(event["user"])
+
+        found_badge = self._find_badge(badges, badge)
+        dt = self._parse_date(event["args_split"][-1])
+
+        badges[found_badge or badge] = self._format_datetime(dt)
+        self._set_badges(event["user"], badges)
+
+        add_or_update = "Added" if not found_badge else "Updated"
+        event["stdout"].write("%s '%s' badge to %s" % (
+            add_or_update, badge, self._date_str(dt)))
