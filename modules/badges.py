@@ -15,10 +15,10 @@ class Module(ModuleManager.BaseModule):
         return datetime.datetime.strptime(dt, DATETIME_FORMAT)
 
     def _parse_date(self, dt: str):
-        if value.lower() == "today":
+        if dt.lower() == "today":
             return self._now()
         else:
-            match = RE_HUMAN_FORMAT.match(value)
+            match = RE_HUMAN_FORMAT.match(dt)
             if not match:
                 raise utils.EventError("Invalid date format, please use %s" %
                     HUMAN_FORMAT_HELP)
