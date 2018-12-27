@@ -3,7 +3,7 @@
 #--require-config twitter-access-token
 #--require-config twitter-access-secret
 
-import datetime, re, time, traceback
+import datetime, html, re, time, traceback
 import twitter
 from src import ModuleManager, utils
 
@@ -79,11 +79,12 @@ class Module(ModuleManager.BaseModule):
                     event["stdout"].write(
                         "(@%s (%s) retweeted %s (%s)) %s%s" % (
                         username, retweet_timestamp, original_username,
-                        original_timestamp, original_text, short_url))
+                        original_timestamp, html.unescape(original_text),
+                        short_url))
                 else:
                     event["stdout"].write("(@%s, %s) %s%s" % (username,
                         self.make_timestamp(tweet["created_at"]),
-                        tweet["text"], short_url))
+                        html.unescape(tweet["text"]), short_url))
             else:
                 event["stderr"].write("Invalid tweet identifiers provided")
         else:
