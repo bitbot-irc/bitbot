@@ -1,7 +1,7 @@
-# --require-config twitter-api-key
-# --require-config twitter-api-secret
-# --require-config twitter-access-token
-# --require-config twitter-access-secret
+#--require-config twitter-api-key
+#--require-config twitter-api-secret
+#--require-config twitter-access-token
+#--require-config twitter-access-secret
 
 import datetime, re, time, traceback
 import twitter
