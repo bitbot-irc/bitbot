@@ -246,7 +246,7 @@ class Module(ModuleManager.BaseModule):
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = self._short_url(data["comment"]["html_url"])
         return ["[%s #%d] %s %s on: %s - %s" %
-            (number, type, commenter, COMMENT_ACTIONS[action], issue_title,
+            (type, number, commenter, COMMENT_ACTIONS[action], issue_title,
             url)]
 
     def create(self, event, full_name, data):
