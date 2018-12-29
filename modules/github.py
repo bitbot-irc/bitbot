@@ -174,6 +174,7 @@ class Module(ModuleManager.BaseModule):
         return ["[commit/%s] %s commented" % (commit, commenter, action)]
 
     def pull_request(self, event, full_name, data):
+        number = data["pull_request"]["number"]
         action = data["action"]
         action_desc = action
         branch = data["pull_request"]["base"]["ref"]
@@ -199,28 +200,32 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["pull_request"]["html_url"])
-        return ["[pr] %s %s: %s - %s" % (author, action_desc, pr_title, url)]
+        return ["[pr #%d] %s %s: %s - %s" % (
+            number, author, action_desc, pr_title, url)]
 
     def pull_request_review(self, event, full_name, data):
         if data["review"]["state"] == "commented":
             return []
 
+        number = data["pull_request"]["number"]
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["review"]["html_url"])
-        return ["[pr] %s %s a review on: %s - %s" % (reviewer, action, pr_title,
-            url)]
+        return ["[pr #%d] %s %s a review on: %s - %s" % (
+            number, reviewer, action, pr_title, url)]
 
     def pull_request_review_comment(self, event, full_name, data):
+        number = data["pull_request"]["number"]
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         sender = data["sender"]["login"]
         url = self._short_url(data["comment"]["html_url"])
-        return ["[pr] %s %s on a review: %s - %s" %
-            (sender, COMMENT_ACTIONS[action], pr_title, url)]
+        return ["[pr #%d] %s %s on a review: %s - %s" %
+            (number, sender, COMMENT_ACTIONS[action], pr_title, url)]
 
     def issues(self, event, full_name, data):
+        number = data["issue"]["number"]
         action = data["action"]
         action_desc = action
         if action == "labeled":
@@ -231,16 +236,17 @@ class Module(ModuleManager.BaseModule):
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["issue"]["html_url"])
-        return ["[issue] %s %s: %s - %s" %
-            (author, action_desc, issue_title, url)]
+        return ["[issue #%d] %s %s: %s - %s" %
+            (number, author, action_desc, issue_title, url)]
     def issue_comment(self, event, full_name, data):
+        number = data["issue"]["number"]
         action = data["action"]
         issue_title = data["issue"]["title"]
         type = "pr" if "pull_request" in data["issue"] else "issue"
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[%s] %s %s on: %s - %s" %
-            (type, commenter, COMMENT_ACTIONS[action], issue_title,
+        return ["[%s #%d] %s %s on: %s - %s" %
+            (number, type, commenter, COMMENT_ACTIONS[action], issue_title,
             url)]
 
     def create(self, event, full_name, data):
