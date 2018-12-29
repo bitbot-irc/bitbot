@@ -251,9 +251,10 @@ class Module(ModuleManager.BaseModule):
         usage = hook.get_kwarg("usage", None)
         if not usage:
             usages = hook.docstring.var_items.get("usage", None)
-            if usages:
-                return " | ".join(
-                    "%s %s" % (command, usage) for usage in usages)
+
+        if usages:
+            return " | ".join(
+                "%s %s" % (command, usage) for usage in usages)
         return usage
 
     def _get_prefix(self, hook):
