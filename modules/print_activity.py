@@ -1,6 +1,8 @@
 import datetime
 from src import EventManager, ModuleManager, utils
 
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
 class Module(ModuleManager.BaseModule):
     def print_line(self, event, line, channel=None):
         timestamp = datetime.datetime.now().isoformat()
@@ -105,6 +107,11 @@ class Module(ModuleManager.BaseModule):
     def on_333(self, event):
         self._on_topic(event, event["setter"], "set",
             event["channel"].topic, event["channel"])
+
+        unix_dt = datetime.datetime.utcfromtimestamp(event["set_at"])
+        dt = datetime.datetime.strftime(unix_dt, DATETIME_FORMAT)
+        self.print_line(event, "topic set at %s" % dt,
+            channel=event["channel"].name)
 
     @utils.hook("received.mode.channel")
     def mode(self, event):
