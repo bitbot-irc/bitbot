@@ -38,8 +38,8 @@ class Module(ModuleManager.BaseModule):
     def github(self, event):
         payload = event["data"].decode("utf8")
         if event["headers"]["Content-Type"] == FORM_ENCODED:
-            payload = urllib.parse.parse_qs(urllib.parse.unquote(payload)
-                )["payload"][0]
+            payload = urllib.parse.unquote(urllib.parse.parse_qs(payload)[
+                "payload"][0])
         data = json.loads(payload)
 
         github_event = event["headers"]["X-GitHub-Event"]
