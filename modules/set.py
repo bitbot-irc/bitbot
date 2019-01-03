@@ -45,6 +45,7 @@ class Module(ModuleManager.BaseModule):
         else:
             shown_settings = [key for key, value in settings_dict.items()
                     if not value.get("hidden", False)]
+            shown_settings = sorted(shown_settings)
             event["stdout"].write("Available settings: %s" % (
                 ", ".join(shown_settings)))
 
