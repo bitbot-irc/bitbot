@@ -47,6 +47,7 @@ class Module(ModuleManager.BaseModule):
             return ""
 
         full_name = data["repository"]["full_name"]
+        repo_username, repo_name = full_name.split("/", 1)
         hooks = self.bot.database.channel_settings.find_by_setting(
             "github-hook")
         targets = []
@@ -54,7 +55,7 @@ class Module(ModuleManager.BaseModule):
         repo_hooked = False
         for i, (server_id, channel_name, hooked_repos) in list(
                 enumerate(hooks))[::-1]:
-            if full_name in hooked_repos:
+            if repo_username in hooked_repos or full_name in hooked_repos:
                 repo_hooked = True
                 server = self.bot.get_server(server_id)
                 if server and channel_name in server.channels:
