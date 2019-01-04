@@ -26,7 +26,7 @@ class Module(ModuleManager.BaseModule):
             found = None
             if word.lower() in tracked_words:
                 found = word.lower()
-            elif strippped_word.lower() in tracked_words:
+            elif stripped_word.lower() in tracked_words:
                 found = stripped_word.lower()
 
             if found:
