@@ -22,9 +22,15 @@ class Module(ModuleManager.BaseModule):
         tracked_words = set(event["server"].get_setting(
             "tracked-words", []))
         for word in words:
-            word = word.lstrip(WORD_START).rstrip(WORD_STOP)
+            stripped_word = word.lstrip(WORD_START).rstrip(WORD_STOP)
+            found = None
             if word.lower() in tracked_words:
-                setting = "word-%s" % word
+                found = word.lower()
+            elif strippped_word.lower() in tracked_words:
+                found = stripped_word.lower()
+
+            if found:
+                setting = "word-%s" % found
                 word_count = user.get_setting(setting, 0)
                 word_count += 1
                 user.set_setting(setting, word_count)
