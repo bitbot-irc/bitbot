@@ -75,7 +75,7 @@ class Module(ModuleManager.BaseModule):
             repo_from = page.data["head"]["label"]
             to_from = page.data["base"]["label"]
             added = self._added(page.data["additions"])
-            removed = self._added(page.data["deletions"])
+            removed = self._removed(page.data["deletions"])
             url = self._short_url(page.data["html_url"])
 
             event["stdout"].write("%s/%s pull#%s) [%s/%s] %s %s" % (
