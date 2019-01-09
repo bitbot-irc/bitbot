@@ -81,7 +81,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write(
                 "(%s/%s pull#%s) [%s/%s] %s→%s - %s %s" % (
                 username, repository, number, added, removed,
-                from_repo, to_repo, page.data["title"], url))
+                repo_from, repo_to, page.data["title"], url))
 
     @utils.hook("api.post.github")
     def webhook(self, event):
