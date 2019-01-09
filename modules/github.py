@@ -78,7 +78,7 @@ class Module(ModuleManager.BaseModule):
             removed = self._removed(page.data["deletions"])
             url = self._short_url(page.data["html_url"])
 
-            event["stdout"].write("%s/%s pull#%s) [%s/%s] %s %s" % (
+            event["stdout"].write("(%s/%s pull#%s) [%s/%s] %s %s" % (
                 username, repository, number, added, removed,
                 page.data["title"], url))
 
