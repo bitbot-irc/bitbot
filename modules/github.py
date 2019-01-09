@@ -36,16 +36,26 @@ COMMENT_ACTIONS = {
 @utils.export("channelset", {"setting": "github-hide-prefix",
     "help": "Hide/show command-like prefix on Github hook outputs",
     "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "github-default-repo",
+    "help": "Set the default github repo for the current channel"})
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.ghissue", min_args=1)
-    def github_issue(self, event):
+    def _parse_ref(self, channel, ref):
         repo, _, number = event["args_split"][0].partition("#")
+        if not repo:
+            repo = channel.get_setting("github-default-repo", None)
+
         username, _, repository = repo.partition("/")
 
         if not username or not repository or not number:
             raise utils.EventError("Please provide username/repo#number")
         if not number.isdigit():
             raise utils.EventError("Issue number must be a number")
+        return username, repository, number
+
+    @utils.hook("received.command.ghissue", min_args=1)
+    def github_issue(self, event):
+        username, repository, number = self._parse_ref(
+            event["channel"], event["args_split"][0])
 
         page = utils.http.request(
             API_ISSUE_URL % (username, repository, number),
@@ -60,13 +70,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.ghpull", min_args=1)
     def github_pull(self, event):
-        repo, _, number = event["args_split"][0].partition("#")
-        username, _, repository = repo.partition("/")
-
-        if not username or not repository or not number:
-            raise utils.EventError("Please provide username/repo#number")
-        if not number.isdigit():
-            raise utils.EventError("Issue number must be a number")
+        username, repository, number = self._parse_ref(
+            event["channel"], event["args_split"][0])
 
         page = utils.http.request(
             API_PULL_URL % (username, repository, number),
