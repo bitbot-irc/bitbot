@@ -55,7 +55,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.ghissue", min_args=1)
     def github_issue(self, event):
         username, repository, number = self._parse_ref(
-            event["channel"], event["args_split"][0])
+            event["target"], event["args_split"][0])
 
         page = utils.http.request(
             API_ISSUE_URL % (username, repository, number),
@@ -71,7 +71,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.ghpull", min_args=1)
     def github_pull(self, event):
         username, repository, number = self._parse_ref(
-            event["channel"], event["args_split"][0])
+            event["target"], event["args_split"][0])
 
         page = utils.http.request(
             API_PULL_URL % (username, repository, number),
