@@ -73,7 +73,7 @@ class Module(ModuleManager.BaseModule):
             json=True)
         if page:
             repo_from = page.data["head"]["label"]
-            to_from = page.data["base"]["label"]
+            repo_to = page.data["base"]["label"]
             added = self._added(page.data["additions"])
             removed = self._removed(page.data["deletions"])
             url = self._short_url(page.data["html_url"])
