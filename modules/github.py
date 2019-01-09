@@ -7,6 +7,8 @@ COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
 
+API_ISSUE_URL = "https://api.github.com/repos/%s/%s/issues/%s"
+
 DEFAULT_EVENTS = [
     "push",
     "commit_comment",
@@ -34,6 +36,27 @@ COMMENT_ACTIONS = {
     "help": "Hide/show command-like prefix on Github hook outputs",
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
+    @utils.hook("received.command.ghissue", min_args=1)
+    def github_issue(self, event):
+        repo, _, number = event["args_split"][0].partition("#")
+        username, _, repository = repo.partition("/")
+
+        if not username or not repository or not number:
+            raise utils.EventError("Please provide username/repo#number")
+        if not number.isdigit():
+            raise utils.EventError("Issue number must be a number")
+
+        page = utils.http.request(
+            API_ISSUE_URL % (username, repository, number),
+            json=True)
+        if page:
+            labels = [label["name"] for label in page.data["labels"]]
+            url = self._short_url(page.data["html_url"])
+
+            event["stdout"].write("(%s/%s issue#%s) %s [%s] %s" % (
+                username, repository, number, page.data["title"],
+                ", ".join(labels), url))
+
     @utils.hook("api.post.github")
     def github(self, event):
         payload = event["data"].decode("utf8")
