@@ -8,6 +8,7 @@ COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
 
 API_ISSUE_URL = "https://api.github.com/repos/%s/%s/issues/%s"
+API_PULL_URL = "https://api.github.com/repos/%s/%s/pulls/%s"
 
 DEFAULT_EVENTS = [
     "push",
@@ -56,6 +57,30 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("(%s/%s issue#%s) %s [%s] %s" % (
                 username, repository, number, page.data["title"],
                 ", ".join(labels), url))
+
+    @utils.hook("received.command.ghpull", min_args=1)
+    def github_pull(self, event):
+        repo, _, number = event["args_split"][0].partition("#")
+        username, _, repository = repo.partition("/")
+
+        if not username or not repository or not number:
+            raise utils.EventError("Please provide username/repo#number")
+        if not number.isdigit():
+            raise utils.EventError("Issue number must be a number")
+
+        page = utils.http.request(
+            API_PULL_URL % (username, repository, number),
+            json=True)
+        if page:
+            repo_from = page.data["head"]["label"]
+            to_from = page.data["base"]["label"]
+            added = self._added(page.data["additions"])
+            removed = self._added(page.data["deletions"])
+            url = self._short_url(page.data["html_url"])
+
+            event["stdout"].write("%s/%s pull#%s) [%s/%s] %s %s" % (
+                username, repository, number, added, removed,
+                page.data["title"], url))
 
     @utils.hook("api.post.github")
     def github(self, event):
