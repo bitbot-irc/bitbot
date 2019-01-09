@@ -243,7 +243,7 @@ class Module(ModuleManager.BaseModule):
         number = data["pull_request"]["number"]
         action = data["action"]
         pr_title = data["pull_request"]["title"]
-        sender = data["sender"]["login"]
+        sender = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
         return ["[pr #%d] %s %s on a review: %s - %s" %
             (number, sender, COMMENT_ACTIONS[action], pr_title, url)]
