@@ -83,7 +83,7 @@ class Module(ModuleManager.BaseModule):
                 page.data["title"], url))
 
     @utils.hook("api.post.github")
-    def github(self, event):
+    def webhook(self, event):
         payload = event["data"].decode("utf8")
         if event["headers"]["Content-Type"] == FORM_ENCODED:
             payload = urllib.parse.unquote(urllib.parse.parse_qs(payload)[
