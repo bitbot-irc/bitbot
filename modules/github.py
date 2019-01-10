@@ -11,6 +11,7 @@ API_ISSUE_URL = "https://api.github.com/repos/%s/%s/issues/%s"
 API_PULL_URL = "https://api.github.com/repos/%s/%s/pulls/%s"
 
 DEFAULT_EVENTS = [
+    "ping",
     "push",
     "commit_comment",
     "pull_request",
@@ -124,8 +125,6 @@ class Module(ModuleManager.BaseModule):
         data = json.loads(payload)
 
         github_event = event["headers"]["X-GitHub-Event"]
-        if github_event == "ping":
-            return ""
 
         full_name = data["repository"]["full_name"]
         repo_username, repo_name = full_name.split("/", 1)
@@ -174,6 +173,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.status(event, full_name, data)
         elif github_event == "fork":
             outputs = self.fork(event, full_name, data)
+        elif github_event == "ping":
+            outputs = self.ping(event, full_name, data)
 
         if outputs:
             for server, channel in targets:
@@ -193,6 +194,9 @@ class Module(ModuleManager.BaseModule):
             return page.headers["Location"]
         except utils.http.HTTPTimeoutException:
             return url
+
+    def ping(self, event, full_name, data):
+        return ["Received new webhook for %s" % full_name]
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
