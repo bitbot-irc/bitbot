@@ -40,7 +40,7 @@ COMMENT_ACTIONS = {
     "help": "Set the default github repo for the current channel"})
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
-        repo, _, number = ref.partition("#")
+        repo, _, number = ref.rpartition("#")
         if not repo:
             repo = channel.get_setting("github-default-repo", None)
 
