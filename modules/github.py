@@ -52,45 +52,68 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Issue number must be a number")
         return username, repository, number
 
+    def _gh_issue(self, event, page):
+        labels = [label["name"] for label in page.data["labels"]]
+        url = self._short_url(page.data["html_url"])
+
+        event["stdout"].write("(%s/%s issue#%s, %s) %s [%s] %s" % (
+            username, repository, number, page.data["state"],
+            page.data["title"], ", ".join(labels), url))
+    def _gh_get_issue(self, username, repository, number):
+        return utils.http.request(
+            API_ISSUE_URL % (username, repository, number),
+            json=True)
+
     @utils.hook("received.command.ghissue", min_args=1)
     def github_issue(self, event):
         username, repository, number = self._parse_ref(
             event["target"], event["args_split"][0])
 
-        page = utils.http.request(
-            API_ISSUE_URL % (username, repository, number),
-            json=True)
+        page = self._gh_get_issue(username, repository, number)
         if page and page.code == 200:
-            labels = [label["name"] for label in page.data["labels"]]
-            url = self._short_url(page.data["html_url"])
-
-            event["stdout"].write("(%s/%s issue#%s, %s) %s [%s] %s" % (
-                username, repository, number, page.data["state"],
-                page.data["title"], ", ".join(labels), url))
+            self._gh_issue(event, page)
         else:
             event["stderr"].write("Could not find issue")
 
+    def _gh_pull(self, event, page):
+        repo_from = page.data["head"]["label"]
+        repo_to = page.data["base"]["label"]
+        added = self._added(page.data["additions"])
+        removed = self._removed(page.data["deletions"])
+        url = self._short_url(page.data["html_url"])
+
+        event["stdout"].write(
+            "(%s/%s pull#%s, %s) [%s/%s] %s→%s - %s %s" % (
+            username, repository, number, page.data["state"],
+            added, removed, repo_from, repo_to, page.data["title"], url))
+    def _gh_get_pull(self, username, repository, number):
+        return utils.http.request(
+            API_PULL_URL % (username, repository, number),
+            json=True)
     @utils.hook("received.command.ghpull", min_args=1)
     def github_pull(self, event):
         username, repository, number = self._parse_ref(
             event["target"], event["args_split"][0])
+        page = self._gh_get_pull(username, repository, number)
 
-        page = utils.http.request(
-            API_PULL_URL % (username, repository, number),
-            json=True)
         if page and page.code == 200:
-            repo_from = page.data["head"]["label"]
-            repo_to = page.data["base"]["label"]
-            added = self._added(page.data["additions"])
-            removed = self._removed(page.data["deletions"])
-            url = self._short_url(page.data["html_url"])
-
-            event["stdout"].write(
-                "(%s/%s pull#%s, %s) [%s/%s] %s→%s - %s %s" % (
-                username, repository, number, page.data["state"],
-                added, removed, repo_from, repo_to, page.data["title"], url))
+            self._gh_pull(event, page)
         else:
             event["stderr"].write("Could not find pull request")
+
+    @utils.hook("received.command.gh", min_args=1)
+    def github(self, event):
+        username, repository, number = self._parse_ref(
+            event["target"], event["args_split"][0])
+        page = self._gh_get_issue(username, repository, number)
+        if page and page.code == 200:
+            if "pull_request" in page.data:
+                pull = self._gh_get_pull(username, repository, number)
+                self._gh_pull(event, pull)
+            else:
+                self._gh_issue(event, page)
+        else:
+            event["stderr"].write("Issue/PR not found")
 
     @utils.hook("api.post.github")
     def webhook(self, event):
