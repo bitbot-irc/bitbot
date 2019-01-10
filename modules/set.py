@@ -173,4 +173,4 @@ class Module(ModuleManager.BaseModule):
         :help: Unset a specified user setting
         :usage: <setting>
         """
-        self._unset(event, event["args_split"][0], "set", event["user"])
+        self._unset(event, event["args_split"][0], "channelset", event["user"])
