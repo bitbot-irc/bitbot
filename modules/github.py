@@ -60,13 +60,15 @@ class Module(ModuleManager.BaseModule):
         page = utils.http.request(
             API_ISSUE_URL % (username, repository, number),
             json=True)
-        if page:
+        if page and page.code == 200:
             labels = [label["name"] for label in page.data["labels"]]
             url = self._short_url(page.data["html_url"])
 
             event["stdout"].write("(%s/%s issue#%s) %s [%s] %s" % (
                 username, repository, number, page.data["title"],
                 ", ".join(labels), url))
+        else:
+            event["stderr"].write("Could not find issue")
 
     @utils.hook("received.command.ghpull", min_args=1)
     def github_pull(self, event):
@@ -76,7 +78,7 @@ class Module(ModuleManager.BaseModule):
         page = utils.http.request(
             API_PULL_URL % (username, repository, number),
             json=True)
-        if page:
+        if page and page.code == 200:
             repo_from = page.data["head"]["label"]
             repo_to = page.data["base"]["label"]
             added = self._added(page.data["additions"])
@@ -87,6 +89,8 @@ class Module(ModuleManager.BaseModule):
                 "(%s/%s pull#%s) [%s/%s] %s→%s - %s %s" % (
                 username, repository, number, added, removed,
                 repo_from, repo_to, page.data["title"], url))
+        else:
+            event["stderr"].write("Could not find pull request")
 
     @utils.hook("api.post.github")
     def webhook(self, event):
