@@ -52,7 +52,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Issue number must be a number")
         return username, repository, number
 
-    def _gh_issue(self, event, page):
+    def _gh_issue(self, event, page, username, repository, number):
         labels = [label["name"] for label in page.data["labels"]]
         url = self._short_url(page.data["html_url"])
 
@@ -71,11 +71,11 @@ class Module(ModuleManager.BaseModule):
 
         page = self._gh_get_issue(username, repository, number)
         if page and page.code == 200:
-            self._gh_issue(event, page)
+            self._gh_issue(event, page, username, repository, number)
         else:
             event["stderr"].write("Could not find issue")
 
-    def _gh_pull(self, event, page):
+    def _gh_pull(self, event, page, username, repository, number):
         repo_from = page.data["head"]["label"]
         repo_to = page.data["base"]["label"]
         added = self._added(page.data["additions"])
@@ -97,7 +97,7 @@ class Module(ModuleManager.BaseModule):
         page = self._gh_get_pull(username, repository, number)
 
         if page and page.code == 200:
-            self._gh_pull(event, page)
+            self._gh_pull(event, page, username, repository, number)
         else:
             event["stderr"].write("Could not find pull request")
 
@@ -109,9 +109,9 @@ class Module(ModuleManager.BaseModule):
         if page and page.code == 200:
             if "pull_request" in page.data:
                 pull = self._gh_get_pull(username, repository, number)
-                self._gh_pull(event, pull)
+                self._gh_pull(event, pull, username, repository, number)
             else:
-                self._gh_issue(event, page)
+                self._gh_issue(event, page, username, repository, number)
         else:
             event["stderr"].write("Issue/PR not found")
 
