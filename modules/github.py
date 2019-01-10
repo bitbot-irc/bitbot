@@ -64,9 +64,9 @@ class Module(ModuleManager.BaseModule):
             labels = [label["name"] for label in page.data["labels"]]
             url = self._short_url(page.data["html_url"])
 
-            event["stdout"].write("(%s/%s issue#%s) %s [%s] %s" % (
-                username, repository, number, page.data["title"],
-                ", ".join(labels), url))
+            event["stdout"].write("(%s/%s issue#%s, %s) %s [%s] %s" % (
+                username, repository, number, page.data["state"],
+                page.data["title"], ", ".join(labels), url))
         else:
             event["stderr"].write("Could not find issue")
 
@@ -86,9 +86,9 @@ class Module(ModuleManager.BaseModule):
             url = self._short_url(page.data["html_url"])
 
             event["stdout"].write(
-                "(%s/%s pull#%s) [%s/%s] %s→%s - %s %s" % (
-                username, repository, number, added, removed,
-                repo_from, repo_to, page.data["title"], url))
+                "(%s/%s pull#%s, %s) [%s/%s] %s→%s - %s %s" % (
+                username, repository, number, page.data["state"],
+                added, removed, repo_from, repo_to, page.data["title"], url))
         else:
             event["stderr"].write("Could not find pull request")
 
