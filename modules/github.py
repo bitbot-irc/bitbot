@@ -196,7 +196,7 @@ class Module(ModuleManager.BaseModule):
             return url
 
     def ping(self, event, full_name, data):
-        return ["Received new webhook for %s" % full_name]
+        return ["Received new webhook"]
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
