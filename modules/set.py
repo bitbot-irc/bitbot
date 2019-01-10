@@ -144,3 +144,33 @@ class Module(ModuleManager.BaseModule):
         """
         setting = event["args_split"][0]
         self._get(event, setting, "", self.bot.get_setting(setting, None))
+
+    def _unset(self, event, setting, category, target):
+        settings = self.exports.get_all(category)
+        settings_dict = {setting["setting"]: setting for setting in settings}
+        setting = setting.lower()
+
+        if setting in settings_dict:
+            target.del_setting(setting)
+            event["stdout"].write("Unset %s" % setting)
+        else:
+            event["stderr"].write("Unknown setting")
+
+    @utils.hook("received.command.unset", min_args=1)
+    def unset(self, event):
+        """
+        :help: Unset a specified user setting
+        :usage: <setting>
+        """
+        self._unset(event, event["args_split"][0], "set", event["user"])
+
+    @utils.hook("received.command.channelunset", min_args=1,
+        require_mode="high")
+    @utils.hook("received.command.channelunsetoverride", min_args=1,
+        permission="channelunsetoverride")
+    def channel_unset(self, event):
+        """
+        :help: Unset a specified user setting
+        :usage: <setting>
+        """
+        self._unset(event, event["args_split"][0], "set", event["user"])
