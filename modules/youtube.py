@@ -19,6 +19,9 @@ ARROW_DOWN = "↓"
 @utils.export("channelset", {"setting": "auto-youtube",
     "help": "Disable/Enable automatically getting info from youtube URLs",
     "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "youtube-safesearch",
+    "help": "Turn safe search off/on",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def get_video_page(self, video_id, part):
         return utils.http.request(URL_YOUTUBEVIDEO, get_params={"part": part,
@@ -92,12 +95,16 @@ class Module(ModuleManager.BaseModule):
             video_id = url_match.group(1)
 
         if search or video_id:
+            safe_setting = event["target"].get_setting("youtube-safesearch",
+                True)
+            safe = "moderate" if safe_setting else "none"
+
             if not video_id:
                 search_page = utils.http.request(URL_YOUTUBESEARCH,
                     get_params={"q": search, "part": "snippet",
                     "maxResults": "1", "type": "video",
-                    "key": self.bot.config["google-api-key"]},
-                    json=True)
+                    "key": self.bot.config["google-api-key"],
+                    "safeSearch": safe}, json=True)
                 if search_page:
                     if search_page.data["pageInfo"]["totalResults"] > 0:
                         video_id = search_page.data["items"][0]["id"]["videoId"]
