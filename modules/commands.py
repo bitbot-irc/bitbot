@@ -68,12 +68,10 @@ class Out(object):
 
 class StdOut(Out):
     def prefix(self):
-        return utils.irc.color(utils.irc.bold(self.module_name),
-            utils.consts.GREEN)
+        return utils.irc.color(self.module_name, utils.consts.LIGHTGREEN)
 class StdErr(Out):
     def prefix(self):
-        return utils.irc.color(utils.irc.bold("!"+self.module_name),
-            utils.consts.RED)
+        return utils.irc.color("!"+self.module_name, utils.consts.RED)
 
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
