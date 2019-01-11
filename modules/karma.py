@@ -11,6 +11,15 @@ KARMA_DELAY_SECONDS = 3
     "help": "Enable/disable karma being for nicknames only",
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
+    def _karma_str(self, karma):
+        karma_str = str(karma)
+        if karma < 0:
+            return utils.irc.color(str(karma), utils.consts.RED)
+        elif karma > 0:
+            return utils.irc.color(str(karma), utils.consts.GREEN)
+        return str(karma)
+
+
     @utils.hook("new.user")
     def new_user(self, event):
         event["user"].last_karma = None
@@ -49,15 +58,16 @@ class Module(ModuleManager.BaseModule):
                 karma = setting_target.get_setting(setting, 0)
                 karma += 1 if positive else -1
 
-                if karma:
+                if not karma == 0:
                     setting_target.set_setting(setting, karma)
                 else:
                     setting_target.del_setting(setting)
 
+                karma_str = self._karma_str(karma)
                 if verbose:
                     self.events.on("send.stdout").call(
                        module_name="Karma", target=event["channel"],
-                       message="%s now has %d karma" % (target, karma),
+                       message="%s now has %d karma" % (target, karma_str),
                        server=event["server"])
                 event["user"].last_karma = time.time()
             elif verbose:
@@ -81,7 +91,8 @@ class Module(ModuleManager.BaseModule):
             karma = event["server"].get_user(target).get_setting("karma", 0)
         else:
             karma = event["server"].get_setting("karma-%s" % target, 0)
-        event["stdout"].write("%s has %s karma" % (target, karma))
+        karma_str = self._karma_str(karma)
+        event["stdout"].write("%s has %s karma" % (target, karma_str))
 
     @utils.hook("received.command.resetkarma", min_args=1)
     def reset_karma(self, event):
