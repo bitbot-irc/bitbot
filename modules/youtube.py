@@ -90,9 +90,10 @@ class Module(ModuleManager.BaseModule):
             if last_youtube:
                 search = last_youtube.message
 
-        url_match = re.search(REGEX_YOUTUBE, search)
-        if search and url_match:
-            video_id = url_match.group(1)
+        if search:
+            url_match = re.search(REGEX_YOUTUBE, search)
+            if url_match:
+                video_id = url_match.group(1)
 
         if search or video_id:
             safe_setting = event["target"].get_setting("youtube-safesearch",
