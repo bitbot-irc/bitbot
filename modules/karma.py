@@ -16,7 +16,7 @@ class Module(ModuleManager.BaseModule):
         if karma < 0:
             return utils.irc.color(str(karma), utils.consts.RED)
         elif karma > 0:
-            return utils.irc.color(str(karma), utils.consts.GREEN)
+            return utils.irc.color(str(karma), utils.consts.LIGHTGREEN)
         return str(karma)
 
 
