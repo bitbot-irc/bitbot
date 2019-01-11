@@ -67,7 +67,7 @@ class Module(ModuleManager.BaseModule):
                 if verbose:
                     self.events.on("send.stdout").call(
                        module_name="Karma", target=event["channel"],
-                       message="%s now has %d karma" % (target, karma_str),
+                       message="%s now has %s karma" % (target, karma_str),
                        server=event["server"])
                 event["user"].last_karma = time.time()
             elif verbose:
