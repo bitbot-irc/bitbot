@@ -102,7 +102,8 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Could not find pull request")
 
-    @utils.hook("received.command.gh", min_args=1)
+    @utils.hook("received.command.gh", alias_of="github")
+    @utils.hook("received.command.github", min_args=1)
     def github(self, event):
         username, repository, number = self._parse_ref(
             event["target"], event["args_split"][0])
