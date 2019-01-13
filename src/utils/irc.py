@@ -159,12 +159,14 @@ def _color_tokens(s: str) -> typing.List[str]:
 
     for char in s:
         if is_color:
-            can_add = char.isdigit()
-            if can_add:
-                current_color = background if is_background else foreground
+            can_add = False
+            current_color = background if is_background else foreground
+            if char.isdigit() and len(current_color) < 2:
                 if current_color:
                     next_color = int(current_color + char)
                     can_add = next_color <= 15 or next_color == 99
+                else:
+                    can_add = True
 
             if can_add:
                 if is_background:
