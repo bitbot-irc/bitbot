@@ -325,6 +325,11 @@ class Module(ModuleManager.BaseModule):
         return ["[issue #%d] %s %s: %s - %s" %
             (number, author, action_desc, issue_title, url)]
     def issue_comment(self, event, full_name, data):
+        if "changes" in data:
+            # don't show this event when nothing has actually changed
+            if data["changes"]["body"]["from"] == data["comment"]["body"]:
+                return
+
         number = data["issue"]["number"]
         action = data["action"]
         issue_title = data["issue"]["title"]
