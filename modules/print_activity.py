@@ -9,7 +9,8 @@ class Module(ModuleManager.BaseModule):
         target = str(event["server"])
         if not channel == None:
             target += channel
-        self.bot.log.info("%s | %s", [target, utils.irc.to_ansi_colors(line)])
+        formatted_line = utils.irc.parse_format(line)
+        self.bot.log.info("%s | %s", [target, formatted_line])
 
     def _mode_symbols(self, user, channel, server):
         modes = channel.get_user_status(user)

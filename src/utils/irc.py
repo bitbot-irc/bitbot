@@ -150,7 +150,10 @@ FORMAT_TOKENS = [
     utils.consts.RESET,
     utils.consts.UNDERLINE
 ]
-def _color_tokens(s: str) -> typing.List[str]:
+FORMAT_STRIP = [
+    "\x08" # backspace
+]
+def _format_tokens(s: str) -> typing.List[str]:
     is_color = False
     foreground = ""
     background = ""
@@ -195,6 +198,8 @@ def _color_tokens(s: str) -> typing.List[str]:
                 is_color = True
         elif char in FORMAT_TOKENS:
             matches.append(char)
+        elif char in FORMAT_STRIP:
+            matches.append(char)
     return matches
 
 def _color_match(code: typing.Optional[str], foreground: bool) -> str:
@@ -206,13 +211,13 @@ def _color_match(code: typing.Optional[str], foreground: bool) -> str:
     else:
         return str(color.ansi_background())
 
-def to_ansi_colors(s: str) -> str:
+def parse_format(s: str) -> str:
     has_foreground = False
     has_background = False
     bold = False
     underline = False
 
-    for token in _color_tokens(s):
+    for token in _format_tokens(s):
         replace = ""
         type = token[0]
 
@@ -250,6 +255,8 @@ def to_ansi_colors(s: str) -> str:
             else:
                 replace += utils.consts.ANSI_UNDERLINE
             underline = not underline
+        elif type in FORMAT_STRIP:
+            replace = ""
 
         s = s.replace(token, replace, 1)
 
