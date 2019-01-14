@@ -29,9 +29,9 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write(
                 "Both start and end must be valid integers")
 
-    @utils.hook("received.command.guid")
-    def guid(self, event):
+    @utils.hook("received.command.uuid")
+    def uuid(self, event):
         """
-        :help: Get a random guid
+        :help: Get a random uuid
         """
         event["stdout"].write(str(uuid.uuid4()))
