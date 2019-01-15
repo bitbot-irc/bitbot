@@ -47,7 +47,7 @@ class Module(ModuleManager.BaseModule):
         except:
             pass
 
-        if page.data:
+        if page and page.data:
             out = page.data.split("</b></span><br>", 1)[1]
             out = html.unescape(out)
             out = json.loads(out)
