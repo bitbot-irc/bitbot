@@ -10,20 +10,18 @@ CREATE_URL = "https://github.com/%s/tree/%s"
 API_ISSUE_URL = "https://api.github.com/repos/%s/%s/issues/%s"
 API_PULL_URL = "https://api.github.com/repos/%s/%s/pulls/%s"
 
-DEFAULT_EVENTS = [
-    "ping",
-    "push",
-    "commit_comment",
-    "pull_request",
-    "pull_request_review",
-    "pull_request_review_comment",
-    "issue_comment",
-    "issues",
-    "create",
-    "delete",
-    "release",
-    "fork"
+DEFAULT_EVENT_CATEGORIES = [
+    "ping", "code", "pr", "issue", "repo"
 ]
+EVENT_CATEGORIES = {
+    "ping":  ["ping"],
+    "code":  ["push", "commit_comment"],
+    "pr":    ["pull_request", "pull_request_review",
+        "pull_request_review_commend"],
+    "issue": ["issue", "issue_comment"],
+    "repo":  ["create", "delete", "release", "fork"],
+    "team":  ["membership"]
+}
 
 COMMENT_ACTIONS = {
     "created": "commented",
@@ -150,8 +148,12 @@ class Module(ModuleManager.BaseModule):
                 server = self.bot.get_server(server_id)
                 if server and channel_name in server.channels:
                     channel = server.channels.get(channel_name)
-                    github_events = channel.get_setting("github-events",
-                        DEFAULT_EVENTS)
+
+                    event_categories = channel.get_setting(
+                        "github-events", DEFAULT_EVENT_CATEGORIES)
+                    github_events = list(itertools.chain(
+                        *[EVENT_CATEGORIES[c] for c in event_categories]))
+
                     if github_event in github_events:
                         targets.append([server, channel])
 
