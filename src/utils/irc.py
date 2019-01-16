@@ -226,10 +226,11 @@ def parse_format(s: str) -> str:
                 background = _color_match(match.group(2), False)
 
                 if foreground:
+                    replace += foreground
                     has_foreground = True
                 if background:
+                    replace += background
                     has_background = True
-                replace += foreground or background
             else:
                 if has_foreground:
                     has_foreground = False
