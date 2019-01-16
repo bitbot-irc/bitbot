@@ -37,6 +37,9 @@ COMMENT_ACTIONS = {
     "validate": utils.bool_or_none})
 @utils.export("channelset", {"setting": "github-default-repo",
     "help": "Set the default github repo for the current channel"})
+@utils.export("channelset", {"setting": "github-events",
+    "help": "Set event category filters for github webhooks",
+    "validate": lambda s: s.split("|")})
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
         repo, _, number = ref.rpartition("#")
