@@ -126,14 +126,16 @@ class Module(ModuleManager.BaseModule):
         github_event = event["headers"]["X-GitHub-Event"]
 
         full_name = None
+        repo_username = None
+        repo_name = None
         if "respository" in data:
             full_name = data["repository"]["full_name"]
+            repo_username, repo_name = full_name.split("/", 1)
 
         organisation = None
         if "organization" in data:
             organisation = data["organization"]["login"]
 
-        repo_username, repo_name = full_name.split("/", 1)
         hooks = self.bot.database.channel_settings.find_by_setting(
             "github-hook")
         targets = []
