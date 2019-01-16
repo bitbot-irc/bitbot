@@ -64,8 +64,9 @@ class Channel(IRCObject.Object):
             else:
                 self.modes[mode].add(arg.lower())
     def remove_mode(self, mode: str, arg: str=None):
-        if not arg and mode in self.modes:
-            del self.modes[mode]
+        if not arg:
+            if mode in self.modes:
+                del self.modes[mode]
         else:
             if mode in self.server.prefix_modes:
                 user = self.server.get_user(arg)
