@@ -1,4 +1,4 @@
-import logging, logging.handlers, os, queue, sys, threading, time, typing
+import logging, logging.handlers, os, queue, sys, time, typing
 
 LEVELS = {
     "trace": logging.DEBUG-1,
@@ -54,16 +54,6 @@ class Log(object):
         warn_handler.setFormatter(formatter)
         self.logger.addHandler(warn_handler)
 
-        self._queue = queue.Queue() # type: queue.Queue[typing.Tuple[str, typing.List, int, typing.Dict]]
-        self._thread = threading.Thread(target=self._loop)
-        self._thread.daemon = True
-        self._thread.start()
-
-    def _loop(self):
-        while True:
-            message, params, level, kwargs = self._queue.get(block=True)
-            self.logger.log(level, message, *params, **kwargs)
-
     def trace(self, message: str, params: typing.List, **kwargs):
         self._log(message, params, LEVELS["trace"], kwargs)
     def debug(self, message: str, params: typing.List, **kwargs):
@@ -77,8 +67,4 @@ class Log(object):
     def critical(self, message: str, params: typing.List, **kwargs):
         self._log(message, params, logging.CRITICAL, kwargs)
     def _log(self, message: str, params: typing.List, level: int, kwargs: dict):
-        if kwargs.get("exc_info") == True:
-            # because we're doing the actual logging on another thread,
-            # we need to catch actual exception information here.
-            kwargs["exc_info"] = sys.exc_info()
-        self._queue.put((message, params, level, kwargs))
+            self.logger.log(level, message, *params, **kwargs)
