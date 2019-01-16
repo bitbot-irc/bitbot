@@ -395,5 +395,5 @@ class Module(ModuleManager.BaseModule):
 
     def membership(self, event, organisation, data):
         return ["%s %s %s to team %s" %
-            (data["action"], data["sender"]["login"], data["member"]["login"],
+            (data["sender"]["login"], data["action"], data["member"]["login"],
             data["team"]["name"])]
