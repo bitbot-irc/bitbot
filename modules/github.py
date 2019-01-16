@@ -128,7 +128,7 @@ class Module(ModuleManager.BaseModule):
         full_name = None
         repo_username = None
         repo_name = None
-        if "respository" in data:
+        if "repository" in data:
             full_name = data["repository"]["full_name"]
             repo_username, repo_name = full_name.split("/", 1)
 
