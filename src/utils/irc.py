@@ -167,7 +167,7 @@ def _format_tokens(s: str) -> typing.List[str]:
             if char.isdigit() and len(current_color) < 2:
                 if current_color:
                     next_color = int(current_color + char)
-                    can_add = next_color <= 15 or next_color == 99
+                    can_add = next_color <= 99
                 else:
                     can_add = True
 
@@ -206,10 +206,7 @@ def _color_match(code: typing.Optional[str], foreground: bool) -> str:
     if not code:
         return ""
     color = utils.consts.COLOR_CODES[int(code)]
-    if foreground:
-        return str(color.ansi)
-    else:
-        return str(color.ansi_background())
+    return color.to_ansi(not foreground)
 
 def parse_format(s: str) -> str:
     has_foreground = False
@@ -230,10 +227,9 @@ def parse_format(s: str) -> str:
 
                 if foreground:
                     has_foreground = True
-                    replace += utils.consts.ANSI_FORMAT % foreground
                 if background:
                     has_background = True
-                    replace += utils.consts.ANSI_FORMAT % background
+                replace += foreground or background
             else:
                 if has_foreground:
                     has_foreground = False

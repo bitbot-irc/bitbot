@@ -1,15 +1,26 @@
 import typing
+from . import _consts_256_color
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
 BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
 
 class IRCColor(object):
-    def __init__(self, irc: int, ansi: int, color_bold: bool):
+    def __init__(self, irc: int, ansi: int, is_256):
         self.irc = irc
         self.ansi = ansi
-        self.color_bold = color_bold
-    def ansi_background(self):
-        return self.ansi+10
+        self.is_256 = is_256
+
+    def to_irc(self):
+        return str(self.irc)
+    def to_ansi(self, background=False):
+        if not self.is_256:
+            code = self.ansi + (10 if background else 0)
+            return ANSI_FORMAT % code
+        else:
+            return ANSI_256_COLOR % (
+                48 if background else 38,
+                self.ansi
+            )
 
 COLOR_NAMES = {}
 COLOR_CODES = {}
@@ -37,6 +48,9 @@ GREY        = _color("grey",        14, 90, False)
 LIGHTGREY   = _color("light grey",  15, 37, False)
 TRANSPARENT = _color("transparent", 99, 39, False)
 
+for irc_code, ansi_code in _consts_256_color.COLORS.items():
+    _color("256-%d" % irc_code, irc_code, ansi_code, True)
+
 BOLD      = "\x02"
 ITALIC    = "\x1D"
 UNDERLINE = "\x1F"
@@ -45,6 +59,7 @@ COLOR     = "\x03"
 RESET     = "\x0F"
 
 ANSI_FORMAT           = "\033[%sm"
+ANSI_256_COLOR        = "\033[%d;5;%dm"
 ANSI_RESET            = "\033[0m"
 ANSI_FOREGROUND_RESET = "\033[39m"
 ANSI_BACKGROUND_RESET = "\033[49m"
