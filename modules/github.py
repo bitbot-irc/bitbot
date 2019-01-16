@@ -185,6 +185,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.fork(event, full_name, data)
         elif github_event == "ping":
             outputs = self.ping(event, full_name, data)
+        elif github_event == "membership":
+            outputs = self.membership(event, organisation, data)
 
         if outputs:
             for server, channel in targets:
@@ -390,3 +392,8 @@ class Module(ModuleManager.BaseModule):
         url = self._short_url(data["forkee"]["html_url"])
         return ["%s forked into %s - %s" %
             (forker, fork_full_name, url)]
+
+    def membership(self, event, organisation, data):
+        return ["%s %s %s to team %s" %
+            (data["action"], data["sender"]["login"], data["member"]["login"],
+            data["team"]["name"])]
