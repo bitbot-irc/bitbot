@@ -127,7 +127,14 @@ class Module(ModuleManager.BaseModule):
 
         github_event = event["headers"]["X-GitHub-Event"]
 
-        full_name = data["repository"]["full_name"]
+        full_name = None
+        if "respository" in data:
+            full_name = data["repository"]["full_name"]
+
+        organisation = None
+        if "organization" in data:
+            organisation = data["organization"]["login"]
+
         repo_username, repo_name = full_name.split("/", 1)
         hooks = self.bot.database.channel_settings.find_by_setting(
             "github-hook")
@@ -136,7 +143,9 @@ class Module(ModuleManager.BaseModule):
         repo_hooked = False
         for i, (server_id, channel_name, hooked_repos) in list(
                 enumerate(hooks))[::-1]:
-            if repo_username in hooked_repos or full_name in hooked_repos:
+            if (repo_username in hooked_repos or
+                    full_name in hooked_repos or
+                    organisation in hooked_repos):
                 repo_hooked = True
                 server = self.bot.get_server(server_id)
                 if server and channel_name in server.channels:
@@ -180,7 +189,8 @@ class Module(ModuleManager.BaseModule):
         if outputs:
             for server, channel in targets:
                 for output in outputs:
-                    output = "(%s) %s" % (full_name, output)
+                    source = full_name or organisation
+                    output = "(%s) %s" % (source, output)
                     self.events.on("send.stdout").call(target=channel,
                         module_name="Github", server=server, message=output,
                         hide_prefix=channel.get_setting(
