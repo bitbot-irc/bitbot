@@ -161,7 +161,7 @@ def _format_tokens(s: str) -> typing.List[str]:
     matches = [] # type: typing.List[str]
 
     for i, char in enumerate(s):
-        last_char = i == len(s)
+        last_char = i == len(s)-1
         if is_color:
             can_add = False
             current_color = background if is_background else foreground
