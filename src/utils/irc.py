@@ -160,27 +160,22 @@ def _format_tokens(s: str) -> typing.List[str]:
     is_background = False
     matches = [] # type: typing.List[str]
 
-    for char in s:
+    for i, char in enumerate(s):
+        last_char = i == len(s)
         if is_color:
             can_add = False
             current_color = background if is_background else foreground
+            color_finished = False
             if char.isdigit() and len(current_color) < 2:
-                if current_color:
-                    next_color = int(current_color + char)
-                    can_add = next_color <= 99
-                else:
-                    can_add = True
-
-            if can_add:
                 if is_background:
                     background += char
                 else:
                     foreground += char
-                continue
-            elif char == "," and not is_background:
+                color_finished = (len(current_color)+1) == 2
+
+            if char == "," and not is_background:
                 is_background = True
-                continue
-            else:
+            elif not char.isdigit() or (color_finished and last_char):
                 color = foreground
                 if background:
                     color += ","+background
