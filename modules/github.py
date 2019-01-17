@@ -43,6 +43,10 @@ COMMENT_ACTIONS = {
     "deleted": "deleted a comment"
 }
 
+ISSUE_ACTIONS = ["opened", "closed", "reopened", "edited", "deleted"]
+PULL_REQUEST_ACTIONS = ["opened", "closed", "reopened", "edited",
+    "synchronized"]
+
 @utils.export("channelset", {"setting": "github-hook",
     "help": ("Disable/Enable showing BitBot's github commits in the "
     "current channel"), "array": True})
@@ -300,6 +304,9 @@ class Module(ModuleManager.BaseModule):
         branch = data["pull_request"]["base"]["ref"]
         colored_branch = utils.irc.color(branch, utils.consts.LIGHTBLUE)
 
+        if not action in PULL_REQUEST_ACTIONS:
+            return
+
         if action == "opened":
             action_desc = "requested merge into %s" % colored_branch
         elif action == "closed":
@@ -312,10 +319,6 @@ class Module(ModuleManager.BaseModule):
                     utils.consts.RED)
         elif action == "synchronize":
             action_desc = "committed to"
-        elif action == "labeled":
-            action_desc = "labeled as '%s'" % data["label"]["name"]
-        elif action == "unlabeled":
-            action_desc = "unlabeled as '%s'" % data["label"]["name"]
 
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
@@ -348,10 +351,9 @@ class Module(ModuleManager.BaseModule):
         number = data["issue"]["number"]
         action = data["action"]
         action_desc = action
-        if action == "labeled":
-            action_desc = "labeled as '%s'" % data["label"]["name"]
-        elif action == "unlabeled":
-            action_desc = "unlabeled as '%s'" % data["label"]["name"]
+
+        if not action in ISSUE_ACTIONS:
+            return
 
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
