@@ -18,7 +18,7 @@ EVENT_CATEGORIES = {
     "code":  ["push", "commit_comment"],
     "pr":    ["pull_request", "pull_request_review",
         "pull_request_review_commend"],
-    "issue": ["issue", "issue_comment"],
+    "issue": ["issues", "issue_comment"],
     "repo":  ["create", "delete", "release", "fork"],
     "team":  ["membership"]
 }
