@@ -68,7 +68,7 @@ class Out(object):
 
 class StdOut(Out):
     def prefix(self):
-        return utils.irc.color(self.module_name, utils.consts.LIGHTGREEN)
+        return utils.irc.color(self.module_name, utils.consts.GREEN)
 class StdErr(Out):
     def prefix(self):
         return utils.irc.color("!"+self.module_name, utils.consts.RED)
