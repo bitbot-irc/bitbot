@@ -205,7 +205,7 @@ class Module(ModuleManager.BaseModule):
         elif github_event == "fork":
             outputs = self.fork(event, full_name, data)
         elif github_event == "ping":
-            outputs = self.ping(event, full_name, data)
+            outputs = self.ping(event, data)
         elif github_event == "membership":
             outputs = self.membership(event, organisation, data)
 
@@ -229,7 +229,7 @@ class Module(ModuleManager.BaseModule):
         except utils.http.HTTPTimeoutException:
             return url
 
-    def ping(self, event, full_name, data):
+    def ping(self, event, data):
         return ["Received new webhook"]
 
     def _change_count(self, n, symbol, color):
