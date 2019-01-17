@@ -41,7 +41,7 @@ class Module(ModuleManager.BaseModule):
 
     def _on_notice(self, event, sender, target):
         self.print_line(event, "(notice->%s) <%s> %s" % (
-            target, event["user"].nickname, event["message"]))
+            target, sender, event["message"]))
     @utils.hook("received.notice.channel",
         priority=EventManager.PRIORITY_HIGH)
     def channel_notice(self, event):
