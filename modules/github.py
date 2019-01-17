@@ -14,13 +14,27 @@ DEFAULT_EVENT_CATEGORIES = [
     "ping", "code", "pr", "issue", "repo"
 ]
 EVENT_CATEGORIES = {
-    "ping":  ["ping"],
-    "code":  ["push", "commit_comment"],
-    "pr":    ["pull_request", "pull_request_review",
-        "pull_request_review_commend"],
-    "issue": ["issues", "issue_comment"],
-    "repo":  ["create", "delete", "release", "fork"],
-    "team":  ["membership"]
+    "ping":  [
+        "ping" # new webhook received
+    ],
+    "code":  [
+        "push", "commit_comment"
+    ],
+    "pr":    [
+        "pull_request", "pull_request_review", "pull_request_review_commend"
+    ],
+    "issue": [
+        "issues", "issue_comment"
+    ],
+    "repo":  [
+        "create", # a repository, branch or tage has been created
+        "delete", # same as above but deleted
+        "release",
+        "fork"
+    ],
+    "team":  [
+        "membership"
+    ]
 }
 
 COMMENT_ACTIONS = {
