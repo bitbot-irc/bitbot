@@ -8,7 +8,7 @@
 Same as above but with `remove` instead of `add`
 
 ## Modifying shown events
-`!ghwebhook events [hook] [events]` where `[events]` is a space-separated list of the following
+`!ghwebhook events [hook] [events]` where `[events]` is either a raw event (see (here)[https://developer.github.com/v3/activity/events/types/]) or a space-separated list of the following
 
 #### ping
 Shows when a newly registered web hook first hits BitBot
