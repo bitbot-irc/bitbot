@@ -1,4 +1,4 @@
-import gc, glob, imp, io, inspect, os, sys, typing, uuid
+import enum, gc, glob, imp, io, inspect, os, sys, typing, uuid
 from src import Config, EventManager, Exports, IRCBot, Logging, Timers, utils
 
 class ModuleException(Exception):
@@ -17,6 +17,10 @@ class ModuleUnloadException(ModuleException):
 
 class ModuleNotLoadedWarning(ModuleWarning):
     pass
+
+class ModuleType(enum.Enum):
+    FILE = 0
+    DIRECTORY = 1
 
 class BaseModule(object):
     def __init__(self,
@@ -64,13 +68,22 @@ class ModuleManager(object):
         self.modules = {} # type: typing.Dict[str, LoadedModule]
         self.waiting_requirement = {} # type: typing.Dict[str, typing.Set[str]]
 
-    def list_modules(self) -> typing.List[str]:
-        return sorted(glob.glob(os.path.join(self.directory, "*.py")))
+    def list_modules(self) -> typing.List[typing.Tuple[ModuleType, str]]:
+        modules = []
+
+        for file_module in glob.glob(os.path.join(self.directory, "*.py")):
+            modules.append((ModuleType.FILE, file_module))
+
+        for directory_module in glob.glob(os.path.join(
+                self.directory, "*", "module.py")):
+            directory = os.path.dirname(directory_module)
+            modules.append((ModuleType.DIRECTORY, directory))
+        return sorted(modules, key=lambda module: module[1])
 
     def _module_name(self, path: str) -> str:
         return os.path.basename(path).rsplit(".py", 1)[0].lower()
     def _module_path(self, name: str) -> str:
-        return os.path.join(self.directory, "%s.py" % name)
+        return os.path.join(self.directory, name)
     def _import_name(self, name: str) -> str:
         return "bitbot_%s" % name
 
@@ -80,6 +93,11 @@ class ModuleManager(object):
 
     def _load_module(self, bot: "IRCBot.Bot", name: str) -> LoadedModule:
         path = self._module_path(name)
+        if os.path.isdir(path) and os.path.isfile(os.path.join(
+                path, "module.py")):
+            path = os.path.join(path, "module.py")
+        else:
+            path = "%s.py" % path
 
         for hashflag, value in utils.parse.hashflags(path):
             if hashflag == "ignore":
@@ -155,7 +173,7 @@ class ModuleManager(object):
 
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
             blacklist: typing.List[str]=[]):
-        for path in self.list_modules():
+        for type, path in self.list_modules():
             name = self._module_name(path)
             if name in whitelist or (not whitelist and not name in blacklist):
                 try:
