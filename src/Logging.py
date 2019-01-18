@@ -67,4 +67,4 @@ class Log(object):
     def critical(self, message: str, params: typing.List, **kwargs):
         self._log(message, params, logging.CRITICAL, kwargs)
     def _log(self, message: str, params: typing.List, level: int, kwargs: dict):
-            self.logger.log(level, message, *params, **kwargs)
+        self.logger.log(level, message, *params, **kwargs)
