@@ -193,6 +193,9 @@ class Module(ModuleManager.BaseModule):
                 all_hooks[existing_hook]["events"] = new_events
                 event["target"].set_setting("github-hooks", all_hooks)
                 event["stdout"].write("Updated events for hook %s" % hook)
+        else:
+            event["stderr"].write("Unknown command '%s'" %
+                event["args_split"][0])
 
     @utils.hook("api.post.github")
     def webhook(self, event):
