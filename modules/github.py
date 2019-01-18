@@ -14,25 +14,41 @@ DEFAULT_EVENT_CATEGORIES = [
     "ping", "code", "pr", "issue", "repo"
 ]
 EVENT_CATEGORIES = {
-    "ping":  [
+    "ping": [
         "ping" # new webhook received
     ],
-    "code":  [
+    "code": [
         "push", "commit_comment"
     ],
-    "pr":    [
-        "pull_request", "pull_request_review", "pull_request_review_commend"
+    "pr-minimal": [
+        "pull_request/opened", "pull_request/closed", "pull_request/reopened"
+    ],
+    "pr": [
+        "pull_request/opened", "pull_request/closed", "pull_request/reopened",
+        "pull_request/edited", "pull_request/assigned",
+        "pull_request/unassigned", "pull_request_review",
+        "pull_request_review_comment"
+    ],
+    "pr-all": [
+        "pull_request", "pull_request_review", "pull_request_review_comment"
+    ],
+    "issue-minimal": [
+        "issues/opened", "issues/closed", "issues/reopened", "issues/deleted"
     ],
     "issue": [
+        "issues/opened", "issues/closed", "issues/reopened", "issues/deleted",
+        "issues/edited", "issues/assigned", "issues/unassigned", "issue_comment"
+    ],
+    "issue-all": [
         "issues", "issue_comment"
     ],
-    "repo":  [
+    "repo": [
         "create", # a repository, branch or tage has been created
         "delete", # same as above but deleted
         "release",
         "fork"
     ],
-    "team":  [
+    "team": [
         "membership"
     ]
 }
@@ -42,10 +58,6 @@ COMMENT_ACTIONS = {
     "edited":  "edited a comment",
     "deleted": "deleted a comment"
 }
-
-ISSUE_ACTIONS = ["opened", "closed", "reopened", "edited", "deleted"]
-PULL_REQUEST_ACTIONS = ["opened", "closed", "reopened", "edited",
-    "synchronized"]
 
 @utils.export("channelset", {"setting": "github-hook",
     "help": ("Disable/Enable showing BitBot's github commits in the "
@@ -157,6 +169,10 @@ class Module(ModuleManager.BaseModule):
         if "organization" in data:
             organisation = data["organization"]["login"]
 
+        event_action = None
+        if "action" in data:
+            event_action = "%s/%s" % (github_event, data["action"])
+
         hooks = self.bot.database.channel_settings.find_by_setting(
             "github-hook")
         targets = []
@@ -177,7 +193,8 @@ class Module(ModuleManager.BaseModule):
                     github_events = list(itertools.chain(
                         *[EVENT_CATEGORIES[c] for c in event_categories]))
 
-                    if github_event in github_events:
+                    if (github_event in github_events or
+                            (event_action and event_action in github_events)):
                         targets.append([server, channel])
 
         if not targets:
@@ -304,9 +321,6 @@ class Module(ModuleManager.BaseModule):
         branch = data["pull_request"]["base"]["ref"]
         colored_branch = utils.irc.color(branch, utils.consts.LIGHTBLUE)
 
-        if not action in PULL_REQUEST_ACTIONS:
-            return
-
         if action == "opened":
             action_desc = "requested merge into %s" % colored_branch
         elif action == "closed":
@@ -351,9 +365,6 @@ class Module(ModuleManager.BaseModule):
         number = data["issue"]["number"]
         action = data["action"]
         action_desc = action
-
-        if not action in ISSUE_ACTIONS:
-            return
 
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
