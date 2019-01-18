@@ -188,7 +188,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 new_events = [e.lower() for e in event["args_split"][2:]]
                 all_hooks[existing_hook]["events"] = new_events
-                event["target"].set_setting("github-hooks", all_hook)
+                event["target"].set_setting("github-hooks", all_hooks)
                 event["stdout"].write("Updated events for hook %s" % hook)
 
     @utils.hook("api.post.github")
