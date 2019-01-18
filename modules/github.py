@@ -59,17 +59,11 @@ COMMENT_ACTIONS = {
     "deleted": "deleted a comment"
 }
 
-@utils.export("channelset", {"setting": "github-hook",
-    "help": ("Disable/Enable showing BitBot's github commits in the "
-    "current channel"), "array": True})
 @utils.export("channelset", {"setting": "github-hide-prefix",
     "help": "Hide/show command-like prefix on Github hook outputs",
     "validate": utils.bool_or_none})
 @utils.export("channelset", {"setting": "github-default-repo",
     "help": "Set the default github repo for the current channel"})
-@utils.export("channelset", {"setting": "github-events",
-    "help": "Set event category filters for github webhooks",
-    "validate": lambda s: s.split("|")})
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
         repo, _, number = ref.rpartition("#")
@@ -148,6 +142,55 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Issue/PR not found")
 
+    @utils.hook("received.command.ghwebhook", min_args=2, channel_only=True)
+    def github_webhook(self, event):
+        """
+        :help: Add/remove/modify a github webhook
+        :require_mode: high
+        :usage: add <hook>
+        :usage: remove <hook>
+        :usage: events <hook> [category [category...]]
+        """
+        all_hooks = event["target"].get_setting("github-hooks", {})
+        hook = event["args_split"][1]
+        existing_hook = None
+        for existing_hook_name in all_hooks.keys():
+            if existing_hook_name.lower() == hook.lower():
+                existing_hook = existing_hook_name
+                break
+
+        if event["args_split"][0] == "add":
+            if existing_hook:
+                event["stderr"].write("There's already a hook for %s" % hook)
+                return
+
+            all_hooks[hook] = {
+                "events": DEFAULT_EVENT_CATEGORIES.copy(),
+                "branches": []
+            }
+            event["target"].set_setting("github-hooks", all_hooks)
+            event["stdout"].write("Added hook for %s" % hook)
+        elif event["args_split"][0] == "remove":
+            if not existing_hook:
+                event["stderr"].write("No hook found for %s" % hook)
+                return
+            del all_hooks[existing_hook]
+            event["target"].set_setting("github-hooks", all_hooks)
+            event["stdout"].write("Removed hook for %s" % hook)
+        elif event["args_split"][0] == "events":
+            if not existing_hook:
+                event["stderr"].write("No hook found for %s" % hook)
+                return
+
+            if len(event["args_split"]) < 3:
+                event["stdout"].write("Events for hook %s: %s" %
+                    (hook, ", ".join(all_hooks[existing_hook]["events"])))
+            else:
+                new_events = [e.lower() for e in event["args_split"][2:]]
+                all_hooks[existing_hook]["events"] = new_events
+                event["target"].set_setting("github-hooks", all_hook)
+                event["stdout"].write("Updated events for hook %s" % hook)
+
     @utils.hook("api.post.github")
     def webhook(self, event):
         payload = event["data"].decode("utf8")
@@ -173,28 +216,35 @@ class Module(ModuleManager.BaseModule):
         if "action" in data:
             event_action = "%s/%s" % (github_event, data["action"])
 
+        branch = None
+        if "ref" in data:
+            branch = data["ref"].split("/", 2)[2]
+
         hooks = self.bot.database.channel_settings.find_by_setting(
-            "github-hook")
+            "github-hooks")
         targets = []
 
         repo_hooked = False
         for i, (server_id, channel_name, hooked_repos) in list(
                 enumerate(hooks))[::-1]:
-            if (repo_username in hooked_repos or
-                    full_name in hooked_repos or
-                    organisation in hooked_repos):
+            found_hook = None
+            if repo_username and repo_username in hooked_repos:
+                found_hook = hooked_repos[repo_username]
+            elif full_name and full_name in hooked_repos:
+                found_hook = hooked_repos[full_name]
+            elif organisation and organisation in hooked_repos:
+                found_hook = hooked_repos[organisation]
+
+            if found_hook:
                 repo_hooked = True
                 server = self.bot.get_server(server_id)
                 if server and channel_name in server.channels:
                     channel = server.channels.get(channel_name)
 
-                    event_categories = channel.get_setting(
-                        "github-events", DEFAULT_EVENT_CATEGORIES)
-
                     github_events = []
-                    for category in event_categories:
+                    for event in found_hook["events"]:
                         github_events.append(EVENT_CATEGORIES.get(
-                            category, [category]))
+                            event, [event]))
                     github_events = list(itertools.chain(*github_events))
 
                     if (github_event in github_events or
