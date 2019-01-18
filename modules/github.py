@@ -190,8 +190,11 @@ class Module(ModuleManager.BaseModule):
 
                     event_categories = channel.get_setting(
                         "github-events", DEFAULT_EVENT_CATEGORIES)
-                    github_events = list(itertools.chain(
-                        *[EVENT_CATEGORIES[c] for c in event_categories]))
+
+                    github_events = []
+                    for category in event_categories:
+                        github_events.append(EVENT_CATEGORIES.get(c, [c]))
+                    github_events = list(itertools.chain(*github_events))
 
                     if (github_event in github_events or
                             (event_action and event_action in github_events)):
