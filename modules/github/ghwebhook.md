@@ -10,34 +10,34 @@ Same as above but with `remove` instead of `add`
 ## Modifying shown events
 `!ghwebhook events [hook] [events]` where `[events]` is a space-separated list of the following
 
-### ping
+#### ping
 Shows when a newly registered web hook first hits BitBot
 
-### code
+#### code
 Shows for commits and comments on commits
 
-### pr-minimal
+#### pr-minimal
 Shows minimal pull request actions; opened, closed, reopened
 
-### pr
+#### pr
 Shows the same actions as `pr-minimal` and also: edited, assigned, unassigned, review requests, comments on review requests
 
-### pr-all
+#### pr-all
 Shows the same actions as `pr` and also: labeled, unlabeled
 
-### issue-minimal
+#### issue-minimal
 Shows minimal issue actions; opened, closed, reopened, deleted
 
-### issue
+#### issue
 Shows the same actions as `issue-minimal` and also: edited, assigned, unassigned, comments on issues
 
-### issue-all
+#### issue-all
 Shows the same actions as `issue` and also: transferred, pinned, unpinned, labeled, unlabeled, milestoned, demilestoned
 
-### repo
+#### repo
 Shows events related repositories themselves; repository/branch/tag created, repository/branch/tag deleted, release created, fork created
 
-### team
+#### team
 Shows when users are added or removed from teams
 
 ## List shown events
