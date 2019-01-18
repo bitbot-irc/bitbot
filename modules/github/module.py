@@ -175,7 +175,10 @@ class Module(ModuleManager.BaseModule):
                 event["stderr"].write("No hook found for %s" % hook)
                 return
             del all_hooks[existing_hook]
-            event["target"].set_setting("github-hooks", all_hooks)
+            if all_hooks:
+                event["target"].set_setting("github-hooks", all_hooks)
+            else:
+                event["target"].del_setting("github-hooks")
             event["stdout"].write("Removed hook for %s" % hook)
         elif event["args_split"][0] == "events":
             if not existing_hook:
