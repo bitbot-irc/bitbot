@@ -149,7 +149,8 @@ class Module(ModuleManager.BaseModule):
         :require_mode: high
         :usage: add <hook>
         :usage: remove <hook>
-        :usage: events <hook> [category [category...]]
+        :usage: events <hook> [category [category ...]]
+        :usage: branches <hook> [branch [branch ...]]
         """
         all_hooks = event["target"].get_setting("github-hooks", {})
         hook = event["args_split"][1]
@@ -193,6 +194,19 @@ class Module(ModuleManager.BaseModule):
                 all_hooks[existing_hook]["events"] = new_events
                 event["target"].set_setting("github-hooks", all_hooks)
                 event["stdout"].write("Updated events for hook %s" % hook)
+        elif event["args_split"][0] == "branches":
+            if not existing_hook:
+                event["stderr"].write("No hook found for %s" % hook)
+                return
+
+            if len(event["args_split"]) < 3:
+                event["stdout"].write("Branches shown for hook %s: %s" %
+                    (hook, ", ".join(all_hooks[existing_hook]["branches"])))
+            else:
+                all_hooks[existing_hook]["branches"] = event["args_split"][2:]
+                event["target"].set_setting("github-hooks", all_hooks)
+                event["stdout"].write("Updated shown branches for hook %s" %
+                    hook)
         else:
             event["stderr"].write("Unknown command '%s'" %
                 event["args_split"][0])
@@ -245,7 +259,10 @@ class Module(ModuleManager.BaseModule):
                 repo_hooked = True
                 server = self.bot.get_server(server_id)
                 if server and channel_name in server.channels:
-                    channel = server.channels.get(channel_name)
+                    if (branch and
+                            found_hook["branches"] and
+                            not branch in found_hook["branches"]):
+                        continue
 
                     github_events = []
                     for event in found_hook["events"]:
@@ -253,6 +270,7 @@ class Module(ModuleManager.BaseModule):
                             event, [event]))
                     github_events = list(itertools.chain(*github_events))
 
+                    channel = server.channels.get(channel_name)
                     if (github_event in github_events or
                             (event_action and event_action in github_events)):
                         targets.append([server, channel])
