@@ -8,7 +8,7 @@
 Same as above but with `remove` instead of `add`
 
 ## Modifying shown events
-`!ghwebhook events [hook] [events]` where `[events]` is a space-separated list of either raw events (see [here](https://developer.github.com/v3/activity/events/types/)) or the following
+`!ghwebhook events [hook] [events]` where `[hook]` is the `[name]` used in the `add` command and where `[events]` is a space-separated list of either raw events (see [here](https://developer.github.com/v3/activity/events/types/)) or the following
 
 #### ping
 Shows when a newly registered web hook first hits BitBot
@@ -42,3 +42,9 @@ Shows when users are added or removed from teams
 
 ## List shown events
 `!ghwebhook events [hook]`
+
+## Modify shown branches
+`!ghwebhook branches [hook] [branches]` where `[hook]` is the `[name]` used in the `add` command and where `[branches]` is a space-separated list of branch names
+
+## List shown branches
+`!ghwebhook branches [hook]`
