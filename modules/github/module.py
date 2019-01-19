@@ -337,8 +337,7 @@ class Module(ModuleManager.BaseModule):
             for commit in data["commits"]:
                 id = self._short_hash(commit["id"])
                 message = commit["message"].split("\n")[0].strip()
-                author = commit["author"]["name"] or commit["author"]["login"]
-                author = utils.irc.bold(author)
+                author = utils.irc.bold(commit["author"]["login"])
                 url = self._short_url(COMMIT_URL % (full_name, id))
 
                 added = self._added(len(commit["added"]))
