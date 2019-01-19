@@ -14,6 +14,9 @@ Use `pip3 install -r requirements.txt` to install them all at once.
 ## Configurating
 To get BitBot off the ground, there's some API-keys and the like in bot.conf.example. move it to bot.conf, fill in the API keys you want (and remove the ones you don't want - this will automatically disable the modules that rely on them.)
 
+## Github web hooks
+I run BitBot as-a-serivce on most popular network and offer github-to-IRC web hook notifications for free to FOSS projects. Contact me for more info!
+
 ## Eagle
 BitBot's National Rail module can optionally include output from Network Rail's SCHEDULE via [Eagle](https://github.com/EvelynSubarrow/Eagle). Configuration on BitBot's end is covered by the `eagle-` keys in bot.conf.example.
 
