@@ -161,7 +161,7 @@ class Module(ModuleManager.BaseModule):
                 existing_hook = existing_hook_name
                 break
 
-        subcommand = event["args_split"][0].lower9)
+        subcommand = event["args_split"][0].lower()
         if subcommand == "list":
             event["stdout"].write("Registered web hooks: %s" %
                 ", ".join(all_hooks.keys()))
