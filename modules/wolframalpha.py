@@ -19,7 +19,7 @@ class Module(ModuleManager.BaseModule):
                 get_params={"i": event["args"],
                 "appid": self.bot.config["wolframalpha-api-key"],
                 "reinterpret": "true", "units": "metric"}, code=True)
-        except HTTPTimeoutException:
+        except utils.http.HTTPTimeoutException:
             page = None
 
         if page:
