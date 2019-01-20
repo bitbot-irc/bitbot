@@ -1,5 +1,8 @@
 # !ghwebhook
 
+## List registered web hooks
+`!ghwebhook list`
+
 ## Adding a web hook
 
 `!ghwebhook add [name]` where `[name]` is either a full repository name (e.g. `jesopo/bitbot`) to get a specific repository or a user/organisation name (e.g. `jesopo`) to get all repositories for that user/organisation
