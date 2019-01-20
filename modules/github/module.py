@@ -147,6 +147,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Add/remove/modify a github webhook
         :require_mode: high
+        :usage: list
         :usage: add <hook>
         :usage: remove <hook>
         :usage: events <hook> [category [category ...]]
@@ -160,7 +161,11 @@ class Module(ModuleManager.BaseModule):
                 existing_hook = existing_hook_name
                 break
 
-        if event["args_split"][0] == "add":
+        subcommand = event["args_split"][0].lower9)
+        if subcommand == "list":
+            event["stdout"].write("Registered web hooks: %s" %
+                ", ".join(all_hooks.keys()))
+        elif subcommand == "add":
             if existing_hook:
                 event["stderr"].write("There's already a hook for %s" % hook)
                 return
@@ -171,7 +176,7 @@ class Module(ModuleManager.BaseModule):
             }
             event["target"].set_setting("github-hooks", all_hooks)
             event["stdout"].write("Added hook for %s" % hook)
-        elif event["args_split"][0] == "remove":
+        elif subcommand == "remove":
             if not existing_hook:
                 event["stderr"].write("No hook found for %s" % hook)
                 return
@@ -181,7 +186,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["target"].del_setting("github-hooks")
             event["stdout"].write("Removed hook for %s" % hook)
-        elif event["args_split"][0] == "events":
+        elif subcommand == "events":
             if not existing_hook:
                 event["stderr"].write("No hook found for %s" % hook)
                 return
@@ -194,7 +199,7 @@ class Module(ModuleManager.BaseModule):
                 all_hooks[existing_hook]["events"] = new_events
                 event["target"].set_setting("github-hooks", all_hooks)
                 event["stdout"].write("Updated events for hook %s" % hook)
-        elif event["args_split"][0] == "branches":
+        elif subcommand == "branches":
             if not existing_hook:
                 event["stderr"].write("No hook found for %s" % hook)
                 return
