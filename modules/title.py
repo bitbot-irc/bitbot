@@ -23,7 +23,9 @@ class Module(ModuleManager.BaseModule):
 
         try:
             page = utils.http.request(url, soup=True)
-        except:
+        except Exception as e:
+            self.log.error("failed to get URL title", exc_info=True)
+            page = None
             pass
 
         if not page:
