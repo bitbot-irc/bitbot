@@ -17,7 +17,7 @@ To get BitBot off the ground, there's some API-keys and the like in bot.conf.exa
 Run `./start.py` to run the bot with default settings (`--help` for more information) which will ask you for server details the first time you run it (run it again after filling out that information to get the bot going.) If you need to add more servers, use `./start.py --add-server`.
 
 ## Github web hooks
-I run BitBot as-a-serivce on most popular network and offer github-to-IRC web hook notifications for free to FOSS projects. Contact me for more information!
+I run BitBot as-a-serivce on most popular networks and offer github-to-IRC web hook notifications for free to FOSS projects. Contact me for more information!
 
 ## Eagle
 BitBot's National Rail module can optionally include output from Network Rail's SCHEDULE via [Eagle](https://github.com/EvelynSubarrow/Eagle). Configuration on BitBot's end is covered by the `eagle-` keys in bot.conf.example.
