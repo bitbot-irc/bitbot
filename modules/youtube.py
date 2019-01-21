@@ -114,7 +114,11 @@ class Module(ModuleManager.BaseModule):
                 else:
                     raise utils.EventsResultsError()
             if video_id:
-                event["stdout"].write(self.video_details(video_id))
+                details = self.video_details(video_id)
+                if details:
+                    event["stdout"].write(self.video_details(video_id))
+                else:
+                    raise utils.EventResultsError()
             else:
                 event["stderr"].write("No search phrase provided")
         else:
