@@ -67,8 +67,8 @@ class Module(ModuleManager.BaseModule):
                 get_params={"app_id": app_id, "app_key": app_key},
                 json=True)
             bus_stop = bus_search.data["matches"][0]
-            real_stop_id = bus_stop.data["id"]
-            stop_name = bus_stop.data["name"]
+            real_stop_id = bus_stop["id"]
+            stop_name = bus_stop["name"]
         else:
             bus_stop = utils.http.request(URL_STOP % stop_id,
                 get_params={"app_id": app_id, "app_key": app_key},
