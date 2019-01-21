@@ -26,7 +26,7 @@ Shows minimal pull request actions; opened, closed, reopened
 Shows the same actions as `pr-minimal` and also: edited, assigned, unassigned, review requests, comments on review requests
 
 #### pr-all
-Shows the same actions as `pr` and also: labeled, unlabeled
+Shows the same actions as `pr` and also: labeled, unlabeled, new commits
 
 #### issue-minimal
 Shows minimal issue actions; opened, closed, reopened, deleted
