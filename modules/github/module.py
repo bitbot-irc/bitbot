@@ -70,7 +70,9 @@ class Module(ModuleManager.BaseModule):
         if not repo:
             repo = channel.get_setting("github-default-repo", None)
 
-        username, _, repository = repo.partition("/")
+        username, repository = None, None
+        if repo:
+            username, _, repository = repo.partition("/")
 
         if not username or not repository or not number:
             raise utils.EventError("Please provide username/repo#number")
