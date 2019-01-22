@@ -200,7 +200,7 @@ class Module(ModuleManager.BaseModule):
 
             if len(event["args_split"]) < 3:
                 event["stdout"].write("Events for hook %s: %s" %
-                    (hook, ", ".join(all_hooks[existing_hook]["events"])))
+                    (hook, " ".join(all_hooks[existing_hook]["events"])))
             else:
                 new_events = [e.lower() for e in event["args_split"][2:]]
                 all_hooks[existing_hook]["events"] = new_events
