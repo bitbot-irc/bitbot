@@ -524,4 +524,4 @@ class Module(ModuleManager.BaseModule):
             data["team"]["name"])]
 
     def watch(self, event, data):
-        return ["%s starred the repository" % data["sender"]["login"])
+        return ["%s starred the repository" % data["sender"]["login"]]
