@@ -50,6 +50,11 @@ EVENT_CATEGORIES = {
     ],
     "team": [
         "membership"
+    ],
+    "star": [
+        # "watch" is a misleading name for this event so this add "star" as an
+        # alias for "watch"
+        "watch"
     ]
 }
 
@@ -314,6 +319,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.ping(event, data)
         elif github_event == "membership":
             outputs = self.membership(event, organisation, data)
+        elif github_event == "watch":
+            outputs = self.watch(event, data)
 
         if outputs:
             for server, channel in targets:
@@ -515,3 +522,6 @@ class Module(ModuleManager.BaseModule):
         return ["%s %s %s to team %s" %
             (data["sender"]["login"], data["action"], data["member"]["login"],
             data["team"]["name"])]
+
+    def watch(self, event, data):
+        return ["%s starred the repository" % data["sender"]["login"])
