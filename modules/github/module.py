@@ -250,10 +250,7 @@ class Module(ModuleManager.BaseModule):
 
         branch = None
         if "ref" in data:
-            if "/" in data["ref"]:
-                branch = data["ref"].split("/", 2)[2]
-            else:
-                branch = data["ref"]
+            _, _, branch = data["ref"].rpartition("/")
 
         hooks = self.bot.database.channel_settings.find_by_setting(
             "github-hooks")
