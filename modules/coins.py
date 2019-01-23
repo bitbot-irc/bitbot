@@ -438,7 +438,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("timer.coin-interest")
     def interest(self, event):
         for server in self.bot.servers.values():
-            if not server.get_value("coin-interest", False):
+            if not server.get_setting("coin-interest", False):
                 continue
             all_coins = self._all_coins(server)
 
