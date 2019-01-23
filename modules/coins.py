@@ -62,7 +62,7 @@ class Module(ModuleManager.BaseModule):
     def _all_coins(self, server):
         all_coins = server.get_all_user_settings("coins", [])
 
-        for i, (nickname, coins) in enumerate(coins):
+        for i, (nickname, coins) in enumerate(all_coins):
             all_coins[i] = (nickname, decimal.Decimal(coins))
 
         return dict(filter(lambda coin: coin[1], all_coins))
