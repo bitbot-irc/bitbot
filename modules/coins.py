@@ -7,7 +7,6 @@ DEFAULT_REDEEM_AMOUNT = "100.0"
 DEFAULT_INTEREST_RATE = "0.01"
 INTEREST_INTERVAL = 60*60 # 1 hour
 REGEX_FLOAT = re.compile("(?:\d+(?:\.\d{1,2}|$)|\.\d{1,2})")
-DEFAULT_MARKET_CAP = str(1000000000)
 
 DECIMAL_ZERO = decimal.Decimal("0")
 DECIMAL_BET_MINIMUM = decimal.Decimal("0.01")
@@ -34,10 +33,6 @@ REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 REGEX_DOUBLESTREET = re.compile("2street([1-9]|1[0-1])$")
 REGEX_CORNER = re.compile("([lr])corner([1-9]|1[0-1])$")
 
-WALLET_DEFAULT_NAME = "default"
-WALLET_DEFAULTS = {"in": WALLET_DEFAULT_NAME, "out": WALLET_DEFAULT_NAME,
-    "interest": WALLET_DEFAULT_NAME, "lottery": WALLET_DEFAULT_NAME}
-
 class CoinParseException(Exception):
     pass
 
@@ -59,51 +54,16 @@ class Module(ModuleManager.BaseModule):
         until_next_6_hour = until_next_6_hour*HOUR_SECONDS
         return until_next_hour+until_next_6_hour
 
-    def _get_pool(self, server):
-        return decimal.Decimal(server.get_setting("coins", DEFAULT_MARKET_CAP))
-    def _set_pool(self, server, amount):
-        server.set_setting("coins", self._coin_str(amount))
-    def _take_from_pool(self, server, amount):
-        coins = self._get_pool(server)
-        self._set_pool(server, coins-amount)
-    def _give_to_pool(self, server, amount):
-        coins = self._get_pool(server)
-        self._set_pool(server, coins+amount)
-
-    def _get_user_wallets(self, user):
-        return user.get_setting("wallets", {WALLET_DEFAULT_NAME: "0.0"})
-    def _set_user_wallets(self, user, wallets):
-        user.set_setting("wallets", wallets)
-    def _reset_user_wallets(self, user):
-        user.del_setting("wallets")
-    def _user_has_wallet(self, user, wallet):
-        return wallet.lower() in self._get_user_wallets(user)
-
-    def _get_user_coins(self, user, wallet=WALLET_DEFAULT_NAME):
-        wallets = self._get_user_wallets(user)
-        return decimal.Decimal(wallets.get(wallet.lower(), "0.0"))
-    def _get_all_user_coins(self, user):
-        wallets = self._get_user_wallets(user)
-        return sum(decimal.Decimal(amount) for amount in wallets.values())
-    def _set_user_coins(self, user, coins, wallet=WALLET_DEFAULT_NAME):
-        wallets = self._get_user_wallets(user)
-        wallets[wallet.lower()] = self._coin_str(coins)
-        self._set_user_wallets(user, wallets)
-    def _add_user_wallet(self, user, wallet):
-        wallets = self._get_user_wallets(user)
-        wallets[wallet.lower()] = "0.0"
-        self._set_user_wallets(user, wallets)
-    def _remove_user_wallet(self, user, wallet):
-        wallets = self._get_user_wallets(user)
-        del wallets[wallet.lower()]
-        self._set_user_wallets(user, wallets)
+    def _get_user_coins(self, user):
+        return decimal.Decimal(user.get_setting("coins", "0.0"))
+    def _set_user_coins(self, user, coins):
+        user.set_setting("coins", self._coin_str(coins))
 
     def _all_coins(self, server):
-        coins = server.get_all_user_settings("wallets", [])
+        coins = server.get_all_user_settings("coins", [])
 
-        for i, (nickname, wallet) in enumerate(coins):
-            user_coins = sum(decimal.Decimal(v) for v in wallet.values())
-            coins[i] = (nickname, user_coins)
+        for i, (nickname, coins) in enumerate(coins):
+            coins[i] = (nickname, decimal.Decimal(coins))
 
         return dict(filter(lambda coin: coin[1], coins))
 
@@ -113,23 +73,20 @@ class Module(ModuleManager.BaseModule):
     def _redeem_delay(self, server):
         return server.get_setting("redeem-delay", DEFAULT_REDEEM_DELAY)
 
-    def _give(self, server, user, amount, wallet=WALLET_DEFAULT_NAME):
-        user_coins = self._get_user_coins(user, wallet)
-        self._take_from_pool(server, amount)
-        self._set_user_coins(user, user_coins+amount, wallet)
+    def _give(self, server, user, amount):
+        user_coins = self._get_user_coins(user)
+        self._set_user_coins(user, user_coins+amount)
         return user_coins+amount
-    def _take(self, server, user, amount, wallet=WALLET_DEFAULT_NAME):
-        user_coins = self._get_user_coins(user, wallet)
-        self._give_to_pool(server, amount)
-        self._set_user_coins(user, user_coins-amount, wallet)
+    def _take(self, server, user, amount):
+        user_coins = self._get_user_coins(user)
+        self._set_user_coins(user, user_coins-amount)
         return user_coins-amount
-    def _move(self, user1, user2, amount, from_wallet=WALLET_DEFAULT_NAME,
-            to_wallet=WALLET_DEFAULT_NAME):
-        user1_coins = self._get_user_coins(user1, from_wallet)
-        self._set_user_coins(user1, user1_coins-amount, from_wallet)
+    def _move(self, user1, user2, amount):
+        user1_coins = self._get_user_coins(user)
+        self._set_user_coins(user1, user1_coins-amount)
 
-        user2_coins = self._get_user_coins(user2, to_wallet)
-        self._set_user_coins(user2, user2_coins+amount, to_wallet)
+        user2_coins = self._get_user_coins(user2)
+        self._set_user_coins(user2, user2_coins+amount)
 
     def _coin_str(self, coins):
         return "{0:.2f}".format(coins)
@@ -153,61 +110,6 @@ class Module(ModuleManager.BaseModule):
             raise CoinParseException(
                 "Please provide a valid positive coin amount")
 
-    def _get_default_wallets(self, user):
-        return user.get_setting("default-wallets", WALLET_DEFAULTS.copy())
-    def _set_default_wallet(self, user, type, wallet):
-        default_wallets = self._get_default_wallets(user)
-        default_wallets[type.lower()] = wallet.lower()
-        user.set_setting("default-wallets", default_wallets)
-    def _default_wallet(self, user, type):
-        default_wallets = self._get_default_wallets(user)
-        return default_wallets.get(type.lower(), None)
-    def _default_wallets(self, user):
-        default_wallet_in = self._default_wallet(user, "in")
-        default_wallet_out = self._default_wallet(user, "out")
-        return default_wallet_in, default_wallet_out
-    def _default_wallet_for(self, user, wallet):
-        default_wallets = self._get_default_wallets(user)
-        for key, value in default_wallets.items():
-            if value.lower() == wallet.lower():
-                return key
-
-    def _parse_wallets(self, user, s):
-        if not s:
-            return self._default_wallets(user)
-        if not ":" in s:
-            return s, s
-        wallet_in_default, wallet_out_default = self._default_wallets(user)
-        wallet_1, _, wallet_2 = s.partition(":")
-        wallet_1 = wallet_1.lower() or wallet_in_Default
-        wallet_2 = wallet_2.lower() or wallet_out_default
-
-        wallets = self._get_user_wallets(user)
-        if not wallet_1 in wallets or not wallet_2 in wallets:
-            raise utils.EventError("Unknown wallet")
-
-        return wallet_1, wallet_2
-
-    @utils.hook("received.command.bank")
-    def bank(self, event):
-        """
-        :help: Show how many coins The Bank currently has
-        """
-        event["stdout"].write("The Bank has %s coins" %
-            self._coin_str(self._get_pool(event["server"])))
-
-    def _total_coins(self, server):
-        all_coins = sum(self._all_coins(server).values())
-        return self._get_pool(server)+all_coins
-
-    @utils.hook("received.command.totalcoins")
-    def total_coins(self, event):
-        """
-        :help: Show how many coins are currently in circulation
-        """
-        event["stdout"].write("Total coins: %s" % self._coin_str(
-            self._total_coins(event["server"])))
-
     @utils.hook("received.command.coins")
     def coins(self, event):
         """
@@ -217,85 +119,9 @@ class Module(ModuleManager.BaseModule):
             target = event["server"].get_user(event["args_split"][0])
         else:
             target = event["user"]
-        coins = self._get_all_user_coins(target)
+        coins = self._get_user_coins(target)
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             self._coin_str_human(coins), "" if coins == 1 else "s"))
-
-    @utils.hook("received.command.wallet")
-    def wallet(self, event):
-        """
-        :help: Show your wallets and their balances
-        :usage: [wallet]
-        """
-        if not event["args_split"]:
-            wallets = self._get_user_wallets(event["user"]).keys()
-            event["stdout"].write("%s: your available wallets are: %s" %
-                (event["user"].nickname, ", ".join(wallets)))
-        else:
-            wallet = event["args"]
-            if not self._user_has_wallet(event["user"], wallet):
-                raise utils.EventError("%s: you don't have a '%s' wallet" %
-                    (event["user"].nickname, wallet))
-            coins = self._get_user_coins(event["user"], wallet)
-            event["stdout"].write("%s: you have %s coins in your '%s' wallet" %
-                (event["user"].nickname, self._coin_str_human(coins), wallet))
-
-    @utils.hook("received.command.addwallet", authenticated=True, min_args=1)
-    def add_wallet(self, event):
-        """
-        :help: Add a wallet to your account
-        :usage: <wallet name>
-        """
-        wallet = event["args_split"][0]
-        if self._user_has_wallet(event["user"], wallet):
-            raise utils.EventError("%s: you already have a '%s' wallet" %
-                (event["user"].nickname, wallet))
-        self._add_user_wallet(event["user"], wallet)
-        event["stdout"].write("%s: added a '%s' wallet" % (
-            event["user"].nickname, wallet))
-    @utils.hook("received.command.removewallet", authenticated=True, min_args=1)
-    def remove_wallet(self, event):
-        """
-        :help: Remove a wallet from your account
-        :usage: <wallet name>
-        """
-        wallet = event["args_split"][0]
-        if not self._user_has_wallet(event["user"], wallet):
-            raise utils.EventError("%s: you don't have a '%s' wallet" %
-                (event["user"].nickname, wallet))
-        default_type = self._default_wallet_for(event["user"], wallet)
-        if default_type:
-            raise utils.EventError("%s: you cannot delete a default wallet "
-                "('%s' is the default wallet for '%s')" %
-                (event["user"].nickname, wallet, default_type))
-
-        coins = self._get_user_coins(event["user"], wallet)
-        in_wallet = self._default_wallet(event["user"], "in")
-        self._give(event["server"], event["user"], coins, in_wallet)
-        self._remove_user_wallet(event["user"], wallet)
-        event["stdout"].write("%s: removed wallet '%s' and shifted any funds "
-            "to your default 'in' wallet" % (event["user"].nickname, wallet))
-
-    @utils.hook("received.command.defaultwallet", authenticated=True,
-        min_args=1)
-    def default_wallet(self, event):
-        """
-        :help: Set a default wallet for a given wallet type
-        :usage: <type> [wallet]
-        """
-        type = event["args_split"][0]
-        if len(event["args_split"]) > 1:
-            wallet = event["args_split"][1]
-            if not self._user_has_wallet(event["user"], wallet):
-                raise utils.EventError("%s: Unknown wallet" %
-                    event["user"].nickname)
-            self._set_default_wallet(event["user"], type, wallet)
-            event["stdout"].write("%s: Set default wallet for '%s' to '%s'" %
-                (event["user"].nickname, type, wallet))
-        else:
-            wallet = self._default_wallet(event["user"], type)
-            event["stdout"].write("%s: Your default wallet for '%s' is '%s'" %
-                (event["user"].nickname, type, wallet))
 
     @utils.hook("received.command.resetcoins", min_args=1)
     def reset_coins(self, event):
@@ -305,30 +131,24 @@ class Module(ModuleManager.BaseModule):
         :permission: resetcoins
         """
         target = event["server"].get_user(event["args_split"][0])
-        coins = self._get_all_user_coins(target)
+        coins = self._get_user_coins(target)
         self._take(event["server"], target, coins)
-        self._reset_user_wallets(target)
         event["stdout"].write("Reset coins for %s" % target.nickname)
 
     @utils.hook("received.command.givecoins", min_args=1)
     def give_coins(self, event):
         """
         :help: Give coins to a user
-        :usage: <nickname> <coins> [wallet]
+        :usage: <nickname> <coins>
         :permission: givecoins
         """
-        _, wallet_out = self._default_wallets(event["user"])
-        if len(event["args_split"]) > 2:
-            _, wallet_out = self._parse_wallets(event["user"],
-                event["args_split"][2])
-
         target = event["server"].get_user(event["args_split"][0])
         try:
             coins = self._parse_coins(event["args_split"][1], DECIMAL_ZERO)
         except CoinParseException as e:
             raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
 
-        self._give(event["server"], target, coins, wallet_out)
+        self._give(event["server"], target, coins)
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
             self._coin_str(coins)))
 
@@ -351,18 +171,12 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Redeem your free coins
         """
-        user_coins = self._get_all_user_coins(event["user"])
+        user_coins = self._get_user_coins(event["user"])
         if user_coins == DECIMAL_ZERO:
             cache = self._redeem_cache(event["server"], event["user"])
             if not self.bot.cache.has_item(cache):
-                _, wallet_out = self._default_wallets(event["user"])
-                if len(event["args_split"]) > 0:
-                    _, wallet_out = self._parse_wallets(event["user"],
-                        event["args_split"][0])
-
                 redeem_amount = self._redeem_amount(event["server"])
-                self._give(event["server"], event["user"], redeem_amount,
-                    wallet_out)
+                self._give(event["server"], event["user"], redeem_amount)
 
                 event["stdout"].write("Redeemed %s coins" % self._coin_str(
                     redeem_amount))
@@ -383,17 +197,12 @@ class Module(ModuleManager.BaseModule):
     def flip(self, event):
         """
         :help: Bet on a coin flip
-        :usage: heads|tails <coin amount> [wallet_in:wallet_out]
+        :usage: heads|tails <coin amount>
         """
-        wallet_in, wallet_out = self._default_wallets(event["user"])
-        if len(event["args_split"]) > 2:
-            wallet_in, wallet_out = self._parse_wallets(event["user"],
-                event["args_split"][2])
-
         side_name = event["args_split"][0].lower()
         coin_bet = event["args_split"][1].lower()
         if coin_bet == "all":
-            coin_bet = self._get_user_coins(event["user"], wallet_in)
+            coin_bet = self._get_user_coins(event["user"])
             if coin_bet <= DECIMAL_ZERO:
                 raise utils.EventError("%s: You have no coins to bet" %
                     event["user"].nickname)
@@ -408,7 +217,7 @@ class Module(ModuleManager.BaseModule):
              raise utils.EventError("%s: Please provide 'heads' or 'tails'" %
                 event["user"].nickname)
 
-        user_coins = self._get_user_coins(event["user"], wallet_in)
+        user_coins = self._get_user_coins(event["user"])
         if coin_bet > user_coins:
             raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
@@ -418,8 +227,7 @@ class Module(ModuleManager.BaseModule):
 
         coin_bet_str = self._coin_str(coin_bet)
         if win:
-            new_total = self._give(event["server"], event["user"], coin_bet,
-                wallet_out)
+            new_total = self._give(event["server"], event["user"], coin_bet)
             event["stdout"].write(
                 "%s flips %s and wins %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
@@ -427,7 +235,7 @@ class Module(ModuleManager.BaseModule):
                 )
             )
         else:
-            self._take(event["server"], event["user"], coin_bet, wallet_in)
+            self._take(event["server"], event["user"], coin_bet)
             event["stdout"].write(
                 "%s flips %s and loses %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
@@ -436,40 +244,13 @@ class Module(ModuleManager.BaseModule):
                 )
             )
 
-    @utils.hook("received.command.movecoins", authenticated=True, min_args=3)
-    def move_coins(self, event):
-        """
-        :help: Move coins between your wallets
-        :usage: <wallet_1> <wallet_2> <amount>
-        """
-        wallet_1 = event["args_split"][0]
-        wallet_2 = event["args_split"][1]
-        amount = self._parse_coins(event["args_split"][2], DECIMAL_ZERO)
-        for wallet in [wallet_1, wallet_2]:
-            if not self._user_has_wallet(event["user"], wallet):
-                raise utils.EventError("%s: Unknown wallet '%s'" %
-                    (event["user"].nickname, wallet))
-
-        self._move(event["user"], event["user"], amount, wallet_1, wallet_2)
-        event["stdout"].write("%s: Moved %s coins from wallet '%s' to "
-            "wallet '%s'" % (event["user"].nickname, self._coin_str(amount),
-            wallet_1, wallet_2))
-
     @utils.hook("received.command.sendcoins", min_args=2, authenticated=True)
     def send(self, event):
         """
         :help: Send coins to another user
-        :usage: <nickname> <amount> [wallet_in:wallet_out]
+        :usage: <nickname> <amount>
         """
         target_user = event["server"].get_user(event["args_split"][0])
-
-        wallet_in, _ = self._default_wallets(event["user"])
-        _, wallet_out = self._default_wallets(target_user)
-        if len(event["args_split"]) > 2:
-            wallet_in, _ = self._parse_wallets(event["user"],
-                event["args_split"][2])
-            _, wallet_out = self._parse_wallets(target_user,
-                event["args_split"][2])
 
         if event["user"].get_id() == target_user.get_id():
             raise utils.EventError("%s: You can't send coins to yourself" %
@@ -481,7 +262,7 @@ class Module(ModuleManager.BaseModule):
         except CoinParseException as e:
             raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
 
-        user_coins = self._get_user_coins(event["user"], wallet_in)
+        user_coins = self._get_user_coins(event["user"])
         redeem_amount = self._redeem_amount(event["server"])
         new_total_coins = self._get_all_user_coins(event["user"])-send_amount
 
@@ -495,13 +276,12 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickname,
                 self._coin_str(redeem_amount)))
 
-        target_user_coins = self._get_user_coins(target_user, wallet_out)
+        target_user_coins = self._get_user_coins(target_user)
         if target_user_coins == None:
             raise utils.EventError("%s: You can only send coins to users that "
                 "have had coins before" % event["user"].nickname)
 
-        self._move(event["user"], target_user, send_amount, wallet_in,
-            wallet_out)
+        self._move(event["user"], target_user, send_amount)
 
         event["stdout"].write("%s sent %s coins to %s" % (
             event["user"].nickname, self._coin_str(send_amount),
@@ -514,15 +294,10 @@ class Module(ModuleManager.BaseModule):
     def roulette(self, event):
         """
         :help: Spin a roulette wheel
-        :usage: <type> <amount> [wallet_in:wallet_out]
+        :usage: <type> <amount>
         """
         expected_args = 1
         expected_args += len(event["args_split"][0].split(","))
-
-        wallet_in, wallet_out = self._default_wallets(event["user"])
-        if len(event["args_split"]) > expected_args:
-            wallet_in, wallet_out = self._parse_wallets(event["user"],
-                event["args_split"][expected_args])
 
         bets = event["args_split"][0].lower().split(",")
         if "0" in bets:
@@ -535,7 +310,7 @@ class Module(ModuleManager.BaseModule):
                 event["user"].nickname)
 
         if len(bet_amounts) == 1 and bet_amounts[0] == "all":
-            bet_amounts[0] = self._get_user_coins(event["user"], wallet_in)
+            bet_amounts[0] = self._get_user_coins(event["user"])
             if bet_amounts[0] <= DECIMAL_ZERO:
                 raise utils.EventError("%s: You have no coins to bet" %
                     event["user"].nickname)
@@ -551,12 +326,12 @@ class Module(ModuleManager.BaseModule):
 
         bet_amount_total = sum(bet_amounts)
 
-        user_coins = self._get_user_coins(event["user"], wallet_in)
+        user_coins = self._get_user_coins(event["user"])
         if bet_amount_total > user_coins:
             raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
 
-        self._take(event["server"], event["user"], bet_amount_total, wallet_in)
+        self._take(event["server"], event["user"], bet_amount_total)
 
         # black, red, odds, evens, low (1-18), high (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
@@ -640,8 +415,7 @@ class Module(ModuleManager.BaseModule):
         coin_losses = sum(loss for loss in losses.values())
 
         if coin_winnings:
-            self._give(event["server"], event["user"], coin_winnings,
-                wallet_out)
+            self._give(event["server"], event["user"], coin_winnings)
 
         total_winnings_str = " (%s total)" % coin_winnings if len(
             winnings.keys()) > 1 else ""
@@ -673,29 +447,16 @@ class Module(ModuleManager.BaseModule):
             for nickname, coins in all_coins.items():
                 if coins > redeem_amount:
                     interest = round(coins*interest_rate, 2)
-                    self._take_from_pool(server, interest)
-
-                    wallets = server.get_user_setting(nickname, "wallets", {})
-                    default_wallet = self._default_wallet(
-                        server.get_user(nickname), "interest")
-                    default_coins = wallets.get(default_wallet, "0.0")
-                    default_coins = decimal.Decimal(default_coins)
-                    wallets[default_wallet] = self._coin_str(
-                        default_coins+interest)
-                    server.set_user_setting(nickname, "wallets", wallets)
+                    server.set_user_setting(nickname, "coins",
+                        self._coin_str(coins+interest))
         event["timer"].redo()
 
     @utils.hook("received.command.lotterybuy", authenticated=True)
     def lottery_buy(self, event):
         """
         :help: Buy ticket(s) for the lottery
-        :usage: [amount] [wallet]
+        :usage: [amount]
         """
-        wallet_in, _ = self._default_wallets(event["user"])
-        if len(event["args_split"]) > 0:
-            wallet_in, _ = self._parse_wallets(event["user"],
-                event["args_split"][0])
-
         amount = "1"
         if event["args_split"]:
             amount = event["args_split"][0]
@@ -704,13 +465,13 @@ class Module(ModuleManager.BaseModule):
                 "of tickets to buy" % event["user"].nickname)
         amount = int(amount)
 
-        user_coins = self._get_user_coins(event["user"], wallet_in)
+        user_coins = self._get_user_coins(event["user"])
         coin_amount = decimal.Decimal(LOTTERY_BUYIN)*amount
         if coin_amount > user_coins:
             raise utils.EventError("%s: You don't have enough coins" %
                 event["user"].nickname)
 
-        self._take(event["server"], event["user"], coin_amount, wallet_in)
+        self._take(event["server"], event["user"], coin_amount)
 
         lottery = event["server"].get_setting("lottery", {})
         nickname = event["user"].nickname_lower
@@ -780,9 +541,8 @@ class Module(ModuleManager.BaseModule):
             coins = self._get_user_coins(user)
             winnings = decimal.Decimal(LOTTERY_BUYIN)*len(users)
             new_coins = coins+winnings
-            wallet = self._default_wallet(user, "lottery")
 
-            self._give(server, user, winnings, wallet)
+            self._give(server, user, winnings)
             server.set_setting("lottery-winner", user.nickname)
             user.send_notice("You won %s in the lottery! you now have %s coins"
                 % (self._coin_str(winnings), self._coin_str(new_coins)))
