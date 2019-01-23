@@ -27,7 +27,7 @@ class Out(object):
         self.written = True
         return self
 
-    def send(self):
+    def send(self, method):
         if self.has_text():
             text = self._text
             text_encoded = text.encode("utf8")
@@ -47,15 +47,10 @@ class Out(object):
             if not self._hide_prefix:
                 prefix = utils.consts.RESET + "[%s] " % self.prefix()
 
-            method = self._get_method()
             if method == "PRIVMSG":
                 self.target.send_message(text, prefix=prefix, tags=tags)
             elif method == "NOTICE":
                 self.target.send_notice(text, prefix=prefix, tags=tags)
-
-    def _get_method(self):
-        return self.target.get_setting(COMMAND_METHOD,
-            self.server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
 
     def set_prefix(self, prefix):
         self.module_name = prefix
@@ -64,7 +59,6 @@ class Out(object):
 
     def has_text(self):
         return bool(self._text)
-
 
 class StdOut(Out):
     def prefix(self):
@@ -123,6 +117,10 @@ class Module(ModuleManager.BaseModule):
     def _set_aliases(self, server, aliases):
         server.set_setting("command-aliases", aliases)
 
+    def _command_method(self, target, server):
+        return target.get_setting(COMMAND_METHOD,
+            server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
+
     def message(self, event, command, args_index=1):
         args_split = event["message_split"][args_index:]
         if not self.has_command(command):
@@ -169,6 +167,7 @@ class Module(ModuleManager.BaseModule):
             msgid = event["tags"].get("draft/msgid", None)
             stdout = StdOut(event["server"], module_name, target, msgid)
             stderr = StdErr(event["server"], module_name, target, msgid)
+            command_method = self._command_method(target, event["server"])
 
             returns = self.events.on("preprocess.command").call_unsafe(
                 hook=hook, user=event["user"], server=event["server"],
@@ -180,7 +179,7 @@ class Module(ModuleManager.BaseModule):
                     return
                 if returned:
                     # error message
-                    stderr.write(returned).send()
+                    stderr.write(returned).send(command_method)
                     target.buffer.skip_next()
                     return
 
@@ -192,10 +191,10 @@ class Module(ModuleManager.BaseModule):
                 usage = self._get_usage(hook, command)
                 if usage:
                     stderr.write("Not enough arguments, usage: %s" %
-                        usage).send()
+                        usage).send(command_method)
                 else:
                     stderr.write("Not enough arguments (minimum: %d)" %
-                        min_args).send()
+                        min_args).send(command_method)
             else:
                 args = " ".join(args_split)
                 server = event["server"]
@@ -210,8 +209,10 @@ class Module(ModuleManager.BaseModule):
                     stderr.write(str(e))
 
                 if not hook.kwargs.get("skip_out", False):
-                    stdout.send()
-                    stderr.send()
+                    command_method = self._command_method(
+                        target, event["server"])
+                    stdout.send(command_method)
+                    stderr.send(command_method)
                     target.last_stdout = stdout
                     target.last_stderr = stderr
             target.buffer.skip_next()
