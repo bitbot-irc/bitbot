@@ -28,7 +28,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             permissions = key_setting.get("permissions", [])
 
             if key_setting:
-                _log.info("[HTTP] %s from API key %s (%s)",
+                _log.debug("[HTTP] %s from API key %s (%s)",
                     [method, key, key_setting["comment"]])
 
             if not authenticated or path in permissions or "*" in permissions:
