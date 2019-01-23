@@ -27,6 +27,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             key_setting = _bot.get_setting("api-key-%s" % key, {})
             permissions = key_setting.get("permissions", [])
 
+            if key_setting:
+                _log.info("[HTTP] %s from API key %s (%s)" %
+                    (method, key, key_setting["comment"]))
+
             if not authenticated or path in permissions or "*" in permissions:
                 if path.startswith("/api/"):
                     event_response = None
@@ -63,14 +67,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         get_params = self._decode_params(parsed.query)
-        self._handle("get", parsed.path, params=get_params)
+        self._handle("GET", parsed.path, params=get_params)
 
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         post_params = self._decode_params(parsed.query)
         content_length = int(self.headers.get("content-length", 0))
         post_body = self.rfile.read(content_length)
-        self._handle("post", parsed.path, data=post_body, params=post_params)
+        self._handle("POST", parsed.path, data=post_body, params=post_params)
 
     def log_message(self, format, *args):
         _log.info("[HTTP] " + format, args)
