@@ -60,12 +60,12 @@ class Module(ModuleManager.BaseModule):
         user.set_setting("coins", self._coin_str(coins))
 
     def _all_coins(self, server):
-        coins = server.get_all_user_settings("coins", [])
+        all_coins = server.get_all_user_settings("coins", [])
 
         for i, (nickname, coins) in enumerate(coins):
-            coins[i] = (nickname, decimal.Decimal(coins))
+            all_coins[i] = (nickname, decimal.Decimal(coins))
 
-        return dict(filter(lambda coin: coin[1], coins))
+        return dict(filter(lambda coin: coin[1], all_coins))
 
     def _redeem_amount(self, server):
         return decimal.Decimal(server.get_setting("redeem-amount",
