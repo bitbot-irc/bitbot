@@ -364,7 +364,8 @@ class Module(ModuleManager.BaseModule):
         if event.get("hide_prefix", False):
             stdout.hide_prefix()
 
-        stdout.write(event["message"]).send()
+        stdout.write(event["message"]).send(
+            self._command_method(event["target"], event["server"]))
         if stdout.has_text():
             event["target"].last_stdout = stdout
     @utils.hook("send.stderr")
@@ -375,7 +376,8 @@ class Module(ModuleManager.BaseModule):
         if event.get("hide_prefix", False):
             stderr.hide_prefix()
 
-        stderr.write(event["message"]).send()
+        stderr.write(event["message"]).send(
+            self._command_method(event["target"], event["server"]))
         if stderr.has_text():
             event["target"].last_stderr = stderr
 
