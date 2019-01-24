@@ -224,7 +224,7 @@ class Server(IRCObject.Object):
         user._id = self.get_user_id(new_nickname)
         self.users[self.irc_lower(new_nickname)] = user
 
-    def irc_lower(self, s: str) -> bool:
+    def irc_lower(self, s: str) -> str:
         return utils.irc.lower(self.case_mapping, s)
     def irc_equals(self, s1: str, s2: str) -> bool:
         return utils.irc.equals(self.case_mapping, s1, s2)
