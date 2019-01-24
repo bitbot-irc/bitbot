@@ -2,7 +2,6 @@
 #--require-config tls-api-certificate
 
 import http.server, json, ssl, threading, uuid, urllib.parse
-import flask
 from src import ModuleManager, utils
 
 _bot = None
