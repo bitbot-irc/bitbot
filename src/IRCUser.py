@@ -38,8 +38,7 @@ class User(IRCObject.Object):
 
     def set_nickname(self, nickname: str):
         self.nickname = nickname
-        self.nickname_lower = utils.irc.lower(self.server.case_mapping,
-            nickname)
+        self.nickname_lower = self.server.irc_lower(nickname)
         self.name = self.nickname_lower
     def join_channel(self, channel: "IRCChannel.Channel"):
         self.channels.add(channel)

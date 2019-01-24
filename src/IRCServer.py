@@ -173,12 +173,11 @@ class Server(IRCObject.Object):
 
     def set_own_nickname(self, nickname: str):
         self.nickname = nickname
-        self.nickname_lower = utils.irc.lower(self.case_mapping, nickname)
+        self.nickname_lower = self.irc_lower(nickname)
     def is_own_nickname(self, nickname: str) -> bool:
         if self.nickname == None:
             return False
-        return utils.irc.equals(self.case_mapping, nickname,
-            typing.cast(str, self.nickname))
+        return self.irc_equals(nickname, typing.cast(str, self.nickname))
 
     def add_own_mode(self, mode: str, arg: str=None):
         self.own_modes[mode] = arg
@@ -191,7 +190,7 @@ class Server(IRCObject.Object):
             self.add_own_mode(mode, arg)
 
     def has_user(self, nickname: str) -> bool:
-        return utils.irc.lower(self.case_mapping, nickname) in self.users
+        return self.irc_lower(nickname) in self.users
     def get_user(self, nickname: str, create: bool=True
             ) -> typing.Optional[IRCUser.User]:
         if not self.has_user(nickname) and create:
@@ -200,7 +199,7 @@ class Server(IRCObject.Object):
             self.events.on("new.user").call(user=new_user, server=self)
             self.users[new_user.nickname_lower] = new_user
             self.new_users.add(new_user)
-        return self.users.get(utils.irc.lower(self.case_mapping, nickname),
+        return self.users.get(self.irc_lower(nickname),
             None)
     def get_user_id(self, nickname: str) -> int:
         self.bot.database.users.add(self.id, nickname)
@@ -221,9 +220,14 @@ class Server(IRCObject.Object):
         return None
 
     def change_user_nickname(self, old_nickname: str, new_nickname: str):
-        user = self.users.pop(utils.irc.lower(self.case_mapping, old_nickname))
+        user = self.users.pop(self.irc_lower(old_nickname))
         user._id = self.get_user_id(new_nickname)
-        self.users[utils.irc.lower(self.case_mapping, new_nickname)] = user
+        self.users[self.irc_lower(new_nickname)] = user
+
+    def irc_lower(self, s: str) -> bool:
+        return utils.irc.lower(self.case_mapping, s)
+    def irc_equal(self, s1: str, s2: str) -> bool:
+        return utils.irc.equals(self.case_mapping, s1, s2)
 
     def parse_data(self, line: str):
         if not line:

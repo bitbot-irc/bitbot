@@ -6,7 +6,7 @@ class Channel(IRCObject.Object):
     name = ""
     def __init__(self, name: str, id, server: "IRCServer.Server",
             bot: "IRCBot.Bot"):
-        self.name = utils.irc.lower(server.case_mapping, name)
+        self.name = server.irc_lower(name)
         self.id = id
         self.server = server
         self.bot = bot

@@ -618,8 +618,7 @@ class Module(ModuleManager.BaseModule):
     # we need a registered nickname for this channel
     @utils.hook("raw.received.477", default_event=True)
     def handle_477(self, event):
-        channel_name = utils.irc.lower(event["server"].case_mapping,
-            event["args"][1])
+        channel_name = event["server"].irc_lower(event["args"][1])
         if channel_name in event["server"].channels:
             key = event["server"].attempted_join[channel_name]
             self.timers.add("rejoin", 5, channel_name=channe_name, key=key,

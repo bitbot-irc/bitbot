@@ -30,7 +30,7 @@ class Channels(object):
         return self._bot.database.channels.get_id(self._server.id, channel_name)
 
     def _name_lower(self, channel_name: str) -> str:
-        return utils.irc.lower(self._server.case_mapping, channel_name)
+        return self._server.irc_lower(channel_name)
 
     def contains(self, name: str) -> bool:
         lower = self._name_lower(name)
