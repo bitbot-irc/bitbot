@@ -264,7 +264,7 @@ class Module(ModuleManager.BaseModule):
 
         user_coins = self._get_user_coins(event["user"])
         redeem_amount = self._redeem_amount(event["server"])
-        new_total_coins = self._get_all_user_coins(event["user"])-send_amount
+        new_total_coins = self._get_user_coins(event["user"])-send_amount
 
         if user_coins == DECIMAL_ZERO:
             raise utils.EventError("%s: You have no coins" %
