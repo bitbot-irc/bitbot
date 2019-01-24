@@ -226,7 +226,7 @@ class Server(IRCObject.Object):
 
     def irc_lower(self, s: str) -> bool:
         return utils.irc.lower(self.case_mapping, s)
-    def irc_equal(self, s1: str, s2: str) -> bool:
+    def irc_equals(self, s1: str, s2: str) -> bool:
         return utils.irc.equals(self.case_mapping, s1, s2)
 
     def parse_data(self, line: str):
