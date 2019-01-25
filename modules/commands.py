@@ -325,7 +325,8 @@ class Module(ModuleManager.BaseModule):
         :help: Show more output from the last command
         """
         if event["target"].last_stdout and event["target"].last_stdout.has_text():
-            event["target"].last_stdout.send()
+            event["target"].last_stdout.send(
+                self._command_method(event["target"], event["server"]))
 
     @utils.hook("received.command.ignore", min_args=1)
     def ignore(self, event):
