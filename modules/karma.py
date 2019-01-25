@@ -25,8 +25,7 @@ class Module(ModuleManager.BaseModule):
     def new_user(self, event):
         event["user"].last_karma = None
 
-    @utils.hook("received.message.channel",
-        priority=EventManager.PRIORITY_MONITOR)
+    @utils.hook("received.message.channel")
     def channel_message(self, event):
         match = re.match(REGEX_KARMA, event["message"].strip())
         if match and not event["action"]:
