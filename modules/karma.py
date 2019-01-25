@@ -2,6 +2,7 @@ import re, time
 from src import EventManager, ModuleManager, utils
 
 REGEX_KARMA = re.compile("^(.*[^-+])[-+]*(\+{2,}|\-{2,})$")
+WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
 @utils.export("channelset", {"setting": "karma-verbose",
@@ -35,7 +36,7 @@ class Module(ModuleManager.BaseModule):
 
             if not event["user"].last_karma or (time.time()-event["user"
                     ].last_karma) >= KARMA_DELAY_SECONDS:
-                target = match.group(1).strip()
+                target = match.group(1).strip().strip("".join(WORD_STOP))
                 if event["server"].irc_lower(target) == event["user"].name:
                     if verbose:
                         self.events.on("send.stderr").call(
