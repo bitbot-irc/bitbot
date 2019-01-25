@@ -469,9 +469,17 @@ class Module(ModuleManager.BaseModule):
 
         user_coins = self._get_user_coins(event["user"])
         coin_amount = decimal.Decimal(LOTTERY_BUYIN)*amount
+        new_user_coins = user_coins-coin_amount
+        redeem_amount = self._redeem_amount(event["server"])
+
         if coin_amount > user_coins:
             raise utils.EventError("%s: You don't have enough coins" %
                 event["user"].nickname)
+        elif new_user_coins < redeem_amount:
+            raise utils.EventError(
+                "%s: you can't play the lottery if it puts your total coins "
+                "below %s" % (event["user"].nickname,
+                self._coin_str(redeem_amount)))
 
         self._take(event["server"], event["user"], coin_amount)
 
