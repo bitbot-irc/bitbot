@@ -636,7 +636,13 @@ class Module(ModuleManager.BaseModule):
             target_user = event["server"].get_user(target)
             self._event(event, "kick", channel=channel, reason=reason,
                 target_user=target_user, user=user, server=event["server"])
+
+            channel.remove_user(target_user)
+            target_user.part_channel(channel)
+            if not len(target_user.channels):
+                event["server"].remove_user(target_user)
         else:
+            event["server"].channels.remove(channel)
             self.events.on("self.kick").call(channel=channel, reason=reason,
                 user=user, server=event["server"])
 
