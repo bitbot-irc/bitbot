@@ -7,6 +7,11 @@ class Module(ModuleManager.BaseModule):
             return [part.strip() for part in s.split("=", 1)]
         return None, None
 
+    def _get_quotes(self, server, category):
+        return server.get_setting("quotes-%s" % category, [])
+    def _set_quotes(self, server, category, quotes):
+        server.set_setting("quote-%s" % category, quotes)
+
     @utils.hook("received.command.qadd", alias_of="quoteadd")
     @utils.hook("received.command.quoteadd", min_args=1)
     def quote_add(self, event):
@@ -16,10 +21,9 @@ class Module(ModuleManager.BaseModule):
         """
         category, quote = self.category_and_quote(event["args"])
         if category and quote:
-            setting = "quotes-%s" % category
-            quotes = event["server"].get_setting(setting, [])
+            quotes = self._get_quotes(event["server"], category)
             quotes.append([event["user"].name, int(time.time()), quote])
-            event["server"].set_setting(setting, quotes)
+            self._set_quotes(event["server"], quotes)
             event["stdout"].write("Quote added")
         else:
             event["stderr"].write("Please provide a category AND quote")
@@ -89,3 +93,17 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("%s: %s" % (category, quote))
         else:
             event["stderr"].write("There are no quotes for this category")
+
+    @utils.hook("received.command.quotegrab", min_args=1, channel_only=True)
+    def quote_grab(self, event):
+        line = event["target"].buffer.find_from(event["args_split"][0])
+        if line:
+            quotes = self._get_quotes(event["server"], line.sender)
+            if line.action:
+                quotes.append("* %s %s" % (line.sender, line.message))
+            else:
+                quotes.append("<%s> %s" % (line.sender, line.message))
+            self._set_quotes(event["server"], quotes)
+            event["stdout"].write("Quote added")
+        else:
+            event["stderr"].write("Nothing found to quote")
