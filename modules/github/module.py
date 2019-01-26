@@ -331,7 +331,7 @@ class Module(ModuleManager.BaseModule):
                     source = full_name or organisation
                     output = "(%s) %s" % (source, output)
                     if channel.get_setting("github-prevent-highlight", False):
-                        self._prevent_highlight(channel, output)
+                        output = self._prevent_highlight(channel, output)
 
                     self.events.on("send.stdout").call(target=channel,
                         module_name="Github", server=server, message=output,
