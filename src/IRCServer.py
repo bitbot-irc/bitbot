@@ -297,9 +297,12 @@ class Server(IRCObject.Object):
         return self.until_read_timeout == 0
 
     def send(self, line: str):
-        returned = self.events.on("preprocess.send").call_unsafe_for_result(
+        results = self.events.on("preprocess.send").call_unsafe(
             server=self, line=line)
-        line = returned or line
+        for result in results:
+            if result:
+                line = result
+                break
 
         encoded = line.split("\n")[0].strip("\r").encode("utf8")
         if len(encoded) > 450:
