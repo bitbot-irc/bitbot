@@ -342,9 +342,9 @@ class Module(ModuleManager.BaseModule):
 
     def _prevent_highlight(self, channel, s):
         for user in channel.users:
-            while user.nickname_lower in s.lower():
-                index = s.lower().index(user.nickname_lower)
-                length = len(user.nickname_lower)
+            while user.nickname.lower() in s.lower():
+                index = s.lower().index(user.nickname.lower())
+                length = len(user.nickname.lower())
 
                 original = s[index:index+length]
                 original = utils.prevent_highlight(original)
