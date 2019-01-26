@@ -66,7 +66,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.received.001", default_event=True)
     def handle_001(self, event):
         event["server"].set_write_throttling(True)
-        event["server"].name = event["prefix"].nickname
+        event["server"].name = event["prefix"].hostmask
         event["server"].set_own_nickname(event["args"][0])
         event["server"].send_whois(event["server"].nickname)
 
