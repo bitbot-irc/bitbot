@@ -211,7 +211,7 @@ class Module(ModuleManager.BaseModule):
         realname = None
         channel_name = event["args"][0]
 
-        if len(event["args"]) == 2:
+        if len(event["args"]) == 3:
             if not event["args"][1] == "*":
                 account = event["args"][1]
             realname = event["args"][2]
