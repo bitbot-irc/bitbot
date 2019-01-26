@@ -103,7 +103,7 @@ class Module(ModuleManager.BaseModule):
                 quotes.append("* %s %s" % (line.sender, line.message))
             else:
                 quotes.append("<%s> %s" % (line.sender, line.message))
-            self._set_quotes(event["server"], quotes)
+            self._set_quotes(event["server"], line.sender, quotes)
             event["stdout"].write("Quote added")
         else:
             event["stderr"].write("Nothing found to quote")
