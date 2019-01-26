@@ -10,7 +10,7 @@ class Module(ModuleManager.BaseModule):
     def _get_quotes(self, server, category):
         return server.get_setting("quotes-%s" % category, [])
     def _set_quotes(self, server, category, quotes):
-        server.set_setting("quote-%s" % category, quotes)
+        server.set_setting("quotes-%s" % category, quotes)
 
     @utils.hook("received.command.qadd", alias_of="quoteadd")
     @utils.hook("received.command.quoteadd", min_args=1)
