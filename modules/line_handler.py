@@ -464,7 +464,8 @@ class Module(ModuleManager.BaseModule):
                 event["prefix"].hostmask == event["server"].name or
                 target == "*" or
                 (not event["prefix"].hostname and not event["server"].name)):
-            event["server"].name = event["prefix"].hostmask
+            if event["prefix"]:
+                event["server"].name = event["prefix"].hostmask
 
             self._event(event, "server-notice", message=message,
                 message_split=message_split, server=event["server"])
