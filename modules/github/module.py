@@ -69,6 +69,9 @@ COMMENT_ACTIONS = {
     "validate": utils.bool_or_none})
 @utils.export("channelset", {"setting": "github-default-repo",
     "help": "Set the default github repo for the current channel"})
+@utils.export("channelset", {"setting": "github-prevent-highlight",
+    "help": "Enable/disable preventing highlights",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
         repo, _, number = ref.rpartition("#")
@@ -327,12 +330,27 @@ class Module(ModuleManager.BaseModule):
                 for output in outputs:
                     source = full_name or organisation
                     output = "(%s) %s" % (source, output)
+                    if channel.get_setting("github-prevent-highlight", False):
+                        self._prevent_highlight(channel, output)
+
                     self.events.on("send.stdout").call(target=channel,
                         module_name="Github", server=server, message=output,
                         hide_prefix=channel.get_setting(
                         "github-hide-prefix", False))
 
         return ""
+
+    def _prevent_highlight(self, channel, s):
+        for user in channel.users:
+            while user.nickname_lower in s.lower():
+                index = s.lower().index(user.nickname_lower)
+                length = len(user.nickname_lower)
+
+                original = s[index:index+length]
+                original = utils.prevent_highlight(original)
+
+                s = s[:index] + original + s[index+length:]
+        return s
 
     def _short_url(self, url):
         try:
