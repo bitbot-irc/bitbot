@@ -292,35 +292,35 @@ class Module(ModuleManager.BaseModule):
 
         outputs = None
         if github_event == "push":
-            outputs = self.push(event, full_name, data)
+            outputs = self.push(full_name, data)
         elif github_event == "commit_comment":
-            outputs = self.commit_comment(event, full_name, data)
+            outputs = self.commit_comment(full_name, data)
         elif github_event == "pull_request":
-            outputs = self.pull_request(event, full_name, data)
+            outputs = self.pull_request(full_name, data)
         elif github_event == "pull_request_review":
-            outputs = self.pull_request_review(event, full_name, data)
+            outputs = self.pull_request_review(full_name, data)
         elif github_event == "pull_request_review_comment":
-            outputs = self.pull_request_review_comment(event, full_name, data)
+            outputs = self.pull_request_review_comment(full_name, data)
         elif github_event == "issue_comment":
-            outputs = self.issue_comment(event, full_name, data)
+            outputs = self.issue_comment(full_name, data)
         elif github_event == "issues":
-            outputs = self.issues(event, full_name, data)
+            outputs = self.issues(full_name, data)
         elif github_event == "create":
-            outputs = self.create(event, full_name, data)
+            outputs = self.create(full_name, data)
         elif github_event == "delete":
-            outputs = self.delete(event, full_name, data)
+            outputs = self.delete(full_name, data)
         elif github_event == "release":
-            outputs = self.release(event, full_name, data)
+            outputs = self.release(full_name, data)
         elif github_event == "status":
-            outputs = self.status(event, full_name, data)
+            outputs = self.status(full_name, data)
         elif github_event == "fork":
-            outputs = self.fork(event, full_name, data)
+            outputs = self.fork(full_name, data)
         elif github_event == "ping":
-            outputs = self.ping(event, data)
+            outputs = self.ping(data)
         elif github_event == "membership":
-            outputs = self.membership(event, organisation, data)
+            outputs = self.membership(organisation, data)
         elif github_event == "watch":
-            outputs = self.watch(event, data)
+            outputs = self.watch(data)
 
         if outputs:
             for server, channel in targets:
@@ -344,7 +344,7 @@ class Module(ModuleManager.BaseModule):
                 "HTTPTimeoutException while waiting for github short URL")
             return url
 
-    def ping(self, event, data):
+    def ping(self, data):
         return ["Received new webhook"]
 
     def _change_count(self, n, symbol, color):
@@ -362,7 +362,7 @@ class Module(ModuleManager.BaseModule):
     def _flat_unique(self, commits, key):
         return set(itertools.chain(*(commit[key] for commit in commits)))
 
-    def push(self, event, full_name, data):
+    def push(self, full_name, data):
         outputs = []
         branch = data["ref"].split("/", 2)[2]
         branch = utils.irc.color(branch, utils.consts.LIGHTBLUE)
@@ -400,14 +400,14 @@ class Module(ModuleManager.BaseModule):
         return outputs
 
 
-    def commit_comment(self, event, full_name, data):
+    def commit_comment(self, full_name, data):
         action = data["action"]
         commit = data["commit_id"][:8]
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = self._short_url(data["comment"]["html_url"])
         return ["[commit/%s] %s commented" % (commit, commenter, action)]
 
-    def pull_request(self, event, full_name, data):
+    def pull_request(self, full_name, data):
         number = data["pull_request"]["number"]
         action = data["action"]
         action_desc = action
@@ -433,7 +433,7 @@ class Module(ModuleManager.BaseModule):
         return ["[pr #%d] %s %s: %s - %s" % (
             number, author, action_desc, pr_title, url)]
 
-    def pull_request_review(self, event, full_name, data):
+    def pull_request_review(self, full_name, data):
         if data["review"]["state"] == "commented":
             return []
 
@@ -445,7 +445,7 @@ class Module(ModuleManager.BaseModule):
         return ["[pr #%d] %s %s a review on: %s - %s" % (
             number, reviewer, action, pr_title, url)]
 
-    def pull_request_review_comment(self, event, full_name, data):
+    def pull_request_review_comment(self, full_name, data):
         number = data["pull_request"]["number"]
         action = data["action"]
         pr_title = data["pull_request"]["title"]
@@ -454,7 +454,7 @@ class Module(ModuleManager.BaseModule):
         return ["[pr #%d] %s %s on a review: %s - %s" %
             (number, sender, COMMENT_ACTIONS[action], pr_title, url)]
 
-    def issues(self, event, full_name, data):
+    def issues(self, full_name, data):
         number = data["issue"]["number"]
         action = data["action"]
         action_desc = action
@@ -464,7 +464,7 @@ class Module(ModuleManager.BaseModule):
         url = self._short_url(data["issue"]["html_url"])
         return ["[issue #%d] %s %s: %s - %s" %
             (number, author, action_desc, issue_title, url)]
-    def issue_comment(self, event, full_name, data):
+    def issue_comment(self, full_name, data):
         if "changes" in data:
             # don't show this event when nothing has actually changed
             if data["changes"]["body"]["from"] == data["comment"]["body"]:
@@ -480,7 +480,7 @@ class Module(ModuleManager.BaseModule):
             (type, number, commenter, COMMENT_ACTIONS[action], issue_title,
             url)]
 
-    def create(self, event, full_name, data):
+    def create(self, full_name, data):
         ref = data["ref"]
         ref_color = utils.irc.color(ref, utils.consts.LIGHTBLUE)
         type = data["ref_type"]
@@ -488,13 +488,13 @@ class Module(ModuleManager.BaseModule):
         url = self._short_url(CREATE_URL % (full_name, ref))
         return ["%s created a %s: %s - %s" % (sender, type, ref_color, url)]
 
-    def delete(self, event, full_name, data):
+    def delete(self, full_name, data):
         ref = data["ref"]
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
         return ["%s deleted a %s: %s" % (sender, type, ref)]
 
-    def release(self, event, full_name, data):
+    def release(self, full_name, data):
         action = data["action"]
         tag = data["release"]["tag_name"]
         name = data["release"]["name"] or ""
@@ -504,7 +504,7 @@ class Module(ModuleManager.BaseModule):
         url = self._short_url(data["release"]["html_url"])
         return ["%s %s a release%s - %s" % (author, action, name, url)]
 
-    def status(self, event, full_name, data):
+    def status(self, full_name, data):
         context = data["context"]
         state = data["state"]
         url = data["target_url"]
@@ -512,7 +512,7 @@ class Module(ModuleManager.BaseModule):
         return ["[%s status] %s is '%s' - %s" %
             (commit, context, state, url)]
 
-    def fork(self, event, full_name, data):
+    def fork(self, full_name, data):
         forker = utils.irc.bold(data["sender"]["login"])
         fork_full_name = utils.irc.color(data["forkee"]["full_name"],
             utils.consts.LIGHTBLUE)
@@ -520,10 +520,10 @@ class Module(ModuleManager.BaseModule):
         return ["%s forked into %s - %s" %
             (forker, fork_full_name, url)]
 
-    def membership(self, event, organisation, data):
+    def membership(self, organisation, data):
         return ["%s %s %s to team %s" %
             (data["sender"]["login"], data["action"], data["member"]["login"],
             data["team"]["name"])]
 
-    def watch(self, event, data):
+    def watch(self, data):
         return ["%s starred the repository" % data["sender"]["login"]]
