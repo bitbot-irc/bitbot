@@ -62,7 +62,8 @@ class Buffer(object):
     def find_from(self, nickname: str) -> typing.Optional[BufferLine]:
         nickname_lower = self.server.irc_lower(nickname)
         for line in self.lines:
-            if self.server.irc_lower(line.sender) == nickname_lower:
+            if (not line.from_self
+                    and self.server.irc_lower(line.sender) == nickname_lower):
                 return line
         return None
 
