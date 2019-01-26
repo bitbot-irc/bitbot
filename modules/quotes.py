@@ -99,10 +99,12 @@ class Module(ModuleManager.BaseModule):
         line = event["target"].buffer.find_from(event["args_split"][0])
         if line:
             quotes = self._get_quotes(event["server"], line.sender)
+            text = None
             if line.action:
-                quotes.append("* %s %s" % (line.sender, line.message))
+                text = "* %s %s" % (line.sender, line.message)
             else:
-                quotes.append("<%s> %s" % (line.sender, line.message))
+                text = "<%s> %s" % (line.sender, line.message)
+            quotes.append([event["user"].name, int(time.time()), text])
             self._set_quotes(event["server"], line.sender, quotes)
             event["stdout"].write("Quote added")
         else:
