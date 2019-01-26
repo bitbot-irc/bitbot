@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
         if category and quote:
             quotes = self._get_quotes(event["server"], category)
             quotes.append([event["user"].name, int(time.time()), quote])
-            self._set_quotes(event["server"], quotes)
+            self._set_quotes(event["server"], category, quotes)
             event["stdout"].write("Quote added")
         else:
             event["stderr"].write("Please provide a category AND quote")
