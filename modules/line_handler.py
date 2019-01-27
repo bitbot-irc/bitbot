@@ -418,7 +418,7 @@ class Module(ModuleManager.BaseModule):
 
         channel = None
         if target[0] in event["server"].channel_types:
-            channel = event["server"].channels.get(event["args"][0])
+            channel = event["server"].channels.get(target)
 
         action = False
         ctcp_message = utils.irc.parse_ctcp(message)
