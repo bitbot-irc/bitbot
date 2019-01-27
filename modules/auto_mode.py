@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.join")
     def on_join(self, event):
         self._check_modes(event["channel"], event["user"])
-    @utils.hook("received.account")
+    @utils.hook("received.account.login")
     @utils.hook("internal.identified")
     def on_account(self, event):
         for channel in event["user"].channels:
