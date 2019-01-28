@@ -174,7 +174,7 @@ class Module(ModuleManager.BaseModule):
                 target=target, is_channel=is_channel, tags=event["tags"])
 
             error = None
-            force_success
+            force_success = False
             for returned in returns:
                 if returned == utils.consts.PERMISSION_HARD_FAIL:
                     # denotes a "silent failure"
