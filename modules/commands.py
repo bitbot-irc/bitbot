@@ -172,16 +172,24 @@ class Module(ModuleManager.BaseModule):
             returns = self.events.on("preprocess.command").call_unsafe(
                 hook=hook, user=event["user"], server=event["server"],
                 target=target, is_channel=is_channel, tags=event["tags"])
+
+            error = None
+            force_success
             for returned in returns:
-                if returned == False:
+                if returned == utils.consts.PERMISSION_HARD_FAIL:
                     # denotes a "silent failure"
                     target.buffer.skip_next()
                     return
-                if returned:
+                elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
+                    force_success = True
+                    break
+                else:
                     # error message
-                    stderr.write(returned).send(command_method)
-                    target.buffer.skip_next()
-                    return
+                    error = returned
+            if error and not force_success:
+                stderr.write(error).send(command_method)
+                target.buffer.skip_next()
+                return
 
             if hook.kwargs.get("remove_empty", True):
                 args_split = list(filter(None, args_split))
