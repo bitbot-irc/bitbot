@@ -183,7 +183,7 @@ class Module(ModuleManager.BaseModule):
                 elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
                     force_success = True
                     break
-                else:
+                elif returned:
                     # error message
                     error = returned
             if error and not force_success:
