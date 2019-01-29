@@ -19,7 +19,7 @@ class Module(ModuleManager.BaseModule):
             client_id = self.bot.config["spotify-client-id"]
             client_secret = self.bot.config["spotify-client-secret"]
             bearer = "%s:%s" % (client_id, client_secret)
-            bearer = base64.b64encode(bearer).decode("utf8")
+            bearer = base64.b64encode(bearer.encode("utf8")).decode("utf8")
 
             page = utils.http.request(URL_TOKEN, method="POST",
                 headers={"Authorization": "Basic %s" % bearer},
