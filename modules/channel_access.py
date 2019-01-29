@@ -7,7 +7,7 @@ class Module(ModuleManager.BaseModule):
     def preprocess_command(self, event):
         require_access = event["hook"].get_kwarg("require_access")
         if event["is_channel"] and require_access:
-            access = event["target"].get_user_setting(event["user"].id,
+            access = event["target"].get_user_setting(event["user"].get_id(),
                 "access", [])
             identified_account = event["user"].get_identified_account()
 
@@ -28,7 +28,7 @@ class Module(ModuleManager.BaseModule):
         """
         subcommand = event["args_split"][0].lower()
         target = event["server"].get_user(event["args_split"][1])
-        access = event["target"].get_user_setting(target.id, "access", [])
+        access = event["target"].get_user_setting(target.get_id(), "access", [])
 
         if subcommand == "list":
             event["stdout"].write("Access for %s: %s" % (target.nickname,
@@ -36,7 +36,7 @@ class Module(ModuleManager.BaseModule):
         elif subcommand == "set":
             if not len(event["args_split"]) > 2:
                 raise utils.EventError("Please provide a list of permissions")
-            event["target"].set_user_setting(target.id, "access",
+            event["target"].set_user_setting(target.get_id(), "access",
                 event["args_split"][2:])
         elif subcommand == "add":
             if not len(event["args_split"]) > 2:
@@ -46,7 +46,7 @@ class Module(ModuleManager.BaseModule):
                     raise utils.EventError("%s already has '%s' permission" % (
                         target.nickname, acc))
                 access.append(acc)
-            event["target"].set_user_setting(target.id, "access", access)
+            event["target"].set_user_setting(target.get_id(), "access", access)
             event["stdout"].write("Added permission to %s: %s" % (
                 target.nickname, " ".join(event["args_split"][2:])))
         elif subcommand == "remove":
@@ -57,6 +57,6 @@ class Module(ModuleManager.BaseModule):
                     raise utils.EventError("%s does not have '%s' permission" %
                         (target.nickname, acc))
                 access.remove(acc)
-            event["target"].set_user_setting(target.id, "access", access)
+            event["target"].set_user_setting(target.get_id(), "access", access)
             event["stdout"].write("Removed permission from %s: %s" % (
                 target.nickname, " ".join(event["args_split"][2:])))
