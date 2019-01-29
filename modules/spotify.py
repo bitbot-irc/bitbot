@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
         self._token_expires = None
 
     def _get_token(self):
-        if self._token and (self._token_expires+10) < time.time():
+        if self._token and time.time() < (self._token_expires+10):
             return self._token
         else:
             client_id = self.bot.config["spotify-client-id"]
@@ -25,8 +25,11 @@ class Module(ModuleManager.BaseModule):
                 headers={"Authorization": "Basic %s" % bearer},
                 post_data={"grant_type": "client_credentials"},
                 json=True)
-            self._token_expire = time.time()+page.data["expires_in"]
-            return page.data["access_token"]
+
+            token = page.data["access_token"]
+            self._token = token
+            self._token_expires = time.time()+page.data["expires_in"]
+            return token
 
     @utils.hook("received.command.spotify", min_args=1)
     def spotify(self, event):
