@@ -11,10 +11,11 @@ class Module(ModuleManager.BaseModule):
                 "access", [])
             identified_account = event["user"].get_identified_account()
 
-            if not require_access in access or not identified_account:
-                return "You do not have permission to do this"
-            else:
+            if ((require_access in acess or "*" in access) and
+                    identified_account):
                 return utils.consts.PERMISSION_FORCE_SUCCESS
+            else:
+                return "You do not have permission to do this"
 
     @utils.hook("received.command.access", min_args=1, channel_only=True)
     def access(self, event):
