@@ -112,7 +112,7 @@ class Module(ModuleManager.BaseModule):
     def temp_ban(self, event):
         """
         :help: Temporarily ban someone from the current channel
-        :usage: <nickname/hostmask>
+        :usage: <nickname/hostmask> <time> [reason]
         :require_mode: o
         :require_access: ban
         :prefix: Tempban
@@ -128,7 +128,7 @@ class Module(ModuleManager.BaseModule):
     def temp_kick_ban(self, event):
         """
         :help: Temporarily kick and ban someone from the current channel
-        :usage: <nickname>
+        :usage: <nickname> <time> [reason]
         :require_mode: o
         :require_access: kickban
         :prefix: TKB
