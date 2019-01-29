@@ -59,16 +59,14 @@ class Module(ModuleManager.BaseModule):
         self._set("set", event, event["user"], event["command"]=="setadd")
 
     @utils.hook("received.command.channelset", channel_only=True,
-        require_mode="high", help=CHANNELSET_HELP)
-    @utils.hook("received.command.channelsetoverride", channel_only=True,
-        permission="channelsetoverride", help=CHANNELSET_HELP)
+        help=CHANNELSET_HELP)
     @utils.hook("received.command.channelsetadd", channel_only=True,
-        require_mode="high", help=CHANNELSETADD_HELP)
-    @utils.hook("received.command.channelsetaddoverride", channel_only=True,
-        permission="channelsetoverride", help=CHANNELSETADD_HELP)
+        help=CHANNELSETADD_HELP)
     def channel_set(self, event):
         """
         :usage: <setting> <value>
+        :require_mode: high
+        :permission: channelsetoverride
         """
         self._set("channelset", event, event["target"],
             event["command"].startswith("channelsetadd"))
@@ -164,13 +162,12 @@ class Module(ModuleManager.BaseModule):
         """
         self._unset(event, event["args_split"][0], "set", event["user"])
 
-    @utils.hook("received.command.channelunset", min_args=1,
-        require_mode="high")
-    @utils.hook("received.command.channelunsetoverride", min_args=1,
-        permission="channelunsetoverride")
+    @utils.hook("received.command.channelunset", min_args=1)
     def channel_unset(self, event):
         """
         :help: Unset a specified user setting
         :usage: <setting>
+        :require_mode: high
+        :permission: channelunsetoverride
         """
         self._unset(event, event["args_split"][0], "channelset", event["user"])
