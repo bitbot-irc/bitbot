@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
                 "access", [])
             identified_account = event["user"].get_identified_account()
 
-            if ((require_access in acess or "*" in access) and
+            if ((require_access in access or "*" in access) and
                     identified_account):
                 return utils.consts.PERMISSION_FORCE_SUCCESS
             else:
