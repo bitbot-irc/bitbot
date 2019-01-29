@@ -40,6 +40,7 @@ class Module(ModuleManager.BaseModule):
         :help: Kick a user from the current channel
         :usage: <nickname> [reason]
         :require_mode: o
+        :require_access: kick
         :prefix: Kick
         """
         target = event["args_split"][0]
@@ -84,6 +85,7 @@ class Module(ModuleManager.BaseModule):
         :help: Ban a user/hostmask from the current channel
         :usage: <nickname/hostmask>
         :require_mode: o
+        :require_access: ban
         """
         self._ban(event["server"], event["target"], True,
             event["args_split"][0])
@@ -112,6 +114,7 @@ class Module(ModuleManager.BaseModule):
         :help: Temporarily ban someone from the current channel
         :usage: <nickname/hostmask>
         :require_mode: o
+        :require_access: ban
         :prefix: Tempban
         """
         try:
@@ -127,6 +130,7 @@ class Module(ModuleManager.BaseModule):
         :help: Temporarily kick and ban someone from the current channel
         :usage: <nickname>
         :require_mode: o
+        :require_access: kickban
         :prefix: TKB
         """
         reason = " ".join(event["args_split"][2:]) or None
@@ -145,6 +149,7 @@ class Module(ModuleManager.BaseModule):
         :help: Unban a user/hostmask from the current channel
         :usage: <nickname/hostmask>
         :require_mode: o
+        :require_access: ban
         """
         self._ban(event["server"], event["target"], False,
             event["args_split"][0])
@@ -156,6 +161,7 @@ class Module(ModuleManager.BaseModule):
         :help: Kick and ban a user from the current channel
         :usage: <nickname> [reason]
         :require_mode: o
+        :require_access: kickban
         :prefix: Kickban
         """
         target = event["args_split"][0]
@@ -172,6 +178,7 @@ class Module(ModuleManager.BaseModule):
         :help: Op a user in the current channel
         :usage: [nickname]
         :require_mode: o
+        :require_access: op
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
@@ -182,6 +189,7 @@ class Module(ModuleManager.BaseModule):
         :help: Remove op from a user in the current channel
         :usage: [nickname]
         :require_mode: o
+        :require_access: op
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
@@ -193,6 +201,7 @@ class Module(ModuleManager.BaseModule):
         :help: Voice a user in the current channel
         :usage: [nickname]
         :require_mode: o
+        :require_access: voice
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
@@ -203,6 +212,7 @@ class Module(ModuleManager.BaseModule):
         :help: Remove voice from a user in the current channel
         :usage: [nickname]
         :require_mode: o
+        :require_access: voice
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
@@ -215,6 +225,7 @@ class Module(ModuleManager.BaseModule):
         :help: Set the topic in the current channel
         :usage: <topic>
         :require_mode: o
+        :require_access: topic
         """
         event["target"].send_topic(event["args"])
     @utils.hook("received.command.tappend", min_args=1, channel_only=True,
@@ -224,6 +235,7 @@ class Module(ModuleManager.BaseModule):
         :help: Append to the topic in the current channel
         :usage: <topic>
         :require_mode: o
+        :require_access: topic
         """
         event["target"].send_topic(event["target"].topic + event["args"])
 
