@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
 
             page = utils.http.request(URL_TOKEN, method="POST",
                 headers={"Authorization": "Basic %s" % bearer},
-                data={"grant_type": "client_credentials"},
+                post_data={"grant_type": "client_credentials"},
                 json=True)
             self._token_expire = time.time()+page.data["expires_in"]
             return page.data["access_token"]
