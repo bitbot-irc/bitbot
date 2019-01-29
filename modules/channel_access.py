@@ -3,19 +3,28 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     _name = "ChanAccess"
 
+    def _has_channel_access(self, target, user, require_access):
+        access = event["target"].get_user_setting(event["user"].get_id(),
+            "access", [])
+        identified_account = event["user"].get_identified_account()
+
+        return ((require_access in access or "*" in access
+            ) and identified_account)
+
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
         require_access = event["hook"].get_kwarg("require_access")
         if event["is_channel"] and require_access:
-            access = event["target"].get_user_setting(event["user"].get_id(),
-                "access", [])
-            identified_account = event["user"].get_identified_account()
-
-            if ((require_access in access or "*" in access) and
-                    identified_account):
+            if self._has_channel_access(event["target"], event["user"],
+                    require_access):
                 return utils.consts.PERMISSION_FORCE_SUCCESS
             else:
                 return "You do not have permission to do this"
+
+    @utils.hook("get.haschannelaccess")
+    def has_channel_access(self, event):
+        return self._has_channel_access(event["target"], event["user"],
+            event["access"])
 
     @utils.hook("received.command.access", min_args=1, channel_only=True)
     def access(self, event):
