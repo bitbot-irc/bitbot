@@ -260,6 +260,7 @@ class Module(ModuleManager.BaseModule):
     def _get_help(self, hook):
         return hook.get_kwarg("help", None) or hook.docstring.description
     def _get_usage(self, hook, command, command_prefix=""):
+        command = "%s%s" % (command_prefix, command)
         usage = hook.get_kwarg("usage", None)
         if usage:
             usages = [usage]
