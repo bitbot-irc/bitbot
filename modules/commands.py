@@ -322,9 +322,8 @@ class Module(ModuleManager.BaseModule):
         command = event["args_split"][0].lower()
         if command in self.events.on("received").on(
                 "command").get_children():
-            command_str = "%s%s" % (command_prefix, command)
             hooks = self.events.on("received.command").on(command).get_hooks()
-            usage = self._get_usage(hooks[0], command_str, command_prefix)
+            usage = self._get_usage(hooks[0], command, command_prefix)
 
             if usage:
                 event["stdout"].write("Usage: %s" % usage)
