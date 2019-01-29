@@ -171,10 +171,14 @@ class Module(ModuleManager.BaseModule):
                 permission in permissions or "*" in permissions)
             if not identified_account or not has_permission:
                 return "You do not have permission to do that"
+            else:
+                return utils.consts.PERMISSION_FORCE_SUCCESS
         elif authenticated:
             if not identified_account:
                 return REQUIRES_IDENTIFY % (event["server"].nickname,
                     event["server"].nickname)
+            else:
+                return utils.consts.PERMISSION_FORCE_SUCCESS
 
     @utils.hook("received.command.mypermissions", authenticated=True)
     def my_permissions(self, event):
