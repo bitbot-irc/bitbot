@@ -194,7 +194,11 @@ class Module(ModuleManager.BaseModule):
 
             min_args = hook.kwargs.get("min_args")
             if min_args and len(args_split) < min_args:
-                usage = self._get_usage(hook, command)
+                command_prefix = ""
+                if is_channel:
+                    command_prefix = self._command_prefix(event["server"],
+                        target)
+                usage = self._get_usage(hook, command, command_prefix)
                 if usage:
                     stderr.write("Not enough arguments, usage: %s" %
                         usage).send(command_method)
@@ -224,6 +228,10 @@ class Module(ModuleManager.BaseModule):
             target.buffer.skip_next()
         event.eat()
 
+    def _command_prefix(self, server, channel):
+        return channel.get_setting("command-prefix",
+            server.get_setting("command-prefix", "!"))
+
     @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
         commands_enabled = event["channel"].get_setting("commands", True)
@@ -231,8 +239,7 @@ class Module(ModuleManager.BaseModule):
             return
         prefixed_commands = event["channel"].get_setting("prefixed-commands", True)
 
-        command_prefix = event["channel"].get_setting("command-prefix",
-            event["server"].get_setting("command-prefix", "!"))
+        command_prefix = self._command_prefix(event["server"], event["channel"])
         if event["message_split"][0].startswith(command_prefix):
             if not prefixed_commands:
                 return
@@ -252,7 +259,7 @@ class Module(ModuleManager.BaseModule):
 
     def _get_help(self, hook):
         return hook.get_kwarg("help", None) or hook.docstring.description
-    def _get_usage(self, hook, command):
+    def _get_usage(self, hook, command, command_prefix=""):
         usage = hook.get_kwarg("usage", None)
         if usage:
             usages = [usage]
@@ -308,15 +315,15 @@ class Module(ModuleManager.BaseModule):
         """
         command_prefix = ""
         if event["is_channel"]:
-            command_prefix = event["target"].get_setting("command-prefix",
-                event["server"].get_setting("command-prefix", "!"))
+            command_prefix = self._command_prefix(event["server"],
+                event["target"])
 
         command = event["args_split"][0].lower()
         if command in self.events.on("received").on(
                 "command").get_children():
             command_str = "%s%s" % (command_prefix, command)
             hooks = self.events.on("received.command").on(command).get_hooks()
-            usage = self._get_usage(hooks[0], command_str)
+            usage = self._get_usage(hooks[0], command_str, command_prefix)
 
             if usage:
                 event["stdout"].write("Usage: %s" % usage)
