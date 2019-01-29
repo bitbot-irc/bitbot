@@ -37,7 +37,7 @@ class Module(ModuleManager.BaseModule):
         token = self._get_token()
         page = utils.http.request(URL_SEARCH,
             get_params={"type": "track", "limit": 1, "q": event["args"]},
-            headers={"Authorization", "Bearer %s" % token},
+            headers={"Authorization": "Bearer %s" % token},
             json=True)
         if page:
             if len(page.data["tracks"]["items"]):
