@@ -57,6 +57,10 @@ class Module(ModuleManager.BaseModule):
                     raise utils.EventError("%s does not have '%s' permission" %
                         (target.nickname, acc))
                 access.remove(acc)
-            event["target"].set_user_setting(target.get_id(), "access", access)
+            if access:
+                event["target"].set_user_setting(target.get_id(), "access",
+                    access)
+            else:
+                event["target"].del_user_setting(target.get_id(), "access")
             event["stdout"].write("Removed permission from %s: %s" % (
                 target.nickname, " ".join(event["args_split"][2:])))
