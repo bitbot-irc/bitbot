@@ -64,3 +64,5 @@ class Module(ModuleManager.BaseModule):
                 event["target"].del_user_setting(target.get_id(), "access")
             event["stdout"].write("Removed permission from %s: %s" % (
                 target.nickname, " ".join(event["args_split"][2:])))
+        else:
+            event["stderr"].write("Unknown command '%s'" % subcommand)
