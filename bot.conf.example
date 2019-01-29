@@ -1,3 +1,6 @@
+# Any of these settings can be removed or left blank. The revelant functionality 
+# will be disabled.
+
 [bot]
 # client-side tls key/cert for IRC connections
 tls-key                  =
