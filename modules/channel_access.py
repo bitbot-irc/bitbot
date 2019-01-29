@@ -4,9 +4,8 @@ class Module(ModuleManager.BaseModule):
     _name = "ChanAccess"
 
     def _has_channel_access(self, target, user, require_access):
-        access = event["target"].get_user_setting(event["user"].get_id(),
-            "access", [])
-        identified_account = event["user"].get_identified_account()
+        access = target.get_user_setting(user.get_id(), "access", [])
+        identified_account = user.get_identified_account()
 
         return ((require_access in access or "*" in access
             ) and identified_account)
