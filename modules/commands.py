@@ -173,23 +173,21 @@ class Module(ModuleManager.BaseModule):
                 hook=hook, user=event["user"], server=event["server"],
                 target=target, is_channel=is_channel, tags=event["tags"])
 
-            error = None
+            hard_fail = False
             force_success = False
+            error = None
             for returned in returns:
                 if returned == utils.consts.PERMISSION_HARD_FAIL:
-                    # denotes a "silent failure"
-                    target.buffer.skip_next()
-                    return
+                    hard_fail = True
                 elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
                     force_success = True
-                    break
                 elif returned:
-                    # error message
                     error = returned
-            if error and not force_success:
-                stderr.write(error).send(command_method)
-                target.buffer.skip_next()
-                return
+
+            if hard_fail or (not force_success and error):
+                if error:
+                    stderr.write(error).send(command_method)
+                    target.buffer.skip_next()
 
             if hook.kwargs.get("remove_empty", True):
                 args_split = list(filter(None, args_split))
