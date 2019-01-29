@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
         :usage: <term>
         """
         token = self._get_token()
-        page = utils.http.request(URL_SPOTIFY,
+        page = utils.http.request(URL_SEARCH,
             get_params={"type": "track", "limit": 1, "q": event["args"]},
             headers={"Authorization", "Bearer %s" % token},
             json=True)
