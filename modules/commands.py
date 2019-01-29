@@ -188,6 +188,7 @@ class Module(ModuleManager.BaseModule):
                 if error:
                     stderr.write(error).send(command_method)
                     target.buffer.skip_next()
+                return
 
             if hook.kwargs.get("remove_empty", True):
                 args_split = list(filter(None, args_split))
