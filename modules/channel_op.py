@@ -168,6 +168,7 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write(str(e))
 
     @utils.hook("received.command.unban", private_only=True, min_args=2)
+    def private_unban(self, event):
         """
         :help: Unban a user/hostmask from the current channel
         :usage: <channel> <nickname/hostmask>
