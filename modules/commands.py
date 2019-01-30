@@ -171,7 +171,8 @@ class Module(ModuleManager.BaseModule):
 
             returns = self.events.on("preprocess.command").call_unsafe(
                 hook=hook, user=event["user"], server=event["server"],
-                target=target, is_channel=is_channel, tags=event["tags"])
+                target=target, is_channel=is_channel, tags=event["tags"],
+                args_split=args_split)
 
             hard_fail = False
             force_success = False
