@@ -143,19 +143,19 @@ class Module(ModuleManager.BaseModule):
             hook = None
             target = None
             for potential_hook in self.get_hooks(command):
-                alias_of = self._get_alias_of(hook)
+                alias_of = self._get_alias_of(potential_hook)
                 if alias_of:
                     if self.has_command(alias_of):
-                        hook = self.get_hooks(alias_of)[0]
+                        potential_hook = self.get_hooks(alias_of)[0]
                     else:
                         raise ValueError(
                             "'%s' is an alias of unknown command '%s'"
                            % (command.lower(), alias_of.lower()))
 
                 is_channel = False
-                if not is_channel and hook.kwargs.get("channel_only"):
+                if not is_channel and potential_hook.kwargs.get("channel_only"):
                     continue
-                if is_channel and hook.kwargs.get("private_only"):
+                if is_channel and potential_hook.kwargs.get("private_only"):
                     continue
 
                 hook = potential_hook
