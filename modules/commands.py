@@ -140,24 +140,33 @@ class Module(ModuleManager.BaseModule):
             if ignore:
                 return
 
-            hook = self.get_hook(command)
-            alias_of = self._get_alias_of(hook)
-            if alias_of:
-                if self.has_command(alias_of):
-                    hook = self.get_hook(alias_of)
-                else:
-                    raise ValueError("'%s' is an alias of unknown command '%s'"
-                        % (command.lower(), alias_of.lower()))
+            hook = None
+            target = None
+            for potential_hook in self.get_hook(command):
+                hook = self.get_hook(command)
+                alias_of = self._get_alias_of(hook)
+                if alias_of:
+                    if self.has_command(alias_of):
+                        hook = self.get_hook(alias_of)
+                    else:
+                        raise ValueError(
+                            "'%s' is an alias of unknown command '%s'"
+                           % (command.lower(), alias_of.lower()))
 
-            is_channel = False
-            if "channel" in event:
-                target = event["channel"]
-                is_channel = True
-            else:
-                target = event["user"]
-            if not is_channel and hook.kwargs.get("channel_only"):
-                return
-            if is_channel and hook.kwargs.get("private_only"):
+                is_channel = False
+                if not is_channel and hook.kwargs.get("channel_only"):
+                    continue
+                if is_channel and hook.kwargs.get("private_only"):
+                    continue
+
+                hook = potential_hook
+                if "channel" in event:
+                    target = event["channel"]
+                    is_channel = True
+                else:
+                    target = event["user"]
+
+            if not hook:
                 return
 
             module_name = self._get_prefix(hook) or ""
