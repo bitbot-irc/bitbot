@@ -152,18 +152,14 @@ class Module(ModuleManager.BaseModule):
                             "'%s' is an alias of unknown command '%s'"
                            % (command.lower(), alias_of.lower()))
 
-                is_channel = False
+                is_channel = "channel" in event
                 if not is_channel and potential_hook.kwargs.get("channel_only"):
                     continue
                 if is_channel and potential_hook.kwargs.get("private_only"):
                     continue
 
                 hook = potential_hook
-                if "channel" in event:
-                    target = event["channel"]
-                    is_channel = True
-                else:
-                    target = event["user"]
+                target = event["user"] if not is_channel else event["channel"]
 
             if not hook:
                 return
