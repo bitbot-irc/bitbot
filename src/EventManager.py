@@ -275,6 +275,10 @@ class EventHookContext(object):
     def __init__(self, parent, context):
         self._parent = parent
         self.context = context
+
+    def make_event(self, **kwargs):
+        return self._parent.make_event(**kwargs)
+
     def hook(self, function: CALLBACK_TYPE, priority: int = DEFAULT_PRIORITY,
             replay: bool = False, **kwargs) -> EventCallback:
         return self._parent._context_hook(self.context, function, priority,
