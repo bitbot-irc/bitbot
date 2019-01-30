@@ -103,9 +103,9 @@ class Module(ModuleManager.BaseModule):
     def has_command(self, command):
         return command.lower() in self.events.on("received").on(
             "command").get_children()
-    def get_hook(self, command):
+    def get_hooks(self, command):
         return self.events.on("received.command").on(command
-            ).get_hooks()[0]
+            ).get_hooks()
 
     def is_highlight(self, server, s):
         if s and s[-1] in [":", ","]:
@@ -142,12 +142,11 @@ class Module(ModuleManager.BaseModule):
 
             hook = None
             target = None
-            for potential_hook in self.get_hook(command):
-                hook = self.get_hook(command)
+            for potential_hook in self.get_hooks(command):
                 alias_of = self._get_alias_of(hook)
                 if alias_of:
                     if self.has_command(alias_of):
-                        hook = self.get_hook(alias_of)
+                        hook = self.get_hooks(alias_of)[0]
                     else:
                         raise ValueError(
                             "'%s' is an alias of unknown command '%s'"
