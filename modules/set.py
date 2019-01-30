@@ -117,6 +117,7 @@ class Module(ModuleManager.BaseModule):
         :help: Get a specified channel setting for the current channel
         :usage: <setting>
         :require_mode: o
+        :permission: channelsetoverride
         """
         setting = event["args_split"][0]
         self._get(event, setting, " for %s" % event["target"].name,
@@ -168,6 +169,6 @@ class Module(ModuleManager.BaseModule):
         :help: Unset a specified user setting
         :usage: <setting>
         :require_mode: high
-        :permission: channelunsetoverride
+        :permission: channelsetoverride
         """
         self._unset(event, event["args_split"][0], "channelset", event["user"])
