@@ -55,6 +55,8 @@ class EventHook(object):
 
     def _make_event(self, kwargs: dict) -> Event:
         return Event(self._get_path(), **kwargs)
+    def make_event(self, **kwargs):
+        return self._make_event(kwargs)
 
     def _get_path(self) -> str:
         path = []

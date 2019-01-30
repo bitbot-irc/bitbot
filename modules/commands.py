@@ -216,12 +216,17 @@ class Module(ModuleManager.BaseModule):
                 args = " ".join(args_split)
                 server = event["server"]
                 user = event["user"]
+
+                new_event = self.events.on("received.command").on(command
+                    ).make_event(user=user, server=server, target=target,
+                    args=args, tags=event["tags"], args_split=args_split,
+                    stdout=stdout, stderr=stderr, command=command.lower(),
+                    is_channel=is_channel)
+
+                self.log.trace("calling command '%s': %s" % (command,
+                    new_event.kwargs))
                 try:
-                    self.events.on("received.command").on(command
-                        ).call_unsafe_limited(1, user=user, server=server,
-                        target=target, args=args, tags=event["tags"],
-                        args_split=args_split, stdout=stdout, stderr=stderr,
-                        command=command.lower(), is_channel=is_channel)
+                    hook.call(new_event)
                 except utils.EventError as e:
                     stderr.write(str(e))
 
