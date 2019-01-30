@@ -37,7 +37,7 @@ class Module(ModuleManager.BaseModule):
         reason = " ".join(args_split[1:]) or None
 
         try:
-            self._kick(event["server"], event["target"], target, reason)
+            self._kick(event["server"], channel, target, reason)
         except UserNotFoundException:
             event["stderr"].write(str(e))
 
