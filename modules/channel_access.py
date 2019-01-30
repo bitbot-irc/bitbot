@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
                 else:
                     return "You do not have permission to do this"
         else:
-            channel_arg_index = event["hook"].get_kwarg("channel_arg")
+            channel_arg_index = int(event["hook"].get_kwarg("channel_arg"))
             channel_name = event["args_split"][channel_arg_index]
             if channel_name in event["server"].channels:
                 channel = event["server"].channels.get(channel_name)
