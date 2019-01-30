@@ -68,7 +68,7 @@ class Module(ModuleManager.BaseModule):
         :require_access: channelset
         :permission: channelsetoverride
         """
-        channel = event["server"].get_channel(event["args_split"][0])
+        channel = event["server"].channels.get(event["args_split"][0])
         self._set("channelset", event, channel, False, 1)
 
     @utils.hook("received.command.channelset", channel_only=True,
