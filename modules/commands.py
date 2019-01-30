@@ -223,8 +223,8 @@ class Module(ModuleManager.BaseModule):
                     stdout=stdout, stderr=stderr, command=command.lower(),
                     is_channel=is_channel)
 
-                self.log.trace("calling command '%s': %s" % (command,
-                    new_event.kwargs))
+                self.log.trace("calling command '%s': %s",
+                    [command, new_event.kwargs])
                 try:
                     hook.call(new_event)
                 except utils.EventError as e:
