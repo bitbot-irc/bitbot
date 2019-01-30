@@ -167,6 +167,16 @@ class Module(ModuleManager.BaseModule):
         except UserNotFoundException as e:
             event["stderr"].write(str(e))
 
+    @utils.hook("received.command.unban", private_only=True, min_args=2)
+        """
+        :help: Unban a user/hostmask from the current channel
+        :usage: <channel> <nickname/hostmask>
+        :require_access: ban
+        :channel_arg: 0
+        """
+        channel = event["server"].channels.get(event["args_split"][0])
+        self._ban(event["server"], channel, False, event["args_split"][1])
+
     @utils.hook("received.command.unban", channel_only=True, min_args=1)
     def unban(self, event):
         """
