@@ -58,6 +58,18 @@ class Module(ModuleManager.BaseModule):
         """
         self._set("set", event, event["user"], event["command"]=="setadd")
 
+    @utils.hook("received.command.channelset", min_args=1, private_only=True,
+        help=CHANNELSET_HELP)
+    def private_channel_set(self, event):
+        """
+        :usage: <channel> <setting> <value>
+        :channel_arg: 0
+        :require_access: channelset
+        :permission: channelsetoverride
+        """
+        channel = event["server"].get_channel(event["args_split"][0])
+        self._set("channelset", event, channel, False)
+
     @utils.hook("received.command.channelset", channel_only=True,
         help=CHANNELSET_HELP)
     @utils.hook("received.command.channelsetadd", channel_only=True,
