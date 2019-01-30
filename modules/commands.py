@@ -182,23 +182,6 @@ class Module(ModuleManager.BaseModule):
                 target=target, is_channel=is_channel, tags=event["tags"],
                 args_split=args_split)
 
-            hard_fail = False
-            force_success = False
-            error = None
-            for returned in returns:
-                if returned == utils.consts.PERMISSION_HARD_FAIL:
-                    hard_fail = True
-                elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
-                    force_success = True
-                elif returned:
-                    error = returned
-
-            if hard_fail or (not force_success and error):
-                if error:
-                    stderr.write(error).send(command_method)
-                    target.buffer.skip_next()
-                return
-
             if hook.kwargs.get("remove_empty", True):
                 args_split = list(filter(None, args_split))
 
@@ -216,6 +199,23 @@ class Module(ModuleManager.BaseModule):
                     stderr.write("Not enough arguments (minimum: %d)" %
                         min_args).send(command_method)
             else:
+                hard_fail = False
+                force_success = False
+                error = None
+                for returned in returns:
+                    if returned == utils.consts.PERMISSION_HARD_FAIL:
+                        hard_fail = True
+                    elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
+                        force_success = True
+                    elif returned:
+                        error = returned
+
+                if hard_fail or (not force_success and error):
+                    if error:
+                        stderr.write(error).send(command_method)
+                        target.buffer.skip_next()
+                    return
+
                 args = " ".join(args_split)
                 server = event["server"]
                 user = event["user"]
