@@ -32,6 +32,26 @@ class Module(ModuleManager.BaseModule):
             channel.send_kick(nickname, reason)
         else:
             raise UserNotFoundException("That user is not in this channel")
+    def _kick_command(self, event, channel, args_split):
+        target = args_split[0]
+        reason = " ".join(args_split[1:]) or None
+
+        try:
+            self._kick(event["server"], event["target"], target, reason)
+        except UserNotFoundException:
+            event["stderr"].write(str(e))
+
+    @utils.hook("received.command.kick", private_only=True, min_args=2)
+    def private_kick(self, event):
+        """
+        :help: Kick a user from the current channel
+        :usage: <nickname> [reason]
+        :require_access: kick
+        :channel_arg: 0
+        :prefix: Kick
+        """
+        channel = event["server"].channels.get(event["args_split"][0])
+        self._kick_command(event, channel, event["args_split"][1:])
 
     @utils.hook("received.command.k", alias_of="kick")
     @utils.hook("received.command.kick", channel_only=True, min_args=1)
@@ -43,13 +63,7 @@ class Module(ModuleManager.BaseModule):
         :require_access: kick
         :prefix: Kick
         """
-        target = event["args_split"][0]
-        reason = " ".join(event["args_split"][1:]) or None
-
-        try:
-            self._kick(event["server"], event["target"], target, reason)
-        except UserNotFoundException:
-            event["stderr"].write(str(e))
+        self._kick_command(event, event["target"], event["args_split"])
 
     def _ban_format(self, user, s):
         return s.replace("$n", user.nickname).replace("$u", user.username
@@ -79,6 +93,16 @@ class Module(ModuleManager.BaseModule):
                 event["target"].send_unban(target)
             return target
 
+    @utils.hook("received.command.ban", private_only=True, min_args=2)
+    def private_ban(self, event):
+        """
+        :help: Ban a user/hostmask from the current channel
+        :usage: <channel> <nickname/hostmask>
+        :require_access: ban
+        :channel_arg: 0
+        """
+        channel = event["server"].channels.get(event["args_split"][0])
+        self._ban(event["server"], channel, True, event["args_split"][1])
     @utils.hook("received.command.ban", channel_only=True, min_args=1)
     def ban(self, event):
         """
