@@ -21,17 +21,18 @@ class Module(ModuleManager.BaseModule):
                 else:
                     return "You do not have permission to do this"
         else:
-            channel_arg_index = int(event["hook"].get_kwarg("channel_arg"))
-            channel_name = event["args_split"][channel_arg_index]
-            if channel_name in event["server"].channels:
-                channel = event["server"].channels.get(channel_name)
-                if self._has_channel_access(channel, event["user"],
-                        require_access):
-                    return utils.consts.PERMISSION_FORCE_SUCCESS
+            channel_arg_index = event["hook"].get_kwarg("channel_arg", None)
+            if not channel_arg_index == None:
+                channel_name = event["args_split"][int(channel_arg_index)]
+                if channel_name in event["server"].channels:
+                    channel = event["server"].channels.get(channel_name)
+                    if self._has_channel_access(channel, event["user"],
+                            require_access):
+                        return utils.consts.PERMISSION_FORCE_SUCCESS
+                    else:
+                        return "You do not have permission to do this"
                 else:
-                    return "You do not have permission to do this"
-            else:
-                return "I'm not in that channel"
+                    return "I'm not in that channel"
 
     @utils.hook("get.haschannelaccess")
     def has_channel_access(self, event):
