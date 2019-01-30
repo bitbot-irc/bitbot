@@ -5,12 +5,13 @@ CHANNELSETADD_HELP = ("Add to a specified channel setting for the "
     "current channel")
 
 class Module(ModuleManager.BaseModule):
-    def _set(self, category, event, target, array):
+    def _set(self, category, event, target, array, arg_index=0):
+        args = event["args_split"][arg_index:]
         settings = self.exports.get_all(category)
         settings_dict = {setting["setting"]: setting for setting in settings}
 
-        if len(event["args_split"]) > 1:
-            setting = event["args_split"][0].lower()
+        if len(args) > 1:
+            setting = args[0].lower()
             if setting in settings_dict:
                 setting_options = settings_dict[setting]
                 if not setting_options.get("array", False) == array:
@@ -21,7 +22,7 @@ class Module(ModuleManager.BaseModule):
                         raise utils.EventError(
                             "You can only 'add' to an array setting")
 
-                value = " ".join(event["args_split"][1:])
+                value = " ".join(args[1:])
                 value = setting_options.get("validate", lambda x: x)(value)
 
                 if not value == None:
@@ -40,7 +41,7 @@ class Module(ModuleManager.BaseModule):
                     event["stderr"].write("Invalid value")
             else:
                 event["stderr"].write("Unknown setting")
-        elif len(event["args_split"]) == 1:
+        elif len(args) == 1:
             event["stderr"].write("Please provide a value")
         else:
             shown_settings = [key for key, value in settings_dict.items()
@@ -68,7 +69,7 @@ class Module(ModuleManager.BaseModule):
         :permission: channelsetoverride
         """
         channel = event["server"].get_channel(event["args_split"][0])
-        self._set("channelset", event, channel, False)
+        self._set("channelset", event, channel, False, 1)
 
     @utils.hook("received.command.channelset", channel_only=True,
         help=CHANNELSET_HELP)
