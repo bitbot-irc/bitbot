@@ -160,6 +160,7 @@ class Module(ModuleManager.BaseModule):
 
                 hook = potential_hook
                 target = event["user"] if not is_channel else event["channel"]
+                break
 
             if not hook:
                 return
