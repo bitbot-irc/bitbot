@@ -173,11 +173,6 @@ class Module(ModuleManager.BaseModule):
             stderr = StdErr(event["server"], module_name, target, msgid)
             command_method = self._command_method(target, event["server"])
 
-            returns = self.events.on("preprocess.command").call_unsafe(
-                hook=hook, user=event["user"], server=event["server"],
-                target=target, is_channel=is_channel, tags=event["tags"],
-                args_split=args_split)
-
             if hook.kwargs.get("remove_empty", True):
                 args_split = list(filter(None, args_split))
 
@@ -195,6 +190,11 @@ class Module(ModuleManager.BaseModule):
                     stderr.write("Not enough arguments (minimum: %d)" %
                         min_args).send(command_method)
             else:
+                returns = self.events.on("preprocess.command").call_unsafe(
+                    hook=hook, user=event["user"], server=event["server"],
+                    target=target, is_channel=is_channel, tags=event["tags"],
+                    args_split=args_split)
+
                 hard_fail = False
                 force_success = False
                 error = None
