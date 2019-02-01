@@ -110,7 +110,7 @@ class Module(ModuleManager.BaseModule):
         if self.httpd:
             self.httpd.shutdown()
 
-    @utils.hook("received.command.apikey", private_only=True)
+    @utils.hook("received.command.apikey", private_only=True, min_args=1)
     def api_key(self, event):
         """
         :help: Generate a new API key
