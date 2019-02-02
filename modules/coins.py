@@ -82,7 +82,7 @@ class Module(ModuleManager.BaseModule):
         self._set_user_coins(user, user_coins-amount)
         return user_coins-amount
     def _move(self, user1, user2, amount):
-        user1_coins = self._get_user_coins(user)
+        user1_coins = self._get_user_coins(user1)
         self._set_user_coins(user1, user1_coins-amount)
 
         user2_coins = self._get_user_coins(user2)
