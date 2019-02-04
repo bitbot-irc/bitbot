@@ -84,8 +84,12 @@ class Module(ModuleManager.BaseModule):
                 target_user.nickname, mode_name))
         else:
             automodes.remove(mode)
-            event["target"].set_user_setting(target_user.get_id(), "automodes",
-                automodes)
+            if automodes:
+                event["target"].set_user_setting(target_user.get_id(),
+                    "automodes", automodes)
+            else:
+                event["target"].del_user_setting(target_user.get_id(),
+                    "automodes")
             event["stdout"].write("Removed automode %s from '%s'" % (
                 mode_name, target_user.nickname))
 
