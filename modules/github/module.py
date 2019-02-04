@@ -263,10 +263,10 @@ class Module(ModuleManager.BaseModule):
         repo_hooked = False
         for server_id, channel_name, hooked_repos) in hooks:
             found_hook = None
-            if repo_username and repo_username in hooked_repos:
-                found_hook = hooked_repos[repo_username]
-            elif full_name and full_name in hooked_repos:
+            if full_name and full_name in hooked_repos:
                 found_hook = hooked_repos[full_name]
+            elif repo_username and repo_username in hooked_repos:
+                found_hook = hooked_repos[repo_username]
             elif organisation and organisation in hooked_repos:
                 found_hook = hooked_repos[organisation]
 
