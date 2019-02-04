@@ -13,7 +13,7 @@ REGEX_CUTOFF = re.compile(r"^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
 REGEX_ARG_NUMBER = re.compile(r"\$(\d+)")
 
 class Out(object):
-    def __init__(self, server, module_name, target, msgid):
+    def __init__(self, server, module_name, target, msgid, statusmsg):
         self.server = server
         self.module_name = module_name
         self._hide_prefix = False
@@ -21,6 +21,7 @@ class Out(object):
         self._text = ""
         self.written = False
         self._msgid = msgid
+        self._statusmsg = statusmsg
 
     def write(self, text):
         self._text += text
@@ -47,10 +48,12 @@ class Out(object):
             if not self._hide_prefix:
                 prefix = utils.consts.RESET + "[%s] " % self.prefix()
 
+            target_str = "%s%s" % (self._statusmsg, self.target.name)
+            full_text = "%s%s" % (prefix, text)
             if method == "PRIVMSG":
-                self.target.send_message(text, prefix=prefix, tags=tags)
+                self.server.send_message(target_str, full_text, tags=tags)
             elif method == "NOTICE":
-                self.target.send_notice(text, prefix=prefix, tags=tags)
+                self.server.send_notice(target_str, full_text, tags=tags)
 
     def set_prefix(self, prefix):
         self.module_name = prefix
@@ -170,8 +173,11 @@ class Module(ModuleManager.BaseModule):
                 module_name = hook.function.__self__._name
 
             msgid = event["tags"].get("draft/msgid", None)
-            stdout = StdOut(event["server"], module_name, target, msgid)
-            stderr = StdErr(event["server"], module_name, target, msgid)
+            statusmsg = "".join(event.get("statusmsg", []))
+            stdout = StdOut(event["server"], module_name, target, msgid,
+                statusmsg)
+            stderr = StdErr(event["server"], module_name, target, msgid,
+                statusmsg)
             command_method = self._command_method(target, event["server"])
 
             if hook.kwargs.get("remove_empty", True):
@@ -385,7 +391,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("send.stdout")
     def send_stdout(self, event):
         stdout = StdOut(event["server"], event["module_name"],
-            event["target"], event.get("msgid", None))
+            event["target"], event.get("msgid", None),
+            event.get("statusmsg", ""))
 
         if event.get("hide_prefix", False):
             stdout.hide_prefix()
@@ -397,7 +404,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("send.stderr")
     def send_stderr(self, event):
         stderr = StdErr(event["server"], event["module_name"],
-            event["target"], event.get("msgid", None))
+            event["target"], event.get("msgid", None),
+            event.get("statusmsg", ""))
 
         if event.get("hide_prefix", False):
             stderr.hide_prefix()

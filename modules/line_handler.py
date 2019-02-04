@@ -413,8 +413,10 @@ class Module(ModuleManager.BaseModule):
         # strip prefix_symbols from the start of target, for when people use
         # e.g. 'PRIVMSG +#channel :hi' which would send a message to only
         # voiced-or-above users
-        prefix_symbols = "".join(event["server"].prefix_symbols.keys())
-        target = target.lstrip(prefix_symbols)
+        statusmsg = []
+        while target[0] in event["server"].prefix_symbols.keys():
+            statusmsg.append(target[0])
+            target = target[1:]
 
         channel = None
         if target[0] in event["server"].channel_types:
@@ -445,7 +447,7 @@ class Module(ModuleManager.BaseModule):
 
         if channel:
             self._event(event, "message.channel", user=user, channel=channel,
-                **kwargs)
+                statusmsg=statusmsg, **kwargs)
             channel.buffer.add_message(user_nickname, message, action,
                 event["tags"], user==None)
         elif event["server"].is_own_nickname(target):
