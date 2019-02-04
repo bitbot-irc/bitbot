@@ -261,7 +261,7 @@ class Module(ModuleManager.BaseModule):
         targets = []
 
         repo_hooked = False
-        for server_id, channel_name, hooked_repos) in hooks:
+        for server_id, channel_name, hooked_repos in hooks:
             found_hook = None
             if full_name and full_name in hooked_repos:
                 found_hook = hooked_repos[full_name]
