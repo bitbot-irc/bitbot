@@ -114,6 +114,10 @@ class Module(ModuleManager.BaseModule):
                     server_signature = hmac.digest(server_key, auth_message,
                         algo)
 
+                    del event["server"]._scram_first
+                    del event["server"]._scram_salted_password
+                    del event["server"]._scram_auth_message
+
                     if server_signature != base64.b64decode(verifier):
                         raise ValueError("SCRAM %s authentication failed "
                             % algo)
