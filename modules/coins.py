@@ -331,8 +331,6 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("%s: You don't have enough coins to bet" %
                 event["user"].nickname)
 
-        self._take(event["server"], event["user"], bet_amount_total)
-
         # black, red, odds, evens, low (1-18), high (19-36)
         # 1dozen (1-12), 2dozen (13-24), 3dozen (25-36)
         # 1column (1,4..34), 2column (2,5..35), 3column (3,6..36)
@@ -402,6 +400,8 @@ class Module(ModuleManager.BaseModule):
                 losses[bet] = bet_amounts[i]
             else:
                 winnings[bet] = [odds, bet_amounts[i]]
+
+        self._take(event["server"], event["user"], bet_amount_total)
 
         winnings_str = ["%s for %s (%d to 1)" % (
             winnings[bet][1]*winnings[bet][0],
