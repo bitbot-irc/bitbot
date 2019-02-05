@@ -1,5 +1,6 @@
 import base64, hashlib, hmac, uuid
 from src import ModuleManager, utils
+from . import scram
 
 def _validate(self, s):
     mechanism = s
@@ -68,62 +69,17 @@ class Module(ModuleManager.BaseModule):
             sasl_username, sasl_password = sasl["args"].split(":", 1)
             if event["message"] == "+":
                 # start SCRAM handshake
-                first_base = "n=%s,r=%s" % (
-                    _scram_escape(sasl_username), _scram_nonce())
-                first_withchannel = "n,,%s" % first_base
-                auth_text = first_withchannel.encode("utf8")
-                event["server"]._scram_first = first_base.encode("utf8")
+                event["server"]._scram = scram.SCRAM(
+                    algo, sasl_username, sasl_password)
+                auth_text = event["server"]._scram.client_first()
+                print(auth_text)
             else:
-                data = base64.b64decode(event["message"]).decode("utf8")
-                pieces = dict(piece.split("=", 1) for piece in data.split(","))
-                if "s" in pieces:
-                    # server-first-message
-                    nonce = pieces["r"].encode("utf8")
-                    salt = base64.b64decode(pieces["s"])
-                    iterations = pieces["i"]
-                    password = sasl_password.encode("utf8")
-
-                    salted_password = hashlib.pbkdf2_hmac(algo, password, salt,
-                        int(iterations), dklen=None)
-                    event["server"]._scram_salted_password = salted_password
-
-                    client_key = hmac.digest(salted_password, b"Client Key",
-                        algo)
-                    stored_key = hashlib.new(algo, client_key).digest()
-
-                    channel = base64.b64encode(b"n,,")
-                    auth_noproof = b"c=%s,r=%s" % (channel, nonce)
-                    auth_message = b"%s,%s,%s" % (event["server"]._scram_first,
-                        data.encode("utf8"), auth_noproof)
-                    event["server"]._scram_auth_message = auth_message
-
-                    client_signature = hmac.digest(stored_key, auth_message,
-                        algo)
-                    client_proof = base64.b64encode(
-                        _scram_xor(client_key, client_signature))
-
-                    auth_text = auth_noproof + (b",p=%s" % client_proof)
-                elif "v" in pieces:
-                    # server-final-message
-                    verifier = pieces["v"]
-
-                    salted_password = event["server"]._scram_salted_password
-                    auth_message = event["server"]._scram_auth_message
-                    server_key = hmac.digest(salted_password, b"Server Key",
-                        algo)
-                    server_signature = hmac.digest(server_key, auth_message,
-                        algo)
-
-                    del event["server"]._scram_first
-                    del event["server"]._scram_salted_password
-                    del event["server"]._scram_auth_message
-
-                    if server_signature != base64.b64decode(verifier):
-                        raise ValueError("SCRAM %s authentication failed "
-                            % algo)
-                        event["server"].disconnect()
-                    auth_text = "+"
-
+                current_scram = event["server"]._scram
+                if current_scram.state == scram.SCRAMState.ClientFirst:
+                    auth_text = current_scram.server_first(event["message"])
+                elif current_scram.state == scram.SCRAMState.ClientFinal:
+                    auth_text = current_scram.server_final(event["message"])
+                    del event["server"]._scram
         else:
             raise ValueError("unknown sasl mechanism '%s'" % mechanism)
 
