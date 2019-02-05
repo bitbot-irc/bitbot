@@ -375,8 +375,6 @@ class Server(IRCObject.Object):
         self.send("CAP END")
     def send_authenticate(self, text: str):
         self.send("AUTHENTICATE %s" % text)
-    def send_starttls(self):
-        self.send("STARTTLS")
 
     def waiting_for_capabilities(self) -> bool:
         return bool(len(self._capabilities_waiting))
