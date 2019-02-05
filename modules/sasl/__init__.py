@@ -79,6 +79,11 @@ class Module(ModuleManager.BaseModule):
                 elif current_scram.state == scram.SCRAMState.ClientFinal:
                     auth_text = current_scram.server_final(event["message"])
                     del event["server"]._scram
+
+                    if current_scram.state == scram.SCRAMState.VerifyFailed:
+                        event["server"].disconnect()
+                        raise ValueError("Server SCRAM verification failed")
+
         else:
             raise ValueError("unknown sasl mechanism '%s'" % mechanism)
 
