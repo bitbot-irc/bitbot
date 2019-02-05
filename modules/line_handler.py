@@ -320,7 +320,9 @@ class Module(ModuleManager.BaseModule):
         if subcommand == "ack" or subcommand == "nak":
             for capability in capabilities:
                 event["server"].requested_capabilities.remove(capability)
+
             if (event["server"].cap_started and
+                    not event["server"].requested_capabilities and
                     not event["server"].waiting_for_capabilities()):
                 event["server"].cap_started = False
                 event["server"].send_capability_end()
