@@ -34,6 +34,11 @@ class SCRAM(object):
         data = base64.b64decode(message)
         return data, dict(piece.split(b"=", 1) for piece in data.split(b","))
 
+    def _hmac(self, key, msg):
+        return hmac.digest(key, msg, self._algo)
+    def _hash(self, msg):
+        return hashlib.new(self._algo, msg).digest()
+
     def client_first(self):
         self.state = SCRAMState.ClientFirst
         # start SCRAM handshake
@@ -55,15 +60,15 @@ class SCRAM(object):
             int(iterations), dklen=None)
         self._salted_password = salted_password
 
-        client_key = hmac.digest(salted_password, b"Client Key", self._algo)
-        stored_key = hashlib.new(self._algo, client_key).digest()
+        client_key = self._hmac(salted_password, b"Client Key")
+        stored_key = self._hash(client_key)
 
         channel = base64.b64encode(b"n,,")
         auth_noproof = b"c=%s,r=%s" % (channel, nonce)
         auth_message = b"%s,%s,%s" % (self._client_first, data, auth_noproof)
         self._auth_message = auth_message
 
-        client_signature = hmac.digest(stored_key, auth_message, self._algo)
+        client_signature = self._hmac(stored_key, auth_message)
         client_proof = base64.b64encode(
             _scram_xor(client_key, client_signature))
 
@@ -74,10 +79,8 @@ class SCRAM(object):
         data, pieces = self._get_data(message)
         verifier = pieces[b"v"]
 
-        server_key = hmac.digest(self._salted_password, b"Server Key",
-            self._algo)
-        server_signature = hmac.digest(server_key, self._auth_message,
-            self._algo)
+        server_key = self._hmac(self._salted_password, b"Server Key")
+        server_signature = self._hmac(server_key, self._auth_message)
 
         if server_signature != base64.b64decode(verifier):
             self.state = SCRAMState.VerifyFailed
