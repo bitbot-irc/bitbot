@@ -4,7 +4,8 @@ from src import IRCObject, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def on_load(self):
-        self._directory = os.path.join(self.bot.directory, "modules", "scripts")
+        our_directory = os.path.abspath(os.path.dirname(__file__))
+        self._directory = os.path.join(our_directory, "scripts")
         self._hooks = []
         self._load_scripts()
 
