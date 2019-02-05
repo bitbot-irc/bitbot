@@ -75,7 +75,7 @@ class ModuleManager(object):
             modules.append((ModuleType.FILE, file_module))
 
         for directory_module in glob.glob(os.path.join(
-                self.directory, "*", "module.py")):
+                self.directory, "*", "__init__.py")):
             directory = os.path.dirname(directory_module)
             modules.append((ModuleType.DIRECTORY, directory))
         return sorted(modules, key=lambda module: module[1])
@@ -94,8 +94,8 @@ class ModuleManager(object):
     def _load_module(self, bot: "IRCBot.Bot", name: str) -> LoadedModule:
         path = self._module_path(name)
         if os.path.isdir(path) and os.path.isfile(os.path.join(
-                path, "module.py")):
-            path = os.path.join(path, "module.py")
+                path, "__init__.py")):
+            path = os.path.join(path, "__init__.py")
         else:
             path = "%s.py" % path
 
@@ -120,6 +120,7 @@ class ModuleManager(object):
         import_name = self._import_name(name)
         import_spec = importlib.util.spec_from_file_location(import_name, path)
         module = importlib.util.module_from_spec(import_spec)
+        sys.modules[import_name] = module
         import_spec.loader.exec_module(module)
 
         module_object_pointer = getattr(module, "Module", None)
