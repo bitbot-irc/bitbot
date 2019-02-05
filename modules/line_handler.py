@@ -282,9 +282,9 @@ class Module(ModuleManager.BaseModule):
     # the server is telling us about its capabilities!
     @utils.hook("raw.received.cap")
     def cap(self, event):
-        capabilities = utils.parse.keyvalue(event["args"][2])
+        capabilities = utils.parse.keyvalue(event["args"][-1])
         subcommand = event["args"][1].lower()
-        is_multiline = len(event["args"]) > 2 and event["args"][2] == "*"
+        is_multiline = len(event["args"]) > 3 and event["args"][2] == "*"
 
         if subcommand == "ls":
             event["server"].cap_started = True
