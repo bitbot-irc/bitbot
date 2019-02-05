@@ -72,7 +72,6 @@ class Module(ModuleManager.BaseModule):
                 event["server"]._scram = scram.SCRAM(
                     algo, sasl_username, sasl_password)
                 auth_text = event["server"]._scram.client_first()
-                print(auth_text)
             else:
                 current_scram = event["server"]._scram
                 if current_scram.state == scram.SCRAMState.ClientFirst:
