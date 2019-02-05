@@ -30,6 +30,7 @@ class Server(IRCObject.Object):
         self._capability_queue = set([]) # type: typing.Set[str]
         self._capabilities_waiting = set([]) # type: typing.Set[str]
         self.capabilities = set([]) # type: typing.Set[str]
+        self.requested_capabilities = [] # type: typing.List[str]
         self.server_capabilities = {} # type: typing.Dict[str, str]
         self.batches = {} # type: typing.Dict[str, utils.irc.IRCLine]
         self.cap_started = False
@@ -363,6 +364,7 @@ class Server(IRCObject.Object):
     def send_capability_queue(self):
         if self.has_capability_queue():
             capabilities = " ".join(self._capability_queue)
+            self.requested_capabilities = list(self._capability_queue)
             self._capability_queue.clear()
             self.send_capability_request(capabilities)
     def has_capability_queue(self):

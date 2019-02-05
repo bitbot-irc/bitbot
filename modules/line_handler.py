@@ -314,17 +314,16 @@ class Module(ModuleManager.BaseModule):
                 capabilities=capabilities)
         elif subcommand == "ack":
             event["server"].capabilities.update(capabilities)
-            if not is_multiline:
-                self._event(event, "cap.ack",
-                   capabilities=event["server"].capabilities,
-                   server=event["server"])
+            self._event(event, "cap.ack", capabilities=capabilities,
+               server=event["server"])
 
-                if event["server"].cap_started and not event["server"
-                        ].waiting_for_capabilities():
-                    event["server"].cap_started = False
-                    event["server"].send_capability_end()
-        elif subcommand == "nack":
-            event["server"].send_capability_end()
+        if subcommand == "ack" or subcommand == "nak":
+            for capability in capabilities:
+                event["server"].requested_capabilities.remove(capability)
+            if (event["server"].cap_started and
+                    not event["server"].waiting_for_capabilities()):
+                event["server"].cap_started = False
+                event["server"].send_capability_end()
 
     # the server is asking for authentication
     @utils.hook("raw.received.authenticate")
