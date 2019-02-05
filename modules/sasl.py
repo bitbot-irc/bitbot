@@ -73,26 +73,18 @@ class Module(ModuleManager.BaseModule):
                 first_withchannel = "n,,%s" % first_base
                 auth_text = first_withchannel.encode("utf8")
                 event["server"]._scram_first = first_base.encode("utf8")
-                self.log.debug("SCRAM client-first-message: %s",
-                    [first_withchannel])
             else:
                 data = base64.b64decode(event["message"]).decode("utf8")
                 pieces = dict(piece.split("=", 1) for piece in data.split(","))
                 if "s" in pieces:
                     # server-first-message
-                    self.log.debug("SCRAM server-first-message: %s", [data])
-
                     nonce = pieces["r"].encode("utf8")
                     salt = base64.b64decode(pieces["s"])
                     iterations = pieces["i"]
                     password = sasl_password.encode("utf8")
-                    self.log.debug("SCRAM server-first-message salt: %s",
-                        [salt])
 
                     salted_password = hashlib.pbkdf2_hmac(algo, password, salt,
                         int(iterations), dklen=None)
-                    self.log.debug("SCRAM server-first-message salted: %s",
-                        [salted_password])
                     event["server"]._scram_salted_password = salted_password
 
                     client_key = hmac.digest(salted_password, b"Client Key",
@@ -103,8 +95,6 @@ class Module(ModuleManager.BaseModule):
                     auth_noproof = b"c=%s,r=%s" % (channel, nonce)
                     auth_message = b"%s,%s,%s" % (event["server"]._scram_first,
                         data.encode("utf8"), auth_noproof)
-                    self.log.debug("SCRAM server-first-message auth msg: %s",
-                        [auth_message])
                     event["server"]._scram_auth_message = auth_message
 
                     client_signature = hmac.digest(stored_key, auth_message,
