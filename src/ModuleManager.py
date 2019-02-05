@@ -1,4 +1,4 @@
-import enum, gc, glob, imp, io, inspect, os, sys, typing, uuid
+import enum, gc, glob, importlib, io, inspect, os, sys, typing, uuid
 from src import Config, EventManager, Exports, IRCBot, Logging, Timers, utils
 
 class ModuleException(Exception):
@@ -118,7 +118,9 @@ class ModuleManager(object):
                     raise ModuleNotLoadedWarning("waiting for requirement")
 
         import_name = self._import_name(name)
-        module = imp.load_source(import_name, path)
+        import_spec = importlib.util.spec_from_file_location(import_name, path)
+        module = importlib.util.module_from_spec(import_spec)
+        import_spec.loader.exec_module(module)
 
         module_object_pointer = getattr(module, "Module", None)
         if not module_object_pointer:
