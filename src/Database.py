@@ -56,14 +56,14 @@ class Users(Table):
     def add(self, server_id: int, nickname: str):
         self.database.execute("""INSERT OR IGNORE INTO users
             (server_id, nickname) VALUES (?, ?)""",
-            [server_id, nickname.lower()])
+            [server_id, nickname])
     def delete(self, user_id: int):
         self.database.execute("DELETE FROM users WHERE user_id=?",
             [user_id])
     def get_id(self, server_id: int, nickname: str):
         value = self.database.execute_fetchone("""SELECT user_id FROM
             users WHERE server_id=? and nickname=?""",
-            [server_id, nickname.lower()])
+            [server_id, nickname])
         return value if value == None else value[0]
 
 class BotSettings(Table):
