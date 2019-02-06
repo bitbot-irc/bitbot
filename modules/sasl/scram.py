@@ -1,7 +1,7 @@
-import base64, enum, hashlib, hmac, typing, uuid
+import base64, enum, hashlib, hmac, os, typing
 
 def _scram_nonce() -> bytes:
-    return uuid.uuid4().hex.encode("utf8")
+    return base64.b64encode(os.urandom(32))
 def _scram_escape(s: bytes) -> bytes:
     return s.replace(b"=", b"=3D").replace(b",", b"=2C")
 def _scram_unescape(s: bytes) -> bytes:
