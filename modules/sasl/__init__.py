@@ -78,10 +78,12 @@ class Module(ModuleManager.BaseModule):
                 if current_scram.state == scram.SCRAMState.ClientFirst:
                     auth_text = current_scram.server_first(data)
                 elif current_scram.state == scram.SCRAMState.ClientFinal:
-                    auth_text = current_scram.server_final(data)
+                    verified = current_scram.server_final(data)
                     del event["server"]._scram
 
-                    if current_scram.state == scram.SCRAMState.VerifyFailed:
+                    if verified:
+                        auth_text = "+"
+                    else:
                         event["server"].disconnect()
                         raise ValueError("Server SCRAM verification failed")
 

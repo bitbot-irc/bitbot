@@ -73,7 +73,7 @@ class SCRAM(object):
 
         return auth_noproof + (b",p=%s" % client_proof)
 
-    def server_final(self, data: bytes) -> bytes:
+    def server_final(self, data: bytes) -> bool:
         # server-final-message
         pieces = self._get_pieces(data)
         verifier = pieces[b"v"]
@@ -83,7 +83,7 @@ class SCRAM(object):
 
         if server_signature != base64.b64decode(verifier):
             self.state = SCRAMState.VerifyFailed
-            return None
+            return False
         else:
             self.state = SCRAMState.Success
-            return "+"
+            return True
