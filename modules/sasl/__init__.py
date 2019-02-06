@@ -74,10 +74,11 @@ class Module(ModuleManager.BaseModule):
                 auth_text = event["server"]._scram.client_first()
             else:
                 current_scram = event["server"]._scram
+                data = base64.b64decode(event["message"])
                 if current_scram.state == scram.SCRAMState.ClientFirst:
-                    auth_text = current_scram.server_first(event["message"])
+                    auth_text = current_scram.server_first(data)
                 elif current_scram.state == scram.SCRAMState.ClientFinal:
-                    auth_text = current_scram.server_final(event["message"])
+                    auth_text = current_scram.server_final(data)
                     del event["server"]._scram
 
                     if current_scram.state == scram.SCRAMState.VerifyFailed:
