@@ -89,10 +89,11 @@ class Module(ModuleManager.BaseModule):
         else:
             raise ValueError("unknown sasl mechanism '%s'" % mechanism)
 
-        if not auth_text == "+":
-            auth_text = base64.b64encode(auth_text)
-            auth_text = auth_text.decode("utf8")
-        event["server"].send_authenticate(auth_text)
+        if not auth_text == None:
+            if not auth_text == "+":
+                auth_text = base64.b64encode(auth_text)
+                auth_text = auth_text.decode("utf8")
+            event["server"].send_authenticate(auth_text)
 
     def _end_sasl(self, server):
         server.capability_done("sasl")
