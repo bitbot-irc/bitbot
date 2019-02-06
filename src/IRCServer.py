@@ -382,7 +382,7 @@ class Server(IRCObject.Object):
     def wait_for_capability(self, capability: str):
         self._capabilities_waiting.add(capability)
     def capability_done(self, capability: str):
-        self._capabilities_waiting.remove(capability)
+        self._capabilities_waiting.discard(capability)
         if self.cap_started and not self._capabilities_waiting:
             self.send_capability_end()
 
