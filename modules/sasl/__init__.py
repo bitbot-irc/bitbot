@@ -48,6 +48,7 @@ class Module(ModuleManager.BaseModule):
         sasl = event["server"].get_setting("sasl")
         mechanism = sasl["mechanism"].upper()
 
+        auth_text = None
         if mechanism == "PLAIN":
             if event["message"] != "+":
                 event["server"].send_authenticate("*")
