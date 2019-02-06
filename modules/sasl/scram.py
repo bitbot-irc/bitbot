@@ -55,9 +55,8 @@ class SCRAM(object):
         nonce = pieces[b"r"]
         salt = base64.b64decode(pieces[b"s"])
         iterations = pieces[b"i"]
-        password = self._password
 
-        salted_password = hashlib.pbkdf2_hmac(self._algo, password, salt,
+        salted_password = hashlib.pbkdf2_hmac(self._algo, self._password, salt,
             int(iterations), dklen=None)
         self._salted_password = salted_password
 
