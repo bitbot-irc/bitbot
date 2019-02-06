@@ -1,5 +1,4 @@
 beautifulsoup4
-Flask
 requests
 scrypt
 suds-jurko
