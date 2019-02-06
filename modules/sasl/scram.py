@@ -55,31 +55,35 @@ class SCRAM(object):
         self.state = SCRAMState.ClientFirst
         self._client_first = b"n=%s,r=%s" % (
             _scram_escape(self._username), _scram_nonce())
+
+        # n,,n=<username>,r=<nonce>
         return b"n,,%s" % self._client_first
 
     def server_first(self, data: bytes) -> bytes:
         self.state = SCRAMState.ClientFinal
 
         pieces = self._get_pieces(data)
-        nonce = pieces[b"r"]
-        salt = base64.b64decode(pieces[b"s"])
-        iterations = pieces[b"i"]
+        nonce = pieces[b"r"] # server combines your nonce with it's own
+        salt = base64.b64decode(pieces[b"s"]) # salt is b64encoded
+        iterations = int(pieces[b"i"])
 
-        self._salted_password = hashlib.pbkdf2_hmac(self._algo, self._password,
-            salt, int(iterations), dklen=None)
+        salted_password = hashlib.pbkdf2_hmac(self._algo, self._password,
+            salt, iterations, dklen=None)
+        self._salted_password = salted_password
 
-        client_key = self._hmac(self._salted_password, b"Client Key")
+        client_key = self._hmac(salted_password, b"Client Key")
         stored_key = self._hash(client_key)
 
         channel = base64.b64encode(b"n,,")
         auth_noproof = b"c=%s,r=%s" % (channel, nonce)
-        self._auth_message = b"%s,%s,%s" % (
-            self._client_first, data, auth_noproof)
+        auth_message = b"%s,%s,%s" % (self._client_first, data, auth_noproof)
+        self._auth_message = auth_message
 
-        client_signature = self._hmac(stored_key, self._auth_message)
-        client_proof = base64.b64encode(
-            _scram_xor(client_key, client_signature))
+        client_signature = self._hmac(stored_key, auth_message)
+        client_proof_xor = _scram_xor(client_key, client_signature)
+        client_proof = base64.b64encode(client_proof_xor)
 
+        # c=<b64encode("n,,")>,r=<nonce>,p=<proof>
         return auth_noproof + (b",p=%s" % client_proof)
 
     def server_final(self, data: bytes) -> bool:
