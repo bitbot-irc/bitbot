@@ -14,7 +14,8 @@ class SCRAMState(enum.Enum):
     ClientFirst = 1
     ClientFinal = 2
     Success = 3
-    VerifyFailed = 4
+    Failed = 4
+    VerifyFailed = 5
 
 class SCRAMError(Exception):
     pass
@@ -78,6 +79,7 @@ class SCRAM(object):
         pieces = self._get_pieces(data)
         if b"e" in pieces:
             self.error = pieces[b"e"].decode("utf8")
+            self.state = SCRAMState.Failed
             return False
 
         verifier = pieces[b"v"]
