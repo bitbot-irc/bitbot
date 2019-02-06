@@ -56,11 +56,10 @@ class SCRAM(object):
         salt = base64.b64decode(pieces[b"s"])
         iterations = pieces[b"i"]
 
-        salted_password = hashlib.pbkdf2_hmac(self._algo, self._password, salt,
-            int(iterations), dklen=None)
-        self._salted_password = salted_password
+        self._salted_password = hashlib.pbkdf2_hmac(self._algo, self._password,
+            salt, int(iterations), dklen=None)
 
-        client_key = self._hmac(salted_password, b"Client Key")
+        client_key = self._hmac(self._salted_password, b"Client Key")
         stored_key = self._hash(client_key)
 
         channel = base64.b64encode(b"n,,")
