@@ -1,5 +1,11 @@
 import base64, enum, hashlib, hmac, os, typing
 
+# IANA Hash Function Textual Names
+# https://tools.ietf.org/html/rfc5802#section-4
+# https://www.iana.org/assignments/hash-function-text-names/
+ALGORITHMS = [
+    "MD2", "MD5", "SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512"]
+
 def _scram_nonce() -> bytes:
     return base64.b64encode(os.urandom(32))
 def _scram_escape(s: bytes) -> bytes:
@@ -22,7 +28,10 @@ class SCRAMError(Exception):
 
 class SCRAM(object):
     def __init__(self, algo, username, password):
-        self._algo = algo
+        if not algo in ALGORITHMS:
+            raise ValueError("Unknown SCRAM algorithm '%s'" % algo)
+
+        self._algo = algo.replace("-", "") # SHA-1 -> SHA1
         self._username = username.encode("utf8")
         self._password = password.encode("utf8")
 

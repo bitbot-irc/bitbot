@@ -70,7 +70,7 @@ class Module(ModuleManager.BaseModule):
 
                 # create SCRAM helper
                 sasl_username, sasl_password = sasl["args"].split(":", 1)
-                algo = mechanism.split("SCRAM-", 1)[1].replace("-", "")
+                algo = mechanism.split("SCRAM-", 1)[1]
                 event["server"]._scram = scram.SCRAM(
                     algo, sasl_username, sasl_password)
 
