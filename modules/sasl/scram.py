@@ -1,12 +1,12 @@
 import base64, enum, hashlib, hmac, typing, uuid
 
-def _scram_nonce():
+def _scram_nonce() -> bytes:
     return uuid.uuid4().hex.encode("utf8")
-def _scram_escape(s):
+def _scram_escape(s: bytes) -> bytes:
     return s.replace(b"=", b"=3D").replace(b",", b"=2C")
-def _scram_unescape(s):
+def _scram_unescape(s: bytes) -> bytes:
     return s.replace(b"=3D", b"=").replace(b"=2C", b",")
-def _scram_xor(s1, s2):
+def _scram_xor(s1: bytes, s2: bytes) -> bytes:
     return bytes(a ^ b for a, b in zip(s1, s2))
 
 class SCRAMState(enum.Enum):
