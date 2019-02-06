@@ -3,9 +3,7 @@ from src import ModuleManager, utils
 from . import scram
 
 def _validate(self, s):
-    mechanism = s
-    if " " in s:
-        mechanism, arguments = s.split(" ", 1)
+    mechanism, _, arguments = s.partition(" ")
     return {"mechanism": mechanism, "args": arguments}
 
 def _scram_nonce():
