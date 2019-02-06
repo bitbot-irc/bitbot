@@ -98,9 +98,11 @@ class Module(ModuleManager.BaseModule):
 
     def _end_sasl(self, server):
         server.capability_done("sasl")
+
     @utils.hook("received.numeric.903")
     def sasl_success(self, event):
         self._end_sasl(event["server"])
     @utils.hook("received.numeric.904")
     def sasl_failure(self, event):
+        self.log.warn("SASL failure: %s", [event["args"][1]])
         self._end_sasl(event["server"])
