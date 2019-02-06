@@ -27,7 +27,7 @@ class SCRAMError(Exception):
     pass
 
 class SCRAM(object):
-    def __init__(self, algo, username, password):
+    def __init__(self, algo: str, username: str, password: str):
         if not algo in ALGORITHMS:
             raise ValueError("Unknown SCRAM algorithm '%s'" % algo)
 
