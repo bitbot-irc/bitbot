@@ -64,10 +64,10 @@ class SCRAM(object):
 
         channel = base64.b64encode(b"n,,")
         auth_noproof = b"c=%s,r=%s" % (channel, nonce)
-        auth_message = b"%s,%s,%s" % (self._client_first, data, auth_noproof)
-        self._auth_message = auth_message
+        self._auth_message = b"%s,%s,%s" % (
+            self._client_first, data, auth_noproof)
 
-        client_signature = self._hmac(stored_key, auth_message)
+        client_signature = self._hmac(stored_key, self._auth_message)
         client_proof = base64.b64encode(
             _scram_xor(client_key, client_signature))
 
