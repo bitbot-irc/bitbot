@@ -121,7 +121,8 @@ class ModuleManager(object):
         import_spec = importlib.util.spec_from_file_location(import_name, path)
         module = importlib.util.module_from_spec(import_spec)
         sys.modules[import_name] = module
-        import_spec.loader.exec_module(module)
+        loader = typing.cast(importlib.abc.Loader, import_spec.loader)
+        loader.exec_module(module)
 
         module_object_pointer = getattr(module, "Module", None)
         if not module_object_pointer:
