@@ -30,13 +30,11 @@ QUOTES = {
     "The monuments of wit survive the monuments of power." : "Francis Bacon",
     "Human ingenuity cannot concoct a cipher which human ingenuity cannot resolve" : "Edgar Allan Poe",
     "Nobody has the intention to erect a wall" : "Walter Ulbricht",
-    "We're all completely fucked. I'm fucked. You're fucked. [...] It has been the biggest cock-up ever and we're all completely fucked" : "Richard Mottram",
     "The security aspect of cyber is very, very tough. And maybe it's hardly doable." : "Donald Trump",
     "The Internet. The hate machine, the love machine, the machine powered by many machines. We are all part of it, helping it grow, and helping it grow on us." : "Topiary",
     "Every great historical event began as a utopia and ended as a reality." : "Richard Nikolaus Eijiro",
     "Strange women lying in ponds distributing swords is no basis for a system of government!" : "",
     "My hovercraft is full of eels." : "",
-    "That was only a prelude; where they burn books, they will in the end also burn people" : "Heinrich Heine",
     'Never, "for the sake of peace and quiet", deny your own experience or convictions.' : "Dag Hammarskjöld",
     "Quis custodiet ipsos custodes?" : "",
     "Unless someone like you cares a whole awful lot, nothing is going to get better. It's not." : "Theodor Seuss Geisel",
@@ -55,6 +53,7 @@ QUOTES = {
     "I don’t need to understand how encryption works" : "Amber Rudd",
     "Life's but a walking shadow, a poor player that struts and frets his hour upon the stage and then is heard no more. It is a tale told by an idiot, full of sound and fury, signifying nothing" : "",
     "We're getting there" : "",
+    "If not me, who? If not now, when?": "Hillel the Elder"
 }
 
 class Module(ModuleManager.BaseModule):
