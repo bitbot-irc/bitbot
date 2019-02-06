@@ -36,11 +36,11 @@ class SCRAM(object):
         self._password = password.encode("utf8")
 
         self.state = SCRAMState.Uninitialised
-        self.error = None # typing.Optional[str]
+        self.error = ""
 
-        self._client_first = None # typing.Optional[bytes]
-        self._salted_password = None # typing.Optional[bytes]
-        self._auth_message = None # typing.Optional[bytes]
+        self._client_first = b""
+        self._salted_password = b""
+        self._auth_message = b""
 
     def _get_pieces(self, data: bytes) -> typing.Dict[bytes, bytes]:
         pieces = (piece.split(b"=", 1) for piece in data.split(b","))
