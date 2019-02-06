@@ -86,7 +86,6 @@ class Module(ModuleManager.BaseModule):
                         if current_scram.state == scram.SCRAMState.VerifyFailed:
                             event["server"].disconnect()
                             raise ValueError("Server SCRAM verification failed")
-                        self._end_sasl(event["server"])
 
         else:
             raise ValueError("unknown sasl mechanism '%s'" % mechanism)
