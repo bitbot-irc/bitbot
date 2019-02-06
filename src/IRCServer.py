@@ -97,7 +97,12 @@ class Server(IRCObject.Object):
         if client_certificate and client_key:
             context.load_cert_chain(client_certificate, keyfile=client_key)
 
-        self.socket = context.wrap_socket(self.socket)
+        server_hostname = None
+        if not utils.is_ip(self.connection_params.hostname):
+            server_hostname = self.connection_params.hostname
+
+        self.socket = context.wrap_socket(self.socket,
+            server_hostname=server_hostname)
 
     def connect(self):
         ipv4 = self.connection_params.ipv4

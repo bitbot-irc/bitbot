@@ -1,4 +1,4 @@
-import decimal, io, re, typing
+import decimal, io, ipaddress, re, typing
 from src.utils import cli, consts, irc, http, parse
 
 TIME_SECOND = 1
@@ -179,3 +179,10 @@ class CaseInsensitiveDict(dict):
         return dict.__getitem__(self, key.lower())
     def __setitem__(self, key: str, value: typing.Any) -> typing.Any:
         return dict.__setitem__(self, key.lower(), value)
+
+def is_ip(s: str) -> bool:
+    try:
+        ipaddress.ip_address(s)
+    except ValueError:
+        return False
+    return True
