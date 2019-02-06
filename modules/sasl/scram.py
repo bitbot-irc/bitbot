@@ -84,7 +84,7 @@ class SCRAM(object):
         client_proof = base64.b64encode(client_proof_xor)
 
         # c=<b64encode("n,,")>,r=<nonce>,p=<proof>
-        return auth_noproof + (b",p=%s" % client_proof)
+        return b"%s,p=%s" % (auth_noproof, client_proof)
 
     def server_final(self, data: bytes) -> bool:
         pieces = self._get_pieces(data)
