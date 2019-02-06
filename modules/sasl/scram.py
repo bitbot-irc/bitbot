@@ -31,7 +31,8 @@ class SCRAM(object):
         self._auth_message = None
 
     def _get_pieces(self, data: bytes) -> typing.Dict[bytes, bytes]:
-        return dict(piece.split(b"=", 1) for piece in data.split(b","))
+        pieces = (piece.split(b"=", 1) for piece in data.split(b","))
+        return dict((piece[0], piece[1]) for piece in pieces)
 
     def _hmac(self, key: bytes, msg: bytes) -> bytes:
         return hmac.digest(key, msg, self._algo)
