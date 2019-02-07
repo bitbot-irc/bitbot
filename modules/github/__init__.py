@@ -529,7 +529,8 @@ class Module(ModuleManager.BaseModule):
     def status(self, full_name, data):
         context = data["context"]
         url = data["target_url"]
-        commit = self._short_hash(data["sha"])
+        commit = utils.irc.color(self._short_hash(data["sha"]),
+            utils.consts.LIGHTBLUE)
 
         state = data["state"]
         if state == "success":
