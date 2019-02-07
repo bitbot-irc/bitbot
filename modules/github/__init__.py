@@ -420,7 +420,7 @@ class Module(ModuleManager.BaseModule):
 
     def commit_comment(self, full_name, data):
         action = data["action"]
-        commit = data["commit_id"][:8]
+        commit = data["comment"]["commit_id"][:8]
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = self._short_url(data["comment"]["html_url"])
         return ["[commit/%s] %s commented" % (commit, commenter, action)]
