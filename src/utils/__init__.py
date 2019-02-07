@@ -62,6 +62,9 @@ UNIT_DAY = 2
 UNIT_WEEK = 1
 def to_pretty_time(total_seconds: int, minimum_unit: int=UNIT_SECOND,
         max_units: int=UNIT_MINIMUM) -> str:
+    if total_seconds == 0:
+        return "0s"
+
     minutes, seconds = divmod(total_seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
