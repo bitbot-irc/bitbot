@@ -528,9 +528,17 @@ class Module(ModuleManager.BaseModule):
 
     def status(self, full_name, data):
         context = data["context"]
-        state = data["state"]
         url = data["target_url"]
         commit = self._short_hash(data["sha"])
+
+        state = data["state"]
+        if state == "success":
+            state = utils.irc.color(state, utils.consts.GREEN)
+        elif state == "failure" or state == "error":
+            state = utils.irc.color(state, utils.consts.RED)
+        elif state == "pending":
+            state = utils.irc.bold(state)
+
         return ["[%s status] %s is '%s' - %s" %
             (commit, context, state, url)]
 
