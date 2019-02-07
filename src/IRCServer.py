@@ -119,10 +119,11 @@ class Server(IRCObject.Object):
         self.socket.connect((self.connection_params.hostname,
             self.connection_params.port))
         self.cached_fileno = self.socket.fileno()
-        self.send_capibility_ls()
 
         if self.connection_params.password:
             self.send_pass(self.connection_params.password)
+
+        self.send_capibility_ls()
 
         nickname = self.connection_params.nickname
         username = self.connection_params.username or nickname
