@@ -1,6 +1,54 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
+    @utils.hook("received.command.traviswebhook", min_args=1)
+    def travis_webhook(self, event):
+        """
+        :help: List/add/remove travis webhooks
+        :require_mode: high
+        :permission: githuboverride
+        :usage: list
+        :usage: add <repository>
+        :usage: remove <repository>
+        """
+        all_hooks = event["target"].get_setting("travis-hooks", {})
+        hook_name = None
+        existing_hook = None
+        if len(event["args_split"]) > 1:
+            hook_name = event["args_split"][1]
+            for existing_hook_name in all_hooks.keys():
+                if existing_hook_name.lower() == hook.lower():
+                    existing_hook = existing_hook_name
+                    break
+
+        subcommand = event["args_split"][0].lower()
+        if subcommand == "list":
+            event["stdout"].write("Registered web hooks: %s" %
+                ", ".join(all_hooks.keys()))
+        elif subcommand == "add":
+            if existing_hook:
+                event["stderr"].write("There's already a hook for %s" %
+                    hook_name)
+                return
+
+            all_hooks[hook_name] = {"events", []}
+            event["target"].set_setting("travis-hooks", all_hooks)
+            event["stdout"].write("Added hook for %s" % hook_name)
+        elif subcommand == "remove":
+            if not existing_hook:
+                event["stderr"].write("No hook found for %s" % hook_name)
+                return
+            del all_hooks[existing_hook]
+            if all_hooks:
+                event["target"].set_setting("travis-hooks", all_hooks)
+            else:
+                event["target"].del_setting("travis-hooks")
+            event["stdout"].write("Removed hook for %s" % hook_name)
+        else:
+            event["stderr"].write("Unknown command '%s'" %
+                event["args_split"][0])
+
+
     @utils.hook("api.post.travis")
     def webhook(self, event):
         payload = urllib.parse.unquote(urllib.parse.parse_qs(
