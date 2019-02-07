@@ -1,6 +1,7 @@
-import itertools, json, urllib.parse
+import datetime, itertools, json, math, urllib.parse
 from src import ModuleManager, utils
 
+_ISO8601 = "%Y-%m-%dT%H:%M:%S%z"
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
@@ -63,6 +64,16 @@ COMMENT_ACTIONS = {
     "edited":  "edited a comment",
     "deleted": "deleted a comment"
 }
+
+CHECK_RUN_CONCLUSION = {
+    "success": "passed",
+    "failure": "failed",
+    "neutral": "finished",
+    "cancelled": "was cancelled",
+    "timed_out": "timed out",
+    "action_required": "requires action"
+}
+CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 @utils.export("channelset", {"setting": "github-hide-prefix",
     "help": "Hide/show command-like prefix on Github hook outputs",
@@ -318,8 +329,8 @@ class Module(ModuleManager.BaseModule):
             outputs = self.delete(full_name, data)
         elif github_event == "release":
             outputs = self.release(full_name, data)
-        elif github_event == "status":
-            outputs = self.status(full_name, data)
+        elif github_event == "check_run":
+            outputs = self.check_run(data)
         elif github_event == "fork":
             outputs = self.fork(full_name, data)
         elif github_event == "ping":
@@ -365,6 +376,9 @@ class Module(ModuleManager.BaseModule):
             self.log.warn(
                 "HTTPTimeoutException while waiting for github short URL")
             return url
+
+    def _iso8601(self, s):
+        return datetime.datetime.strptime(s, _ISO8601)
 
     def ping(self, data):
         return ["Received new webhook"]
@@ -526,22 +540,42 @@ class Module(ModuleManager.BaseModule):
         url = self._short_url(data["release"]["html_url"])
         return ["%s %s a release%s - %s" % (author, action, name, url)]
 
-    def status(self, full_name, data):
-        context = data["context"]
-        url = data["target_url"]
-        commit = utils.irc.color(self._short_hash(data["sha"]),
-            utils.consts.LIGHTBLUE)
+    def check_run(self, data):
+        name = data["check_run"]["name"]
+        commit = self._short_hash(data["check_run"]["head_sha"])
+        commit = utils.irc.color(commit, utils.consts.LIGHTBLUE)
 
-        state = data["state"]
-        if state == "success":
-            state = utils.irc.color(state, utils.consts.GREEN)
-        elif state == "failure" or state == "error":
-            state = utils.irc.color(state, utils.consts.RED)
-        elif state == "pending":
-            state = utils.irc.bold(state)
+        url = ""
+        if data["check_run"]["details_url"]:
+            url = data["check_run"]["details_url"]
+            url = " - %s" % self.exports.get_one("shortlink")(url)
 
-        return ["[%s status] %s is '%s' - %s" %
-            (commit, context, state, url)]
+        duration = ""
+        if data["check_run"]["completed_at"]:
+            started_at = self._iso8601(data["check_run"]["started_at"])
+            completed_at = self._iso8601(data["check_run"]["completed_at"])
+            seconds = (completed_at-started_at).total_seconds()
+            duration = " in %ds" % seconds
+
+        status = data["check_run"]["status"]
+        status_str = ""
+        if status == "queued":
+            return
+        elif status == "in_progress":
+            status_str = utils.irc.bold("started")
+        elif status == "completed":
+            conclusion = data["check_run"]["conclusion"]
+            conclusion_color = utils.consts.GREEN
+            if conclusion in CHECK_RUN_FAILURES:
+                conclusion_color = utils.consts.RED
+            if conclusion == "neutral":
+                conclusion_color = utils.consts.LIGHTGREY
+
+            status_str = utils.irc.color(
+                CHECK_RUN_CONCLUSION[conclusion], conclusion_color)
+
+        return ["[build @%s] %s: %s%s%s" % (
+            commit, name, status_str, duration, url)]
 
     def fork(self, full_name, data):
         forker = utils.irc.bold(data["sender"]["login"])
