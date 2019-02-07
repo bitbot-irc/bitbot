@@ -152,7 +152,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Issue/PR not found")
 
-    @utils.hook("received.command.ghwebhook", min_args=2, channel_only=True)
+    @utils.hook("received.command.ghwebhook", min_args=1, channel_only=True)
     def github_webhook(self, event):
         """
         :help: Add/remove/modify a github webhook
@@ -165,12 +165,14 @@ class Module(ModuleManager.BaseModule):
         :usage: branches <hook> [branch [branch ...]]
         """
         all_hooks = event["target"].get_setting("github-hooks", {})
-        hook = event["args_split"][1]
+        hook_name = None
         existing_hook = None
-        for existing_hook_name in all_hooks.keys():
-            if existing_hook_name.lower() == hook.lower():
-                existing_hook = existing_hook_name
-                break
+        if len(event["args_split"]) > 1:
+            hook_name = event["args_split"][1]
+            for existing_hook_name in all_hooks.keys():
+                if existing_hook_name.lower() == hook_name.lower():
+                    existing_hook = existing_hook_name
+                    break
 
         subcommand = event["args_split"][0].lower()
         if subcommand == "list":
@@ -178,51 +180,53 @@ class Module(ModuleManager.BaseModule):
                 ", ".join(all_hooks.keys()))
         elif subcommand == "add":
             if existing_hook:
-                event["stderr"].write("There's already a hook for %s" % hook)
+                event["stderr"].write("There's already a hook for %s" %
+                    hook_name)
                 return
 
-            all_hooks[hook] = {
+            all_hooks[hook_name] = {
                 "events": DEFAULT_EVENT_CATEGORIES.copy(),
                 "branches": []
             }
             event["target"].set_setting("github-hooks", all_hooks)
-            event["stdout"].write("Added hook for %s" % hook)
+            event["stdout"].write("Added hook for %s" % hook_name)
         elif subcommand == "remove":
             if not existing_hook:
-                event["stderr"].write("No hook found for %s" % hook)
+                event["stderr"].write("No hook found for %s" % hook_name)
                 return
             del all_hooks[existing_hook]
             if all_hooks:
                 event["target"].set_setting("github-hooks", all_hooks)
             else:
                 event["target"].del_setting("github-hooks")
-            event["stdout"].write("Removed hook for %s" % hook)
+            event["stdout"].write("Removed hook for %s" % hook_name)
         elif subcommand == "events":
             if not existing_hook:
-                event["stderr"].write("No hook found for %s" % hook)
+                event["stderr"].write("No hook found for %s" % hook_name)
                 return
 
             if len(event["args_split"]) < 3:
                 event["stdout"].write("Events for hook %s: %s" %
-                    (hook, " ".join(all_hooks[existing_hook]["events"])))
+                    (hook_name, " ".join(all_hooks[existing_hook]["events"])))
             else:
                 new_events = [e.lower() for e in event["args_split"][2:]]
                 all_hooks[existing_hook]["events"] = new_events
                 event["target"].set_setting("github-hooks", all_hooks)
-                event["stdout"].write("Updated events for hook %s" % hook)
+                event["stdout"].write("Updated events for hook %s" % hook_name)
         elif subcommand == "branches":
             if not existing_hook:
-                event["stderr"].write("No hook found for %s" % hook)
+                event["stderr"].write("No hook found for %s" % hook_name)
                 return
 
             if len(event["args_split"]) < 3:
+                branches = ",".join(all_hooks[existing_hook]["branches"])
                 event["stdout"].write("Branches shown for hook %s: %s" %
-                    (hook, ", ".join(all_hooks[existing_hook]["branches"])))
+                    (hook_name, branches))
             else:
                 all_hooks[existing_hook]["branches"] = event["args_split"][2:]
                 event["target"].set_setting("github-hooks", all_hooks)
                 event["stdout"].write("Updated shown branches for hook %s" %
-                    hook)
+                    hook_name)
         else:
             event["stderr"].write("Unknown command '%s'" %
                 event["args_split"][0])
