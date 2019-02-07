@@ -555,7 +555,7 @@ class Module(ModuleManager.BaseModule):
             started_at = self._iso8601(data["check_run"]["started_at"])
             completed_at = self._iso8601(data["check_run"]["completed_at"])
             seconds = (completed_at-started_at).total_seconds()
-            duration = " in %ds" % seconds
+            duration = " in %s" % utils.to_pretty_time(seconds)
 
         status = data["check_run"]["status"]
         status_str = ""
