@@ -64,8 +64,7 @@ class Module(ModuleManager.BaseModule):
                 tweet_link = "https://twitter.com/%s/status/%s" % (username,
                     linked_id)
 
-                short_url = self.events.on("get.shortlink").call_for_result(
-                    url=tweet_link)
+                short_url = self.exports.get_one("shortlink")(tweet_link)
                 short_url = " - %s" % short_url if short_url else ""
 
                 if "retweeted_status" in tweet:

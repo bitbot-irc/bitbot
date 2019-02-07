@@ -5,9 +5,10 @@ ISGD_API_URL = "https://is.gd/create.php"
 REGEX_URL = re.compile("https?://", re.I)
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("get.shortlink")
-    def shortlink(self, event):
-        url = event["url"]
+    def on_load(self):
+        self.exports.add("shortlink", self._shortlink)
+
+    def _shortlink(self, url):
         if not re.match(REGEX_URL, url):
             url = "http://%s" % url
 
@@ -23,8 +24,7 @@ class Module(ModuleManager.BaseModule):
         :help: Shorten a given URL using the is.gd service
         :usage: <url>
         """
-        link = self.events.on("get.shortlink").call_for_result(
-            url=event["args"])
+        link = self._shortlink(event["args"])
         if link:
             event["stdout"].write("Shortened URL: %s" % link)
         else:
