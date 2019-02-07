@@ -424,7 +424,7 @@ class Module(ModuleManager.BaseModule):
 
     def commit_comment(self, full_name, data):
         action = data["action"]
-        commit = data["comment"]["commit_id"][:8]
+        commit = self._short_hash(data["comment"]["commit_id"])
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = self._short_url(data["comment"]["html_url"])
         return ["[commit/%s] %s commented" % (commit, commenter, action)]
@@ -530,7 +530,7 @@ class Module(ModuleManager.BaseModule):
         context = data["context"]
         state = data["state"]
         url = data["target_url"]
-        commit = self._short_id(data["sha"])
+        commit = self._short_hash(data["sha"])
         return ["[%s status] %s is '%s' - %s" %
             (commit, context, state, url)]
 
