@@ -561,7 +561,7 @@ class Module(ModuleManager.BaseModule):
         status = data["check_run"]["status"]
         status_str = ""
         if status == "queued":
-            return
+            status_str = utils.irc.bold("queued")
         elif status == "in_progress":
             status_str = utils.irc.bold("started")
         elif status == "completed":
