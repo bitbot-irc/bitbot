@@ -53,7 +53,8 @@ QUOTES = {
     "I don’t need to understand how encryption works" : "Amber Rudd",
     "Life's but a walking shadow, a poor player that struts and frets his hour upon the stage and then is heard no more. It is a tale told by an idiot, full of sound and fury, signifying nothing" : "",
     "We're getting there" : "",
-    "If not me, who? If not now, when?": "Hillel the Elder"
+    "If not me, who? If not now, when?": "Hillel the Elder",
+    "The truth is painful, but always more useful": "Donald Tusk",
 }
 
 class Module(ModuleManager.BaseModule):
