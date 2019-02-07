@@ -46,3 +46,5 @@ class ExportsContext(object):
         self._parent._context_add(self.context, setting, value)
     def get_all(self, setting: str) -> typing.List[typing.Any]:
         return self._parent.get_all(setting)
+    def get_one(self, setting: str) -> typing.Optional[typing.Any]:
+        return self._parent.get_one(setting)
