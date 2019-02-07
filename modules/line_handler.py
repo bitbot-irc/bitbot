@@ -473,7 +473,7 @@ class Module(ModuleManager.BaseModule):
                 not event["prefix"] or
                 not event["server"].name or
                 event["prefix"].hostmask == event["server"].name or
-                target == "*" or):
+                target == "*"):
             if event["prefix"]:
                 event["server"].name = event["prefix"].hostmask
 
