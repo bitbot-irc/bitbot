@@ -26,7 +26,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         content_length = int(self.headers.get("content-length", 0))
         return self.rfile.read(content_length)
 
-    def _handle(self, method, path, data="", params={}):
+    def _handle(self, method):
         endpoint, args = self._path_data()
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
         params = self._url_params()
