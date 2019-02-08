@@ -9,11 +9,28 @@ _events = None
 _log = None
 class Handler(http.server.BaseHTTPRequestHandler):
     timeout = 10
-    def _handle(self, method, path, data="", params={}):
+
+    def _path_data(self):
+        path = urllib.parse.urlparse(self.path).path
         _, _, endpoint = path[1:].partition("/")
         endpoint, _, args = endpoint.partition("/")
         args = list(filter(None, args.split("/")))
+        return endpoint, args
+
+    def _url_params(self):
+        parsed = urllib.parse.urlparse(self.path)
+        query = utils.parse.parse_qs(parsed.query)
+        return dict([(k, v[0]) for k, v in query.items()])
+
+    def _body(self):
+        content_length = int(self.headers.get("content-length", 0))
+        return self.rfile.read(content_length)
+
+    def _handle(self, method, path, data="", params={}):
+        endpoint, args = self._path_data()
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
+        params = self._url_params()
+        data = self._body()
 
         response = ""
         code = 404
@@ -59,21 +76,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response.encode("utf8"))
 
-    def _decode_params(self, s):
-        params = urllib.parse.parse_qs(s)
-        return dict([(k, v[0]) for k, v in params.items()])
-
     def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-        get_params = self._decode_params(parsed.query)
-        self._handle("GET", parsed.path, params=get_params)
+        self._handle("GET")
 
     def do_POST(self):
-        parsed = urllib.parse.urlparse(self.path)
-        post_params = self._decode_params(parsed.query)
-        content_length = int(self.headers.get("content-length", 0))
-        post_body = self.rfile.read(content_length)
-        self._handle("POST", parsed.path, data=post_body, params=post_params)
+        self._handle("POST")
 
     def log_message(self, format, *args):
         _log.info("[HTTP] " + format, args)
