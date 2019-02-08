@@ -19,7 +19,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def _url_params(self):
         parsed = urllib.parse.urlparse(self.path)
-        query = utils.parse.parse_qs(parsed.query)
+        query = urllib.parse.parse_qs(parsed.query)
         return dict([(k, v[0]) for k, v in query.items()])
 
     def _body(self):
