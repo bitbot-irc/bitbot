@@ -306,7 +306,10 @@ class Module(ModuleManager.BaseModule):
                         targets.append([server, channel])
 
         if not targets:
-            return "" if repo_hooked else None
+            if not repo_hooked:
+                return None
+            else:
+                return {"state": "success", "deliveries": 0}
 
         outputs = None
         if github_event == "push":
@@ -353,7 +356,7 @@ class Module(ModuleManager.BaseModule):
                         hide_prefix=channel.get_setting(
                         "github-hide-prefix", False))
 
-        return ""
+        return {"state": "success", "deliveries": len(targets)}
 
     def _prevent_highlight(self, channel, s):
         for user in channel.users:
