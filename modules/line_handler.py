@@ -279,7 +279,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["server"].disconnect()
 
-    def _match_caps(self, cabilities):
+    def _match_caps(self, capabilities):
         return set(capabilities) & CAPABILITIES
 
     # the server is telling us about its capabilities!
@@ -294,9 +294,9 @@ class Module(ModuleManager.BaseModule):
             event["server"].server_capabilities.update(capabilities)
             if not is_multiline:
                 matched_caps = self._match_caps(
-                    list(event["server"].server_capbilities.keys()))
+                    list(event["server"].server_capabilities.keys()))
 
-                if matched_capabilities:
+                if matched_caps:
                     event["server"].queue_capabilities(matched_caps)
 
                     self._event(event, "cap.ls",
