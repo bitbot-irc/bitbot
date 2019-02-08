@@ -28,7 +28,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def _respond(self, code, headers, data):
         self.send_response(code)
-        for key, value in headers:
+        for key, value in headers.items():
             self.send_header(key, value)
         self.end_headers()
         self.wfile.write(data.encode("utf8"))
