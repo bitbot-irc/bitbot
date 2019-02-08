@@ -37,6 +37,7 @@ class Module(ModuleManager.BaseModule):
             event["server"].queue_capability("sasl")
 
     @utils.hook("received.cap.ack")
+    @utils.hook("received.cap.new")
     def on_cap_ack(self, event):
         if "sasl" in event["capabilities"]:
             sasl = event["server"].get_setting("sasl")
