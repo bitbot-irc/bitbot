@@ -31,6 +31,7 @@ class Module(ModuleManager.BaseModule):
             self._token_expires = time.time()+page.data["expires_in"]
             return token
 
+    @utils.hook("received.command.sp", alias_of="spotify")
     @utils.hook("received.command.spotify", min_args=1)
     def spotify(self, event):
         """
