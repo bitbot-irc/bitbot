@@ -15,7 +15,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         _, _, endpoint = path[1:].partition("/")
         endpoint, _, args = endpoint.partition("/")
         args = list(filter(None, args.split("/")))
-        return endpoint, args
+        return path, endpoint, args
 
     def _url_params(self):
         parsed = urllib.parse.urlparse(self.path)
@@ -27,7 +27,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return self.rfile.read(content_length)
 
     def _handle(self, method):
-        endpoint, args = self._path_data()
+        path, endpoint, args = self._path_data()
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
         params = self._url_params()
         data = self._body()
