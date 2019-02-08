@@ -26,6 +26,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
         content_length = int(self.headers.get("content-length", 0))
         return self.rfile.read(content_length)
 
+    def _respond(self, code, headers, data):
+        self.send_response(code)
+        for key, value in headers:
+            self.send_header(key, value)
+        self.end_headers()
+        self.wfile.write(data.encode("utf8"))
+
     def _handle(self, method):
         path, endpoint, args = self._path_data()
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
@@ -34,6 +41,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         response = ""
         code = 404
+        content_type = "text/plain"
 
         hooks = _events.on("api").on(method).on(endpoint).get_hooks()
         if hooks:
@@ -61,6 +69,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         code = 500
 
                     if not event_response == None:
+                        content_type = "application/json"
                         if _bot.get_setting("rest-api-minify", False):
                             response = json.dumps(event_response,
                                 sort_keys=True, separators=(",", ":"))
@@ -71,10 +80,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             else:
                 code = 401
 
-        self.send_response(code)
-        self.send_header("Content-type", "application/json")
-        self.end_headers()
-        self.wfile.write(response.encode("utf8"))
+        headers = {
+            "Content-type": content_type
+        }
+
+        self._respond(code, headers, response)
+
 
     def do_GET(self):
         self._handle("GET")
