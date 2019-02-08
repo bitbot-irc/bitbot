@@ -296,17 +296,16 @@ class Module(ModuleManager.BaseModule):
                 matched_caps = self._match_caps(
                     list(event["server"].server_capabilities.keys()))
 
-                if matched_caps:
-                    event["server"].queue_capabilities(matched_caps)
+                event["server"].queue_capabilities(matched_caps)
 
-                    self._event(event, "cap.ls",
-                        capabilities=event["server"].server_capabilities,
-                        server=event["server"])
+                self._event(event, "cap.ls",
+                    capabilities=event["server"].server_capabilities,
+                    server=event["server"])
 
-                    if event["server"].has_capability_queue():
-                        event["server"].send_capability_queue()
-                    else:
-                        event["server"].send_capability_end()
+                if event["server"].has_capability_queue():
+                    event["server"].send_capability_queue()
+                else:
+                    event["server"].send_capability_end()
         elif subcommand == "new":
             event["server"].capabilities.update(set(capabilities.keys()))
 
