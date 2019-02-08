@@ -279,6 +279,9 @@ class Module(ModuleManager.BaseModule):
         else:
             event["server"].disconnect()
 
+    def _match_caps(self, cabilities):
+        return set(capabilities) & CAPABILITIES
+
     # the server is telling us about its capabilities!
     @utils.hook("raw.received.cap")
     def cap(self, event):
@@ -290,10 +293,11 @@ class Module(ModuleManager.BaseModule):
             event["server"].cap_started = True
             event["server"].server_capabilities.update(capabilities)
             if not is_multiline:
-                matched_capabilities = set(event["server"
-                    ].server_capabilities.keys()) & CAPABILITIES
+                matched_caps = self._match_caps(
+                    list(event["server"].server_capbilities.keys()))
+
                 if matched_capabilities:
-                    event["server"].queue_capabilities(matched_capabilities)
+                    event["server"].queue_capabilities(matched_caps)
 
                     self._event(event, "cap.ls",
                         capabilities=event["server"].server_capabilities,
@@ -305,8 +309,15 @@ class Module(ModuleManager.BaseModule):
                         event["server"].send_capability_end()
         elif subcommand == "new":
             event["server"].capabilities.update(set(capabilities.keys()))
+
+            matched_caps = self._match_caps(list(capabilities.keys()))
+            event["server"].queue_capabilities(matched_caps)
+
             self._event(event, "cap.new", server=event["server"],
                 capabilities=capabilities)
+
+            if event["server"].has_capability_queue():
+                event["server"].send_capability_queue()
         elif subcommand == "del":
             event["server"].capabilities.difference_update(set(
                 capabilities.keys()))
