@@ -307,9 +307,10 @@ class Module(ModuleManager.BaseModule):
                 else:
                     event["server"].send_capability_end()
         elif subcommand == "new":
-            event["server"].capabilities.update(set(capabilities.keys()))
+            capabilities_keys = capabilities.keys()
+            event["server"].server_capabilities.update(capabilities)
 
-            matched_caps = self._match_caps(list(capabilities.keys()))
+            matched_caps = self._match_caps(list(capabilities_keys))
             event["server"].queue_capabilities(matched_caps)
 
             self._event(event, "cap.new", server=event["server"],
@@ -318,8 +319,10 @@ class Module(ModuleManager.BaseModule):
             if event["server"].has_capability_queue():
                 event["server"].send_capability_queue()
         elif subcommand == "del":
-            event["server"].capabilities.difference_update(set(
-                capabilities.keys()))
+            for capability in capabilities.keys():
+                event["server"].capabilities.discard(capability)
+                del event["server"].server_capabilities[capability]
+
             self._event(event, "cap.del", server=event["server"],
                 capabilities=capabilities)
         elif subcommand == "ack":
