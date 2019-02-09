@@ -107,6 +107,7 @@ class Module(ModuleManager.BaseModule):
             modes = isupport["CHANMODES"].split(",", 3)
             event["server"].channel_list_modes = list(modes[0])
             event["server"].channel_paramatered_modes = list(modes[1])
+            event["server"].channel_setting_modes = list(modes[2])
             event["server"].channel_modes = list(modes[3])
         if "CHANTYPES" in isupport:
             event["server"].channel_types = list(isupport["CHANTYPES"])
