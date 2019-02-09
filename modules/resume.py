@@ -4,7 +4,7 @@ CAP = "draft/resume-0.2"
 
 class Module(ModuleManager.BaseModule):
     def _get_token(self, server):
-        return server.connection_params.args.get("resume", [None, None])
+        return server.connection_params.args.get("resume-token", [None, None])
 
     @utils.hook("received.cap.ls")
     def on_cap_new(self, event):
@@ -34,6 +34,6 @@ class Module(ModuleManager.BaseModule):
         new_token = event["server"].connection_params.args.get(
             "new-resume-token", None)
         if new_token:
-            event["server"].connection_params.args["resume"] = [
+            event["server"].connection_params.args["resume-token"] = [
                 event["server"].nickname, new_token]
             del event["server"].connection_params.args["new-resume-token"]
