@@ -7,7 +7,7 @@ class Module(ModuleManager.BaseModule):
         return server.connection_params.args.get("resume-token", [None, None])
 
     @utils.hook("received.cap.ls")
-    def on_cap_new(self, event):
+    def on_cap_ls(self, event):
         username, token = self._get_token(event["server"])
         if CAP in event["capabilities"] and (not username or not token):
             event["server"].queue_capability(CAP)
