@@ -25,10 +25,14 @@ arg_parser.add_argument("--add-server", "-a",
     help="Add a new server", action="store_true")
 
 arg_parser.add_argument("--verbose", "-v", action="store_true")
+arg_parser.add_argument("--log-level", "-L")
 
 args = arg_parser.parse_args()
 
-log_level = "debug" if args.verbose else "info"
+log_level = args.log_level
+if not log_level:
+    log_level = "debug" if args.verbose else "info"
+
 log = Logging.Log(log_level, args.log_dir)
 database = Database.Database(log, args.database)
 
