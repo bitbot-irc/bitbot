@@ -26,7 +26,7 @@ class Module(ModuleManager.BaseModule):
         elif event["args"][0] == "ERR":
             self.log.info("Failed to resume session: %s" % event["args"][1])
         elif event["args"][0] == "TOKEN":
-            event["server"].connection_params.args["new-token"
+            event["server"].connection_params.args["new-resume-token"
                 ] = event["args"][1]
 
     @utils.hook("received.numeric.001")
