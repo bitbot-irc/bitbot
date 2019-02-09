@@ -31,9 +31,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.numeric.001")
     def on_connect(self, event):
-        new_token = event["server"].connection_params.args.get("new-token",
-            None)
+        new_token = event["server"].connection_params.args.get(
+            "new-resume-token", None)
         if new_token:
             event["server"].connection_params.args["resume"] = [
                 event["server"].nickname, new_token]
-            del event["server"].connection_params.args["resume"]
+            del event["server"].connection_params.args["new-resume-token"]
