@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
         try:
             page = utils.http.request(url, soup=True)
         except Exception as e:
-            self.log.error("failed to get URL title", exc_info=True)
+            self.log.error("failed to get URL title", [], exc_info=True)
             return None
         if page.data.title:
             return page.data.title.text.replace("\n", " ").replace(
