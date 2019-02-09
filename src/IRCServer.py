@@ -50,14 +50,19 @@ class Server(IRCObject.Object):
         self.own_modes = {} # type: typing.Dict[str, typing.Optional[str]]
 
         self.isupport = {} # type: typing.Dict[str, typing.Optional[str]]
+
         self.prefix_symbols = collections.OrderedDict(
             (("@", "o"), ("+", "v")))
         self.prefix_modes = collections.OrderedDict(
             (("o", "@"), ("v", "+")))
-        self.channel_modes = [] # type: typing.List[str]
-        self.channel_list_modes = [] # type: typing.List[str]
-        self.channel_setting_modes = [] # type: typing.List[str]
-        self.channel_paramatered_modes = [] # type: typing.List[str]
+
+        self.channel_list_modes = ["b"] # type: typing.List[str]
+        self.channel_paramatered_modes = ["k"] # type: typing.List[str]
+        self.channel_setting_modes = ["l"] # type: typing.List[str]
+        self.channel_modes = [
+            "n", "i", "m", "t", "p", "s"
+        ] # type: typing.List[str]
+
         self.channel_types = ["#"]
         self.case_mapping = "rfc1459"
 
