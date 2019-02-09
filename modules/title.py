@@ -3,7 +3,28 @@ from src import ModuleManager, utils
 
 REGEX_URL = re.compile("https?://\S+", re.I)
 
+@utils.export("channelset", {"setting": "auto-title",
+    "help": "Disable/Enable automatically getting info titles from URLs",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
+    def _get_title(self, url):
+        try:
+            page = utils.http.request(url, soup=True)
+        except Exception as e:
+            self.log.error("failed to get URL title", exc_info=True)
+            return None
+        return page.data.title
+
+    @utils.hook("received.message.channel")
+    def channel_message(self, event):
+        match = re.search(REGEX_URL, event["message"])
+        if match and event["channel"].get_setting("auto-title", False):
+            title = self._get_title(match.group(0))
+            if title:
+                self.events.on("send.stdout").call(target=event["channel"],
+                    message=title, module_name="Title",
+                    server=event["server"])
+
     @utils.hook("received.command.t", alias_of="title")
     @utils.hook("received.command.title", usage="[URL]")
     def title(self, event):
@@ -21,20 +42,11 @@ class Module(ModuleManager.BaseModule):
         if not url:
             raise utils.EventError("No URL provided/found.")
 
-        try:
-            page = utils.http.request(url, soup=True)
-        except Exception as e:
-            self.log.error("failed to get URL title", exc_info=True)
-            page = None
-            pass
+        title = self._get_title(url)
 
-        if not page:
-            raise utils.EventError("Failed to get URL.")
-
-        title = page.data.title
         if title:
             title = title.text.replace("\n", " ").replace("\r", ""
                 ).replace("  ", " ").strip()
             event["stdout"].write(title)
         else:
-            event["stderr"].write("No title found.")
+            event["stderr"].write("Failed to get title")
