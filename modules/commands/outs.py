@@ -1,5 +1,9 @@
 from src import utils
 
+OUT_CUTOFF = 400
+STR_MORE = "%s (more...)" % utils.consts.RESET
+STR_CONTINUED = "(...continued) "
+
 class Out(object):
     def __init__(self, server, module_name, target, msgid, statusmsg):
         self.server = server

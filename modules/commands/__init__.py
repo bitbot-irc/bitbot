@@ -2,13 +2,8 @@ import re
 from src import EventManager, ModuleManager, utils
 from . import outs
 
-STR_MORE = "%s (more...)" % utils.consts.RESET
-STR_CONTINUED = "(...continued) "
-
 COMMAND_METHOD = "command-method"
 COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
-
-OUT_CUTOFF = 400
 
 REGEX_CUTOFF = re.compile(r"^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
 REGEX_ARG_NUMBER = re.compile(r"\$(\d+)")
