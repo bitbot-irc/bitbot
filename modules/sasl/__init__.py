@@ -19,6 +19,7 @@ def _scram_xor(s1, s2):
     "help": "Set the sasl username/password for this server",
     "validate": _validate})
 class Module(ModuleManager.BaseModule):
+    @utils.hook("received.cap.new")
     @utils.hook("received.cap.ls")
     def on_cap(self, event):
         has_sasl = "sasl" in event["capabilities"]
@@ -37,7 +38,6 @@ class Module(ModuleManager.BaseModule):
             event["server"].queue_capability("sasl")
 
     @utils.hook("received.cap.ack")
-    @utils.hook("received.cap.new")
     def on_cap_ack(self, event):
         if "sasl" in event["capabilities"]:
             sasl = event["server"].get_setting("sasl")
