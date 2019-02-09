@@ -1,6 +1,9 @@
+import re
 from src import utils
 
 OUT_CUTOFF = 400
+REGEX_CUTOFF = re.compile(r"^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
+
 STR_MORE = "%s (more...)" % utils.consts.RESET
 STR_CONTINUED = "(...continued) "
 

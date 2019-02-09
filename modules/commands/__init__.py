@@ -5,7 +5,6 @@ from . import outs
 COMMAND_METHOD = "command-method"
 COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
-REGEX_CUTOFF = re.compile(r"^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
 REGEX_ARG_NUMBER = re.compile(r"\$(\d+)")
 
 def _command_method_validate(s):
