@@ -4,19 +4,21 @@ CAP = "draft/resume-0.2"
 
 class Module(ModuleManager.BaseModule):
     def _get_token(self, server):
-        return server.connection_params.args.get("resume-token", [None, None])
+        return server.connection_params.args.get("resume-token", (None, None))
+    def _set_token(Self, server, nickname, token):
+        server.connection_params.args["resume-token"] = (nickname, token)
 
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
-        username, token = self._get_token(event["server"])
-        if CAP in event["capabilities"] and (not username or not token):
+        nickname, token = self._get_token(event["server"])
+        if CAP in event["capabilities"] and (not nickname or not token):
             event["server"].queue_capability(CAP)
 
     @utils.hook("received.cap.ack")
     def on_cap_ack(self, event):
-        username, token = self._get_token(event["server"])
-        if CAP in event["capabilities"] and username and token:
-            event["server"].send("RESUME %s %s" % (username, token))
+        nickname, token = self._get_token(event["server"])
+        if CAP in event["capabilities"] and nickname and token:
+            event["server"].send("RESUME %s %s" % (nickname, token))
             event["server"].cap_started = False
 
     @utils.hook("received.resume")
@@ -34,6 +36,12 @@ class Module(ModuleManager.BaseModule):
         new_token = event["server"].connection_params.args.get(
             "new-resume-token", None)
         if new_token:
-            event["server"].connection_params.args["resume-token"] = [
-                event["server"].nickname, new_token]
+            self._set_token(event["server"], event["server"].nickname,
+                new_token)
             del event["server"].connection_params.args["new-resume-token"]
+
+    @utils.hook("self.nick")
+    def nick_change(self, event):
+        nickname, token = self._get_token(event["server"])
+        if nickname and token:
+            self._set_token(event["server"], event["new_nickname"], token)
