@@ -50,8 +50,6 @@ class Module(ModuleManager.BaseModule):
         title = self._get_title(url)
 
         if title:
-            title = title.text.replace("\n", " ").replace("\r", ""
-                ).replace("  ", " ").strip()
             event["stdout"].write(title)
         else:
             event["stderr"].write("Failed to get title")
