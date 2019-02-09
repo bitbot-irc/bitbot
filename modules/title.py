@@ -13,7 +13,11 @@ class Module(ModuleManager.BaseModule):
         except Exception as e:
             self.log.error("failed to get URL title", exc_info=True)
             return None
-        return page.data.title
+        if page.data.title:
+            return page.data.title.text.replace("\n", " ").replace(
+                "\r", "").replace("  ", " ").strip()
+        else:
+            return None
 
     @utils.hook("received.message.channel")
     def channel_message(self, event):
