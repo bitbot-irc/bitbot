@@ -24,8 +24,8 @@ class Module(ModuleManager.BaseModule):
         for server in self.bot.servers.values():
             reason = "Leaving"
             if server.get_setting("quit-quote", True):
-                reason = self.events.on("get.quit-quote"
-                    ).call_for_result(default=reason)
+                reason = self.exports.get_one("quit-quote",
+                    lambda: reason)()
             server.send_quit(reason)
 
         self.events.on("writebuffer.empty").hook(

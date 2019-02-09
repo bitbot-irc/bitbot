@@ -23,6 +23,9 @@ ARROW_DOWN = "↓"
     "help": "Turn safe search off/on",
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
+    def on_load(self):
+        self.exports.add("search-youtube", self._search_youtube)
+
     def get_video_page(self, video_id, part):
         return utils.http.request(URL_YOUTUBEVIDEO, get_params={"part": part,
             "id": video_id, "key": self.bot.config["google-api-key"]},
@@ -58,13 +61,11 @@ class Module(ModuleManager.BaseModule):
                 video_title, video_duration, video_uploader, "{:,}".format(
                 int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
 
-    @utils.hook("get.searchyoutube")
-    def search_video(self, event):
-        search = event["query"]
+    def _search_youtube(self, query):
         video_id = ""
 
         search_page = utils.http.request(URL_YOUTUBESEARCH,
-            get_params={"q": search, "part": "snippet",
+            get_params={"q": query, "part": "snippet",
             "maxResults": "1", "type": "video",
             "key": self.bot.config["google-api-key"]},
              json=True)

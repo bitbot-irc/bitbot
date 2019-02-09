@@ -47,10 +47,7 @@ class Module(ModuleManager.BaseModule):
 
                 ytquery = " - ".join([artist, track_name])
 
-                short_url = self.events.on(
-                    "get.searchyoutube").call_for_result(
-                    query=ytquery)
-
+                short_url = self.exports.get_one("search-youtube")(ytquery)
                 short_url = " -- " + short_url if short_url else ""
 
                 info_page = utils.http.request(URL_SCROBBLER, get_params={

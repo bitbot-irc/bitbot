@@ -58,8 +58,10 @@ QUOTES = {
 }
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("get.quit-quote")
-    def quote(self, event):
+    def on_load(self):
+        self.exports.add("quit-quote", self._quote)
+
+    def _quote(self):
         quote = random.choice(list(QUOTES.items()))
         return (" - " if quote[1] else "").join(quote)
 
