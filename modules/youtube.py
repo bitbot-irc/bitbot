@@ -124,7 +124,8 @@ class Module(ModuleManager.BaseModule):
         else:
            event["stderr"].write("No search phrase provided")
 
-    @utils.hook("received.message.channel")
+    @utils.hook("received.message.channel",
+        priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
         match = re.search(REGEX_YOUTUBE, event["message"])
         if match and event["channel"].get_setting("auto-youtube", False):
@@ -134,3 +135,4 @@ class Module(ModuleManager.BaseModule):
                 self.events.on("send.stdout").call(target=event["channel"],
                     message=video_details, module_name="Youtube",
                     server=event["server"])
+            event.eat()

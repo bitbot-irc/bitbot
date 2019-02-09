@@ -19,7 +19,8 @@ class Module(ModuleManager.BaseModule):
         else:
             return None
 
-    @utils.hook("received.message.channel")
+    @utils.hook("received.message.channel",
+        priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         match = re.search(REGEX_URL, event["message"])
         if match and event["channel"].get_setting("auto-title", False):
