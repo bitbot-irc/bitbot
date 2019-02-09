@@ -1,5 +1,5 @@
 import re
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 
 REGEX_URL = re.compile("https?://\S+", re.I)
 
