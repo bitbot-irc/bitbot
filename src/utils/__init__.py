@@ -1,5 +1,5 @@
 import decimal, io, ipaddress, re, typing
-from src.utils import cli, consts, irc, http, parse
+from src.utils import cli, consts, irc, http, parse, security
 
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60

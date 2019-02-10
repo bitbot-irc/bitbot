@@ -89,26 +89,17 @@ class Server(IRCObject.Object):
         return self.cached_fileno or self.socket.fileno()
 
     def tls_wrap(self):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-        context.options |= ssl.OP_NO_SSLv2
-        context.options |= ssl.OP_NO_SSLv3
-        context.options |= ssl.OP_NO_TLSv1
-
-        context.load_default_certs()
-        if self.get_setting("ssl-verify", True):
-            context.verify_mode = ssl.CERT_REQUIRED
-
         client_certificate = self.bot.config.get("tls-certificate", None)
         client_key = self.bot.config.get("tls-key", None)
-        if client_certificate and client_key:
-            context.load_cert_chain(client_certificate, keyfile=client_key)
+        verify = self.get_setting("ssl-verify", True)
 
         server_hostname = None
         if not utils.is_ip(self.connection_params.hostname):
             server_hostname = self.connection_params.hostname
 
-        self.socket = context.wrap_socket(self.socket,
-            server_hostname=server_hostname)
+        self.socket = utils.security.ssl_wrap(self.socket,
+            cert=client_certificate, key=client_key,
+            verify=verify, hostname=server_hostname)
 
     def connect(self):
         ipv4 = self.connection_params.ipv4
