@@ -116,10 +116,12 @@ class Module(ModuleManager.BaseModule):
         self.httpd = None
         if self.bot.get_setting("rest-api", False):
             self.httpd = http.server.HTTPServer(("", 5000), Handler)
-            self.httpd.socket = ssl.wrap_socket(self.httpd.socket,
-                keyfile=self.bot.config["tls-api-key"],
-                certfile=self.bot.config["tls-api-certificate"],
+
+            self.httpd.socket = utils.security.wrap_scket(self.httpd.socket,
+                cert=self.bot.config["tls-api-certificate"],
+                key=self.bot.config["tls-api-key"],
                 server_side=True)
+
             self.thread = threading.Thread(target=self.httpd.serve_forever)
             self.thread.daemon = True
             self.thread.start()
