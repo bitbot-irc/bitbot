@@ -38,3 +38,35 @@ class Module(ModuleManager.BaseModule):
             target = server.get_target(event["target"])
             self.events.on("send.stdout").call(target=target, module_name="In",
                 server=server, message=message)
+
+    @utils.hook("received.command.inlist")
+    def in_list(self, event):
+        """
+        :help: List reminders
+        :usage: [index]
+        """
+        timers = self.timers.find_all("in")
+        found = []
+        for timer in timers:
+            nickname_match = (event["server"].irc_lower(
+                timer.kwargs["nickname"]) == event["user"].nickname_lower)
+            target_match = timer.kwargs["target"] == event["target"].name
+
+            if nickname_match and target_match:
+                found.append(timer)
+
+        if len(event["args_split"]) > 0:
+            index = event["args_split"][0]
+            if not index.isdigit() or index == "0":
+                raise utils.EventError("Please provide a valid reminder index")
+
+            index = int(index)
+            actual_index = index-1
+            if actual_index > len(found):
+                raise utils.EventError("You do not have that many reminders")
+
+            timer = found[actual_index]
+            event["stdout"].write("Reminder %d: %s" % (index, timer["message"]))
+        else:
+            event["stdout"].write("%s: you have %d reminders" % (
+                event["user"].nickname, len(found)))
