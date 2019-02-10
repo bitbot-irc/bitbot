@@ -272,7 +272,8 @@ class Module(ModuleManager.BaseModule):
     def quit(self, event):
         reason = event["args"].get(0)
 
-        if not event["server"].is_own_nickname(event["prefix"].nickname):
+        if (not event["server"].is_own_nickname(event["prefix"].nickname) and
+                not event["prefix"].hostmask == "*"):
             user = event["server"].get_user(event["prefix"].nickname)
             event["server"].remove_user(user)
             self._event(event, "quit", reason=reason, user=user,
