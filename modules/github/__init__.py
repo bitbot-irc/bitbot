@@ -422,7 +422,7 @@ class Module(ModuleManager.BaseModule):
                 modified = self._modified(len(commit["modified"]))
 
                 outputs.append(
-                    "[%s/%s/%s files] %s %spushed commit to %s: %s - %s"
+                    "[%s/%s/%s files] %s %spushed to %s: %s - %s"
                     % (added, removed, modified, author, forced, branch,
                     message, url))
         else:
