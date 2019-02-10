@@ -26,10 +26,11 @@ class Module(ModuleManager.BaseModule):
             if server.get_setting("quit-quote", True):
                 reason = self.exports.get_one("quit-quote",
                     lambda: reason)()
-            server.send_quit(reason)
+            line = server.send_quit(reason)
+            line.on_send(self._make_hook(server))
 
-        self.events.on("writebuffer.empty").hook(
-            lambda event: self.bot.disconnect(event["server"]))
+    def _make_hook(self, server):
+        return lambda: self.bot.disconnect(server)
 
     def SIGUSR1(self, signum, frame):
         self.bot.trigger(self._reload_config)
