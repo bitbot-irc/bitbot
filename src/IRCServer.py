@@ -36,7 +36,7 @@ class Server(IRCObject.Object):
         self.capabilities = set([]) # type: typing.Set[str]
         self.requested_capabilities = [] # type: typing.List[str]
         self.server_capabilities = {} # type: typing.Dict[str, str]
-        self.batches = {} # type: typing.Dict[str, utils.irc.IRCLine]
+        self.batches = {} # type: typing.Dict[str, utils.irc.IRCParsedLine]
         self.cap_started = False
 
         self.write_buffer = b""
