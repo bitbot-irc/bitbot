@@ -63,7 +63,7 @@ class IRCArgs(object):
         return self._args[index]
 
 
-class IRCLine(object):
+class IRCParsedLine(object):
     def __init__(self, tags: dict, prefix: typing.Optional[IRCHostmask],
             command: str, args: IRCArgs, has_arbitrary: bool):
         self.tags = tags
@@ -79,7 +79,7 @@ def message_tag_escape(s):
 def message_tag_unescape(s):
     return _multi_replace(s, MESSAGE_TAG_ESCAPED, MESSAGE_TAG_UNESCAPED)
 
-def parse_line(line: str) -> IRCLine:
+def parse_line(line: str) -> IRCParsedLine:
     tags = {} # type: typing.Dict[str, typing.Any]
     prefix = None # type: typing.Optional[IRCHostmask]
     command = None
@@ -117,7 +117,7 @@ def parse_line(line: str) -> IRCLine:
     if arbitrary:
         args.append(arbitrary)
 
-    return IRCLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
+    return IRCParsedLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
 
 
 REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % utils.consts.COLOR)
