@@ -22,7 +22,7 @@ class Line(IRCObject.Object):
     def __repr__(self) -> str:
         return "IRCLine.Line(%s)" % self.__str__()
     def __str__(self) -> str:
-        return self._data
+        return self.decoded_data()
 
     def _char_limit(self) -> int:
         return LINE_CUTOFF-len(":%s " % self.server.hostmask())
