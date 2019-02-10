@@ -189,3 +189,13 @@ def is_ip(s: str) -> bool:
     except ValueError:
         return False
     return True
+
+def encode_truncate(s: str, encoding: str, byte_max: int) -> bytes:
+    encoded = b""
+    for character in s:
+        encoded_character = character.encode(encoding)
+        if len(encoded + encoded_character) > byte_max:
+            break
+        else:
+            encoded += encoded_character
+    return encoded
