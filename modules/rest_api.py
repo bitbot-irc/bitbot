@@ -120,7 +120,7 @@ class Module(ModuleManager.BaseModule):
             self.httpd.socket = utils.security.ssl_wrap(self.httpd.socket,
                 cert=self.bot.config["tls-api-certificate"],
                 key=self.bot.config["tls-api-key"],
-                server_side=True)
+                server_side=True, verify=False)
 
             self.thread = threading.Thread(target=self.httpd.serve_forever)
             self.thread.daemon = True
