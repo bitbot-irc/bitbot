@@ -1,10 +1,7 @@
 import re
 from src import utils
 
-OUT_CUTOFF = 400
-REGEX_CUTOFF = re.compile(r"^.{1,%d}(?:\s|$)" % OUT_CUTOFF)
-
-STR_MORE = "%s (more...)" % utils.consts.RESET
+STR_MORE = " (more...)"
 STR_CONTINUED = "(...continued) "
 
 class Out(object):
@@ -25,17 +22,6 @@ class Out(object):
 
     def send(self, method):
         if self.has_text():
-            text = self._text
-            text_encoded = text.encode("utf8")
-            if len(text_encoded) > OUT_CUTOFF:
-                text = "%s%s" % (text_encoded[:OUT_CUTOFF].decode("utf8"
-                    ).rstrip(), STR_MORE)
-                self._text = "%s%s" % (STR_CONTINUED, text_encoded[OUT_CUTOFF:
-                    ].decode("utf8").lstrip())
-            else:
-                self._text = ""
-
-
             tags = {}
             if self._msgid:
                 tags["+draft/reply"] = self._msgid
@@ -45,11 +31,18 @@ class Out(object):
                 prefix = utils.consts.RESET + "[%s] " % self.prefix()
 
             target_str = "%s%s" % (self._statusmsg, self.target.name)
-            full_text = "%s%s" % (prefix, text)
+            full_text = "%s%s" % (prefix, self._text)
             if method == "PRIVMSG":
-                self.server.send_message(target_str, full_text, tags=tags)
+                line = self.server.send_message(target_str, full_text,
+                    tags=tags)
             elif method == "NOTICE":
-                self.server.send_notice(target_str, full_text, tags=tags)
+                line = self.server.send_notice(target_str, full_text, tags=tags)
+            else:
+                raise ValuError("Unknown command methd '%s'" % method)
+
+            if line.truncated():
+                line.end_replace(STR_MORE)
+                self._text = "%s%s" % (STR_CONTINUED, line.truncated())
 
     def set_prefix(self, prefix):
         self.module_name = prefix

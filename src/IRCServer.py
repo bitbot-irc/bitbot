@@ -316,7 +316,7 @@ class Server(IRCObject.Object):
                 break
 
         line_stripped = line.split("\n", 1)[0].strip("\r")
-        line_obj = IRCLine.Line(datetime.datetime.utcnow(), line_stripped)
+        line_obj = IRCLine.Line(self, datetime.datetime.utcnow(), line_stripped)
         self.queued_lines.append(line_obj)
 
         return line_obj
