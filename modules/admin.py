@@ -41,9 +41,9 @@ class Module(ModuleManager.BaseModule):
         :help: Reconnect to the current network
         :permission: reconnect
         """
-        event["server"].send_quit("Reconnecting")
-        self.bot.reconnect(event["server"].id,
-            event["server"].connection_params)
+        line = event["server"].send_quit("Reconnecting")
+        line.on_send(lambda: self.bot.reconnect(
+            event["server"].id, event["server"].connection_params))
 
     @utils.hook("received.command.connect", min_args=1)
     def connect(self, event):
