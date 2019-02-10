@@ -66,7 +66,8 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("You do not have that many reminders")
 
             timer = found[actual_index]
-            event["stdout"].write("Reminder %d: %s" % (index, timer["message"]))
+            event["stdout"].write("Reminder %d: %s" % (index,
+                timer.kwargs["message"]))
         else:
             event["stdout"].write("%s: you have %d reminders" % (
                 event["user"].nickname, len(found)))
