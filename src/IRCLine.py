@@ -2,7 +2,7 @@ import datetime, typing
 from src import IRCObject
 
 class Line(IRCObject.Object):
-    def __init__(self, send_time: datetime.datetime, data: str):
+    def __init__(self, send_time: datetime.datetime, data: bytes):
         self.send_time = send_time
         self.data = data
 
