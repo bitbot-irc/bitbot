@@ -1,7 +1,7 @@
 import datetime, typing
 from src import IRCObject, utils
 
-LINE_CUTOFF = 450
+LINE_CUTOFF = 470
 
 class Line(IRCObject.Object):
     def __init__(self, server: "IRCServer.Server", send_time: datetime.datetime,
