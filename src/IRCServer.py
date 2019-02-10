@@ -314,11 +314,10 @@ class Server(IRCObject.Object):
                 line = result
                 break
 
-        encoded = line.split("\n")[0].strip("\r").encode("utf8")
-        if len(encoded) > LINE_CUTOFF:
-            encoded = encoded[:LINE_CUTOFF]
-
+        line_stripped = line.split("\n", 1)[0].strip("\r")
+        encoded = utils.encode_truncate(line_stripped, "utf8", LINE_CUTOFF)
         encoded = b"%s\r\n" % encoded
+
         line_obj = IRCLine.Line(datetime.datetime.utcnow(), encoded)
         self.queued_lines.append(line_obj)
 
