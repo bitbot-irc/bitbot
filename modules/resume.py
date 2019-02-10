@@ -11,15 +11,12 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
         nickname, token = self._get_token(event["server"])
-        if CAP in event["capabilities"] and (not nickname or not token):
+        if CAP in event["capabilities"]:
             event["server"].queue_capability(CAP)
 
     @utils.hook("received.cap.ack")
     def on_cap_ack(self, event):
-        nickname, token = self._get_token(event["server"])
-        if CAP in event["capabilities"] and nickname and token:
-            event["server"].send("RESUME %s %s" % (nickname, token))
-            event["server"].cap_started = False
+        event["server"].wait_for_capability("resume")
 
     @utils.hook("received.resume")
     def on_resume(self, event):
@@ -30,6 +27,11 @@ class Module(ModuleManager.BaseModule):
         elif event["args"][0] == "TOKEN":
             event["server"].connection_params.args["new-resume-token"
                 ] = event["args"][1]
+            nickname, token = self._get_token(event["server"])
+
+            if nickname and token:
+                event["server"].send("RESUME %s %s" % (nickname, token))
+                event["server"].capability_done("resume")
 
     @utils.hook("received.numeric.001")
     def on_connect(self, event):
