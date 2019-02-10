@@ -42,7 +42,7 @@ class Module(ModuleManager.BaseModule):
         else:
             self._handle(event["server"], line)
 
-    @utils.hook("preprocess.send")
+    @utils.hook("raw.send")
     def handle_send(self, event):
         line = utils.irc.parse_line(event["line"])
         self.events.on("raw.send").on(line.command).call_unsafe(

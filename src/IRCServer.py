@@ -319,8 +319,6 @@ class Server(IRCObject.Object):
         line_obj = IRCLine.Line(datetime.datetime.utcnow(), line_stripped)
         self.queued_lines.append(line_obj)
 
-        self.bot.log.debug("%s (raw send) | %s", [str(self), line])
-
         return line_obj
 
     def _send(self):
@@ -329,6 +327,12 @@ class Server(IRCObject.Object):
             to_buffer = self.queued_lines[:throttle_space]
             self.queued_lines = self.queued_lines[throttle_space:]
             for line in to_buffer:
+                decoded_data = line.decoded_data()
+                self.bot.log.debug("%s (raw send) | %s",
+                    [str(self), decoded_data])
+                self.events.on("raw.send").call_unsafe(
+                    server=self, line=decoded_data)
+
                 self.write_buffer += line.data()
                 self.buffered_lines.append(line)
 
