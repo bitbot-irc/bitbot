@@ -96,7 +96,7 @@ class Module(ModuleManager.BaseModule):
         :permission: shutdown
         """
         reason = event["args"] or ""
-        for server in self.bot.servers:
+        for server in self.bot.servers.values():
             line = server.send_quit(reason)
             line.on_send(self._shutdown_hook(server))
     def _shutdown_hook(self, server):
