@@ -87,3 +87,17 @@ class Module(ModuleManager.BaseModule):
         server = self.bot.get_server(id)
         server.disconnect()
         self.bot.disconnect(server)
+
+    @utils.hook("received.command.shutdown")
+    def shutdown(self, event):
+        """
+        :help: Shutdown bot
+        :usage: [reason]
+        :permission: shutdown
+        """
+        reason = event["args"] or ""
+        for server in self.bot.servers:
+            line = server.send_quit(reason)
+            line.on_send(self._shutdown_hook(server))
+    def _shutdown_hook(self, server):
+        return lambda: self.bot.disconnect(server)
