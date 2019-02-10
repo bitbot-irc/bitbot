@@ -16,7 +16,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.cap.ack")
     def on_cap_ack(self, event):
-        event["server"].wait_for_capability("resume")
+        if CAP in event["capabilities"]:
+            event["server"].wait_for_capability("resume")
 
     @utils.hook("received.resume")
     def on_resume(self, event):
