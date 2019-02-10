@@ -1,6 +1,7 @@
 import datetime, typing
 from src import IRCObject, utils
 
+# this should be 510 (RFC1459, 512 with \r\n) but a server BitBot uses is broken
 LINE_CUTOFF = 470
 
 class Line(IRCObject.Object):
