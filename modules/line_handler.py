@@ -62,6 +62,10 @@ class Module(ModuleManager.BaseModule):
     def ping(self, event):
         event["server"].send_pong(event["args"].get(0))
 
+    @utils.hook("raw.received.error")
+    def error(self, event):
+        self.log.error("error received: %s", [event["args"][0]])
+
     # first numeric line the server sends
     @utils.hook("raw.received.001", default_event=True)
     def handle_001(self, event):
