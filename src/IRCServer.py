@@ -91,6 +91,9 @@ class Server(IRCObject.Object):
     def fileno(self) -> int:
         return self.cached_fileno or self.socket.fileno()
 
+    def hostmask(self):
+        return "%s!%s@%s" % (self.nickname, self.username, self.hostname)
+
     def tls_wrap(self):
         client_certificate = self.bot.config.get("tls-certificate", None)
         client_key = self.bot.config.get("tls-key", None)
