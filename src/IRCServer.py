@@ -324,6 +324,8 @@ class Server(IRCObject.Object):
 
         self.bot.log.debug("%s (raw send) | %s", [str(self), line])
 
+        return line_obj
+
     def _send(self):
         if not len(self.write_buffer):
             throttle_space = self.throttle_space()
@@ -384,13 +386,13 @@ class Server(IRCObject.Object):
     def set_write_throttling(self, is_on: bool):
         self._write_throttling = is_on
 
-    def send_user(self, username: str, realname: str):
-        self.send("USER %s 0 * :%s" % (username, realname))
-    def send_nick(self, nickname: str):
-        self.send("NICK %s" % nickname)
+    def send_user(self, username: str, realname: str) -> IRCLine.Line:
+        return self.send("USER %s 0 * :%s" % (username, realname))
+    def send_nick(self, nickname: str) -> IRCLine.Line:
+        return self.send("NICK %s" % nickname)
 
-    def send_capibility_ls(self):
-        self.send("CAP LS 302")
+    def send_capibility_ls(self) -> IRCLine.Line:
+        return self.send("CAP LS 302")
     def queue_capability(self, capability: str):
         self._capability_queue.add(capability)
     def queue_capabilities(self, capabilities: typing.List[str]):
@@ -403,12 +405,12 @@ class Server(IRCObject.Object):
             self.send_capability_request(capabilities)
     def has_capability_queue(self):
         return bool(len(self._capability_queue))
-    def send_capability_request(self, capability: str):
-        self.send("CAP REQ :%s" % capability)
-    def send_capability_end(self):
-        self.send("CAP END")
-    def send_authenticate(self, text: str):
-        self.send("AUTHENTICATE %s" % text)
+    def send_capability_request(self, capability: str) -> IRCLine.Line:
+        return self.send("CAP REQ :%s" % capability)
+    def send_capability_end(self) -> IRCLine.Line:
+        return self.send("CAP END")
+    def send_authenticate(self, text: str) -> IRCLine.Line:
+        return self.send("AUTHENTICATE %s" % text)
 
     def waiting_for_capabilities(self) -> bool:
         return bool(len(self._capabilities_waiting))
@@ -419,26 +421,26 @@ class Server(IRCObject.Object):
         if self.cap_started and not self._capabilities_waiting:
             self.send_capability_end()
 
-    def send_pass(self, password: str):
-        self.send("PASS %s" % password)
+    def send_pass(self, password: str) -> IRCLine.Line:
+        return self.send("PASS %s" % password)
 
-    def send_ping(self, nonce: str="hello"):
-        self.send("PING :%s" % nonce)
-    def send_pong(self, nonce: str="hello"):
-        self.send("PONG :%s" % nonce)
+    def send_ping(self, nonce: str="hello") -> IRCLine.Line:
+        return self.send("PING :%s" % nonce)
+    def send_pong(self, nonce: str="hello") -> IRCLine.Line:
+        return self.send("PONG :%s" % nonce)
 
     def try_rejoin(self, event: EventManager.Event):
         if event["server_id"] == self.id and event["channel_name"
                 ] in self.attempted_join:
             self.send_join(event["channel_name"], event["key"])
-    def send_join(self, channel_name: str, key: str=None):
-        self.send("JOIN %s%s" % (channel_name,
+    def send_join(self, channel_name: str, key: str=None) -> IRCLine.Line:
+        return self.send("JOIN %s%s" % (channel_name,
             "" if key == None else " %s" % key))
-    def send_part(self, channel_name: str, reason: str=None):
-        self.send("PART %s%s" % (channel_name,
+    def send_part(self, channel_name: str, reason: str=None) -> IRCLine.Line:
+        return self.send("PART %s%s" % (channel_name,
             "" if reason == None else " %s" % reason))
-    def send_quit(self, reason: str="Leaving"):
-        self.send("QUIT :%s" % reason)
+    def send_quit(self, reason: str="Leaving") -> IRCLine.Line:
+        return self.send("QUIT :%s" % reason)
 
     def _tag_str(self, tags: dict) -> str:
         tag_str = ""
@@ -453,42 +455,47 @@ class Server(IRCObject.Object):
         return tag_str
 
     def send_message(self, target: str, message: str, prefix: str=None,
-            tags: dict={}):
+            tags: dict={}) -> IRCLine.Line:
         full_message = message if not prefix else prefix+message
-        self.send("%sPRIVMSG %s :%s" % (self._tag_str(tags), target,
+        return self.send("%sPRIVMSG %s :%s" % (self._tag_str(tags), target,
             full_message))
 
     def send_notice(self, target: str, message: str, prefix: str=None,
-            tags: dict={}):
+            tags: dict={}) -> IRCLine.Line:
         full_message = message if not prefix else prefix+message
-        self.send("%sNOTICE %s :%s" % (self._tag_str(tags), target,
+        return self.send("%sNOTICE %s :%s" % (self._tag_str(tags), target,
             full_message))
 
-    def send_mode(self, target: str, mode: str=None, args: str=None):
-        self.send("MODE %s%s%s" % (target, "" if mode == None else " %s" % mode,
+    def send_mode(self, target: str, mode: str=None, args: str=None
+            ) -> IRCLine.Line:
+        return self.send("MODE %s%s%s" % (target,
+            "" if mode == None else " %s" % mode,
             "" if args == None else " %s" % args))
 
-    def send_topic(self, channel_name: str, topic: str):
-        self.send("TOPIC %s :%s" % (channel_name, topic))
-    def send_kick(self, channel_name: str, target: str, reason: str=None):
-        self.send("KICK %s %s%s" % (channel_name, target,
+    def send_topic(self, channel_name: str, topic: str) -> IRCLine.Line:
+        return self.send("TOPIC %s :%s" % (channel_name, topic))
+    def send_kick(self, channel_name: str, target: str, reason: str=None
+            ) -> IRCLine.Line:
+        return self.send("KICK %s %s%s" % (channel_name, target,
             "" if reason == None else " :%s" % reason))
-    def send_names(self, channel_name: str):
-        self.send("NAMES %s" % channel_name)
-    def send_list(self, search_for: str=None):
-        self.send(
+    def send_names(self, channel_name: str) -> IRCLine.Line:
+        return self.send("NAMES %s" % channel_name)
+    def send_list(self, search_for: str=None) -> IRCLine.Line:
+        return self.send(
             "LIST%s" % "" if search_for == None else " %s" % search_for)
-    def send_invite(self, target: str, channel_name: str):
-        self.send("INVITE %s %s" % (target, channel_name))
+    def send_invite(self, target: str, channel_name: str) -> IRCLine.Line:
+        return self.send("INVITE %s %s" % (target, channel_name))
 
-    def send_whois(self, target: str):
-        self.send("WHOIS %s" % target)
-    def send_whowas(self, target: str, amount: int=None, server: str=None):
-        self.send("WHOWAS %s%s%s" % (target,
+    def send_whois(self, target: str) -> IRCLine.Line:
+        return self.send("WHOIS %s" % target)
+    def send_whowas(self, target: str, amount: int=None, server: str=None
+            ) -> IRCLine.Line:
+        return self.send("WHOWAS %s%s%s" % (target,
             "" if amount == None else " %s" % amount,
             "" if server == None else " :%s" % server))
-    def send_who(self, filter: str=None):
-        self.send("WHO%s" % ("" if filter == None else " %s" % filter))
-    def send_whox(self, mask: str, filter: str, fields: str, label: str=None):
-        self.send("WHO %s %s%%%s%s" % (mask, filter, fields,
+    def send_who(self, filter: str=None) -> IRCLine.Line:
+        return self.send("WHO%s" % ("" if filter == None else " %s" % filter))
+    def send_whox(self, mask: str, filter: str, fields: str, label: str=None
+            ) -> IRCLine.Line:
+        return self.send("WHO %s %s%%%s%s" % (mask, filter, fields,
             ","+label if label else ""))
