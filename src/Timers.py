@@ -126,3 +126,5 @@ class TimersContext(object):
             **kwargs):
         self._parent._add(None, name, delay, next_due, None, True,
             kwargs)
+    def find_all(self, name: str) -> typing.List[Timer]:
+        return self._parent.find_all(name)
