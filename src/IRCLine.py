@@ -2,9 +2,11 @@ import datetime, typing
 from src import IRCObject
 
 class Line(IRCObject.Object):
-    def __init__(self, send_time: datetime.datetime, data: bytes):
+    def __init__(self, send_time: datetime.datetime, data: bytes,
+            truncated: str):
         self.send_time = send_time
         self.data = data
+        self.truncated = truncated
 
         self._on_send = [] # type: typing.List[typing.Callable[[], None]]
 

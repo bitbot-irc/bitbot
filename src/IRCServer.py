@@ -315,10 +315,11 @@ class Server(IRCObject.Object):
                 break
 
         line_stripped = line.split("\n", 1)[0].strip("\r")
-        encoded = utils.encode_truncate(line_stripped, "utf8", LINE_CUTOFF)
+        encoded, truncated = utils.encode_truncate(
+            line_stripped, "utf8", LINE_CUTOFF)
         encoded = b"%s\r\n" % encoded
 
-        line_obj = IRCLine.Line(datetime.datetime.utcnow(), encoded)
+        line_obj = IRCLine.Line(datetime.datetime.utcnow(), encoded, truncated)
         self.queued_lines.append(line_obj)
 
         self.bot.log.debug("%s (raw send) | %s", [str(self), line])
