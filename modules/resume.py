@@ -31,7 +31,8 @@ class Module(ModuleManager.BaseModule):
 
             if nickname and token:
                 event["server"].send("RESUME %s %s" % (nickname, token))
-                event["server"].capability_done("resume")
+                event["server"].cap_started = False
+        event["server"].capability_done("resume")
 
     @utils.hook("received.numeric.001")
     def on_connect(self, event):
