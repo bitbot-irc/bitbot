@@ -6,6 +6,7 @@ THROTTLE_LINES = 4
 THROTTLE_SECONDS = 1
 READ_TIMEOUT_SECONDS = 120
 PING_INTERVAL_SECONDS = 30
+LINE_CUTOFF = 450
 
 class Server(IRCObject.Object):
     def __init__(self,
@@ -310,8 +311,8 @@ class Server(IRCObject.Object):
                 break
 
         encoded = line.split("\n")[0].strip("\r").encode("utf8")
-        if len(encoded) > 450:
-            encoded = encoded[:450]
+        if len(encoded) > LINE_CUTOFF:
+            encoded = encoded[:LINE_CUTOFF]
         self.buffered_lines.append(encoded + b"\r\n")
         self.bot.log.debug("%s (raw send) | %s", [str(self), line])
 
