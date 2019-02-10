@@ -91,6 +91,16 @@ class Timers(object):
     def get_timers(self) -> typing.List[Timer]:
         return self.timers + sum(self.context_timers.values(), [])
 
+    def find_all(self, name: str) -> typing.List[Timer]:
+        name_lower = name.lower()
+        timers = self.get_timers()
+        found = [] # type: typing.List[Timer]
+        for timer in timers:
+            if timer.name.lower() == name_lower:
+                found.append(timer)
+
+        return found
+
     def call(self):
         for timer in self.get_timers():
             if timer.due():
