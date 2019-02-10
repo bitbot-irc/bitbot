@@ -9,8 +9,6 @@ UNTHROTTLED_MAX_LINES = 10
 READ_TIMEOUT_SECONDS = 120
 PING_INTERVAL_SECONDS = 30
 
-LINE_CUTOFF = 450
-
 class Server(IRCObject.Object):
     def __init__(self,
             bot: "IRCBot.Bot",
@@ -315,11 +313,7 @@ class Server(IRCObject.Object):
                 break
 
         line_stripped = line.split("\n", 1)[0].strip("\r")
-        encoded, truncated = utils.encode_truncate(
-            line_stripped, "utf8", LINE_CUTOFF)
-        encoded = b"%s\r\n" % encoded
-
-        line_obj = IRCLine.Line(datetime.datetime.utcnow(), encoded, truncated)
+        line_obj = IRCLine.Line(datetime.datetime.utcnow(), line_stripped)
         self.queued_lines.append(line_obj)
 
         self.bot.log.debug("%s (raw send) | %s", [str(self), line])
@@ -332,7 +326,7 @@ class Server(IRCObject.Object):
             to_buffer = self.queued_lines[:throttle_space]
             self.queued_lines = self.queued_lines[throttle_space:]
             for line in to_buffer:
-                self.write_buffer += line.data
+                self.write_buffer += line.data()
                 self.buffered_lines.append(line)
 
         bytes_written_i = self.socket.send(self.write_buffer)
