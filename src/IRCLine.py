@@ -24,12 +24,12 @@ class Line(IRCObject.Object):
     def __str__(self) -> str:
         return self._data
 
-    def _char_limit(self):
+    def _char_limit(self) -> int:
         return LINE_CUTOFF-len(":%s " % self.server.hostmask())
 
     def data(self) -> bytes:
         return b"%s\r\n" % self._data
-    def decoded_data(self) -> bytes:
+    def decoded_data(self) -> str:
         return self._data.decode("utf8")
     def truncated(self) -> str:
         return self._truncated
