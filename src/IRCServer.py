@@ -435,7 +435,7 @@ class Server(IRCObject.Object):
             self.send_join(event["channel_name"], event["key"])
     def send_join(self, channel_name: str, key: str=None) -> IRCLine.Line:
         return self.send("JOIN %s%s" % (channel_name,
-            "" if key == None else " %s" % key))
+            "" if key else " %s" % key))
     def send_part(self, channel_name: str, reason: str=None) -> IRCLine.Line:
         return self.send("PART %s%s" % (channel_name,
             "" if reason == None else " %s" % reason))
