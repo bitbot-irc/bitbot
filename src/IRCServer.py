@@ -378,7 +378,7 @@ class Server(IRCObject.Object):
             return 0
 
         time_left = self.recent_sends[0]+THROTTLE_SECONDS
-        time_left = time_left-now
+        time_left = time_left-time.monotonic()
         return time_left
 
     def set_write_throttling(self, is_on: bool):
