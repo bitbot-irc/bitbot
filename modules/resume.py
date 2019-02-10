@@ -24,9 +24,9 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.resume")
     def on_resume(self, event):
         if event["args"][0] == "SUCCESS":
-            self.log.info("Successfully resumed session")
+            self.log.info("Successfully resumed session", [])
         elif event["args"][0] == "ERR":
-            self.log.info("Failed to resume session: %s" % event["args"][1])
+            self.log.info("Failed to resume session: %s", [event["args"][1]])
         elif event["args"][0] == "TOKEN":
             event["server"].connection_params.args["new-resume-token"
                 ] = event["args"][1]
