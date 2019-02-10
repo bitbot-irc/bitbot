@@ -406,6 +406,10 @@ class Module(ModuleManager.BaseModule):
         branch = data["ref"].split("/", 2)[2]
         branch = utils.irc.color(branch, utils.consts.LIGHTBLUE)
 
+        forced = ""
+        if data["forced"]:
+            forced = "%s " % utils.irc.color("force", utils.consts.RED)
+
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 id = self._short_hash(commit["id"])
@@ -417,8 +421,10 @@ class Module(ModuleManager.BaseModule):
                 removed = self._removed(len(commit["removed"]))
                 modified = self._modified(len(commit["modified"]))
 
-                outputs.append("[%s/%s/%s files] commit by %s to %s: %s - %s"
-                    % (added, removed, modified, author, branch, message, url))
+                outputs.append(
+                    "[%s/%s/%s files] %s %spushed commit to %s: %s - %s"
+                    % (added, removed, modified, author, forced, branch,
+                    message, url))
         else:
             first_id = self._short_hash(data["before"])
             last_id = self._short_hash(data["commits"][-1]["id"])
@@ -432,9 +438,9 @@ class Module(ModuleManager.BaseModule):
             modified = self._modified(len(self._flat_unique(commits,
                 "modified")))
 
-            outputs.append("[%s/%s/%s files] %s pushed %d commits to %s - %s"
-                % (added, removed, modified, pusher, len(data["commits"]),
-                branch, url))
+            outputs.append("[%s/%s/%s files] %s %spushed %d commits to %s - %s"
+                % (added, removed, modified, pusher, forced,
+                len(data["commits"]), branch, url))
 
         return outputs
 
