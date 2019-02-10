@@ -3,7 +3,10 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.numeric.001")
     def on_connect(self, event):
-        channels =  event["server"].get_setting("autojoin", [])
+        channels = event["server"].get_setting("autojoin", [])
+        if not channels:
+            return
+
         chan_keys = event["server"].get_setting("channel_keys", {})
         channels_sorted = sorted(channels,
             key=lambda x: 0 if x in chan_keys else 1)
