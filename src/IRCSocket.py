@@ -61,7 +61,7 @@ class Socket(IRCObject.Object):
             self._tls_wrap()
 
         self._socket.connect((self._hostname, self._port))
-        self.connected_ip, port = self._socket.getpeername()
+        self.connected_ip = self._socket.getpeername()[0]
         self.cached_fileno = self._socket.fileno()
         self.connected = True
 
