@@ -58,9 +58,6 @@ class Server(IRCObject.Object):
         self.motd_lines = [] # type: typing.List[str]
         self.motd_done = False
 
-        self.last_read = time.monotonic()
-        self.last_send = None # type: typing.Optional[float]
-
         self.attempted_join = {} # type: typing.Dict[str, typing.Optional[str]]
         self.ping_sent = False
 
@@ -221,13 +218,13 @@ class Server(IRCObject.Object):
     def until_next_ping(self) -> typing.Optional[float]:
         if self.ping_sent:
             return None
-        return max(0, (self.last_read+PING_INTERVAL_SECONDS
+        return max(0, (self.socket.last_read+PING_INTERVAL_SECONDS
             )-time.monotonic())
     def ping_due(self) -> bool:
         return self.until_next_ping() == 0
 
     def until_read_timeout(self) -> float:
-        return max(0, (self.last_read+READ_TIMEOUT_SECONDS
+        return max(0, (self.socket.last_read+READ_TIMEOUT_SECONDS
             )-time.monotonic())
     def read_timed_out(self) -> bool:
         return self.until_read_timeout == 0

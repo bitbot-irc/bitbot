@@ -35,6 +35,9 @@ class Socket(IRCObject.Object):
         self.bytes_written = 0
         self.bytes_read = 0
 
+        self.last_read = time.monotonic()
+        self.last_send = None # type: typing.Optional[float]
+
         self.connected_ip = None
 
     def fileno(self) -> int:
