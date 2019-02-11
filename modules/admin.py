@@ -100,4 +100,6 @@ class Module(ModuleManager.BaseModule):
             line = server.send_quit(reason)
             line.on_send(self._shutdown_hook(server))
     def _shutdown_hook(self, server):
-        return lambda: self.bot.disconnect(server)
+        def shutdown():
+            server.disconnect()
+            self.bot.disconnect(server)
