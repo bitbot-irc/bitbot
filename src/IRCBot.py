@@ -101,8 +101,9 @@ class Bot(object):
     def next_send(self) -> typing.Optional[float]:
         next = None
         for server in self.servers.values():
-            timeout = server.send_throttle_timeout()
-            if server.waiting_send() and (next == None or timeout < next):
+            timeout = server.socket.send_throttle_timeout()
+            if (server.socket.waiting_send() and
+                    (next == None or timeout < next)):
                 next = timeout
         return next
 
@@ -238,7 +239,8 @@ class Bot(object):
                         self.log.warn(
                             "Disconnected from %s, reconnecting in %d seconds",
                             [str(server), reconnect_delay])
-                elif server.waiting_send() and server.throttle_done():
+                elif (server.socket.waiting_send() and
+                        server.socket.throttle_done()):
                     self.register_both(server)
 
             for sock in list(self.other_sockets.values()):
