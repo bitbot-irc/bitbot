@@ -23,6 +23,8 @@ class Socket(IRCObject.Object):
         self._cert = cert
         self._key = key
 
+        self.connected = False
+
         self._write_buffer = b""
         self._queued_lines = [] # type: typing.List[IRCLine.Line]
         self._buffered_lines = [] # type: typing.List[IRCLine.Line]
@@ -61,6 +63,7 @@ class Socket(IRCObject.Object):
         self._socket.connect((self._hostname, self._port))
         self.connected_ip, port = self._socket.getpeername()
         self.cached_fileno = self._socket.fileno()
+        self.connected = True
 
     def disconnect(self):
         self.connected = False

@@ -228,7 +228,7 @@ class Bot(object):
                 elif server.ping_due() and not server.ping_sent:
                     server.send_ping()
                     server.ping_sent = True
-                if not server.connected:
+                if not server.socket.connected:
                     self._events.on("server.disconnect").call(server=server)
                     self.disconnect(server)
 

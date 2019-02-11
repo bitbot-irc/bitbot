@@ -13,7 +13,6 @@ class Server(IRCObject.Object):
             id: int,
             alias: typing.Optional[str],
             connection_params: utils.irc.IRCConnectionParameters):
-        self.connected = False
         self.bot = bot
         self.events = events
         self.id = id
@@ -108,7 +107,6 @@ class Server(IRCObject.Object):
 
         self.send_user(username, realname)
         self.send_nick(nickname)
-        self.connected = True
 
     def disconnect(self):
         self.socket.disconnect()
