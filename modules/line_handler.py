@@ -8,7 +8,11 @@ CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
     "draft/message-tags-0.2", "draft/message-tags-0.3", "server-time",
     "cap-notify", "batch", "draft/labeled-response", "draft/rename"}
-LABELED_BATCH = ["draft/labeled-response", "labeled-response"]
+
+LABELED_BATCH = {
+    "labeled-response": "label",
+    "draft/labeled-response": "draft/label"
+}
 
 class Direction(enum.Enum):
     SEND = 0
@@ -563,7 +567,15 @@ class Module(ModuleManager.BaseModule):
         else:
             batch = event["server"].batches[identifier]
             del event["server"].batches[identifier]
+
+            add_tags = {}
+            if batch.type in LABELED_BATCH.keys():
+                tag_name = LABELED_BATCH[batch.type]
+                add_tags[tag_name] = batch.tags[tag_name]
+
             for line in batch.lines:
+                if add_tags:
+                    line.tags.update(add_tags)
                 self._handle(line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
