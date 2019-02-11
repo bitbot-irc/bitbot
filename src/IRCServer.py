@@ -346,9 +346,6 @@ class Server(IRCObject.Object):
 
         self.bytes_written += bytes_written_i
 
-        if not self.waiting_send():
-            self.events.on("writebuffer.empty").call(server=self)
-
         now = time.monotonic()
         self.recent_sends.append(now)
         self.last_send = now
