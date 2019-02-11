@@ -8,6 +8,7 @@ CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
     "draft/message-tags-0.2", "draft/message-tags-0.3", "server-time",
     "cap-notify", "batch", "draft/labeled-response", "draft/rename"}
+LABELED_BATCH = ["draft/labeled-response", "labeled-response"]
 
 class Direction(enum.Enum):
     SEND = 0
@@ -38,7 +39,7 @@ class Module(ModuleManager.BaseModule):
         line = utils.irc.parse_line(event["line"])
         if "batch" in line.tags and line.tags["batch"] in event[
                 "server"].batches:
-            server.batches[tag["batch"]].append(line)
+            server.batches[tag["batch"]].lines.append(line)
         else:
             self._handle(event["server"], line)
 
@@ -554,12 +555,15 @@ class Module(ModuleManager.BaseModule):
     def batch(self, event):
         identifier = event["args"][0]
         modifier, identifier = identifier[0], identifier[1:]
+        batch_type = event["args"][1]
+
         if modifier == "+":
-            event["server"].batches[identifier] = []
+            event["server"].batches[identifier] = utils.irc.IRCBatch(identifier,
+                batch_type, event["tags"])
         else:
-            lines = event["server"].batches[identifier]
+            batch = event["server"].batches[identifier]
             del event["server"].batches[identifier]
-            for line in lines:
+            for line in batch.lines:
                 self._handle(line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
