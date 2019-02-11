@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-import argparse, os, sys, time
+import argparse, faulthandler, os, sys, time
 from src import Cache, Config, Database, EventManager, Exports, IRCBot
 from src import Logging, ModuleManager, Timers, utils
+
+faulthandler.enable()
 
 directory = os.path.dirname(os.path.realpath(__file__))
 
