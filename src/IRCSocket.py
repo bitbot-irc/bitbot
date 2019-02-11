@@ -115,7 +115,6 @@ class Socket(IRCObject.Object):
             decoded_lines.append(decoded_line)
 
         self.last_read = time.monotonic()
-        self.ping_sent = False
         return decoded_lines
 
     def send(self, line: IRCLine.Line):

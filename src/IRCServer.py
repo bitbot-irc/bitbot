@@ -230,7 +230,11 @@ class Server(IRCObject.Object):
         return self.until_read_timeout == 0
 
     def read(self) -> typing.Optional[typing.List[str]]:
-        return self.socket.read()
+        lines = self.socket.read()
+        if lines:
+            self.ping_sent = False
+        return lines
+
     def send(self, line: str):
         results = self.events.on("preprocess.send").call_unsafe(
             server=self, line=line)
