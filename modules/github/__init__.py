@@ -422,8 +422,8 @@ class Module(ModuleManager.BaseModule):
                 modified = self._modified(len(commit["modified"]))
 
                 outputs.append(
-                    "[%s/%s/%s files] %s %spushed to %s: %s - %s"
-                    % (added, removed, modified, author, forced, branch,
+                    "%s %spushed to %s [%s/%s/%s files] %s - %s"
+                    % (author, forced, branch, added, removed, modified,
                     message, url))
         else:
             first_id = self._short_hash(data["before"])
@@ -438,9 +438,9 @@ class Module(ModuleManager.BaseModule):
             modified = self._modified(len(self._flat_unique(commits,
                 "modified")))
 
-            outputs.append("[%s/%s/%s files] %s %spushed %d commits to %s - %s"
-                % (added, removed, modified, pusher, forced,
-                len(data["commits"]), branch, url))
+            outputs.append("%s %spushed %d commits to %s [%s/%s/%s files] - %s"
+                % (pusher, forced, len(data["commits"]), branch,
+                added, removed, modified, url))
 
         return outputs
 
