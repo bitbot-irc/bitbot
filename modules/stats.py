@@ -57,8 +57,8 @@ class Module(ModuleManager.BaseModule):
             "hostmask": "%s!%s@%s" % (
                 server.nickname, server.username, server.hostname),
             "users": len(server.users),
-            "bytes-written": server.bytes_written,
-            "bytes-read": server.bytes_read,
+            "bytes-written": server.socket.bytes_written,
+            "bytes-read": server.socket.bytes_read,
             "channels": {
                 c.name: self._channel_stats(c) for c in server.channels
             },
