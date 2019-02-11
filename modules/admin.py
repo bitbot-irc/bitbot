@@ -103,3 +103,4 @@ class Module(ModuleManager.BaseModule):
         def shutdown():
             server.disconnect()
             self.bot.disconnect(server)
+        return shutdown
