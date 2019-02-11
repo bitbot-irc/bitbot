@@ -33,6 +33,8 @@ class Socket(IRCObject.Object):
         self.bytes_written = 0
         self.bytes_read = 0
 
+        self.connected_ip = None
+
     def fileno(self) -> int:
         return self.cached_fileno or self._socket.fileno()
 
@@ -57,6 +59,7 @@ class Socket(IRCObject.Object):
             self._tls_wrap()
 
         self._socket.connect((self._hostname, self._port))
+        self.connected_ip, port = self._socket.getpeername()
         self.cached_fileno = self._socket.fileno()
 
     def disconnect(self):
