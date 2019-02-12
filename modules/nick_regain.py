@@ -1,15 +1,20 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.numeric.251")
-    def on_connect(self, event):
-        target_nick = event["server"].connection_params.nickname
-        if not event["server"].irc_equals(
-                event["server"].nickname, target_nick):
-            if "MONITOR" in event["server"].isupport:
-                event["server"].send("MONITOR + %s" % target_nick)
+    def _done_connecting(self, server):
+        target_nick = server.connection_params.nickname
+        if not server.irc_equals(server.nickname, target_nick):
+            if "MONITOR" in server.isupport:
+                server.send("MONITOR + %s" % target_nick)
             else:
-                self.timers.add("ison-check", 30, server=event["server"])
+                self.timers.add("ison-check", 30, server=server)
+
+    @utils.hook("received.numeric.376")
+    def end_of_motd(self, event):
+        self._done_connecting(event["server"])
+    @utils.hook("received.numeric.422")
+    def no_motd(self, event):
+        self._done_connecting(event["server"])
 
     @utils.hook("self.nick")
     def self_nick(self, event):
