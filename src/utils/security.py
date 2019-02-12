@@ -22,7 +22,5 @@ def ssl_wrap(sock: socket.socket, cert: str=None, key: str=None,
     return context.wrap_socket(sock, server_side=server_side,
         server_hostname=hostname)
 
-def constant_time_compare(
-        a: typing.Union[str, bytes],
-        b: typing.Union[str, bytes]) -> bool:
+def constant_time_compare(a: typing.AnyStr, b: typing.AnyStr) -> bool:
     return hmac.compare_digest(a, b)
