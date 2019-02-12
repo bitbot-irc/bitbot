@@ -25,4 +25,4 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.ctcp.time.private")
     def ctcp_time(self, event):
         event["user"].send_ctcp_response("TIME",
-            datetme.datetime.now().strftime("%c"))
+            datetime.datetime.now().strftime("%c"))
