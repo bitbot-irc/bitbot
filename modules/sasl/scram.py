@@ -1,4 +1,5 @@
 import base64, enum, hashlib, hmac, os, typing
+from src import utils
 
 # IANA Hash Function Textual Names
 # https://tools.ietf.org/html/rfc5802#section-4
@@ -101,7 +102,7 @@ class SCRAM(object):
         server_key = self._hmac(self._salted_password, b"Server Key")
         server_signature = self._hmac(server_key, self._auth_message)
 
-        if self._constant_time_compare(server_signature, verifier):
+        if utils.security.constant_time_compare(server_signature, verifier):
             self.state = SCRAMState.Success
             return True
         else:

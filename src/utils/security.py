@@ -1,4 +1,4 @@
-import socket, ssl
+import hmac, socket, ssl, typing
 
 def ssl_context(cert: str=None, key: str=None, verify: bool=True
         ) -> ssl.SSLContext:
@@ -21,3 +21,8 @@ def ssl_wrap(sock: socket.socket, cert: str=None, key: str=None,
     context = ssl_context(cert=cert, key=key, verify=verify)
     return context.wrap_socket(sock, server_side=server_side,
         server_hostname=hostname)
+
+def constant_time_compare(
+        a: typing.Union[str, bytes],
+        b: typing.Union[str, bytes]) -> bool:
+    return hmac.compare_digest(a, b)
