@@ -7,7 +7,6 @@ class Module(ModuleManager.BaseModule):
         if not event["server"].irc_equals(
                 event["server"].nickname, target_nick):
             if "MONITOR" in event["server"].isupport:
-                print("monitor")
                 event["server"].send("MONITOR + %s" % target_nick)
             else:
                 self.timers.add("ison-check", 30, server=event["server"])
