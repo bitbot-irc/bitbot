@@ -51,6 +51,9 @@ class SCRAM(object):
     def _hash(self, msg: bytes) -> bytes:
         return hashlib.new(self._algo, msg).digest()
 
+    def _constant_time_compare(self, b1: bytes, b2: bytes):
+        return hmac.compare_digest(b1, b2)
+
     def client_first(self) -> bytes:
         self.state = SCRAMState.ClientFirst
         self._client_first = b"n=%s,r=%s" % (
@@ -93,14 +96,14 @@ class SCRAM(object):
             self.state = SCRAMState.Failed
             return False
 
-        verifier = pieces[b"v"]
+        verifier = base64.b64decode(pieces[b"v"])
 
         server_key = self._hmac(self._salted_password, b"Server Key")
         server_signature = self._hmac(server_key, self._auth_message)
 
-        if server_signature != base64.b64decode(verifier):
-            self.state = SCRAMState.VerifyFailed
-            return False
-        else:
+        if self._constant_time_compare(server_signature, verifier):
             self.state = SCRAMState.Success
             return True
+        else:
+            self.state = SCRAMState.VerifyFailed
+            return False
