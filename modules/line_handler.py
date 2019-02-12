@@ -697,7 +697,8 @@ class Module(ModuleManager.BaseModule):
     # nickname already in use
     @utils.hook("raw.received.433", default_event=True)
     def handle_433(self, event):
-        pass
+        new_nick = "%s|" % event["server"].connection_params.nickname
+        event["server"].send_nick(new_nick)
 
     # we need a registered nickname for this channel
     @utils.hook("raw.received.477", default_event=True)
