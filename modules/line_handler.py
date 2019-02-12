@@ -7,7 +7,8 @@ RE_MODES = re.compile(r"[-+]\w+")
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
     "draft/message-tags-0.2", "draft/message-tags-0.3", "server-time",
-    "cap-notify", "batch", "draft/labeled-response", "draft/rename"}
+    "cap-notify", "batch", "draft/labeled-response", "draft/rename",
+    "echo-message"}
 
 LABELED_BATCH = {
     "labeled-response": "label",
@@ -429,11 +430,18 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.received.privmsg")
     @utils.hook("raw.send.privmsg")
     def privmsg(self, event):
+        if event["direction"] == Direction.SEND:
+            from_self = True
+            if "echo-message" in event["server"].capabilities:
+                return
+        else:
+            from_self = event["server"].is_own_nickname(
+                event["prefix"].nickname)
+
         user = None
         user_nickname = None
         if "prefix" in event:
             user = event["server"].get_user(event["prefix"].nickname)
-            user_nickname = user.nickname
 
         message = event["args"][1]
         message_split = message.split(" ")
@@ -474,25 +482,36 @@ class Module(ModuleManager.BaseModule):
             "server": event["server"], "tags": event["tags"],
             "action": action}
 
+        direction = "send" if from_self else "received"
+        context = "channel" if channel else "private"
+        hook = self.events.on(direction).on("message").on(context)
+
         if channel:
-            self._event(event, "message.channel", user=user, channel=channel,
-                statusmsg=statusmsg, **kwargs)
-            channel.buffer.add_message(user_nickname, message, action,
+            hook.call(user=user, channel=channel, statusmsg=statusmsg, **kwargs)
+            channel.buffer.add_message(user.nickname, message, action,
                 event["tags"], user==None)
         elif event["server"].is_own_nickname(target):
-            self._event(event, "message.private", user=user, **kwargs)
+            hook.call(user=user, **kwargs)
             user.buffer.add_message(user.nickname, message, action,
                 event["tags"], False)
         elif not "prefix" in event:
             # a message we've sent to a user
             user = event["server"].get_user(target)
+            hook.call(user=user, **kwargs)
             user.buffer.add_message(None, message, action, event["tags"], True)
-            self._event(event, "message.private", user=user, **kwargs)
 
     # we've received/sent a notice
     @utils.hook("raw.received.notice")
     @utils.hook("raw.send.notice")
     def notice(self, event):
+        if event["direction"] == Direction.SEND:
+            from_self = True
+            if "echo-message" in event["server"].capabilities:
+                return
+        else:
+            from_self = event["server"].is_own_nickname(
+                event["prefix"].nickname)
+
         message = event["args"][1]
         message_split = message.split(" ")
         target = event["args"][0]
@@ -509,28 +528,30 @@ class Module(ModuleManager.BaseModule):
                 message_split=message_split, server=event["server"])
         else:
             user = None
-            user_nickname = None
             if "prefix" in event:
                 user = event["server"].get_user(event["prefix"].nickname)
+
+            direction = "send" if from_self else "received"
+            context = "channel" if channel else "private"
+            hook = self.events.on(direction).on("notice").on(context)
 
             kwargs = {"message": message, "message_split": message_split,
                 "server": event["server"], "tags": event["tags"]}
 
             if target[0] in event["server"].channel_types:
                 channel = event["server"].channels.get(target)
-                self._event(event, "notice.channel", user=user, channel=channel,
-                    **kwargs)
-                channel.buffer.add_notice(user_nickname, message, event["tags"],
+                hook.call(user=user, channel=channel, **kwargs)
+                channel.buffer.add_notice(user.nickname, message, event["tags"],
                     user==None)
             elif event["server"].is_own_nickname(target):
-                self._event(event, "notice.private", user=user, **kwargs)
+                hook.call(user=user, **kwargs)
                 user.buffer.add_notice(user.nickname, message, event["tags"],
                     False)
             elif not "prefix" in event:
                 # a notice we've sent to a user
                 user = event["server"].get_user(target)
+                hook.call(user=user, **kwargs)
                 user.buffer.add_message(None, message, event["tags"], True)
-                self._event(event, "notice.private", user=user, **kwargs)
 
     # IRCv3 TAGMSG, used to send tags without any other information
     @utils.hook("raw.received.tagmsg")
