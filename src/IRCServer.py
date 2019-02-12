@@ -257,7 +257,8 @@ class Server(IRCObject.Object):
             self.events.on("raw.send").call_unsafe(server=self, line=line)
 
     def send_user(self, username: str, realname: str) -> IRCLine.Line:
-        return self.send("USER %s 0 * :%s" % (username, realname))
+        return self.send("USER %s 0 * %s" %
+            (username, utils.irc.trailing(realname)))
     def send_nick(self, nickname: str) -> IRCLine.Line:
         return self.send("NICK %s" % nickname)
 
@@ -276,7 +277,7 @@ class Server(IRCObject.Object):
     def has_capability_queue(self):
         return bool(len(self._capability_queue))
     def send_capability_request(self, capability: str) -> IRCLine.Line:
-        return self.send("CAP REQ :%s" % capability)
+        return self.send("CAP REQ %s" % utils.irc.trailing(capability))
     def send_capability_end(self) -> IRCLine.Line:
         return self.send("CAP END")
     def send_authenticate(self, text: str) -> IRCLine.Line:
@@ -295,9 +296,9 @@ class Server(IRCObject.Object):
         return self.send("PASS %s" % password)
 
     def send_ping(self, nonce: str="hello") -> IRCLine.Line:
-        return self.send("PING :%s" % nonce)
+        return self.send("PING %s" % utils.irc.trailing(nonce))
     def send_pong(self, nonce: str="hello") -> IRCLine.Line:
-        return self.send("PONG :%s" % nonce)
+        return self.send("PONG %s" % utils.irc.trailing(nonce))
 
     def try_rejoin(self, event: EventManager.Event):
         if event["server_id"] == self.id and event["channel_name"
@@ -310,7 +311,7 @@ class Server(IRCObject.Object):
         return self.send("PART %s%s" % (channel_name,
             "" if reason == None else " %s" % reason))
     def send_quit(self, reason: str="Leaving") -> IRCLine.Line:
-        return self.send("QUIT :%s" % reason)
+        return self.send("QUIT %s" % utils.irc.trailing(reason))
 
     def _tag_str(self, tags: dict) -> str:
         tag_str = ""
@@ -327,14 +328,14 @@ class Server(IRCObject.Object):
     def send_message(self, target: str, message: str, prefix: str=None,
             tags: dict={}) -> IRCLine.Line:
         full_message = message if not prefix else prefix+message
-        return self.send("%sPRIVMSG %s :%s" % (self._tag_str(tags), target,
-            full_message))
+        return self.send("%sPRIVMSG %s %s" %
+            (self._tag_str(tags), target, utils.irc.trailing(full_message)))
 
     def send_notice(self, target: str, message: str, prefix: str=None,
             tags: dict={}) -> IRCLine.Line:
         full_message = message if not prefix else prefix+message
-        return self.send("%sNOTICE %s :%s" % (self._tag_str(tags), target,
-            full_message))
+        return self.send("%sNOTICE %s %s" %
+            (self._tag_str(tags), target, utils.irc.trailing(full_message)))
 
     def send_mode(self, target: str, mode: str=None, args: str=None
             ) -> IRCLine.Line:
@@ -343,11 +344,14 @@ class Server(IRCObject.Object):
             "" if args == None else " %s" % args))
 
     def send_topic(self, channel_name: str, topic: str) -> IRCLine.Line:
-        return self.send("TOPIC %s :%s" % (channel_name, topic))
+        return self.send("TOPIC %s %s" %
+            (channel_name, utils.irc.trailing(topic)))
     def send_kick(self, channel_name: str, target: str, reason: str=None
             ) -> IRCLine.Line:
-        return self.send("KICK %s %s%s" % (channel_name, target,
-            "" if reason == None else " :%s" % reason))
+        reason = ""
+        if not reason == None:
+            reason = " %s" % utils.irc.trailing(typing.cast(str, reason))
+        return self.send("KICK %s %s%s" % (channel_name, target, reason))
     def send_names(self, channel_name: str) -> IRCLine.Line:
         return self.send("NAMES %s" % channel_name)
     def send_list(self, search_for: str=None) -> IRCLine.Line:
@@ -360,9 +364,13 @@ class Server(IRCObject.Object):
         return self.send("WHOIS %s" % target)
     def send_whowas(self, target: str, amount: int=None, server: str=None
             ) -> IRCLine.Line:
+        server = ""
+        if not server == None:
+            server = " %s" % utils.irc.trailing(typing.cast(str, server))
+
         return self.send("WHOWAS %s%s%s" % (target,
             "" if amount == None else " %s" % amount,
-            "" if server == None else " :%s" % server))
+            "" if server == None else " %s" % utils.irc.trailing(server)))
     def send_who(self, filter: str=None) -> IRCLine.Line:
         return self.send("WHO%s" % ("" if filter == None else " %s" % filter))
     def send_whox(self, mask: str, filter: str, fields: str, label: str=None

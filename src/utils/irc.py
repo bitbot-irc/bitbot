@@ -293,3 +293,9 @@ class IRCBatch(object):
         self.type = batch_type
         self.tags = tags
         self.lines = [] # type: typing.List[IRCParsedLine]
+
+def trailing(s: str) -> str:
+    if s[0] == ":" or " " in s:
+        return ":%s" % s
+    else:
+        return s
