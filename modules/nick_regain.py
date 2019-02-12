@@ -6,7 +6,8 @@ class Module(ModuleManager.BaseModule):
         if not server.irc_equals(server.nickname, target_nick):
             if "MONITOR" in server.isupport:
                 server.send("MONITOR + %s" % target_nick)
-            self.timers.add("ison-check", 30, server=server)
+            else:
+                self.timers.add("ison-check", 30, server=server)
 
     @utils.hook("received.numeric.376")
     def end_of_motd(self, event):
