@@ -526,6 +526,10 @@ class Module(ModuleManager.BaseModule):
             if "prefix" in event:
                 user = event["server"].get_user(event["prefix"].nickname)
 
+            channel = None
+            if target[0] in event["server"].channel_types:
+                channel = event["server"].channels.get(target)
+
             direction = "send" if from_self else "received"
             context = "channel" if channel else "private"
             hook = self.events.on(direction).on("notice").on(context)
@@ -533,8 +537,7 @@ class Module(ModuleManager.BaseModule):
             kwargs = {"message": message, "message_split": message_split,
                 "server": event["server"], "tags": event["tags"]}
 
-            if target[0] in event["server"].channel_types:
-                channel = event["server"].channels.get(target)
+            if channel:
                 hook.call(user=user, channel=channel, **kwargs)
                 channel.buffer.add_notice(user.nickname, message, event["tags"],
                     user==None)
