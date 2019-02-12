@@ -306,6 +306,10 @@ class Module(ModuleManager.BaseModule):
             if not is_multiline:
                 matched_caps = self._match_caps(
                     list(event["server"].server_capabilities.keys()))
+                blacklisted_caps = event["server"].get_setting(
+                    "blacklisted-caps", [])
+                matched_caps = list(
+                    set(matched_caps)-set(blacklisted_caps))
 
                 event["server"].queue_capabilities(matched_caps)
 
