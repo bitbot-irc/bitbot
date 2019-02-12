@@ -544,22 +544,27 @@ class Module(ModuleManager.BaseModule):
             context = "channel" if channel else "private"
             hook = self.events.on(direction).on("notice").on(context)
 
+            user_nickname = None
+            if user:
+                user_nickname = None if from_self else user.nickname
+
             kwargs = {"message": message, "message_split": message_split,
                 "server": event["server"], "tags": event["tags"]}
 
             if channel:
                 hook.call(user=user, channel=channel, **kwargs)
-                channel.buffer.add_notice(user.nickname, message, event["tags"],
+                channel.buffer.add_notice(user_nickname, message, event["tags"],
                     user==None)
             elif event["server"].is_own_nickname(target):
                 hook.call(user=user, **kwargs)
-                user.buffer.add_notice(user.nickname, message, event["tags"],
+                user.buffer.add_notice(user_nickname, message, event["tags"],
                     False)
             elif not "prefix" in event:
                 # a notice we've sent to a user
                 user = event["server"].get_user(target)
                 hook.call(user=user, **kwargs)
-                user.buffer.add_message(None, message, event["tags"], True)
+                user.buffer.add_notice(user_nickname, message, event["tags"],
+                    True)
 
     # IRCv3 TAGMSG, used to send tags without any other information
     @utils.hook("raw.received.tagmsg")
