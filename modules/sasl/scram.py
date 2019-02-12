@@ -3,8 +3,9 @@ import base64, enum, hashlib, hmac, os, typing
 # IANA Hash Function Textual Names
 # https://tools.ietf.org/html/rfc5802#section-4
 # https://www.iana.org/assignments/hash-function-text-names/
+# MD2 has been removed as it's unacceptably weak
 ALGORITHMS = [
-    "MD2", "MD5", "SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512"]
+    "MD5", "SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512"]
 
 def _scram_nonce() -> bytes:
     return base64.b64encode(os.urandom(32))
