@@ -435,8 +435,11 @@ class Module(ModuleManager.BaseModule):
             if "echo-message" in event["server"].capabilities:
                 return
         else:
-            from_self = event["server"].is_own_nickname(
-                event["prefix"].nickname)
+            if event["prefix"]:
+                from_self = event["server"].is_own_nickname(
+                    event["prefix"].nickname)
+            else:
+                from_self = False
 
         user = None
         user_nickname = None
@@ -504,8 +507,11 @@ class Module(ModuleManager.BaseModule):
             if "echo-message" in event["server"].capabilities:
                 return
         else:
-            from_self = event["server"].is_own_nickname(
-                event["prefix"].nickname)
+            if event["prefix"]:
+                from_self = event["server"].is_own_nickname(
+                    event["prefix"].nickname)
+            else:
+                from_self = False
 
         message = event["args"][1]
         message_split = message.split(" ")
