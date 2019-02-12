@@ -67,7 +67,7 @@ class Module(ModuleManager.BaseModule):
             hash, salt = self._get_hash(event["server"], account)
             if hash and salt:
                 attempt, _ = self._make_hash(password, salt)
-                if attempt == hash:
+                if utils.security.constant_time_compare(attempt, hash):
                     self._identified(event["server"], event["user"], account)
                     event["stdout"].write("Correct password, you have "
                         "been identified as '%s'." % account)
