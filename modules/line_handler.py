@@ -444,7 +444,6 @@ class Module(ModuleManager.BaseModule):
             user = event["server"].get_user(event["prefix"].nickname)
 
         message = event["args"][1]
-        message_split = message.split(" ")
         target = event["args"][0]
 
         # strip prefix_symbols from the start of target, for when people use
@@ -460,31 +459,27 @@ class Module(ModuleManager.BaseModule):
             channel = event["server"].channels.get(target)
 
         action = False
+        event_type = "message"
         ctcp_message = utils.irc.parse_ctcp(message)
         if ctcp_message:
+            message = ctcp_message.message
+            event_type = "ctcp.%s" % ctcp_message.command
             if ctcp_message.command == "ACTION":
                 action = True
                 message = ctcp_message.message
-            else:
-                if channel:
-                    self._event(event, "ctcp.channel", channel=channel,
-                        ctcp=ctcp_message)
-                else:
-                    self._event(event, "ctcp.private", user=user,
-                        ctcp=ctcp_message)
 
         if user and "account" in event["tags"]:
             user.identified_account = event["tags"]["account"]
             user.identified_account_id = event["server"].get_user(
                 event["tags"]["account"]).get_id()
 
-        kwargs = {"message": message, "message_split": message_split,
+        kwargs = {"message": message, "message_split": message.split(),
             "server": event["server"], "tags": event["tags"],
             "action": action}
 
         direction = "send" if from_self else "received"
         context = "channel" if channel else "private"
-        hook = self.events.on(direction).on("message").on(context)
+        hook = self.events.on(direction).on(event_type).on(context)
 
         if channel:
             hook.call(user=user, channel=channel, statusmsg=statusmsg, **kwargs)
