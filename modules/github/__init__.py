@@ -1,7 +1,6 @@
 import datetime, itertools, json, math, urllib.parse
 from src import ModuleManager, utils
 
-_ISO8601 = "%Y-%m-%dT%H:%M:%S%z"
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
@@ -381,7 +380,7 @@ class Module(ModuleManager.BaseModule):
             return url
 
     def _iso8601(self, s):
-        return datetime.datetime.strptime(s, _ISO8601)
+        return datetime.datetime.strptime(s, utils.ISO8601_FORMAT)
 
     def ping(self, data):
         return ["Received new webhook"]

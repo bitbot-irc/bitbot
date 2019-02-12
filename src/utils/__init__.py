@@ -1,6 +1,8 @@
 import decimal, io, ipaddress, re, typing
 from src.utils import cli, consts, irc, http, parse, security
 
+ISO8601_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
+
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60
 TIME_HOUR = TIME_MINUTE*60
