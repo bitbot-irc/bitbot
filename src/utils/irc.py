@@ -114,7 +114,7 @@ def parse_line(line: str) -> IRCParsedLine:
         # this is so that `args` is empty if `line` is empty
         args = line.split(" ")
 
-    if arbitrary:
+    if not arbitrary == None:
         args.append(arbitrary)
 
     return IRCParsedLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
