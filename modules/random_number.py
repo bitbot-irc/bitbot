@@ -1,6 +1,8 @@
 import random, uuid
 from src import ModuleManager, utils
 
+COIN_SIDES = ["heads", "tails"]
+
 class Module(ModuleManager.BaseModule):
     _name = "Random"
 
@@ -28,6 +30,12 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write(
                 "Both start and end must be valid integers")
+
+    @utils.hook("received.command.cointoss")
+    def coin_toss(self, event):
+        chosen_side = random.SystemRandom().choice(COIN_SIDES)
+        event["stdout"].write("%s tosses a coin and gets %s" %
+            (event["user"].nickname, chosen_side))
 
     @utils.hook("received.command.uuid")
     def uuid(self, event):
