@@ -8,7 +8,7 @@ CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
     "draft/message-tags-0.2", "draft/message-tags-0.3", "server-time",
     "cap-notify", "batch", "draft/labeled-response", "draft/rename",
-    "echo-message"}
+    "echo-message", "draft/setname"}
 
 LABELED_BATCH = {
     "labeled-response": "label",
@@ -640,6 +640,12 @@ class Module(ModuleManager.BaseModule):
             target = event["server"]
         target.username = username
         target.hostname = hostname
+
+    # IRCv3 SETNAME, to change a user's realname
+    @utils.hook("raw.received.setname")
+    def setname(self, event):
+        user = event["server"].get_user(event["prefix"].nickname)
+        user.realname = event["args"][0]
 
     @utils.hook("raw.received.account")
     def account(self, event):
