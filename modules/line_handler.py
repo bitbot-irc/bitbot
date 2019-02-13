@@ -630,11 +630,12 @@ class Module(ModuleManager.BaseModule):
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
     @utils.hook("raw.received.chghost")
     def chghost(self, event):
+        nickname = event["prefix"].nickname
         username = event["args"][0]
         hostname = event["args"][1]
 
-        if not event["server"].is_own_nickname(event["prefix"].nickname):
-            target = event["server"].get_user("nickanme")
+        if not event["server"].is_own_nickname(nickname):
+            target = event["server"].get_user(nickname)
         else:
             target = event["server"]
         target.username = username
