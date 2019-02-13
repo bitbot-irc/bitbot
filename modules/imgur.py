@@ -1,6 +1,6 @@
 #--require-config imgur-api-key
 
-import re
+import re, json
 from src import ModuleManager, utils, EventManager
 
 REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
@@ -22,7 +22,7 @@ class Module(ModuleManager.BaseModule):
         return text
 
     @utils.hook("received.message.channel",
-                priority=EventManager.PRIORITY_MONITOR)
+                priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
         if not event["channel"].get_setting("auto-imgur", False):
             return
@@ -30,9 +30,13 @@ class Module(ModuleManager.BaseModule):
         match_image = re.search(REGEX_IMAGE, event["message"])
         match_gallery = re.search(REGEX_GALLERY, event["message"])
         if match_image:
-            self.imgur(event, 1)
+            self.imgur(event, True)
+            event.eat()
+            return
         if match_gallery:
-            self.imgur(event, 1)
+            self.imgur(event, True)
+            event.eat()
+            return
 
     def _image_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
@@ -70,18 +74,30 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventsResultsError()
 
     @utils.hook("received.command.imgur", min_args=1)
-    def imgur(self, event, auto: int=0):
+    def imgur(self, event, auto: bool=False):
         """
         :help: Get information about a given imgur image URL
         :usage: <url>
         """
-        msg = event["args_split"][0] if auto is 1 else event["message"]
+        msg = event["args_split"][0] if not auto else event["message"]
+
 
         match = REGEX_GALLERY.match(msg)
         if match:
-            event["stdout"].write(self._gallery_info(match.group(1)))
+            self.events.on("send.stdout").call(
+                target=event["channel"], module_name="Imgur",
+                server=event["server"],
+                message=self._gallery_info(match.group(1)))
+
+            event.eat()
             return
+
         match = REGEX_IMAGE.match(msg)
         if match:
-            event["stdout"].write(self._image_info(match.group(1)))
+            self.events.on("send.stdout").call(
+                target=event["channel"], module_name="Imgur",
+                server=event["server"],
+                message=self._image_info(match.group(1)))
+
+            event.eat()
             return
