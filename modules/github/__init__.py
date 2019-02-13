@@ -132,10 +132,12 @@ class Module(ModuleManager.BaseModule):
             "(%s/%s pull#%s, %s) [%s/%s] %s→%s - %s %s" % (
             username, repository, number, page.data["state"],
             added, removed, repo_from, repo_to, page.data["title"], url))
+
     def _gh_get_pull(self, username, repository, number):
         return utils.http.request(
             API_PULL_URL % (username, repository, number),
             json=True)
+
     @utils.hook("received.command.ghpull", min_args=1)
     def github_pull(self, event):
         username, repository, number = self._parse_ref(
@@ -449,7 +451,9 @@ class Module(ModuleManager.BaseModule):
         commit = self._short_hash(data["comment"]["commit_id"])
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[commit/%s] %s commented" % (commit, commenter, action)]
+        comment = utils.irc.bold(data["comment"]["body"])
+        return ["[commit/%s] %s %s %s" % (commit, COMMENT_ACTIONS[action],
+                                          commenter, comment)]
 
     def pull_request(self, full_name, data):
         number = data["pull_request"]["number"]
@@ -563,7 +567,7 @@ class Module(ModuleManager.BaseModule):
             started_at = self._iso8601(data["check_run"]["started_at"])
             completed_at = self._iso8601(data["check_run"]["completed_at"])
             if completed_at > started_at:
-                seconds = (completed_at-started_at).total_seconds()
+                seconds = math.floor((completed_at-started_at).total_seconds())
                 duration = " in %s" % utils.to_pretty_time(seconds)
 
         status = data["check_run"]["status"]
