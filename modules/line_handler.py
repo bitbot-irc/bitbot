@@ -70,7 +70,18 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("raw.received.error")
     def error(self, event):
-        self.log.error("error received: %s", [event["args"][0]])
+        self.log.error("ERROR received: %s", [event["args"][0]])
+    @utils.hook("raw.received.fail")
+    def fail(self, event):
+        command = event["args"][0]
+        error_code = event["args"][1]
+        context = event["args"][2:-1]
+        description = event["args"][-1]
+
+        self.log.warn("FAIL (%s %s) received: %s" %
+            (command, error_code, description))
+        self.events.on("received.fail").call(command=command,
+            error_code=error_code, context=context, description=description)
 
     # first numeric line the server sends
     @utils.hook("raw.received.001", default_event=True)
