@@ -46,6 +46,8 @@ class Module(ModuleManager.BaseModule):
         return user.get_setting("badges", {})
     def _set_badges(self, user, badges):
         user.set_setting("badges", badges)
+    def _del_badges(self, user):
+        user.del_setting("badges")
 
     @utils.hook("received.command.badge", min_args=1)
     def badge(self, event):
@@ -186,3 +188,18 @@ class Module(ModuleManager.BaseModule):
         add_or_update = "Added" if not found_badge else "Updated"
         event["stdout"].write("%s '%s' badge to %s" % (
             add_or_update, badge, self._date_str(dt)))
+
+    @utils.hook("recieved.command.clearbadges", min_args=1)
+    def clear_badges(self, event):
+        """
+        :help: Clear another user's badges
+        :usage: <nickname>
+        :permission: clearbadges
+        """
+        user = event["server"].get_user(event["args_split"][0])
+        current_badges = self._get_badges(user)
+        if badges:
+            self._del_badges(user)
+            event["stdout"].write("Cleared badges for %s" % user.nickname)
+        else:
+            event["stderr"].write("%s has no badges" % user.nickname)
