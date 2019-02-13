@@ -197,7 +197,7 @@ class Module(ModuleManager.BaseModule):
         :permission: clearbadges
         """
         user = event["server"].get_user(event["args_split"][0])
-        current_badges = self._get_badges(user)
+        badges = self._get_badges(user)
         if badges:
             self._del_badges(user)
             event["stdout"].write("Cleared badges for %s" % user.nickname)
