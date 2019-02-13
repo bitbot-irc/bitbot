@@ -1,7 +1,7 @@
 #--require-config imgur-api-key
 
 import re
-from src import ModuleManager, utils
+from src import ModuleManager, utils, EventManager
 
 REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
 REGEX_GALLERY = re.compile("https?://imgur.com/gallery/(\w+)")
@@ -9,6 +9,9 @@ REGEX_GALLERY = re.compile("https?://imgur.com/gallery/(\w+)")
 URL_IMAGE = "https://api.imgur.com/3/image/%s"
 URL_GALLERY = "https://api.imgur.com/3/gallery/%s"
 
+@utils.export("channelset", {"setting": "auto-imgur",
+    "help": "Disable/Enable automatically getting info from Imgur URLs",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def _prefix(self, data):
         text = "%s: " % data["id"]
@@ -17,6 +20,19 @@ class Module(ModuleManager.BaseModule):
         if data["account_url"]:
             text += "%s " % data["account_url"]
         return text
+
+    @utils.hook("received.message.channel",
+                priority=EventManager.PRIORITY_MONITOR)
+    def channel_message(self, event):
+        if not event["channel"].get_setting("auto-imgur", False):
+            return
+
+        match_image = re.search(REGEX_IMAGE, event["message"])
+        match_gallery = re.search(REGEX_GALLERY, event["message"])
+        if match_image:
+            self.imgur(event, 1)
+        if match_gallery:
+            self.imgur(event, 1)
 
     def _image_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
@@ -54,16 +70,18 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventsResultsError()
 
     @utils.hook("received.command.imgur", min_args=1)
-    def imgur(self, event):
+    def imgur(self, event, auto: int=0):
         """
         :help: Get information about a given imgur image URL
         :usage: <url>
         """
-        match = REGEX_GALLERY.match(event["args_split"][0])
+        msg = event["args_split"][0] if auto is 1 else event["message"]
+
+        match = REGEX_GALLERY.match(msg)
         if match:
             event["stdout"].write(self._gallery_info(match.group(1)))
             return
-        match = REGEX_IMAGE.match(event["args_split"][0])
+        match = REGEX_IMAGE.match(msg)
         if match:
             event["stdout"].write(self._image_info(match.group(1)))
             return
