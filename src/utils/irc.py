@@ -115,7 +115,7 @@ def parse_line(line: str) -> IRCParsedLine:
         args = line.split(" ")
 
     if not arbitrary == None:
-        args.append(arbitrary)
+        args.append(typing.cast(str, arbitrary))
 
     return IRCParsedLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
 
