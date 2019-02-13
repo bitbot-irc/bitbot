@@ -1,7 +1,7 @@
 import random
 from src import ModuleManager, utils
 
-INSULT_INTRO = ["Thou art a", "Ye", "Thou", "Thy", "Thee"]
+INSULT_INTRO = ["Thou art a", "Ye", "Thou", "Thy", "Thee", "Thine"]
 
 INSULT_PART_1 = ["artless", "bawdy", "beslubbering", "bootless", "churlish",
                  "cockered", "clouted", "craven", "currish", "dankish",
