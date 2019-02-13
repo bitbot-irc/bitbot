@@ -189,7 +189,7 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("%s '%s' badge to %s" % (
             add_or_update, badge, self._date_str(dt)))
 
-    @utils.hook("recieved.command.clearbadges", min_args=1)
+    @utils.hook("received.command.clearbadges", min_args=1)
     def clear_badges(self, event):
         """
         :help: Clear another user's badges
