@@ -111,7 +111,7 @@ class Module(ModuleManager.BaseModule):
                     if search_page.data["pageInfo"]["totalResults"] > 0:
                         video_id = search_page.data["items"][0]["id"]["videoId"]
                     else:
-                        event["stderr"].write("No videos found")
+                        raise utils.EventError("No videos found")
                 else:
                     raise utils.EventsResultsError()
             if video_id:
