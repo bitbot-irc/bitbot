@@ -304,21 +304,9 @@ class Server(IRCObject.Object):
         if event["server_id"] == self.id and event["channel_name"
                 ] in self.attempted_join:
             self.send_join(event["channel_name"], event["key"])
-    def send_join(self, channel_name: str, key: str="") -> IRCLine.Line:
-        if "," in channel_name:
-            # Multiple channels
-            chans = channel_name.split(",")
-            channel_name = list()
-            for chan in chans:
-                if not self.channels.contains(chan):
-                    channel_name.append(chan)
-            channel_name = ",".join(channel_name)
-        else:
-            if self.channels.contains(channel_name):
-                return self.send("")
-
+    def send_join(self, channel_name: str, key: str=None) -> IRCLine.Line:
         return self.send("JOIN %s%s" % (channel_name,
-            "" if key else " %s" % key))
+            "" if not key else " %s" % key))
     def send_part(self, channel_name: str, reason: str=None) -> IRCLine.Line:
         return self.send("PART %s%s" % (channel_name,
             "" if reason == None else " %s" % reason))
