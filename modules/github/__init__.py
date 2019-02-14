@@ -567,7 +567,7 @@ class Module(ModuleManager.BaseModule):
             started_at = self._iso8601(data["check_run"]["started_at"])
             completed_at = self._iso8601(data["check_run"]["completed_at"])
             if completed_at > started_at:
-                seconds = math.floor((completed_at-started_at).total_seconds())
+                seconds = (completed_at-started_at).total_seconds()
                 duration = " in %s" % utils.to_pretty_time(seconds)
 
         status = data["check_run"]["status"]
