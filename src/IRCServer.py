@@ -337,6 +337,9 @@ class Server(IRCObject.Object):
         return self.send("%sNOTICE %s %s" %
             (self._tag_str(tags), target, utils.irc.trailing(full_message)))
 
+    def send_tagmsg(self, target, tags: dict):
+        return self.send("%s TAGMSG %s" % (self._tag_str(tags), target))
+
     def send_mode(self, target: str, mode: str=None, args: str=None
             ) -> IRCLine.Line:
         return self.send("MODE %s%s%s" % (target,
