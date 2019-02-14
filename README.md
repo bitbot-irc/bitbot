@@ -23,3 +23,13 @@ BitBot's National Rail module can optionally include output from Network Rail's 
 
 ## Contact/Support
 Come say hi at [##bitbot on freenode](https://webchat.freenode.net/?channels=##bitbot)
+
+## IRCv3 Account Support
+If the server the bot is connecting to supports account-notify, you can use 
+IRC services to keep track of users, instead of having users register to the 
+bot.
+
+To enable this, run this SQL command:
+
+> INSERT INTO server_settings (&lt;serverid&gt;, 'identity-mechanism', 
+'"ircv3-account"');
