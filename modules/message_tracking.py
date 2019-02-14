@@ -6,9 +6,7 @@ DELIVERED_TAG = "+draft/delivered"
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.message.private")
-    @utils.hook("received.message.channel")
     @utils.hook("received.notice.private")
-    @utils.hook("received.notice.channel")
     def privmsg(self, event):
         if MSGID_TAG in event["tags"]:
             target = event.get("channel", event["user"])
