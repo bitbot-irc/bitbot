@@ -28,11 +28,13 @@ class Event(object):
         self.eaten = True
 
 class EventCallback(object):
-    def __init__(self, function: CALLBACK_TYPE, priority: int, kwargs: dict):
+    def __init__(self, function: CALLBACK_TYPE, priority: int, kwargs: dict,
+            one_shot: bool=False):
         self.function = function
         self.priority = priority
         self.kwargs = kwargs
         self.docstring = utils.parse.docstring(function.__doc__ or "")
+        self._one_shot = one_shot
 
     def call(self, event: Event) -> typing.Any:
         return self.function(event)
@@ -205,6 +207,9 @@ class EventHook(object):
                         [self._get_path()], exc_info=True)
                 else:
                     raise
+
+            if hook._one_shot:
+                self.unhook(hook)
 
         total_milliseconds = (time.monotonic() - start) * 1000
         self.log.trace("event \"%s\" called in %fms",
