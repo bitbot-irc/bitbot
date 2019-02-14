@@ -451,7 +451,7 @@ class Module(ModuleManager.BaseModule):
         commit = self._short_hash(data["comment"]["commit_id"])
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        comment = utils.irc.bold(data["comment"]["body"])
+        comment = data["comment"]["body"]
         return ["[commit/%s] %s %s %s - %s" % (commit, commenter,
                                         COMMENT_ACTIONS[action], comment, url)]
 
