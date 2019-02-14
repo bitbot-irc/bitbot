@@ -469,6 +469,8 @@ class Module(ModuleManager.BaseModule):
 
         channel = None
         if target[0] in event["server"].channel_types:
+            if not target in event["server"].channels:
+                return
             channel = event["server"].channels.get(target)
 
         action = False
