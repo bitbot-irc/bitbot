@@ -322,20 +322,22 @@ class Server(IRCObject.Object):
             if value:
                 tag_str += "=%s" % value
         if tag_str:
-            tag_str = "@%s " % tag_str
+            tag_str = "@%s" % tag_str
         return tag_str
 
     def send_message(self, target: str, message: str, prefix: str=None,
             tags: dict={}) -> IRCLine.Line:
         full_message = message if not prefix else prefix+message
+        tag_str = "" if not tags else "%s " % self._tag_str(tags)
         return self.send("%sPRIVMSG %s %s" %
-            (self._tag_str(tags), target, utils.irc.trailing(full_message)))
+            (tag_str, target, utils.irc.trailing(full_message)))
 
     def send_notice(self, target: str, message: str, prefix: str=None,
             tags: dict={}) -> IRCLine.Line:
         full_message = message if not prefix else prefix+message
+        tag_str = "" if not tags else "%s " % self._tag_str(tags)
         return self.send("%sNOTICE %s %s" %
-            (self._tag_str(tags), target, utils.irc.trailing(full_message)))
+            (tag_str, target, utils.irc.trailing(full_message)))
 
     def send_tagmsg(self, target, tags: dict):
         return self.send("%s TAGMSG %s" % (self._tag_str(tags), target))
