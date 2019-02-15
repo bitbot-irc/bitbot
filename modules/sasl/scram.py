@@ -16,7 +16,7 @@ SCRAM_ERRORS = [
     "channel-binding-not-supported",
     "unsupported-channel-binding-type",
     "unknown-user",
-    "invalid-username-encoding", # invalid utf8 of bad SASLprep
+    "invalid-username-encoding", # invalid utf8 or bad SASLprep
     "no-resources",
     "other-error"
 ]
