@@ -290,17 +290,26 @@ class Module(ModuleManager.BaseModule):
 
     # a user has disconnected!
     @utils.hook("raw.received.quit")
+    @utils.hook("raw.send.quit")
     def quit(self, event):
+        nickname = None
+        if event["direction"] == Direction.RECV:
+            nickname = event["prefix"].nickname
         reason = event["args"].get(0)
 
-        if (not event["server"].is_own_nickname(event["prefix"].nickname) and
-                not event["prefix"].hostmask == "*"):
-            user = event["server"].get_user(event["prefix"].nickname)
-            event["server"].remove_user(user)
-            self._event(event, "quit", reason=reason, user=user,
-                server=event["server"])
+        if event["direction"] == Direction.RECV:
+            nickname = event["prefix"].nickname
+            if (not event["server"].is_own_nickname(nickname) and
+                    not event["prefix"].hostmask == "*"):
+                user = event["server"].get_user(nickname)
+                event["server"].remove_user(user)
+                self.events.on("received.quit").call(reason=reason, user=user,
+                    server=event["server"])
+            else:
+                event["server"].disconnect()
         else:
-            event["server"].disconnect()
+            self.events.on("send.quit").call(reason=reason,
+                server=event["server"])
 
     def _match_caps(self, capabilities):
         return set(capabilities) & CAPABILITIES

@@ -89,10 +89,16 @@ class Module(ModuleManager.BaseModule):
         self.print_line(event, "%s changed nickname to %s" % (
             event["old_nickname"], event["new_nickname"]))
 
+    def _quit(self, event, nickname, reason):
+        self.print_line(event, "%s quit%s" % (nickname,
+            "" if not reason else " (%s)" % reason))
+
     @utils.hook("received.quit")
     def on_quit(self, event):
-        self.print_line(event, "%s quit%s" % (event["user"].nickname,
-            "" if not event["reason"] else " (%s)" % event["reason"]))
+        self._quit(event, event["user"].nickname, event["reason"])
+    @utils.hook("send.quit")
+    def send_quit(self, event):
+        self._quit(event, event["server"].nickname, event["reason"])
 
     def _on_kick(self, event, nickname):
         self.print_line(event, "%s kicked %s from %s%s" % (
