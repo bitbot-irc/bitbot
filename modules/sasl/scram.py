@@ -48,7 +48,7 @@ class SCRAM(object):
         return dict((piece[0], piece[1]) for piece in pieces)
 
     def _hmac(self, key: bytes, msg: bytes) -> bytes:
-        return hmac.digest(key, msg, self._algo)
+        return hmac.new(key, msg, self._algo).digest()
     def _hash(self, msg: bytes) -> bytes:
         return hashlib.new(self._algo, msg).digest()
 
