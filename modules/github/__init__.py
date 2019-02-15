@@ -43,7 +43,7 @@ EVENT_CATEGORIES = {
         "issues", "issue_comment"
     ],
     "repo": [
-        "create", # a repository, branch or tage has been created
+        "create", # a repository, branch or tag has been created
         "delete", # same as above but deleted
         "release",
         "fork"
