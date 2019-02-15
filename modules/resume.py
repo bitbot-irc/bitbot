@@ -15,6 +15,11 @@ class Module(ModuleManager.BaseModule):
     def _get_timestamp(self, server):
         return server.get_setting("last-read", None)
 
+    @utils.hook("new.server")
+    def new_server(self, event):
+        resume_timestamp = self._get_timestamp(event["server"])
+        event["server"]._resume_timestamp = resume_timestamp
+
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
         if CAP in event["capabilities"]:
@@ -29,18 +34,21 @@ class Module(ModuleManager.BaseModule):
     def on_resume(self, event):
         if event["args"][0] == "SUCCESS":
             self.log.info("Successfully resumed session", [])
+
         elif event["args"][0] == "ERR":
             self.log.info("Failed to resume session: %s", [event["args"][1]])
+
         elif event["args"][0] == "TOKEN":
             token = self._get_token(event["server"])
             self._set_token(event["server"], event["args"][1], new=True)
 
             if token:
-                timestamp = self._get_timestamp(event["server"])
+                timestamp = event["server"]._resume_timestamp
 
                 event["server"].send("RESUME %s%s" %
                     (token, " %s" % timestamp if timestamp else ""))
                 event["server"].cap_started = False
+
         event["server"].capability_done("resume")
 
     @utils.hook("received.numeric.001")
