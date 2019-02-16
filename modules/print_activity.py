@@ -118,7 +118,7 @@ class Module(ModuleManager.BaseModule):
     def on_topic(self, event):
         self._on_topic(event, event["user"].nickname, "changed",
             event["topic"], event["channel"])
-    @utils.hook("received.numeric.333")
+    @utils.hook("received.333")
     def on_333(self, event):
         self._on_topic(event, event["setter"], "set",
             event["channel"].topic, event["channel"])
@@ -142,7 +142,7 @@ class Module(ModuleManager.BaseModule):
         self.print_line(event, "%s was renamed to %s" % (
             event["old_name"], event["new_name"]))
 
-    @utils.hook("received.numeric.376")
+    @utils.hook("received.376")
     def motd_end(self, event):
         for line in event["server"].motd_lines:
             self.print_line(event, "[MOTD] %s" % line)

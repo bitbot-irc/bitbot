@@ -1,7 +1,7 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.numeric.001")
+    @utils.hook("received.001")
     def on_connect(self, event):
         channels = event["server"].get_setting("autojoin", [])
         if not channels:

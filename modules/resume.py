@@ -52,7 +52,7 @@ class Module(ModuleManager.BaseModule):
 
         event["server"].capability_done("resume")
 
-    @utils.hook("received.numeric.001")
+    @utils.hook("received.001")
     def on_connect(self, event):
         event["server"].del_setting("resume-channels")
 

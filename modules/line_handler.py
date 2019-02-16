@@ -33,11 +33,7 @@ class Module(ModuleManager.BaseModule):
 
         self.events.on("raw.received").on(line.command).call_unsafe(**kwargs)
         if default_event or not hooks:
-            if line.command.isdigit():
-                self.events.on("received.numeric").on(line.command).call(
-                    **kwargs)
-            else:
-                self.events.on("received").on(line.command).call(**kwargs)
+            self.events.on("received").on(line.command).call(**kwargs)
 
     @utils.hook("raw.received")
     def handle_raw(self, event):

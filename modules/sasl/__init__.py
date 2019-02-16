@@ -131,17 +131,17 @@ class Module(ModuleManager.BaseModule):
     def _end_sasl(self, server):
         server.capability_done("sasl")
 
-    @utils.hook("received.numeric.908")
+    @utils.hook("received.908")
     def sasl_mechanisms(self, event):
         server_mechanisms = event["args"][1].split(",")
         mechanism = self._best_userpass_mechanism(server_mechanimsms)
         event["server"].sasl_mechanism = mechanism
         event["server"].send_authenticate(mechanism)
 
-    @utils.hook("received.numeric.903")
+    @utils.hook("received.903")
     def sasl_success(self, event):
         self._end_sasl(event["server"])
-    @utils.hook("received.numeric.904")
+    @utils.hook("received.904")
     def sasl_failure(self, event):
         self.log.warn("SASL failure for %s: %s",
             [str(event["server"]), event["args"][1]])
