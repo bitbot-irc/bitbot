@@ -63,7 +63,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("self.join")
     def on_join(self, event):
-        resume_channels = event["server"].get_settings("resume-channels", [])
+        resume_channels = event["server"].get_setting("resume-channels", [])
         channel_name = event["server"].irc_lower(event["channel"].name)
         if not channel_name in resume_channels:
             resume_channels.append(channel_name)
