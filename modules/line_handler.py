@@ -113,7 +113,7 @@ class Module(ModuleManager.BaseModule):
         event["server"].isupport.update(isupport)
 
         if "NAMESX" in isupport and not "multi-prefix" in event[
-                "server"].capabilities:
+                "server"].agreed_capabilities:
             event["server"].send("PROTOCTL NAMESX")
 
         if "PREFIX" in isupport:
@@ -198,7 +198,7 @@ class Module(ModuleManager.BaseModule):
                 modes.add(event["server"].prefix_symbols[nickname[0]])
                 nickname = nickname[1:]
 
-            if "userhost-in-names" in event["server"].capabilities:
+            if "userhost-in-names" in event["server"].agreed_capabilities:
                 hostmask = utils.irc.seperate_hostmask(nickname)
                 nickname = hostmask.nickname
                 user = event["server"].get_user(hostmask.nickname)
@@ -356,13 +356,13 @@ class Module(ModuleManager.BaseModule):
                 event["server"].send_capability_queue()
         elif subcommand == "del":
             for capability in capabilities.keys():
-                event["server"].capabilities.discard(capability)
+                event["server"].agreed_capabilities.discard(capability)
                 del event["server"].server_capabilities[capability]
 
             self._event(event, "cap.del", server=event["server"],
                 capabilities=capabilities)
         elif subcommand == "ack":
-            event["server"].capabilities.update(capabilities)
+            event["server"].agreed_capabilities.update(capabilities)
             self._event(event, "cap.ack", capabilities=capabilities,
                server=event["server"])
 
@@ -452,7 +452,7 @@ class Module(ModuleManager.BaseModule):
     def privmsg(self, event):
         if event["direction"] == Direction.SEND:
             from_self = True
-            if "echo-message" in event["server"].capabilities:
+            if "echo-message" in event["server"].agreed_capabilities:
                 return
         else:
             if event["prefix"]:
@@ -530,7 +530,7 @@ class Module(ModuleManager.BaseModule):
     def notice(self, event):
         if event["direction"] == Direction.SEND:
             from_self = True
-            if "echo-message" in event["server"].capabilities:
+            if "echo-message" in event["server"].agreed_capabilities:
                 return
         else:
             if event["prefix"]:

@@ -62,7 +62,7 @@ class Module(ModuleManager.BaseModule):
             "channels": {
                 c.name: self._channel_stats(c) for c in server.channels
             },
-            "capabilities": list(server.capabilities)
+            "capabilities": list(server.agreed_capabilities)
         }
 
     @utils.hook("api.get.servers")
@@ -125,4 +125,4 @@ class Module(ModuleManager.BaseModule):
         :help: List negotiated IRCv3 capabilities
         """
         event["stdout"].write("IRCv3 capabilities: %s" %
-            ", ".join(event["server"].capabilities))
+            ", ".join(event["server"].agreed_capabilities))
