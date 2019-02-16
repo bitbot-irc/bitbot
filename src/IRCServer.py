@@ -270,10 +270,13 @@ class Server(IRCObject.Object):
         self._capability_queue.update(capabilities)
     def send_capability_queue(self):
         if self.has_capability_queue():
-            capabilities = " ".join(self._capability_queue)
-            self.requested_capabilities = list(self._capability_queue)
+            capability_queue = list(self._capability_queue)
             self._capability_queue.clear()
-            self.send_capability_request(capabilities)
+
+            for i in range(0, len(capability_queue), 10):
+                capability_batch = capability_queue[i:i+10]
+                self.requested_capabilities += capability_batch
+                self.send_capability_request(" ".join(capability_batch))
     def has_capability_queue(self):
         return bool(len(self._capability_queue))
     def send_capability_request(self, capability: str) -> IRCLine.Line:
