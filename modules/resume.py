@@ -33,6 +33,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.resume")
     def on_resume(self, event):
         if event["args"][0] == "SUCCESS":
+            resume_channels = event["server"].get_setting("resume-channels", [])
             self.log.info("Successfully resumed session", [])
 
         elif event["args"][0] == "ERR":
@@ -53,7 +54,17 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.numeric.001")
     def on_connect(self, event):
+        event["server"].del_setting("resume-channels")
+
         new_token = self._get_token(event["server"], new=True)
         if new_token:
             self._set_token(event["server"], new_token)
             self._del_token(event["server"], new=True)
+
+    @utils.hook("self.join")
+    def on_join(self, event):
+        resume_channels = event["server"].get_settings("resume-channels", [])
+        channel_name = event["server"].irc_lower(event["channel"].name)
+        if not channel_name in resume_channels:
+            resume_channels.append(channel_name)
+            event["server"].set_setting("resume-channels", resume_channels)
