@@ -9,7 +9,7 @@ This is a little complex at the moment but it will get easier some time soon.
 Join a channel that BitBot is in (he'll automatically join #bitbot with default
 configuration) and then type
 
-> /msg &lt;botnick> register <password>
+> /msg &lt;botnick> register &lt;password>
 
 ### Give * permission
 
@@ -35,4 +35,4 @@ And then insert your `*` permission
 
 To authenticate yourself as your admin user, use the following command
 
-> /msg &lt;botnick> identify <password>
+> /msg &lt;botnick> identify &lt;password>
