@@ -32,17 +32,15 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.resume")
     def on_resume(self, event):
-        cap_done = False
+        cap_done = True
 
         if event["args"][0] == "SUCCESS":
             resume_channels = event["server"].get_setting("resume-channels", [])
             self.log.info("Successfully resumed session", [])
             event["server"].cap_started = False
-            cap_done = True
 
         elif event["args"][0] == "ERR":
             self.log.info("Failed to resume session: %s", [event["args"][1]])
-            cap_done = True
 
         elif event["args"][0] == "TOKEN":
             token = self._get_token(event["server"])
@@ -53,8 +51,7 @@ class Module(ModuleManager.BaseModule):
 
                 event["server"].send("RESUME %s%s" %
                     (token, " %s" % timestamp if timestamp else ""))
-            else:
-                cap_done = True
+                cap_done = False
 
         if cap_done:
             event["server"].capability_done("resume")
