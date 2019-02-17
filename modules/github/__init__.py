@@ -380,7 +380,7 @@ class Module(ModuleManager.BaseModule):
             return url
 
     def _iso8601(self, s):
-        return datetime.datetime.strptime(s, utils.ISO8601_FORMAT)
+        return datetime.datetime.strptime(s, utils.ISO8601_PARSE)
 
     def ping(self, data):
         return ["Received new webhook"]

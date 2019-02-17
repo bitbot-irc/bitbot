@@ -234,8 +234,7 @@ class Server(IRCObject.Object):
             self.ping_sent = False
 
             now = datetime.datetime.utcnow()
-            self.set_setting("last-read", datetime.datetime.strftime(now,
-                utils.ISO8601_FORMAT))
+            self.set_setting("last-read", utils.iso8601_format(now))
         return lines
 
     def send(self, line: str):
