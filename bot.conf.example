@@ -19,7 +19,8 @@ openweathermap-api-key   =
 # https://products.wolframalpha.com/api/
 wolframalpha-api-key     =
 
-# https://console.developers.google.com - Custom Search API
+# https://console.developers.google.com - for Custom Search API key
+# https://cse.google.com/all - this shows Custom Search ID
 google-api-key           =
 google-search-id         =
 
