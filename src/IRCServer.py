@@ -1,4 +1,3 @@
-
 import collections, datetime, sys, time, typing
 from src import EventManager, IRCBot, IRCChannel, IRCChannels, IRCLine
 from src import IRCObject, IRCSocket, IRCUser, utils
