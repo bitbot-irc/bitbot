@@ -6,7 +6,7 @@ This is a little complex at the moment but it will get easier some time soon.
 
 ### Registering user
 
-Join a channel that BitBo is in (he'll automatically join #bitbot with default 
+Join a channel that BitBot is in (he'll automatically join #bitbot with default
 configuration) and then type
 
 > /msg &lt;botnick> register <password>
