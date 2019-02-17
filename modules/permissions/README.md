@@ -30,3 +30,9 @@ And then insert your `*` permission
 > INSERT INTO user_settings VALUES (&lt;id>, 'permissions', '["*"]');
 
 (where `<id>` is the response from the `myid` command)
+
+### Authenticating
+
+To authenticate yourself as your admin user, use the following command
+
+> /msg &lt;botnick> identify <password>
