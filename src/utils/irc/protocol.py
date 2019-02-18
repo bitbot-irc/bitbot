@@ -79,3 +79,10 @@ def whox(mask: str, filter: str, fields: str, label: str=None
         ) -> 'utils.irc.IRCParsedLine':
     flags = "%s%%%s%s" % (filter, fields, ","+label if label else "")
     return utils.irc.IRCParsedLine("WHO", [mask, flags])
+
+def batch_start(identifier: str, batch_type: str, tags: dict=None):
+    return utils.irc.IRCParsedLine("BATCH", ["+%s" % identifier, batch_type],
+        tags=tags)
+
+def batch_end(identifier: str, tags: dict=None):
+    return utils.irc.IRCParsedLine("BATCH", ["+%s" % identifier], tags=tags)
