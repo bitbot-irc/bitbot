@@ -351,3 +351,14 @@ class Server(IRCObject.Object):
     def send_whox(self, mask: str, filter: str, fields: str, label: str=None
             ) -> IRCLine.Line:
         return self.send(utils.irc.protocol.whox(mask, filter, fields, label))
+
+    def make_batch(self, identifier: str, batch_type: str, tags: dict=None):
+        return utils.irc.IRCSendBatch(identifier, batch_type, tags)
+    def send_batch(self, batch: utils.irc.IRCSendBatch):
+        self.send(utils.irc.protocol.batch_start(batch.id, batch.type,
+            batch.tags))
+
+        for line in batch.lines:
+            self.send(line)
+
+        return self.send(utils.irc.protocol.batch_end(batch.id))
