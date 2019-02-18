@@ -32,10 +32,10 @@ def part(channel_name: str, reason: str=None) -> 'utils.irc.IRCParsedLine':
 def quit(reason: str=None) -> 'utils.irc.IRCParsedLine':
     return utils.irc.IRCParsedLine("QUIT", [reason] if reason else [])
 
-def message(target: str, message: str, tags: dict={}
+def message(target: str, message: str, tags: dict=None
         ) -> 'utils.irc.IRCParsedLine':
     return utils.irc.IRCParsedLine("PRIVMSG", [target, message], tags=tags)
-def notice(target: str, message: str, tags: dict={}
+def notice(target: str, message: str, tags: dict=None
         ) -> 'utils.irc.IRCParsedLine':
     return utils.irc.IRCParsedLine("NOTICE", [target, message], tags=tags)
 def tagmsg(target, tags: dict) -> 'utils.irc.IRCParsedLine':
