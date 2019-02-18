@@ -100,7 +100,7 @@ def parse_line(line: str) -> IRCParsedLine:
     line, trailing_separator, trailing_split = line.partition(" :")
 
     trailing = None # type: typing.Optional[str]
-    if trailing_separator
+    if trailing_separator:
         trailing = trailing_split
 
     if line[0] == ":":
