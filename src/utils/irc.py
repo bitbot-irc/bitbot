@@ -64,13 +64,12 @@ class IRCArgs(object):
 
 
 class IRCParsedLine(object):
-    def __init__(self, tags: dict, prefix: typing.Optional[IRCHostmask],
-            command: str, args: IRCArgs, has_arbitrary: bool):
+    def __init__(self, command: str, args: IRCArgs, prefix: IRCHostmask = None,
+            tags: dict = None):
         self.tags = tags
         self.prefix = prefix
         self.command = command
         self.args = args
-        self.has_arbitrary = has_arbitrary
 
 MESSAGE_TAG_ESCAPED = [r"\:", r"\s", r"\\", r"\r", r"\n"]
 MESSAGE_TAG_UNESCAPED = [";", " ", "\\", "\r", "\n"]
@@ -98,11 +97,11 @@ def parse_line(line: str) -> IRCParsedLine:
                 else:
                     tags[tag] = None
 
-    line, arb_sep, arbitrary_split = line.partition(" :")
-    has_arbitrary = bool(arb_sep)
-    arbitrary = None # type: typing.Optional[str]
-    if has_arbitrary:
-        arbitrary = arbitrary_split
+    line, trailing_separator, trailing_split = line.partition(" :")
+
+    trailing = None # type: typing.Optional[str]
+    if trailing_separator
+        trailing = trailing_split
 
     if line[0] == ":":
         prefix_str, line = line[1:].split(" ", 1)
@@ -114,10 +113,10 @@ def parse_line(line: str) -> IRCParsedLine:
         # this is so that `args` is empty if `line` is empty
         args = line.split(" ")
 
-    if not arbitrary == None:
-        args.append(typing.cast(str, arbitrary))
+    if not trailing == None:
+        args.append(typing.cast(str, trailing))
 
-    return IRCParsedLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
+    return IRCParsedLine(command, IRCArgs(args), prefix, tags)
 
 
 REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % utils.consts.COLOR)

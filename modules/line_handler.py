@@ -28,8 +28,7 @@ class Module(ModuleManager.BaseModule):
         default_event = any(default_events)
 
         kwargs = {"args": line.args, "tags": line.tags, "server": server,
-            "prefix": line.prefix, "has_arbitrary": line.has_arbitrary,
-            "direction": Direction.RECV}
+            "prefix": line.prefix, "direction": Direction.RECV}
 
         self.events.on("raw.received").on(line.command).call_unsafe(**kwargs)
         if default_event or not hooks:
@@ -90,9 +89,7 @@ class Module(ModuleManager.BaseModule):
     # server telling us what it supports
     @utils.hook("raw.received.005")
     def handle_005(self, event):
-        isupport_list = event["args"][1:]
-        if event["has_arbitrary"]:
-            isupport_list = isupport_list[:-1]
+        isupport_list = event["args"][1:-1]
 
         isupport = {}
         for i, item in enumerate(isupport_list):
