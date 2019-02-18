@@ -615,8 +615,8 @@ class Module(ModuleManager.BaseModule):
         batch_type = event["args"][1]
 
         if modifier == "+":
-            event["server"].batches[identifier] = utils.irc.IRCBatch(identifier,
-                batch_type, event["tags"])
+            event["server"].batches[identifier] = utils.irc.IRCRecvBatch(
+                identifier, batch_type, event["tags"])
         else:
             batch = event["server"].batches[identifier]
             del event["server"].batches[identifier]
