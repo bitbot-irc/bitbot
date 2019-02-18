@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
         modes = self._get_modes(channel, user)
         if modes:
             channel.send_mode("+%s" % "".join(modes),
-                " ".join([user.nickname for mode in modes]))
+                [user.nickname for mode in modes])
 
     @utils.hook("received.join")
     def on_join(self, event):
@@ -41,7 +41,7 @@ class Module(ModuleManager.BaseModule):
             modes = [item[0] for item in chunk]
             nicknames = [item[1] for item in chunk]
             channel.send_mode(
-                "+%s" % "".join(modes), " ".join(nicknames))
+                "+%s" % "".join(modes), nicknames)
     @utils.hook("received.command.syncmodes", channel_only=True)
     def sync_modes(self, event):
         """

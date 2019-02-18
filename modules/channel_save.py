@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
             event["server"].attempted_join[channel] = key
 
         event["server"].send_join(
-            ",".join(channels_sorted), ",".join(keys_sorted))
+            ",".join(channels_sorted), keys_sorted)
 
     @utils.hook("self.join")
     def on_join(self, event):

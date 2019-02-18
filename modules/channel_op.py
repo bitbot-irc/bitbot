@@ -217,7 +217,7 @@ class Module(ModuleManager.BaseModule):
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
-        event["target"].send_mode("+o", target)
+        event["target"].send_mode("+o", [target])
     @utils.hook("received.command.deop", channel_only=True)
     def deop(self, event):
         """
@@ -228,7 +228,7 @@ class Module(ModuleManager.BaseModule):
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
-        event["target"].send_mode("-o", target)
+        event["target"].send_mode("-o", [target])
 
     @utils.hook("received.command.voice", channel_only=True)
     def voice(self, event):
@@ -240,7 +240,7 @@ class Module(ModuleManager.BaseModule):
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
-        event["target"].send_mode("+v", target)
+        event["target"].send_mode("+v", [target])
     @utils.hook("received.command.devoice", channel_only=True)
     def devoice(self, event):
         """
@@ -251,7 +251,7 @@ class Module(ModuleManager.BaseModule):
         """
         target = event["user"].nickname if not event["args_split"] else event[
             "args_split"][0]
-        event["target"].send_mode("-v", target)
+        event["target"].send_mode("-v", [target])
 
     @utils.hook("received.command.topic", min_args=1, channel_only=True,
         remove_empty=False)
