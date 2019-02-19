@@ -25,7 +25,8 @@ def pong(nonce: str="hello") -> 'utils.irc.IRCParsedLine':
 
 def join(channel_name: str, keys: typing.List[str]=None
         ) -> 'utils.irc.IRCParsedLine':
-    return utils.irc.IRCParsedLine("JOIN", [channel_name]+keys if keys else [])
+    return utils.irc.IRCParsedLine("JOIN", [channel_name]+(
+        keys if keys else []))
 def part(channel_name: str, reason: str=None) -> 'utils.irc.IRCParsedLine':
     return utils.irc.IRCParsedLine("PART", [channel_name]+(
         [reason] if reason else []))
