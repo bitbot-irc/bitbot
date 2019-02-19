@@ -63,7 +63,7 @@ class IRCArgs(object):
     def __getitem__(self, index) -> str:
         return self._args[index]
 
-def _tag_str(tags: dict) -> str:
+def _tag_str(tags: typing.Dict[str, str]) -> str:
     tag_str = ""
     for tag, value in tags.items():
         if tag_str:
@@ -77,7 +77,8 @@ def _tag_str(tags: dict) -> str:
 
 class IRCParsedLine(object):
     def __init__(self, command: str, args: typing.List[str],
-            prefix: IRCHostmask = None, tags: dict = None):
+            prefix: IRCHostmask=None,
+            tags: typing.Dict[str, str]={}):
         self.command = command
         self._args = args
         self.args = IRCArgs(args)
@@ -318,7 +319,8 @@ def parse_ctcp(s: str) -> typing.Optional[CTCPMessage]:
     return None
 
 class IRCBatch(object):
-    def __init__(self, identifier: str, batch_type: str, tags: dict=None):
+    def __init__(self, identifier: str, batch_type: str, tags:
+            typing.Dict[str, str]={}):
         self.id = identifier
         self.type = batch_type
         self.tags = tags
@@ -329,9 +331,9 @@ class IRCSendBatch(IRCBatch):
     def _add_line(self, line: IRCParsedLine):
         line.tags["batch"] = self.id
         self.lines.append(line)
-    def message(self, target: str, message: str, tags: dict=None):
+    def message(self, target: str, message: str, tags: dict={}):
         self._add_line(utils.irc.protocol.message(target, message, tags))
-    def notice(self, target: str, message: str, tags: dict=None):
+    def notice(self, target: str, message: str, tags: dict={}):
         self._add_line(utils.irc.protocol.notice(target, message, tags))
 
 def trailing(s: str) -> str:

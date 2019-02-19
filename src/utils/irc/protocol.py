@@ -33,10 +33,10 @@ def part(channel_name: str, reason: str=None) -> 'utils.irc.IRCParsedLine':
 def quit(reason: str=None) -> 'utils.irc.IRCParsedLine':
     return utils.irc.IRCParsedLine("QUIT", [reason] if reason else [])
 
-def message(target: str, message: str, tags: dict=None
+def message(target: str, message: str, tags: typing.Dict[str, str]={}
         ) -> 'utils.irc.IRCParsedLine':
     return utils.irc.IRCParsedLine("PRIVMSG", [target, message], tags=tags)
-def notice(target: str, message: str, tags: dict=None
+def notice(target: str, message: str, tags: typing.Dict[str, str]={}
         ) -> 'utils.irc.IRCParsedLine':
     return utils.irc.IRCParsedLine("NOTICE", [target, message], tags=tags)
 def tagmsg(target, tags: dict) -> 'utils.irc.IRCParsedLine':
@@ -81,9 +81,10 @@ def whox(mask: str, filter: str, fields: str, label: str=None
     flags = "%s%%%s%s" % (filter, fields, ","+label if label else "")
     return utils.irc.IRCParsedLine("WHO", [mask, flags])
 
-def batch_start(identifier: str, batch_type: str, tags: dict=None):
+def batch_start(identifier: str, batch_type: str, tags: typing.Dict[str, str]={}
+        ) -> 'utils.irc.IRCParsedLine':
     return utils.irc.IRCParsedLine("BATCH", ["+%s" % identifier, batch_type],
         tags=tags)
 
-def batch_end(identifier: str, tags: dict=None):
+def batch_end(identifier: str, tags: typing.Dict[str, str]={}):
     return utils.irc.IRCParsedLine("BATCH", ["-%s" % identifier], tags=tags)
