@@ -36,7 +36,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def _get_settings(self):
         key = params.get("key", None)
         key_setting = _bot.get_setting("api-key-%s" % key, {})
-        minify = _bot.get_setting("rest-api-minify", False):
+        minify = _bot.get_setting("rest-api-minify", False)
         return [key_setting, minify]
 
     def _handle(self, method):
