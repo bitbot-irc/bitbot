@@ -85,4 +85,4 @@ def batch_start(identifier: str, batch_type: str, tags: dict=None):
         tags=tags)
 
 def batch_end(identifier: str, tags: dict=None):
-    return utils.irc.IRCParsedLine("BATCH", ["+%s" % identifier], tags=tags)
+    return utils.irc.IRCParsedLine("BATCH", ["-%s" % identifier], tags=tags)
