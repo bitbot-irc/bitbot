@@ -78,11 +78,11 @@ def _tag_str(tags: dict) -> str:
 class IRCParsedLine(object):
     def __init__(self, command: str, args: typing.List[str],
             prefix: IRCHostmask = None, tags: dict = None):
-        self.tags = tags
-        self.prefix = prefix
         self.command = command
         self._args = args
         self.args = IRCArgs(args)
+        self.prefix = prefix
+        self.tags = {} if tags == None else tags
 
     def format(self) -> str:
         s = ""
