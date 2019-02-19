@@ -55,6 +55,7 @@ QUOTES = {
     "We're getting there" : "",
     "If not me, who? If not now, when?": "Hillel the Elder",
     "The truth is painful, but always more useful": "Donald Tusk",
+    "How can you govern a country that has two hundred and forty-six varieties of cheese?": "Charles de Gaulle",
 }
 
 class Module(ModuleManager.BaseModule):
