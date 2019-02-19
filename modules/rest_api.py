@@ -33,8 +33,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data.encode("utf8"))
 
-    def _get_settings(self):
-        key = params.get("key", None)
+    def _get_settings(self, key):
         key_setting = _bot.get_setting("api-key-%s" % key, {})
         minify = _bot.get_setting("rest-api-minify", False)
         return [key_setting, minify]
@@ -54,7 +53,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             hook = hooks[0]
             authenticated = hook.get_kwarg("authenticated", True)
             key = params.get("key", None)
-            key_setting, minify = _bot.trigger(self._get_settings)
+            key_setting, minify = _bot.trigger(lambda: self._get_settings(key))
             permissions = key_setting.get("permissions", [])
 
             if key_setting:
