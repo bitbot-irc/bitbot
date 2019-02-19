@@ -332,7 +332,7 @@ class IRCSendBatch(IRCBatch):
     def message(self, target: str, message: str, tags: dict=None):
         self._add_line(utils.irc.protocol.message(target, message, tags))
     def notice(self, target: str, message: str, tags: dict=None):
-        self._add_line(utls.irc.protocol.notice(target, message, tags))
+        self._add_line(utils.irc.protocol.notice(target, message, tags))
 
 def trailing(s: str) -> str:
     if s[0] == ":" or " " in s:
