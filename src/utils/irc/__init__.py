@@ -326,7 +326,13 @@ class IRCBatch(object):
 class IRCRecvBatch(IRCBatch):
     pass
 class IRCSendBatch(IRCBatch):
-    pass
+    def _add_line(self, line: IRCParsedLine):
+        line.tags["batch"] = self.id
+        self.lines.append(line)
+    def message(self, target: str, message: str, tags: dict=None):
+        self._add_line(utils.irc.protocol.message(target, message, tags))
+    def notice(self, target: str, message: str, tags: dict=None):
+        self._add_line(utls.irc.protocol.notice(target, message, tags))
 
 def trailing(s: str) -> str:
     if s[0] == ":" or " " in s:
