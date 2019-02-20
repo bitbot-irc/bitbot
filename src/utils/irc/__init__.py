@@ -116,16 +116,12 @@ def parse_line(line: str) -> IRCParsedLine:
     if line[0] == "@":
         tags_prefix, line = line[1:].split(" ", 1)
 
-        if tags_prefix[0] == "{":
-            tags_prefix = message_tag_unescape(tags_prefix)
-            tags = json.loads(tags_prefix)
-        else:
-            for tag in filter(None, tags_prefix.split(";")):
-                tag, sep, value = tag.partition("=")
-                if sep:
-                    tags[tag] = message_tag_unescape(value)
-                else:
-                    tags[tag] = None
+        for tag in filter(None, tags_prefix.split(";")):
+            tag, sep, value = tag.partition("=")
+            if sep:
+                tags[tag] = message_tag_unescape(value)
+            else:
+                tags[tag] = None
 
     line, trailing_separator, trailing_split = line.partition(" :")
 

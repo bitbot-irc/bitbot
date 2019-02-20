@@ -6,9 +6,8 @@ RE_MODES = re.compile(r"[-+]\w+")
 
 CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
     "account-notify", "extended-join", "away-notify", "userhost-in-names",
-    "draft/message-tags-0.2", "draft/message-tags-0.3", "server-time",
-    "cap-notify", "batch", "draft/labeled-response", "draft/rename",
-    "echo-message", "draft/setname"}
+    "draft/message-tags-0.2", "server-time", "cap-notify", "batch",
+    "draft/labeled-response", "draft/rename", "echo-message", "draft/setname"}
 
 LABELED_BATCH = {
     "labeled-response": "label",
