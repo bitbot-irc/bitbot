@@ -20,8 +20,7 @@ class Module(ModuleManager.BaseModule):
             key = None if len(keys_sorted) <= i else keys_sorted[i]
             event["server"].attempted_join[channel] = key
 
-        event["server"].send_join(
-            ",".join(channels_sorted), keys_sorted)
+        event["server"].send_joins(channels_sorted, keys_sorted)
 
     @utils.hook("self.join")
     def on_join(self, event):

@@ -309,6 +309,10 @@ class Server(IRCObject.Object):
     def send_join(self, channel_name: str, keys: typing.List[str]=None
             ) -> IRCLine.Line:
         return self.send(utils.irc.protocol.join(channel_name, keys))
+    def send_joins(self, channel_names: typing.List[str],
+            keys: typing.List[str]=None):
+        return self.send(utils.irc.protocol.join(",".join(channel_names),
+            keys))
     def send_part(self, channel_name: str, reason: str=None) -> IRCLine.Line:
         return self.send(utils.irc.protocol.part(channel_name, reason))
     def send_quit(self, reason: str="Leaving") -> IRCLine.Line:
