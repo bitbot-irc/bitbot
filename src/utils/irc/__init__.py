@@ -102,7 +102,7 @@ class IRCParsedLine(object):
         return s
 
 MESSAGE_TAG_ESCAPED = [r"\:", r"\s", r"\\", r"\r", r"\n"]
-MESSAGE_TAG_UNESCAPED = [";", " ", r"\\", "\r", "\n"]
+MESSAGE_TAG_UNESCAPED = [";", " ", r"\", "\r", "\n"]
 def message_tag_escape(s):
     return _multi_replace(s, MESSAGE_TAG_UNESCAPED, MESSAGE_TAG_ESCAPED)
 def message_tag_unescape(s):
