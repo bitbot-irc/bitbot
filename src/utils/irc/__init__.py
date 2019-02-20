@@ -107,7 +107,7 @@ def message_tag_escape(s):
     return _multi_replace(s, MESSAGE_TAG_UNESCAPED, MESSAGE_TAG_ESCAPED)
 def message_tag_unescape(s):
     unescaped = _multi_replace(s, MESSAGE_TAG_ESCAPED, MESSAGE_TAG_UNESCAPED)
-    return unescaped.replace(r"\", "")
+    return unescaped.replace("\\", "")
 
 def parse_line(line: str) -> IRCParsedLine:
     tags = {} # type: typing.Dict[str, typing.Any]
