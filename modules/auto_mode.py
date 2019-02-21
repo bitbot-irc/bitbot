@@ -14,8 +14,10 @@ class Module(ModuleManager.BaseModule):
     def _check_modes(self, channel, user):
         modes = self._get_modes(channel, user)
         if modes:
-            channel.send_mode("+%s" % "".join(modes),
-                [user.nickname for mode in modes])
+            current_modes = channel.get_user_status(user)
+            new_modes = modes-current_modes
+            channel.send_mode("+%s" % "".join(new_modes),
+                [user.nickname for mode in new_modes])
 
     @utils.hook("received.join")
     def on_join(self, event):
