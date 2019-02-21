@@ -480,6 +480,8 @@ class Module(ModuleManager.BaseModule):
     def pull_request_review(self, full_name, data):
         if data["review"]["state"] == "commented":
             return []
+        if not "submitted_at" in data["review"]:
+            return []
 
         number = data["pull_request"]["number"]
         action = data["action"]
