@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
         modes = self._get_modes(channel, user)
         if modes:
             current_modes = channel.get_user_status(user)
-            new_modes = modes-current_modes
+            new_modes = set(modes)-current_modes
             channel.send_mode("+%s" % "".join(new_modes),
                 [user.nickname for mode in new_modes])
 
