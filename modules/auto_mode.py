@@ -47,6 +47,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Check/sync user modes
         :require_mode: o
+        :require_access: syncmodes
         """
         self._check_channel(event["target"])
 
@@ -99,6 +100,7 @@ class Module(ModuleManager.BaseModule):
         :help: Add a user to the auto-mode list as an op
         :usage: <nickname>
         :require_mode: o
+        :require_access: autoop
         """
         self._add_mode(event, "o", "op")
     @utils.hook("received.command.removeop", min_args=1, channel_only=True)
@@ -107,6 +109,7 @@ class Module(ModuleManager.BaseModule):
         :help: Remove a user from the auto-mode list as an op
         :usage: <nickname>
         :require_mode: o
+        :require_access: autoop
         """
         self._remove_mode(event, "o", "op")
 
@@ -116,6 +119,7 @@ class Module(ModuleManager.BaseModule):
         :help: Add a user to the auto-mode list as a voice
         :usage: <nickname>
         :require_mode: o
+        :require_access: autovoice
         """
         self._add_mode(event, "v", "voice")
     @utils.hook("received.command.removevoice", min_args=1, channel_only=True)
@@ -124,5 +128,6 @@ class Module(ModuleManager.BaseModule):
         :help: Remove a user from the auto-mode list as a voice
         :usage: <nickname>
         :require_mode: o
+        :require_access: autovoice
         """
         self._remove_mode(event, "v", "voice")
