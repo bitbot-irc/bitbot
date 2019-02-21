@@ -167,6 +167,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Add/remove/modify a github webhook
         :require_mode: high
+        :require_access: github-webhook
         :permission: githuboverride
         :usage: list
         :usage: add <hook>
