@@ -439,23 +439,29 @@ class Module(ModuleManager.BaseModule):
         self._event(event, "invite", user=user, target_channel=target_channel,
             server=event["server"], target_user=target_user)
 
+    def _from_self(self, server, direction, prefix):
+        if direction == Direction.SEND:
+            if "echo-message" in server.agreed_capabilities:
+                return None
+            else:
+                return True
+        else:
+            if prefix:
+                return server.is_own_nickname(prefix.nickname)
+            else:
+                return False
+
     # we've received/sent a message
     @utils.hook("raw.received.privmsg")
     @utils.hook("raw.send.privmsg")
     def privmsg(self, event):
-        if event["direction"] == Direction.SEND:
-            from_self = True
-            if "echo-message" in event["server"].agreed_capabilities:
-                return
-        else:
-            if event["prefix"]:
-                from_self = event["server"].is_own_nickname(
-                    event["prefix"].nickname)
-            else:
-                from_self = False
+        from_self = self._from_self(event["server"], event["direction"],
+            event.get("prefix", None))
+        if from_self == None:
+            return
 
         user = None
-        if "prefix" in event:
+        if "prefix" in event and not from_self:
             user = event["server"].get_user(event["prefix"].nickname)
 
         message = event["args"][1]
@@ -510,7 +516,7 @@ class Module(ModuleManager.BaseModule):
             hook.call(user=user, **kwargs)
             user.buffer.add_message(user_nickname, message, action,
                 event["tags"], False)
-        elif not "prefix" in event:
+        elif from_self:
             # a message we've sent to a user
             user = event["server"].get_user(target)
             hook.call(user=user, **kwargs)
@@ -521,16 +527,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.received.notice")
     @utils.hook("raw.send.notice")
     def notice(self, event):
-        if event["direction"] == Direction.SEND:
-            from_self = True
-            if "echo-message" in event["server"].agreed_capabilities:
-                return
-        else:
-            if event["prefix"]:
-                from_self = event["server"].is_own_nickname(
-                    event["prefix"].nickname)
-            else:
-                from_self = False
+        from_self = self._from_self(event["server"], event["direction"],
+            event.get("prefix", None))
+        if from_self == None:
+            return
 
         message = event["args"][1]
         message_split = message.split(" ")
@@ -548,7 +548,7 @@ class Module(ModuleManager.BaseModule):
                 message_split=message_split, server=event["server"])
         else:
             user = None
-            if "prefix" in event:
+            if "prefix" in event and not from_self:
                 user = event["server"].get_user(event["prefix"].nickname)
 
             channel = None
@@ -574,7 +574,7 @@ class Module(ModuleManager.BaseModule):
                 hook.call(user=user, **kwargs)
                 user.buffer.add_notice(user_nickname, message, event["tags"],
                     False)
-            elif not "prefix" in event:
+            elif from_self:
                 # a notice we've sent to a user
                 user = event["server"].get_user(target)
                 hook.call(user=user, **kwargs)
