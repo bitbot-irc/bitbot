@@ -43,6 +43,8 @@ class Out(object):
             if line.truncated():
                 line.end_replace(STR_MORE)
                 self._text = "%s%s" % (STR_CONTINUED, line.truncated())
+            else:
+                self._text = ""
 
     def set_prefix(self, prefix):
         self.module_name = prefix
