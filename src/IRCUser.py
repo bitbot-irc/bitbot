@@ -23,6 +23,8 @@ class User(IRCObject.Object):
         self.identified_account_id = None
         self.identified_account_id_override = None
         self.away = False
+        self.away_message = None # type: typing.Optional[str]
+
         self.buffer = IRCBuffer.Buffer(bot, server)
 
     def __repr__(self) -> str:

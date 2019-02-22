@@ -51,10 +51,12 @@ def away(events, event):
     message = event["args"].get(0)
     if message:
         user.away = True
+        user.away_message = message
         events.on("received.away.on").call(user=user, server=event["server"],
             message=message)
     else:
         user.away = False
+        user.away_message = None
         events.on("received.away.off").call(user=user, server=event["server"])
 
 def chghost(event):
