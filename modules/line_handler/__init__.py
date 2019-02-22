@@ -76,7 +76,7 @@ class Module(ModuleManager.BaseModule):
     # on-join channel topic line
     @utils.hook("raw.received.332")
     def handle_332(self, event):
-        channels.handle_332(self.events, event)
+        channel.handle_332(self.events, event)
 
     # channel topic changed
     @utils.hook("raw.received.topic")
