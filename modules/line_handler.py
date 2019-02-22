@@ -1,4 +1,4 @@
-import codecs, enum, re, threading
+import codecs, enum, re
 from src import ModuleManager, utils
 
 RE_ISUPPORT_ESCAPE = re.compile(r"\\x(\d\d)", re.I)
