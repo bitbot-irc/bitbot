@@ -12,7 +12,7 @@ def topic(events, event):
     channel = event["server"].channels.get(event["args"][0])
     topic = event["args"].get(1)
     channel.set_topic(topic)
-    events.on("received.topic", channel=channel, server=event["server"],
+    events.on("received.topic").call(channel=channel, server=event["server"],
         topic=topic, user=user)
 
 def handle_333(events, event):
@@ -25,8 +25,8 @@ def handle_333(events, event):
     channel.set_topic_setter(topic_setter.nickname, topic_setter.username,
         topic_setter.hostname)
     channel.set_topic_time(topic_time)
-    events.on("received.333", channel=channel, setter=topic_setter.nickname,
-        set_at=topic_time, server=event["server"])
+    events.on("received.333").call(channel=channel,
+        setter=topic_setter.nickname, set_at=topic_time, server=event["server"])
 
 def handle_353(event):
     channel = event["server"].channels.get(event["args"][2])
@@ -81,7 +81,7 @@ def join(events, event):
 
         channel.add_user(user)
         user.join_channel(channel)
-        events.on("received.join", channel=channel, user=user,
+        events.on("received.join").call(channel=channel, user=user,
             server=event["server"], account=account, realname=realname)
     else:
         channel = event["server"].channels.add(channel_name)
@@ -98,8 +98,8 @@ def part(events, event):
     if not event["server"].is_own_nickname(event["prefix"].nickname):
         user = event["server"].get_user(event["prefix"].nickname)
 
-        events.on("received.part", channel=channel, reason=reason,  user=user,
-            server=event["server"])
+        events.on("received.part").call(channel=channel, reason=reason,
+            user=user, server=event["server"])
 
         channel.remove_user(user)
         user.part_channel(channel)
