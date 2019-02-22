@@ -73,3 +73,5 @@ class User(IRCObject.Object):
         self.server.send_notice(self.nickname, text, tags=tags)
     def send_ctcp_response(self, command: str, args: str):
         self.send_notice("\x01%s %s\x01" % (command, args))
+    def send_tagmsg(self, tags: dict):
+        self.server.send_tagmsg(self.nickname, tags)

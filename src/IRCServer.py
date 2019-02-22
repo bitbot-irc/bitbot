@@ -326,7 +326,7 @@ class Server(IRCObject.Object):
             ) -> IRCLine.Line:
         return self.send(utils.irc.protocol.notice(target, message, tags))
 
-    def send_tagmsg(self, target, tags: dict):
+    def send_tagmsg(self, target: str, tags: dict):
         return self.send(utils.irc.protocol.tagmsg(target, tags))
 
     def send_mode(self, target: str, mode: str=None, args: typing.List[str]=None

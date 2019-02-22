@@ -131,6 +131,9 @@ class Channel(IRCObject.Object):
         self.server.send_message(self.name, text, tags=tags)
     def send_notice(self, text: str, tags: dict={}):
         self.server.send_notice(self.name, text, tags=tags)
+    def send_tagmsg(self, tags: dict):
+        self.server.send_tagmsg(self.name, tags)
+
     def send_mode(self, mode: str=None, target: typing.List[str]=None):
         self.server.send_mode(self.name, mode, target)
     def send_kick(self, target: str, reason: str=None):
