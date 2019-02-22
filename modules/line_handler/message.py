@@ -161,7 +161,7 @@ def tagmsg(events, event):
 
     if channel:
         hook.call(user=user, channel=channel, **kwargs)
-    elif event["server"].is_own_nickname(taget):
+    elif event["server"].is_own_nickname(target):
         hook.call(user=user, **kwargs)
     elif from_self:
         user = event["server"].get_user(target)
