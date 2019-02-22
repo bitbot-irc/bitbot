@@ -14,4 +14,4 @@ class Module(ModuleManager.BaseModule):
             target = event.get("channel", event["user"])
             msgid = event["tags"][MSGID_TAG]
             tags = {DELIVERED_TAG: msgid, READ_TAG: msgid}
-            event["server"].send_tagmsg(target.name, tags)
+            target.send_tagmsg(tags)
