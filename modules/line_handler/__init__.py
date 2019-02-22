@@ -81,7 +81,7 @@ class Module(ModuleManager.BaseModule):
     # channel topic changed
     @utils.hook("raw.received.topic")
     def topic(self, event):
-        channels.topic(self.events, event)
+        channel.topic(self.events, event)
 
     # on-join channel topic set by/at
     @utils.hook("raw.received.333")
