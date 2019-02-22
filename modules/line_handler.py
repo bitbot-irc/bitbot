@@ -584,16 +584,33 @@ class Module(ModuleManager.BaseModule):
     # IRCv3 TAGMSG, used to send tags without any other information
     @utils.hook("raw.received.tagmsg")
     def tagmsg(self, event):
-        user = event["server"].get_user(event["prefix"].nickname)
-        target = event["args"][0]
+        from_self = self._from_self(event["server"], event["direction"],
+            event.get("prefix", None))
+        if from_self == None:
+            return
 
+        user = None
+        if "prefix" in event and not from_self:
+            user = event["server"].get_user(event["prefix"].nickname)
+
+        target = event["args"][0]
+        channel = None
         if target[0] in event["server"].channel_types:
             channel = event["server"].channels.get(target)
-            self._event(event, "tagmsg.channel", channel=channel, user=user,
-                tags=event["tags"], server=event["server"])
-        elif event["server"].is_own_nickname(target):
-            self._event(event, "tagmsg.private", user=user, tags=event["tags"],
-                server=event["server"])
+
+        direction = "send" if from_self else "received"
+        context = "channel" if channel else "private"
+        hook = self.events.on(direction).on("tagmsg").on(context)
+
+        kwargs = {"server": event["server"], "tags": event["tags"]}
+
+        if channel:
+            hook.call(user=user, channel=channel, **kwargs)
+        elif event["server"].is_own_nickname(taget):
+            hook.call(user=user, **kwargs)
+        elif from_self:
+            user = event["server"].get_user(target)
+            hook.call(user=user, **kwargs)
 
     # IRCv3 AWAY, used to notify us that a client we can see has changed /away
     @utils.hook("raw.received.away")
