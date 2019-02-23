@@ -93,11 +93,12 @@ class IRCParsedLine(object):
         if self.prefix:
             s += "%s " % self.prefix
 
-        s += self.command
+        s += self.command.upper()
 
         if self.args:
-            for i, arg in enumerate(self._args):
-                s += " %s" % trailing(arg)
+            if len(self._args) > 1:
+                s += " %s" % " ".join(self._args[:-1])
+            s += " %s" % trailing(self._args[-1])
 
         return s
 
