@@ -120,15 +120,14 @@ class Socket(IRCObject.Object):
     def send(self, line: IRCLine.Line):
         self._queued_lines.append(line)
 
-    def _send(self) -> typing.List[str]:
-        decoded_sent = []
+    def _send(self) -> typing.List[IRCLine.ParsedLine]:
+        sent_lines = []
         throttle_space = self.throttle_space()
         if throttle_space:
             to_buffer = self._queued_lines[:throttle_space]
             self._queued_lines = self._queued_lines[throttle_space:]
             for line in to_buffer:
-                decoded_data = line.decoded_data()
-                decoded_sent.append(decoded_data)
+                sent_lines.append(line.parsed_line)
 
                 self._write_buffer += line.data()
                 self._buffered_lines.append(line)
@@ -147,7 +146,7 @@ class Socket(IRCObject.Object):
         self._recent_sends.append(now)
         self.last_send = now
 
-        return decoded_sent
+        return sent_lines
 
     def waiting_send(self) -> bool:
         return bool(len(self._write_buffer)) or bool(len(self._queued_lines))

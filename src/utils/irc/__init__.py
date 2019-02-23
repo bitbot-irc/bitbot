@@ -1,5 +1,5 @@
 import json, string, re, typing
-from src import utils
+from src import IRCLine, utils
 from . import protocol
 
 ASCII_UPPER = string.ascii_uppercase
@@ -30,77 +30,10 @@ def lower(case_mapping: str, s: str) -> str:
 def equals(case_mapping: str, s1: str, s2: str) -> bool:
     return lower(case_mapping, s1) == lower(case_mapping, s2)
 
-class IRCHostmask(object):
-    def __init__(self, nickname: str, username: str, hostname: str,
-            hostmask: str):
-        self.nickname = nickname
-        self.username = username
-        self.hostname = hostname
-        self.hostmask = hostmask
-    def __repr__(self):
-        return "IRCHostmask(%s)" % self.__str__()
-    def __str__(self):
-        return self.hostmask
-
-def seperate_hostmask(hostmask: str) -> IRCHostmask:
+def seperate_hostmask(hostmask: str) -> IRCLine.Hostmask:
     nickname, _, username = hostmask.partition("!")
     username, _, hostname = username.partition("@")
-    return IRCHostmask(nickname, username, hostname, hostmask)
-
-class IRCArgs(object):
-    def __init__(self, args: typing.List[str]):
-        self._args = args
-
-    def get(self, index: int) -> typing.Optional[str]:
-        if len(self._args) > index:
-            return self._args[index]
-        return None
-
-    def __repr__(self):
-        return "IRCArgs(%s)" % self._args
-    def __len__(self) -> int:
-        return len(self._args)
-    def __getitem__(self, index) -> str:
-        return self._args[index]
-
-def _tag_str(tags: typing.Dict[str, str]) -> str:
-    tag_str = ""
-    for tag, value in tags.items():
-        if tag_str:
-            tag_str += ","
-        tag_str += tag
-        if value:
-            tag_str += "=%s" % value
-    if tag_str:
-        tag_str = "@%s" % tag_str
-    return tag_str
-
-class IRCParsedLine(object):
-    def __init__(self, command: str, args: typing.List[str],
-            prefix: IRCHostmask=None,
-            tags: typing.Dict[str, str]={}):
-        self.command = command
-        self._args = args
-        self.args = IRCArgs(args)
-        self.prefix = prefix
-        self.tags = {} if tags == None else tags
-
-    def format(self) -> str:
-        s = ""
-        if self.tags:
-            s += "%s " % _tag_str(self.tags)
-
-        if self.prefix:
-            s += "%s " % self.prefix
-
-        s += self.command.upper()
-
-        if self.args:
-            if len(self._args) > 1:
-                s += " %s" % " ".join(self._args[:-1])
-            s += " %s" % trailing(self._args[-1])
-
-        return s
+    return IRCLine.Hostmask(nickname, username, hostname, hostmask)
 
 MESSAGE_TAG_ESCAPED = [r"\:", r"\s", r"\\", r"\r", r"\n"]
 MESSAGE_TAG_UNESCAPED = [";", " ", "\\", "\r", "\n"]
@@ -110,9 +43,9 @@ def message_tag_unescape(s):
     unescaped = _multi_replace(s, MESSAGE_TAG_ESCAPED, MESSAGE_TAG_UNESCAPED)
     return unescaped.replace("\\", "")
 
-def parse_line(line: str) -> IRCParsedLine:
+def parse_line(line: str) -> IRCLine.ParsedLine:
     tags = {} # type: typing.Dict[str, typing.Any]
-    prefix = None # type: typing.Optional[IRCHostmask]
+    prefix = None # type: typing.Optional[IRCLine.Hostmask]
     command = None
 
     if line[0] == "@":
@@ -144,7 +77,7 @@ def parse_line(line: str) -> IRCParsedLine:
     if not trailing == None:
         args.append(typing.cast(str, trailing))
 
-    return IRCParsedLine(command, args, prefix, tags)
+    return IRCLine.ParsedLine(command, args, prefix, tags)
 
 
 REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % utils.consts.COLOR)
@@ -322,20 +255,14 @@ class IRCBatch(object):
         self.id = identifier
         self.type = batch_type
         self.tags = tags
-        self.lines = [] # type: typing.List[IRCParsedLine]
+        self.lines = [] # type: typing.List[IRCLine.ParsedLine]
 class IRCRecvBatch(IRCBatch):
     pass
 class IRCSendBatch(IRCBatch):
-    def _add_line(self, line: IRCParsedLine):
+    def _add_line(self, line: IRCLine.ParsedLine):
         line.tags["batch"] = self.id
         self.lines.append(line)
     def message(self, target: str, message: str, tags: dict={}):
         self._add_line(utils.irc.protocol.message(target, message, tags))
     def notice(self, target: str, message: str, tags: dict={}):
         self._add_line(utils.irc.protocol.notice(target, message, tags))
-
-def trailing(s: str) -> str:
-    if s[0] == ":" or " " in s:
-        return ":%s" % s
-    else:
-        return s

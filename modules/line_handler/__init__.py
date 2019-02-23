@@ -33,10 +33,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("raw.send")
     def handle_send(self, event):
-        line = utils.irc.parse_line(event["line"])
-        self.events.on("raw.send").on(line.command).call_unsafe(
-            args=line.args, tags=line.tags, server=event["server"],
-            direction=utils.Direction.SEND)
+        self.events.on("raw.send").on(event["line"].command).call_unsafe(
+            args=event["line"].args, tags=event["line"].tags,
+            server=event["server"], direction=utils.Direction.SEND)
 
     # ping from the server
     @utils.hook("raw.received.ping")
