@@ -54,7 +54,7 @@ def privmsg(events, event):
         user.identified_account_id = event["server"].get_user(
             event["tags"]["account"]).get_id()
 
-    kwargs = {"message": message, "message_split": message.split(),
+    kwargs = {"message": message, "message_split": message.split(" "),
         "server": event["server"], "tags": event["tags"],
         "action": action}
 
@@ -88,7 +88,6 @@ def notice(events, event):
         return
 
     message = event["args"][1]
-    message_split = message.split(" ")
     target = event["args"][0]
 
     if "prefix" in event and (
@@ -100,7 +99,7 @@ def notice(events, event):
             event["server"].name = event["prefix"].hostmask
 
         events.on("received.server-notice").call(message=message,
-            message_split=message_split, server=event["server"])
+            message_split=message.split(" "), server=event["server"])
     else:
         user = None
         if "prefix" in event and not from_self:
@@ -118,7 +117,7 @@ def notice(events, event):
         if user:
             user_nickname = None if from_self else user.nickname
 
-        kwargs = {"message": message, "message_split": message_split,
+        kwargs = {"message": message, "message_split": message.split(" "),
             "server": event["server"], "tags": event["tags"]}
 
         if channel:
