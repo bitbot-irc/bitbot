@@ -17,8 +17,10 @@ class IRCArgs(object):
         return "IRCArgs(%s)" % self._args
     def __len__(self) -> int:
         return len(self._args)
-    def __getitem__(self, index) -> str:
+    def __getitem__(self, index: int) -> str:
         return self._args[index]
+    def __setitem__(self, index: int, value: str):
+        self._args[index] = value
 
 class Hostmask(object):
     def __init__(self, nickname: str, username: str, hostname: str,
