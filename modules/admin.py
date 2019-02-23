@@ -18,7 +18,8 @@ class Module(ModuleManager.BaseModule):
         :usage: <raw line>
         :permission: raw
         """
-        event["server"].send(event["args"])
+        line = utils.irc.parse_line(event["args"])
+        event["server"].send(line)
 
     @utils.hook("received.command.part")
     def part(self, event):
