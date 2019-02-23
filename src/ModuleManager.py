@@ -203,7 +203,13 @@ class ModuleManager(object):
 
         module = loaded_module.module
         del loaded_module.module
+
         del sys.modules[loaded_module.import_name]
+        namespace = "%s." % loaded_module.import_name
+        for import_name in list(sys.modules.keys()):
+            if import_name.startswith(namespace):
+                del sys.modules[import_name]
+
         references = sys.getrefcount(module)
         referrers = gc.get_referrers(module)
         del module

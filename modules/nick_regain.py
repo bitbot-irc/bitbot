@@ -9,10 +9,10 @@ class Module(ModuleManager.BaseModule):
             else:
                 self.timers.add("ison-check", 30, server=server)
 
-    @utils.hook("received.numeric.376")
+    @utils.hook("received.376")
     def end_of_motd(self, event):
         self._done_connecting(event["server"])
-    @utils.hook("received.numeric.422")
+    @utils.hook("received.422")
     def no_motd(self, event):
         self._done_connecting(event["server"])
 
@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
             if "MONITOR" in event["server"].isupport:
                 event["server"].send("MONITOR - %s " % target_nick)
 
-    @utils.hook("received.numeric.731")
+    @utils.hook("received.731")
     def mon_offline(self, event):
         target_nick = event["server"].connection_params.nickname
         nicks = event["args"][1].split(",")
@@ -39,7 +39,7 @@ class Module(ModuleManager.BaseModule):
             event["server"].send("ISON %s" % target_nick)
             event["timer"].redo()
 
-    @utils.hook("received.numeric.303")
+    @utils.hook("received.303")
     def ison_response(self, event):
         target_nick = event["server"].connection_params.nickname
         if not event["args"][1] and not event["server"].irc_equals(

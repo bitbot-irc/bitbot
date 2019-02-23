@@ -89,10 +89,16 @@ class Module(ModuleManager.BaseModule):
         self.print_line(event, "%s changed nickname to %s" % (
             event["old_nickname"], event["new_nickname"]))
 
+    def _quit(self, event, nickname, reason):
+        self.print_line(event, "%s quit%s" % (nickname,
+            "" if not reason else " (%s)" % reason))
+
     @utils.hook("received.quit")
     def on_quit(self, event):
-        self.print_line(event, "%s quit%s" % (event["user"].nickname,
-            "" if not event["reason"] else " (%s)" % event["reason"]))
+        self._quit(event, event["user"].nickname, event["reason"])
+    @utils.hook("send.quit")
+    def send_quit(self, event):
+        self._quit(event, event["server"].nickname, event["reason"])
 
     def _on_kick(self, event, nickname):
         self.print_line(event, "%s kicked %s from %s%s" % (
@@ -112,7 +118,7 @@ class Module(ModuleManager.BaseModule):
     def on_topic(self, event):
         self._on_topic(event, event["user"].nickname, "changed",
             event["topic"], event["channel"])
-    @utils.hook("received.numeric.333")
+    @utils.hook("received.333")
     def on_333(self, event):
         self._on_topic(event, event["setter"], "set",
             event["channel"].topic, event["channel"])
@@ -136,7 +142,7 @@ class Module(ModuleManager.BaseModule):
         self.print_line(event, "%s was renamed to %s" % (
             event["old_name"], event["new_name"]))
 
-    @utils.hook("received.numeric.376")
+    @utils.hook("received.376")
     def motd_end(self, event):
         for line in event["server"].motd_lines:
             self.print_line(event, "[MOTD] %s" % line)

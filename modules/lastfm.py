@@ -31,7 +31,10 @@ class Module(ModuleManager.BaseModule):
         if page:
             if "recenttracks" in page.data and len(page.data["recenttracks"
                     ]["track"]):
-                now_playing = page.data["recenttracks"]["track"][0]
+                now_playing = page.data["recenttracks"]["track"]
+                if type(now_playing) == list:
+                    now_playing = now_playing[0]
+
                 track_name = now_playing["name"]
                 artist = now_playing["artist"]["#text"]
 

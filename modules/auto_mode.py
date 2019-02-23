@@ -14,8 +14,10 @@ class Module(ModuleManager.BaseModule):
     def _check_modes(self, channel, user):
         modes = self._get_modes(channel, user)
         if modes:
-            channel.send_mode("+%s" % "".join(modes),
-                " ".join([user.nickname for mode in modes]))
+            current_modes = channel.get_user_status(user)
+            new_modes = set(modes)-current_modes
+            channel.send_mode("+%s" % "".join(new_modes),
+                [user.nickname for mode in new_modes])
 
     @utils.hook("received.join")
     def on_join(self, event):
@@ -41,12 +43,13 @@ class Module(ModuleManager.BaseModule):
             modes = [item[0] for item in chunk]
             nicknames = [item[1] for item in chunk]
             channel.send_mode(
-                "+%s" % "".join(modes), " ".join(nicknames))
+                "+%s" % "".join(modes), nicknames)
     @utils.hook("received.command.syncmodes", channel_only=True)
     def sync_modes(self, event):
         """
         :help: Check/sync user modes
         :require_mode: o
+        :require_access: syncmodes
         """
         self._check_channel(event["target"])
 
@@ -99,6 +102,7 @@ class Module(ModuleManager.BaseModule):
         :help: Add a user to the auto-mode list as an op
         :usage: <nickname>
         :require_mode: o
+        :require_access: autoop
         """
         self._add_mode(event, "o", "op")
     @utils.hook("received.command.removeop", min_args=1, channel_only=True)
@@ -107,6 +111,7 @@ class Module(ModuleManager.BaseModule):
         :help: Remove a user from the auto-mode list as an op
         :usage: <nickname>
         :require_mode: o
+        :require_access: autoop
         """
         self._remove_mode(event, "o", "op")
 
@@ -116,6 +121,7 @@ class Module(ModuleManager.BaseModule):
         :help: Add a user to the auto-mode list as a voice
         :usage: <nickname>
         :require_mode: o
+        :require_access: autovoice
         """
         self._add_mode(event, "v", "voice")
     @utils.hook("received.command.removevoice", min_args=1, channel_only=True)
@@ -124,5 +130,6 @@ class Module(ModuleManager.BaseModule):
         :help: Remove a user from the auto-mode list as a voice
         :usage: <nickname>
         :require_mode: o
+        :require_access: autovoice
         """
         self._remove_mode(event, "v", "voice")

@@ -1,5 +1,6 @@
 import json, string, re, typing
 from src import utils
+from . import protocol
 
 ASCII_UPPER = string.ascii_uppercase
 ASCII_LOWER = string.ascii_lowercase
@@ -62,22 +63,51 @@ class IRCArgs(object):
     def __getitem__(self, index) -> str:
         return self._args[index]
 
+def _tag_str(tags: typing.Dict[str, str]) -> str:
+    tag_str = ""
+    for tag, value in tags.items():
+        if tag_str:
+            tag_str += ","
+        tag_str += tag
+        if value:
+            tag_str += "=%s" % value
+    if tag_str:
+        tag_str = "@%s" % tag_str
+    return tag_str
 
 class IRCParsedLine(object):
-    def __init__(self, tags: dict, prefix: typing.Optional[IRCHostmask],
-            command: str, args: IRCArgs, has_arbitrary: bool):
-        self.tags = tags
-        self.prefix = prefix
+    def __init__(self, command: str, args: typing.List[str],
+            prefix: IRCHostmask=None,
+            tags: typing.Dict[str, str]={}):
         self.command = command
-        self.args = args
-        self.has_arbitrary = has_arbitrary
+        self._args = args
+        self.args = IRCArgs(args)
+        self.prefix = prefix
+        self.tags = {} if tags == None else tags
+
+    def format(self) -> str:
+        s = ""
+        if self.tags:
+            s += "%s " % _tag_str(self.tags)
+
+        if self.prefix:
+            s += "%s " % self.prefix
+
+        s += self.command
+
+        if self.args:
+            for i, arg in enumerate(self._args):
+                s += " %s" % trailing(arg)
+
+        return s
 
 MESSAGE_TAG_ESCAPED = [r"\:", r"\s", r"\\", r"\r", r"\n"]
 MESSAGE_TAG_UNESCAPED = [";", " ", "\\", "\r", "\n"]
 def message_tag_escape(s):
     return _multi_replace(s, MESSAGE_TAG_UNESCAPED, MESSAGE_TAG_ESCAPED)
 def message_tag_unescape(s):
-    return _multi_replace(s, MESSAGE_TAG_ESCAPED, MESSAGE_TAG_UNESCAPED)
+    unescaped = _multi_replace(s, MESSAGE_TAG_ESCAPED, MESSAGE_TAG_UNESCAPED)
+    return unescaped.replace("\\", "")
 
 def parse_line(line: str) -> IRCParsedLine:
     tags = {} # type: typing.Dict[str, typing.Any]
@@ -87,22 +117,18 @@ def parse_line(line: str) -> IRCParsedLine:
     if line[0] == "@":
         tags_prefix, line = line[1:].split(" ", 1)
 
-        if tags_prefix[0] == "{":
-            tags_prefix = message_tag_unescape(tags_prefix)
-            tags = json.loads(tags_prefix)
-        else:
-            for tag in filter(None, tags_prefix.split(";")):
-                tag, sep, value = tag.partition("=")
-                if sep:
-                    tags[tag] = message_tag_unescape(value)
-                else:
-                    tags[tag] = None
+        for tag in filter(None, tags_prefix.split(";")):
+            tag, sep, value = tag.partition("=")
+            if sep:
+                tags[tag] = message_tag_unescape(value)
+            else:
+                tags[tag] = None
 
-    line, arb_sep, arbitrary_split = line.partition(" :")
-    has_arbitrary = bool(arb_sep)
-    arbitrary = None # type: typing.Optional[str]
-    if has_arbitrary:
-        arbitrary = arbitrary_split
+    line, trailing_separator, trailing_split = line.partition(" :")
+
+    trailing = None # type: typing.Optional[str]
+    if trailing_separator:
+        trailing = trailing_split
 
     if line[0] == ":":
         prefix_str, line = line[1:].split(" ", 1)
@@ -114,10 +140,10 @@ def parse_line(line: str) -> IRCParsedLine:
         # this is so that `args` is empty if `line` is empty
         args = line.split(" ")
 
-    if not arbitrary == None:
-        args.append(typing.cast(str, arbitrary))
+    if not trailing == None:
+        args.append(typing.cast(str, trailing))
 
-    return IRCParsedLine(tags, prefix, command, IRCArgs(args), has_arbitrary)
+    return IRCParsedLine(command, args, prefix, tags)
 
 
 REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % utils.consts.COLOR)
@@ -290,11 +316,22 @@ def parse_ctcp(s: str) -> typing.Optional[CTCPMessage]:
     return None
 
 class IRCBatch(object):
-    def __init__(self, identifier: str, batch_type: str, tags: dict):
+    def __init__(self, identifier: str, batch_type: str, tags:
+            typing.Dict[str, str]={}):
         self.id = identifier
         self.type = batch_type
         self.tags = tags
         self.lines = [] # type: typing.List[IRCParsedLine]
+class IRCRecvBatch(IRCBatch):
+    pass
+class IRCSendBatch(IRCBatch):
+    def _add_line(self, line: IRCParsedLine):
+        line.tags["batch"] = self.id
+        self.lines.append(line)
+    def message(self, target: str, message: str, tags: dict={}):
+        self._add_line(utils.irc.protocol.message(target, message, tags))
+    def notice(self, target: str, message: str, tags: dict={}):
+        self._add_line(utils.irc.protocol.notice(target, message, tags))
 
 def trailing(s: str) -> str:
     if s[0] == ":" or " " in s:

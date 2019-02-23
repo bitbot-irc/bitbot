@@ -1,4 +1,5 @@
-import logging, logging.handlers, os, queue, sys, time, typing
+import datetime, logging, logging.handlers, os, queue, sys, time, typing
+from src import utils
 
 LEVELS = {
     "trace": logging.DEBUG-1,
@@ -10,18 +11,9 @@ LEVELS = {
 }
 
 class BitBotFormatter(logging.Formatter):
-    converter = time.gmtime
     def formatTime(self, record, datefmt=None):
-        ct = self.converter(record.created)
-        if datefmt:
-            if "%f" in datefmt:
-                msec = "%03d" % record.msecs
-                datefmt = datefmt.replace("%f", msec)
-            s = time.strftime(datefmt, ct)
-        else:
-            t = time.strftime("%Y-%m-%d %H:%M:%S", ct)
-            s = "%s.%03d" % (t, record.msecs)
-        return s
+        datetime_obj = datetime.datetime.fromtimestamp(record.created)
+        return utils.iso8601_format(datetime_obj)
 
 class Log(object):
     def __init__(self, level: str, location: str):

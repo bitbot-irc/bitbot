@@ -1,7 +1,7 @@
 from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.numeric.001", priority=EventManager.PRIORITY_URGENT)
+    @utils.hook("received.001", priority=EventManager.PRIORITY_URGENT)
     def on_connect(self, event):
         commands = event["server"].get_setting("perform", [])
         for i, command in enumerate(commands):
