@@ -127,18 +127,21 @@ class Channel(IRCObject.Object):
         return self.bot.database.user_channel_settings.find_all_by_setting(
             self.id, setting, default)
 
-    def send_message(self, text: str, prefix: str=None, tags: dict={}):
-        self.server.send_message(self.name, text, prefix=prefix, tags=tags)
-    def send_notice(self, text: str, prefix: str=None, tags: dict={}):
-        self.server.send_notice(self.name, text, prefix=prefix, tags=tags)
-    def send_mode(self, mode: str=None, target: str=None):
+    def send_message(self, text: str, tags: dict={}):
+        self.server.send_message(self.name, text, tags=tags)
+    def send_notice(self, text: str, tags: dict={}):
+        self.server.send_notice(self.name, text, tags=tags)
+    def send_tagmsg(self, tags: dict):
+        self.server.send_tagmsg(self.name, tags)
+
+    def send_mode(self, mode: str=None, target: typing.List[str]=None):
         self.server.send_mode(self.name, mode, target)
     def send_kick(self, target: str, reason: str=None):
         self.server.send_kick(self.name, target, reason)
     def send_ban(self, hostmask: str):
-        self.server.send_mode(self.name, "+b", hostmask)
+        self.server.send_mode(self.name, "+b", [hostmask])
     def send_unban(self, hostmask: str):
-        self.server.send_mode(self.name, "-b", hostmask)
+        self.server.send_mode(self.name, "-b", [hostmask])
     def send_topic(self, topic: str):
         self.server.send_topic(self.name, topic)
     def send_part(self, reason: str=None):

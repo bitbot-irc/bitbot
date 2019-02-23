@@ -23,6 +23,8 @@ class User(IRCObject.Object):
         self.identified_account_id = None
         self.identified_account_id_override = None
         self.away = False
+        self.away_message = None # type: typing.Optional[str]
+
         self.buffer = IRCBuffer.Buffer(bot, server)
 
     def __repr__(self) -> str:
@@ -65,10 +67,11 @@ class User(IRCObject.Object):
         return self.bot.database.user_channel_settings.find_by_setting(
             self.get_id(), setting, default)
 
-    def send_message(self, message: str, prefix: str=None, tags: dict={}):
-        self.server.send_message(self.nickname, message, prefix=prefix,
-            tags=tags)
-    def send_notice(self, text: str, prefix: str=None, tags: dict={}):
-        self.server.send_notice(self.nickname, text, prefix=prefix, tags=tags)
+    def send_message(self, message: str, tags: dict={}):
+        self.server.send_message(self.nickname, message, tags=tags)
+    def send_notice(self, text: str, tags: dict={}):
+        self.server.send_notice(self.nickname, text, tags=tags)
     def send_ctcp_response(self, command: str, args: str):
         self.send_notice("\x01%s %s\x01" % (command, args))
+    def send_tagmsg(self, tags: dict):
+        self.server.send_tagmsg(self.nickname, tags)

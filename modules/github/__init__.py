@@ -43,7 +43,7 @@ EVENT_CATEGORIES = {
         "issues", "issue_comment"
     ],
     "repo": [
-        "create", # a repository, branch or tage has been created
+        "create", # a repository, branch or tag has been created
         "delete", # same as above but deleted
         "release",
         "fork"
@@ -129,7 +129,7 @@ class Module(ModuleManager.BaseModule):
         url = self._short_url(page.data["html_url"])
 
         event["stdout"].write(
-            "(%s/%s pull#%s, %s) [%s/%s] %s→%s - %s %s" % (
+            "(%s/%s pull#%s, %s) [%s/%s] %s → %s - %s %s" % (
             username, repository, number, page.data["state"],
             added, removed, repo_from, repo_to, page.data["title"], url))
 
@@ -169,6 +169,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Add/remove/modify a github webhook
         :require_mode: high
+        :require_access: github-webhook
         :permission: githuboverride
         :usage: list
         :usage: add <hook>
@@ -382,7 +383,7 @@ class Module(ModuleManager.BaseModule):
             return url
 
     def _iso8601(self, s):
-        return datetime.datetime.strptime(s, utils.ISO8601_FORMAT)
+        return datetime.datetime.strptime(s, utils.ISO8601_PARSE)
 
     def ping(self, data):
         return ["Received new webhook"]
@@ -483,6 +484,8 @@ class Module(ModuleManager.BaseModule):
 
     def pull_request_review(self, full_name, data):
         if data["review"]["state"] == "commented":
+            return []
+        if not "submitted_at" in data["review"]:
             return []
 
         number = data["pull_request"]["number"]

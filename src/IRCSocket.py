@@ -122,8 +122,8 @@ class Socket(IRCObject.Object):
 
     def _send(self) -> typing.List[str]:
         decoded_sent = []
-        if not len(self._write_buffer):
-            throttle_space = self.throttle_space()
+        throttle_space = self.throttle_space()
+        if throttle_space:
             to_buffer = self._queued_lines[:throttle_space]
             self._queued_lines = self._queued_lines[throttle_space:]
             for line in to_buffer:

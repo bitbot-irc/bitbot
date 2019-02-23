@@ -1,7 +1,7 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.numeric.001")
+    @utils.hook("received.001")
     def on_connect(self, event):
         channels = event["server"].get_setting("autojoin", [])
         if not channels:
@@ -20,8 +20,7 @@ class Module(ModuleManager.BaseModule):
             key = None if len(keys_sorted) <= i else keys_sorted[i]
             event["server"].attempted_join[channel] = key
 
-        event["server"].send_join(
-            ",".join(channels_sorted), ",".join(keys_sorted))
+        event["server"].send_joins(channels_sorted, keys_sorted)
 
     @utils.hook("self.join")
     def on_join(self, event):
