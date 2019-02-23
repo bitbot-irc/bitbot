@@ -93,7 +93,7 @@ class IRCParsedLine(object):
         if self.prefix:
             s += "%s " % self.prefix
 
-        s += self.command
+        s += self.command.upper()
 
         if self.args:
             if len(self._args) > 1:
