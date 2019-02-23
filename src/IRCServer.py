@@ -238,13 +238,10 @@ class Server(IRCObject.Object):
         return lines
 
     def send(self, line_parsed: IRCLine.ParsedLine):
-        line = line_parsed.format()
-        results = self.events.on("preprocess.send").call_unsafe(
-            server=self, line=line)
-        results = list(filter(None, results))
-        if results:
-            line = results[0]
+        self.events.on("preprocess.send").on(line_parsed.command
+            ).call_unsafe(server=self, line=line_parsed)
 
+        line = line_parsed.format()
         line_stripped = line.split("\n", 1)[0].strip("\r")
         line_obj = IRCLine.Line(datetime.datetime.utcnow(), self.hostmask(),
             line_parsed)
