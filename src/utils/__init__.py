@@ -199,16 +199,3 @@ def is_ip(s: str) -> bool:
     except ValueError:
         return False
     return True
-
-def encode_truncate(s: str, encoding: str, byte_max: int
-        ) -> typing.Tuple[bytes, str]:
-    encoded = b""
-    truncated = ""
-    for i, character in enumerate(s):
-        encoded_character = character.encode(encoding)
-        if len(encoded + encoded_character) > byte_max:
-            truncated = s[i:]
-            break
-        else:
-            encoded += encoded_character
-    return encoded, truncated

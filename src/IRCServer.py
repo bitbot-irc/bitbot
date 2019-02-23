@@ -29,7 +29,7 @@ class Server(IRCObject.Object):
         self.agreed_capabilities = set([]) # type: typing.Set[str]
         self.requested_capabilities = [] # type: typing.List[str]
         self.server_capabilities = {} # type: typing.Dict[str, str]
-        self.batches = {} # type: typing.Dict[str, utils.irc.IRCParsedLine]
+        self.batches = {} # type: typing.Dict[str, IRCLine.ParsedLine]
         self.cap_started = False
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
@@ -237,23 +237,21 @@ class Server(IRCObject.Object):
             self.set_setting("last-read", utils.iso8601_format(now))
         return lines
 
-    def send(self, line_parsed: utils.irc.IRCParsedLine):
+    def send(self, line_parsed: IRCLine.ParsedLine):
+        self.events.on("preprocess.send").on(line_parsed.command
+            ).call_unsafe(server=self, line=line_parsed)
+
         line = line_parsed.format()
-        results = self.events.on("preprocess.send").call_unsafe(
-            server=self, line=line)
-        for result in results:
-            if result:
-                line = result
-                break
         line_stripped = line.split("\n", 1)[0].strip("\r")
-        line_obj = IRCLine.Line(self, datetime.datetime.utcnow(), line_stripped)
+        line_obj = IRCLine.Line(datetime.datetime.utcnow(), self.hostmask(),
+            line_parsed)
         self.socket.send(line_obj)
         return line_obj
 
     def _send(self):
         lines = self.socket._send()
         for line in lines:
-            self.bot.log.debug("%s (raw send) | %s", [str(self), line])
+            self.bot.log.debug("%s (raw send) | %s", [str(self), line.format()])
             self.events.on("raw.send").call_unsafe(server=self, line=line)
 
     def send_user(self, username: str, realname: str) -> IRCLine.Line:

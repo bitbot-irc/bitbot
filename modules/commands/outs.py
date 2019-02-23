@@ -40,8 +40,8 @@ class Out(object):
             else:
                 raise ValueError("Unknown command methd '%s'" % method)
 
+            line.truncate_marker = STR_MORE
             if line.truncated():
-                line.end_replace(STR_MORE)
                 self._text = "%s%s" % (STR_CONTINUED, line.truncated())
             else:
                 self._text = ""
