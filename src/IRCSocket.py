@@ -26,8 +26,8 @@ class Socket(IRCObject.Object):
         self.connected = False
 
         self._write_buffer = b""
-        self._queued_lines = [] # type: typing.List[IRCLine.Line]
-        self._buffered_lines = [] # type: typing.List[IRCLine.Line]
+        self._queued_lines = [] # type: typing.List[IRCLine.SentLine]
+        self._buffered_lines = [] # type: typing.List[IRCLine.SentLine]
         self._write_throttling = False
         self._read_buffer = b""
         self._recent_sends = [] # type: typing.List[float]
@@ -117,7 +117,7 @@ class Socket(IRCObject.Object):
         self.last_read = time.monotonic()
         return decoded_lines
 
-    def send(self, line: IRCLine.Line):
+    def send(self, line: IRCLine.SentLine):
         self._queued_lines.append(line)
 
     def _send(self) -> typing.List[IRCLine.ParsedLine]:

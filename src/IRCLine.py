@@ -78,7 +78,7 @@ class ParsedLine(object):
 
         return s
 
-class Line(IRCObject.Object):
+class SentLine(IRCObject.Object):
     def __init__(self, send_time: datetime.datetime, hostmask: str,
             line: ParsedLine):
         self.send_time = send_time
@@ -89,7 +89,7 @@ class Line(IRCObject.Object):
         self.truncate_marker: typing.Optional[str] = None
 
     def __repr__(self) -> str:
-        return "IRCLine.Line(%s)" % self.__str__()
+        return "IRCLine.SentLine(%s)" % self.__str__()
     def __str__(self) -> str:
         return self.decoded_data()
 
