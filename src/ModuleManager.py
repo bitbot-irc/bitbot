@@ -39,6 +39,10 @@ class BaseModule(object):
         pass
     def unload(self):
         pass
+
+    def command_line(self, args: str):
+        pass
+
 class LoadedModule(object):
     def __init__(self,
             name: str,
@@ -157,7 +161,7 @@ class ModuleManager(object):
 
         return LoadedModule(name, module_object, context, import_name)
 
-    def load_module(self, bot: "IRCBot.Bot", name: str):
+    def load_module(self, bot: "IRCBot.Bot", name: str) -> LoadedModule:
         try:
             loaded_module = self._load_module(bot, name)
         except ModuleWarning as warning:
@@ -174,6 +178,7 @@ class ModuleManager(object):
                     loaded_module.name]:
                 self.load_module(bot, requirement_name)
         self.log.debug("Module '%s' loaded", [loaded_module.name])
+        return loaded_module
 
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
             blacklist: typing.List[str]=[]):

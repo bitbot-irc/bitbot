@@ -31,6 +31,9 @@ arg_parser.add_argument("--log-level", "-L")
 
 arg_parser.add_argument("--version", "-v", action="store_true")
 
+arg_parser.add_argument("--module", "-m")
+arg_parser.add_argument("--module-args", "-M")
+
 args = arg_parser.parse_args()
 
 if args.version:
@@ -59,6 +62,11 @@ modules = modules = ModuleManager.ModuleManager(events, exports, timers, config,
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
     exports, log, modules, timers)
+
+if args.module:
+    module = modules.load_module(bot, args.module)
+    module.module.command_line(args.module_args)
+    sys.exit(0)
 
 whitelist = bot.get_setting("module-whitelist", [])
 blacklist = bot.get_setting("module-blacklist", [])
