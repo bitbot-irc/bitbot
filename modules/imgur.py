@@ -1,8 +1,7 @@
 #--require-config imgur-api-key
 
-import re, json
+import re, datetime
 from src import ModuleManager, utils, EventManager
-from datetime import datetime
 
 REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
 REGEX_GALLERY = re.compile("https?://imgur.com/gallery/(\w+)")
@@ -63,7 +62,7 @@ class Module(ModuleManager.BaseModule):
             nsfw = utils.irc.bold(NSFW_TEXT) + " " if data["nsfw"] else ""
             title = data["title"] + " " if data["title"] else ""
             views = data["views"]
-            time = datetime.utcfromtimestamp(data["datetime"]). \
+            time = datetime.datetime.utcfromtimestamp(data["datetime"]). \
                 strftime("%e %b, %Y at %H:%M")
             ups = utils.irc.color(str(data["ups"]) + "▲", utils.consts.GREEN)
             downs = utils.irc.color("▼" + str(data["downs"]), utils.consts.RED)
@@ -95,7 +94,7 @@ class Module(ModuleManager.BaseModule):
             width = data["width"]
             height = data["height"]
             views = data["views"]
-            time = datetime.utcfromtimestamp(data["datetime"]).\
+            time = datetime.datetime.utcfromtimestamp(data["datetime"]).\
                 strftime("%e %b, %Y at %H:%M")
 
            #%Y-%m-%d %H:%M:%S+00:00 (UTC)
