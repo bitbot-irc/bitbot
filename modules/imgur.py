@@ -1,7 +1,7 @@
 #--require-config imgur-api-key
 
 import re, json
-from src import ModuleManager, utils, EventManager, Logging
+from src import ModuleManager, utils, EventManager
 from datetime import datetime
 
 REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
@@ -88,8 +88,6 @@ class Module(ModuleManager.BaseModule):
             json=True)
 
         if result and result.data["success"]:
-           # Logging.Log.debug("%s", result.data["data"])
-
             data = result.data["data"]
             text = ""
 
