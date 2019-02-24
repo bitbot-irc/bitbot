@@ -10,6 +10,8 @@ REGEX_GALLERY = re.compile("https?://imgur.com/gallery/(\w+)")
 URL_IMAGE = "https://api.imgur.com/3/image/%s"
 URL_GALLERY = "https://api.imgur.com/3/gallery/%s"
 
+NSFW_TEXT = "(NSFW)"
+
 @utils.export("channelset", {"setting": "auto-imgur",
     "help": "Disable/Enable automatically getting info from Imgur URLs",
     "validate": utils.bool_or_none})
@@ -28,9 +30,6 @@ class Module(ModuleManager.BaseModule):
         if not event["channel"].get_setting("auto-imgur", False):
             return
 
-        self._imgur(event)
-
-    def _imgur(self, event):
         msg = event["message"]
         reply = ""
         match_gallery = REGEX_GALLERY.match(msg)
@@ -47,8 +46,7 @@ class Module(ModuleManager.BaseModule):
 
         event.eat()
 
-        self.events.on("send.stdout").call(target=event[
-            "channel"], module_name="Imgur", server=event["server"],
+        self.events.on("send.stdout").call(target=event["channel"], module_name="Imgur", server=event["server"],
                                            message=reply)
         return
 
@@ -62,15 +60,15 @@ class Module(ModuleManager.BaseModule):
             data = result.data["data"]
             text = ""
 
-            nsfw = utils.irc.bold("[NSFW] ") if data["nsfw"] else ""
-            title = utils.irc.bold(data["title"]) + " " if data["title"] else ""
+            nsfw = utils.irc.bold(NSFW_TEXT) + " " if data["nsfw"] else ""
+            title = data["title"] + " " if data["title"] else ""
             views = data["views"]
             time = datetime.utcfromtimestamp(data["datetime"]). \
                 strftime("%e %b, %Y at %H:%M")
             ups = utils.irc.color(str(data["ups"]) + "▲", utils.consts.GREEN)
             downs = utils.irc.color("▼" + str(data["downs"]), utils.consts.RED)
             images = data["images_count"]
-            image_plural = "" if images is 1 else "s"
+            image_plural = "" if images == 1 else "s"
 
             bracket_left = "(" if title or nsfw else ""
             bracket_right = ")" if title or nsfw else ""
@@ -91,8 +89,8 @@ class Module(ModuleManager.BaseModule):
             data = result.data["data"]
             text = ""
 
-            nsfw = utils.irc.bold("[NSFW] ") if data["nsfw"] else ""
-            title = utils.irc.bold(data["title"]) + " " if data["title"] else ""
+            nsfw = utils.irc.bold(NSFW_TEXT) + " " if data["nsfw"] else ""
+            title = data["title"] + " " if data["title"] else ""
             type = data["type"].split("/")[-1]
             width = data["width"]
             height = data["height"]
@@ -108,8 +106,6 @@ class Module(ModuleManager.BaseModule):
         return "%s%s%sA %s image, %sx%s, with %s views, posted %s%s" % \
                (nsfw, title, bracket_left, type, width, height, views, time,
                 bracket_right)
-
-
 
     def _image_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
