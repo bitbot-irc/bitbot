@@ -37,7 +37,7 @@ class Module(ModuleManager.BaseModule):
         if match_gallery:
             reply = self._parse_gallery(match_gallery.group(1))
 
-        if match_image and not reply:
+        elif match_image:
             reply = self._parse_image(match_image.group(1))
 
         if not reply:
