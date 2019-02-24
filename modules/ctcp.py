@@ -1,7 +1,7 @@
 import datetime
-from src import ModuleManager, utils
+from src import IRCBot, ModuleManager, utils
 
-VERSION_DEFAULT = "BitBot (https://git.io/bitbot)"
+VERSION_DEFAULT = "BitBot %s (https://git.io/bitbot)" % IRCBot.VERSION
 SOURCE_DEFAULT = "https://git.io/bitbot"
 
 @utils.export("serverset", {"setting": "ctcp-responses",
