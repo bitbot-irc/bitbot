@@ -11,6 +11,8 @@ directory = os.path.dirname(os.path.realpath(__file__))
 arg_parser = argparse.ArgumentParser(
     description="Python3 event-driven modular IRC bot")
 
+arg_parser.add_argument("--version", "-v", action="store_true")
+
 arg_parser.add_argument("--config", "-c",
     help="Location of the JSON config file",
     default=os.path.join(directory, "bot.conf"))
@@ -29,10 +31,10 @@ arg_parser.add_argument("--add-server", "-a",
 arg_parser.add_argument("--verbose", "-V", action="store_true")
 arg_parser.add_argument("--log-level", "-L")
 
-arg_parser.add_argument("--version", "-v", action="store_true")
-
-arg_parser.add_argument("--module", "-m")
-arg_parser.add_argument("--module-args", "-M")
+arg_parser.add_argument("--module", "-m",
+    help="Execute an action against a specific module")
+arg_parser.add_argument("--module-args", "-M",
+    help="Arguments to give in action against a specific module")
 
 args = arg_parser.parse_args()
 
