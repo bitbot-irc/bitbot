@@ -26,10 +26,16 @@ arg_parser.add_argument("--log-dir", "-l",
 arg_parser.add_argument("--add-server", "-a",
     help="Add a new server", action="store_true")
 
-arg_parser.add_argument("--verbose", "-v", action="store_true")
+arg_parser.add_argument("--verbose", "-V", action="store_true")
 arg_parser.add_argument("--log-level", "-L")
 
+arg_parser.add_argument("--version", "-v", action="store_true")
+
 args = arg_parser.parse_args()
+
+if args.version:
+    print("BitBot %s" % IRCBot.VERSION)
+    sys.exit(0)
 
 log_level = args.log_level
 if not log_level:
