@@ -17,8 +17,7 @@ SCRAM_ERRORS = [
     "unsupported-channel-binding-type",
     "unknown-user",
     "invalid-username-encoding", # invalid utf8 or bad SASLprep
-    "no-resources",
-    "other-error"
+    "no-resources"
 ]
 
 def _scram_nonce() -> bytes:
