@@ -10,4 +10,4 @@ class Module(ModuleManager.BaseModule):
                 command[j] = part.replace("%nick%", event["server"
                     ].nickname)
             command = "%".join(command)
-            event["server"].send(command)
+            event["server"].send(utils.irc.parse_line(command))
