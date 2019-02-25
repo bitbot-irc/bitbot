@@ -40,7 +40,7 @@ class Module(ModuleManager.BaseModule):
         elif match_image:
             reply = self._parse_image(match_image.group(1))
 
-        if not reply:
+        else:
             return
 
         event.eat()
