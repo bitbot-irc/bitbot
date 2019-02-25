@@ -1,4 +1,4 @@
-import datetime, decimal, enum, io, ipaddress, re, typing
+import datetime, decimal, enum, io, ipaddress, re, threading, typing
 from src.utils import cli, consts, irc, http, parse, security
 
 class Direction(enum.Enum):
@@ -199,3 +199,6 @@ def is_ip(s: str) -> bool:
     except ValueError:
         return False
     return True
+
+def is_main_thread() -> bool:
+    return threading.current_thread() is threading.main_thread()

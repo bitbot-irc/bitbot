@@ -38,7 +38,8 @@ class Bot(object):
             func: typing.Optional[typing.Callable[[], typing.Any]]=None
             ) -> typing.Any:
         func = func or (lambda: None)
-        if threading.current_thread() is threading.main_thread():
+
+        if utils.is_main_thread():
             returned = func()
             self._trigger_client.send(b"TRIGGER")
             return returned

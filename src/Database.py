@@ -1,5 +1,5 @@
 import json, os, sqlite3, threading, time, typing
-from src import Logging
+from src import Logging, utils
 
 sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
 
@@ -309,6 +309,9 @@ class Database(object):
     def _execute_fetch(self, query: str,
             fetch_func: typing.Callable[[sqlite3.Cursor], typing.Any],
             params: typing.List=[]):
+        if not utils.is_main_thread():
+            raise RuntimeError("Can't access Database outside of main thread")
+
         printable_query = " ".join(query.split())
         start = time.monotonic()
 
