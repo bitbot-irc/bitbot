@@ -76,7 +76,7 @@ class ParsedLine(object):
             else:
                 s += self._args[-1]
 
-        return s
+        return s.split("\n")[0].strip("\r")
 
 class SentLine(IRCObject.Object):
     def __init__(self, send_time: datetime.datetime, hostmask: str,
