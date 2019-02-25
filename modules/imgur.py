@@ -6,6 +6,9 @@ from src import ModuleManager, utils, EventManager
 REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
 REGEX_GALLERY = re.compile("https?://imgur.com/gallery/(\w+)")
 
+GALLERY_FORMAT = "%s%s%sA gallery with %s image%s, %s views, posted %s (%s%s)%s"
+IMAGE_FORMAT = "%s%s%sA %s image, %sx%s, with %s views, posted %s%s"
+
 URL_IMAGE = "https://api.imgur.com/3/image/%s"
 URL_GALLERY = "https://api.imgur.com/3/gallery/%s"
 
@@ -23,31 +26,24 @@ class Module(ModuleManager.BaseModule):
             text += "%s " % data["account_url"]
         return text
 
-    @utils.hook("received.message.channel",
-                priority=EventManager.PRIORITY_LOW)
+    @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
-        if not event["channel"].get_setting("auto-imgur", False):
-            return
+        if event["channel"].get_setting("auto-imgur", False):
+            match_gallery = REGEX_GALLERY.match(event["message"])
+            match_image = REGEX_IMAGE.match(event["message"])
 
-        msg = event["message"]
-        reply = ""
-        match_gallery = REGEX_GALLERY.match(msg)
-        match_image = REGEX_IMAGE.match(msg)
+            result = None
+            if match_gallery:
+                result = self._parse_gallery(match_gallery.group(1))
+            elif match_image:
+                result = self._parse_image(match_image.group(1))
+            else:
+                return
 
-        if match_gallery:
-            reply = self._parse_gallery(match_gallery.group(1))
+            event.eat()
 
-        elif match_image:
-            reply = self._parse_image(match_image.group(1))
-
-        else:
-            return
-
-        event.eat()
-
-        self.events.on("send.stdout").call(target=event["channel"], module_name="Imgur", server=event["server"],
-                                           message=reply)
-        return
+            self.events.on("send.stdout").call(target=event["channel"],
+                module_name="Imgur", server=event["server"], message=result)
 
     def _parse_gallery(self, hash):
         api_key = self.bot.config["imgur-api-key"]
@@ -72,10 +68,8 @@ class Module(ModuleManager.BaseModule):
             bracket_left = "(" if title or nsfw else ""
             bracket_right = ")" if title or nsfw else ""
 
-            return "%s%s%sA gallery with %s image%s, %s views, posted %s (%s%s)%s" % \
-               (nsfw, title, bracket_left, images, image_plural, views,
-                time, ups, downs,
-                bracket_right)
+            return GALLERY_FORMAT % (nsfw, title, bracket_left, images,
+                image_plural, views, time, ups, downs, bracket_right)
 
 
     def _parse_image(self, hash):
@@ -102,9 +96,8 @@ class Module(ModuleManager.BaseModule):
             bracket_left = "(" if title or nsfw else ""
             bracket_right = ")" if title or nsfw else ""
 
-        return "%s%s%sA %s image, %sx%s, with %s views, posted %s%s" % \
-               (nsfw, title, bracket_left, type, width, height, views, time,
-                bracket_right)
+        return IMAGE_FORMAT % (nsfw, title, bracket_left, type, width, height,
+            views, time, bracket_right)
 
     def _image_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
@@ -122,7 +115,7 @@ class Module(ModuleManager.BaseModule):
                 text += " %s" % data["title"]
             return text
         else:
-            raise utils.EventsResultsError()
+            return None
 
     def _gallery_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
@@ -139,7 +132,7 @@ class Module(ModuleManager.BaseModule):
                 text += " %s" % data["title"]
             return text
         else:
-            raise utils.EventsResultsError()
+            return None
 
     @utils.hook("received.command.imgur", min_args=1)
     def imgur(self, event):
@@ -147,14 +140,17 @@ class Module(ModuleManager.BaseModule):
         :help: Get information about a given imgur image URL
         :usage: <url>
         """
-        msg = event["args_split"][0]
+        image_match = REGEX_IMAGE.match(event["args_split"][0])
 
-        match = REGEX_GALLERY.match(msg)
-        if match:
-            event["stdout"].write(self._gallery_info(match.group(1)))
-            return
+        result = None
+        if image_match:
+            result = self._image_info(image_match.group(1))
+        else:
+            gallery_match = REGEX_GALLERY.match(event["args_split"][0])
+            if gallery_match:
+                result = self._gallery_info(gallery_match.group(1))
 
-        match = REGEX_IMAGE.match(event["args_split"][0])
-        if match:
-            event["stdout"].write(self._image_info(match.group(1)))
-            return
+        if result:
+            event["stdout"].write(result)
+        else:
+            raise utils.EventsResultsError()
