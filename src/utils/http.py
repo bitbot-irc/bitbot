@@ -8,6 +8,7 @@ USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
 REGEX_HTTP = re.compile("https?://", re.I)
 
 RESPONSE_MAX = (1024*1024)*100
+SOUP_CONTENT_TYPES = ["text/html", "text/xml", "application/xml"]
 
 class HTTPException(Exception):
     pass
@@ -60,9 +61,11 @@ def request(url: str, method: str="GET", get_params: dict={},
 
     response_headers = utils.CaseInsensitiveDict(dict(response.headers))
 
-    if soup:
+    content_type = response.headers["Content-Type"].split(";", 1)[0]
+    if soup and content_type in SOUP_CONTENT_TYPES:
         soup = bs4.BeautifulSoup(response_content, parser)
         return Response(response.status_code, soup, response_headers)
+
 
     data = response_content.decode(response.encoding or fallback_encoding)
     if json and data:
