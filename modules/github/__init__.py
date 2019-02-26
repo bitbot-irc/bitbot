@@ -521,7 +521,7 @@ class Module(ModuleManager.BaseModule):
         action = data["action"]
         issue_title = data["issue"]["title"]
         type = "pr" if "pull_request" in data["issue"] else "issue"
-        commenter = utils.irc.bold(data["comment"]["user"]["login"])
+        commenter = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
         return ["[%s #%d] %s %s on: %s - %s" %
             (type, number, commenter, COMMENT_ACTIONS[action], issue_title,
