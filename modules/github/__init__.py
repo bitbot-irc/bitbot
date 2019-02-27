@@ -150,6 +150,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.gh", alias_of="github")
     @utils.hook("received.command.github", min_args=1)
     def github(self, event):
+        if event["target"].get_setting("github-hide-prefix", False):
+            event["stdout"].hide_prefix()
+            event["stderr"].hide_prefix()
+
         username, repository, number = self._parse_ref(
             event["target"], event["args_split"][0])
         page = self._gh_get_issue(username, repository, number)
@@ -175,10 +179,6 @@ class Module(ModuleManager.BaseModule):
         :usage: events <hook> [category [category ...]]
         :usage: branches <hook> [branch [branch ...]]
         """
-        if event["target"].get_setting("github-hide-prefix", False):
-            event["stdout"].hide_prefix()
-            event["stderr"].hide_prefix()
-
         all_hooks = event["target"].get_setting("github-hooks", {})
         hook_name = None
         existing_hook = None
