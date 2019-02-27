@@ -175,7 +175,7 @@ class Module(ModuleManager.BaseModule):
         :usage: events <hook> [category [category ...]]
         :usage: branches <hook> [branch [branch ...]]
         """
-        if event["target"].get_setting("github-hide-prefix", False)):
+        if event["target"].get_setting("github-hide-prefix", False):
             event["stdout"].hide_prefix()
             event["stderr"].hide_prefix()
 
