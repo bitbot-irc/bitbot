@@ -53,7 +53,7 @@ def parse_line(line: str) -> IRCLine.ParsedLine:
 
         for tag in filter(None, tags_prefix.split(";")):
             tag, sep, value = tag.partition("=")
-            if sep:
+            if value:
                 tags[tag] = message_tag_unescape(value)
             else:
                 tags[tag] = None
