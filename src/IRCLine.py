@@ -45,38 +45,35 @@ class ParsedLine(object):
         self.tags = {} if tags == None else tags
 
     def _tag_str(self, tags: typing.Dict[str, str]) -> str:
-        tag_str = ""
+        tag_pieces = []
         for tag, value in tags.items():
-            if tag_str:
-                tag_str += ","
-            tag_str += tag
             if value:
-                tag_str += "=%s" % value
-        if tag_str:
-            tag_str = "@%s" % tag_str
-        return tag_str
+                tag_pieces.append("%s=%s" % (tag, value))
+            else:
+                tag_pieces.append(tag)
+
+        if tag_pieces:
+            return "@%s" % ",".join(tag_pieces)
+        return ""
 
     def format(self) -> str:
-        s = ""
+        pieces = []
         if self.tags:
-            s += "%s " % self._tag_str(self.tags)
+            pieces.append(self._tag_str(self.tags))
 
         if self.prefix:
-            s += "%s " % self.prefix
+            pieces.append(self.prefix)
 
-        s += self.command.upper()
+        pieces.append(self.command.upper())
 
         if self.args:
-            if len(self._args) > 1:
-                s += " %s" % " ".join(self._args[:-1])
+            for i, arg in enumerate(self._args):
+                if i == len(self._args)-1 and (" " in arg or arg[0] == ":"):
+                    pieces.append(":%s" % arg)
+                else:
+                    pieces.append(arg)
 
-            s += " "
-            if " " in self._args[-1] or self._args[-1][0] == ":":
-                s += ":%s" % self._args[-1]
-            else:
-                s += self._args[-1]
-
-        return s.split("\n")[0].strip("\r")
+        return " ".join(pieces).split("\n")[0].strip("\r")
 
 class SentLine(IRCObject.Object):
     def __init__(self, send_time: datetime.datetime, hostmask: str,
