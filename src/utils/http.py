@@ -16,6 +16,8 @@ class HTTPTimeoutException(HTTPException):
     pass
 class HTTPParsingException(HTTPException):
     pass
+class HTTPWrongContentTypeException(HTTPException):
+    pass
 
 def throw_timeout():
     raise HTTPTimeoutException()
@@ -67,7 +69,8 @@ def request(url: str, method: str="GET", get_params: dict={},
             soup = bs4.BeautifulSoup(response_content, parser)
             return Response(response.status_code, soup, response_headers)
         else:
-            raise ValueError("Tried to soup non-html/non-xml data")
+            raise HTTPWrongContentTypeException(
+                "Tried to soup non-html/non-xml data")
 
 
     data = response_content.decode(response.encoding or fallback_encoding)
