@@ -62,7 +62,7 @@ class ParsedLine(object):
             pieces.append(self._tag_str(self.tags))
 
         if self.prefix:
-            pieces.append(self.prefix)
+            pieces.append(str(self.prefix))
 
         pieces.append(self.command.upper())
 
