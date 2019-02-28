@@ -515,8 +515,8 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["review"]["html_url"])
-        return ["[pr %s] %s %s a review on: %s - %s" % (
-            number, reviewer, action, pr_title, url)]
+        return ["[pr] %s %s a review on %s: %s - %s" %
+            (reviewer, action, number, pr_title, url)]
 
     def pull_request_review_comment(self, full_name, data):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
@@ -525,19 +525,17 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[pr %s] %s %s on a review: %s - %s" %
-            (number, sender, COMMENT_ACTIONS[action], pr_title, url)]
+        return ["[pr] %s %s on a review on %s: %s - %s" %
+            (sender, COMMENT_ACTIONS[action], number, pr_title, url)]
 
     def issues(self, full_name, data):
         number = utils.irc.color("#%s" % data["issue"]["number"], COLOR_ID)
         action = data["action"]
-        action_desc = action
-
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["issue"]["html_url"])
-        return ["[issue %s] %s %s: %s - %s" %
-            (number, author, action_desc, issue_title, url)]
+        return ["[issue] %s %s %s: %s - %s" %
+            (author, action, number, issue_title, url)]
     def issue_comment(self, full_name, data):
         if "changes" in data:
             # don't show this event when nothing has actually changed
@@ -550,8 +548,8 @@ class Module(ModuleManager.BaseModule):
         type = "pr" if "pull_request" in data["issue"] else "issue"
         commenter = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[%s %s] %s %s on: %s - %s" %
-            (type, number, commenter, COMMENT_ACTIONS[action], issue_title,
+        return ["[%s] %s %s on %s: %s - %s" %
+            (type, commenter, COMMENT_ACTIONS[action], number, issue_title,
             url)]
 
     def create(self, full_name, data):
