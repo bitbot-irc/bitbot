@@ -477,7 +477,8 @@ class Module(ModuleManager.BaseModule):
         return ["[commit/%s] %s commented" % (commit, commenter, action)]
 
     def pull_request(self, full_name, data):
-        number = data["pull_request"]["number"]
+        number = utils.irc.color("#%s" % data["pull_request"]["number"],
+            COLOR_ID)
         action = data["action"]
         action_desc = action
         branch = data["pull_request"]["base"]["ref"]
@@ -499,7 +500,7 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["pull_request"]["html_url"])
-        return ["[pr #%d] %s %s: %s - %s" % (
+        return ["[pr %s] %s %s: %s - %s" % (
             number, author, action_desc, pr_title, url)]
 
     def pull_request_review(self, full_name, data):
@@ -508,32 +509,34 @@ class Module(ModuleManager.BaseModule):
         if not "submitted_at" in data["review"]:
             return []
 
-        number = data["pull_request"]["number"]
+        number = utils.irc.color("#%s" % data["pull_request"]["number"],
+            COLOR_ID)
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["review"]["html_url"])
-        return ["[pr #%d] %s %s a review on: %s - %s" % (
+        return ["[pr %s] %s %s a review on: %s - %s" % (
             number, reviewer, action, pr_title, url)]
 
     def pull_request_review_comment(self, full_name, data):
-        number = data["pull_request"]["number"]
+        number = utils.irc.color("#%s" % data["pull_request"]["number"],
+            COLOR_ID)
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[pr #%d] %s %s on a review: %s - %s" %
+        return ["[pr %s] %s %s on a review: %s - %s" %
             (number, sender, COMMENT_ACTIONS[action], pr_title, url)]
 
     def issues(self, full_name, data):
-        number = data["issue"]["number"]
+        number = utils.irc.color("#%s" % data["issue"]["number"], COLOR_ID)
         action = data["action"]
         action_desc = action
 
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["issue"]["html_url"])
-        return ["[issue #%d] %s %s: %s - %s" %
+        return ["[issue %s] %s %s: %s - %s" %
             (number, author, action_desc, issue_title, url)]
     def issue_comment(self, full_name, data):
         if "changes" in data:
