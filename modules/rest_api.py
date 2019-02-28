@@ -99,7 +99,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self._handle("POST")
 
     def log_message(self, format, *args):
-        _log.info("[HTTP] " + format, args)
+        _log.debug("[HTTP] " + format, args)
 
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
