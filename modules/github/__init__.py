@@ -1,6 +1,12 @@
 import datetime, itertools, json, math, urllib.parse
 from src import ModuleManager, utils
 
+COLOR_BRANCH = utils.consts.ORANGE
+COLOR_REPO = utils.consts.GREY
+COLOR_POSITIVE = utils.consts.RED
+COLOR_NEGATIVE = utils.consts.GREEN
+COLOR_ID = utils.consts.PURPLE
+
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
@@ -405,9 +411,9 @@ class Module(ModuleManager.BaseModule):
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
     def _added(self, n):
-        return self._change_count(n, "+", utils.consts.GREEN)
+        return self._change_count(n, "+", COLOR_POSITIVE)
     def _removed(self, n):
-        return self._change_count(n, "-", utils.consts.RED)
+        return self._change_count(n, "-", COLOR_NEGATIVE)
     def _modified(self, n):
         return self._change_count(n, "~", utils.consts.PURPLE)
 
@@ -420,7 +426,7 @@ class Module(ModuleManager.BaseModule):
     def push(self, full_name, data):
         outputs = []
         branch = data["ref"].split("/", 2)[2]
-        branch = utils.irc.color(branch, utils.consts.LIGHTBLUE)
+        branch = utils.irc.color(branch, COLOR_BRANCH)
 
         forced = ""
         if data["forced"]:
@@ -473,18 +479,18 @@ class Module(ModuleManager.BaseModule):
         action = data["action"]
         action_desc = action
         branch = data["pull_request"]["base"]["ref"]
-        colored_branch = utils.irc.color(branch, utils.consts.LIGHTBLUE)
+        colored_branch = utils.irc.color(branch, COLOR_BRANCH)
 
         if action == "opened":
             action_desc = "requested merge into %s" % colored_branch
         elif action == "closed":
             if data["pull_request"]["merged"]:
                 action_desc = "%s into %s" % (
-                    utils.irc.color("merged", utils.consts.GREEN),
+                    utils.irc.color("merged", COLOR_POSITIVE),
                     colored_branch)
             else:
                 action_desc = utils.irc.color("closed without merging",
-                    utils.consts.RED)
+                    COLOR_NEGATIVE)
         elif action == "synchronize":
             action_desc = "committed to"
 
@@ -533,19 +539,19 @@ class Module(ModuleManager.BaseModule):
             if data["changes"]["body"]["from"] == data["comment"]["body"]:
                 return
 
-        number = data["issue"]["number"]
+        number = utils.irc.color("#%s" % data["issue"]["number"], COLOR_ID)
         action = data["action"]
         issue_title = data["issue"]["title"]
         type = "pr" if "pull_request" in data["issue"] else "issue"
         commenter = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[%s #%d] %s %s on: %s - %s" %
+        return ["[%s %s] %s %s on: %s - %s" %
             (type, number, commenter, COMMENT_ACTIONS[action], issue_title,
             url)]
 
     def create(self, full_name, data):
         ref = data["ref"]
-        ref_color = utils.irc.color(ref, utils.consts.LIGHTBLUE)
+        ref_color = utils.irc.color(ref, COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(CREATE_URL % (full_name, ref))
@@ -593,11 +599,11 @@ class Module(ModuleManager.BaseModule):
             status_str = utils.irc.bold("started")
         elif status == "completed":
             conclusion = data["check_run"]["conclusion"]
-            conclusion_color = utils.consts.GREEN
+            conclusion_color = COLOR_POSITIVE
             if conclusion in CHECK_RUN_FAILURES:
-                conclusion_color = utils.consts.RED
+                conclusion_color = COLOR_NEGATIVE
             if conclusion == "neutral":
-                conclusion_color = utils.consts.LIGHTGREY
+                conclusion_color = utils.consts.GREY
 
             status_str = utils.irc.color(
                 CHECK_RUN_CONCLUSION[conclusion], conclusion_color)
