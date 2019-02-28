@@ -68,7 +68,8 @@ class Module(ModuleManager.BaseModule):
                     tags = ""
 
                 play_count = ""
-                if "userplaycount" in info_page.data.get("track", []):
+                if ("userplaycount" in info_page.data.get("track", {}) and
+                        info_page.data["track"]["userplaycount"] > 0):
                     play_count = int(info_page.data["track"]["userplaycount"])
                     play_count = " (%d play%s)" % (play_count,
                         "s" if play_count > 1 else "")
