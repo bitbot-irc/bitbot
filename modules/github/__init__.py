@@ -369,7 +369,9 @@ class Module(ModuleManager.BaseModule):
             for server, channel in targets:
                 for output in outputs:
                     source = full_name or organisation
-                    output = "(%s) %s" % (source, output)
+                    output = "(%s) %s" % (
+                        utils.irc.color(source, COLOR_REPO), output)
+
                     if channel.get_setting("github-prevent-highlight", False):
                         output = self._prevent_highlight(channel, output)
 
