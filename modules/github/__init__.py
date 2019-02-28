@@ -500,7 +500,7 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["pull_request"]["html_url"])
-        return ["[pr %s] %s %s: %s - %s" % (
+        return ["[PR %s] %s %s: %s - %s" % (
             number, author, action_desc, pr_title, url)]
 
     def pull_request_review(self, full_name, data):
@@ -515,7 +515,7 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["review"]["html_url"])
-        return ["[pr] %s %s a review on %s: %s - %s" %
+        return ["[PR] %s %s a review on %s: %s - %s" %
             (reviewer, action, number, pr_title, url)]
 
     def pull_request_review_comment(self, full_name, data):
@@ -525,7 +525,7 @@ class Module(ModuleManager.BaseModule):
         pr_title = data["pull_request"]["title"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[pr] %s %s on a review on %s: %s - %s" %
+        return ["[PR] %s %s on a review on %s: %s - %s" %
             (sender, COMMENT_ACTIONS[action], number, pr_title, url)]
 
     def issues(self, full_name, data):
