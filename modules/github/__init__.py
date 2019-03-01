@@ -83,6 +83,9 @@ CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 @utils.export("channelset", {"setting": "github-hide-prefix",
     "help": "Hide/show command-like prefix on Github hook outputs",
     "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "github-hide-organisation",
+    "help": "Hide/show organisation in repository names",
+    "validate": utils.bool_or_none})
 @utils.export("channelset", {"setting": "github-default-repo",
     "help": "Set the default github repo for the current channel"})
 @utils.export("channelset", {"setting": "github-prevent-highlight",
@@ -365,10 +368,15 @@ class Module(ModuleManager.BaseModule):
         elif github_event == "watch":
             outputs = self.watch(data)
 
+        source = full_name or organisation
+        hide_org = event["channel"].get_setting("github-hide-organisation",
+            False)
+        if repo_name and hide_org:
+            source = repo_name
+
         if outputs:
             for server, channel in targets:
                 for output in outputs:
-                    source = full_name or organisation
                     output = "(%s) %s" % (
                         utils.irc.color(source, COLOR_REPO), output)
 
