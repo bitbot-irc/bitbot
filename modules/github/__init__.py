@@ -545,7 +545,7 @@ class Module(ModuleManager.BaseModule):
         number = utils.irc.color("#%s" % data["issue"]["number"], COLOR_ID)
         action = data["action"]
         issue_title = data["issue"]["title"]
-        type = "pr" if "pull_request" in data["issue"] else "issue"
+        type = "PR" if "pull_request" in data["issue"] else "issue"
         commenter = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
         return ["[%s] %s %s on %s: %s - %s" %
