@@ -10,10 +10,10 @@ class Module(ModuleManager.BaseModule):
     def _get_title(self, url):
         try:
             page = utils.http.request(url, soup=True)
+        except utils.http.HTTPWrongContentTypeException:
+            return None
         except Exception as e:
             self.log.error("failed to get URL title", [], exc_info=True)
-            return None
-        except utils.http.HTTPWrongContentTypeException:
             return None
         if page.data.title:
             return page.data.title.text.replace("\n", " ").replace(
