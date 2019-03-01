@@ -368,14 +368,15 @@ class Module(ModuleManager.BaseModule):
         elif github_event == "watch":
             outputs = self.watch(data)
 
-        source = full_name or organisation
-        hide_org = event["channel"].get_setting("github-hide-organisation",
-            False)
-        if repo_name and hide_org:
-            source = repo_name
 
         if outputs:
             for server, channel in targets:
+                source = full_name or organisation
+                hide_org = channel.get_setting(
+                    "github-hide-organisation", False)
+                if repo_name and hide_org:
+                    source = repo_name
+
                 for output in outputs:
                     output = "(%s) %s" % (
                         utils.irc.color(source, COLOR_REPO), output)
