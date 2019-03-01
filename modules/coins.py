@@ -341,6 +341,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Roulette spin lands on 0, "
                 "the house wins, %s loses %s" % (
                 event["user"].nickname, bet_amount_total))
+            self._take(event["server"], event["user"], bet_amount_total)
             return
 
         colour = "red" if choice in RED else "black"
