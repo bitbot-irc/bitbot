@@ -320,9 +320,9 @@ class Module(ModuleManager.BaseModule):
                         continue
 
                     github_events = []
-                    for event in found_hook["events"]:
+                    for hooked_event in found_hook["events"]:
                         github_events.append(EVENT_CATEGORIES.get(
-                            event, [event]))
+                            hooked_event, [hooked_event]))
                     github_events = list(itertools.chain(*github_events))
 
                     channel = server.channels.get(channel_name)
