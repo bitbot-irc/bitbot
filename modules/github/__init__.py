@@ -143,7 +143,7 @@ class Module(ModuleManager.BaseModule):
         url = self._short_url(page.data["html_url"])
 
         event["stdout"].write(
-            "(%s pull#%s, %s) %s → %s [%s/%s] - %s %s" % (
+            "(%s pull#%s, %s) %s → %s [%s/%s] %s %s" % (
             repo, number, page.data["state"], branch_from, branch_to,
             added, removed, page.data["title"], url))
     def _gh_get_pull(self, username, repository, number):
