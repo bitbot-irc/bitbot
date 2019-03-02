@@ -4,6 +4,7 @@ from src import ModuleManager, utils
 COLOR_BRANCH = utils.consts.ORANGE
 COLOR_REPO = utils.consts.GREY
 COLOR_POSITIVE = utils.consts.GREEN
+COLOR_NEUTRAL = utils.consts.LIGHTGREY
 COLOR_NEGATIVE = utils.consts.RED
 COLOR_ID = utils.consts.PINK
 
@@ -108,6 +109,8 @@ class Module(ModuleManager.BaseModule):
         return username, repository, number
 
     def _gh_issue(self, event, page, username, repository, number):
+        repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
+        number = utils.irc.color("#%s" % number, COLOR_ID)
         labels = [label["name"] for label in page.data["labels"]]
         labels_str = ""
         if labels:
@@ -115,9 +118,14 @@ class Module(ModuleManager.BaseModule):
 
         url = self._short_url(page.data["html_url"])
 
-        event["stdout"].write("(%s/%s issue#%s, %s) %s %s%s" % (
-            username, repository, number, page.data["state"],
-            page.data["title"], labels_str, url))
+        state = page.data["state"]
+        if state == "open":
+            state = utils.irc.color("open", COLOR_NEUTRAL)
+        elif state == "closed":
+            state = utils.irc.color("closed", COLOR_NEGATIVE)
+
+        event["stdout"].write("(%s issue%s, %s) %s %s%s" % (
+            repo, number, state, page.data["title"], labels_str, url))
     def _gh_get_issue(self, username, repository, number):
         return utils.http.request(
             API_ISSUE_URL % (username, repository, number),
@@ -148,22 +156,17 @@ class Module(ModuleManager.BaseModule):
         url = self._short_url(page.data["html_url"])
 
         state = page.data["state"]
-        state_color = None
         if page.data["merged"]:
-            state = "merged"
-            state_color = utils.consts.GREEN
+            state = utils.irc.color("merged", COLOR_POSITIVE)
         elif state == "open":
-            state_color = utils.consts.GREEN
+            state = utils.irc.color("open", COLOR_NEUTRAL)
         elif state == "closed":
-            state_color = utils.consts.RED
-
-        if state_color:
-            state = utils.irc.color(state, state_color)
+            state = utils.irc.color("closed", COLOR_NEGATIVE)
 
         event["stdout"].write(
             "(%s pull%s, %s) %s → %s [%s/%s] %s %s" % (
-            repo, number, state, branch_from, branch_to,
-            added, removed, page.data["title"], url))
+            repo, number, state, branch_from, branch_to, added, removed,
+            page.data["title"], url))
     def _gh_get_pull(self, username, repository, number):
         return utils.http.request(
             API_PULL_URL % (username, repository, number),
@@ -630,7 +633,7 @@ class Module(ModuleManager.BaseModule):
             if conclusion in CHECK_RUN_FAILURES:
                 conclusion_color = COLOR_NEGATIVE
             if conclusion == "neutral":
-                conclusion_color = utils.consts.GREY
+                conclusion_color = COLOR_NEUTRAL
 
             status_str = utils.irc.color(
                 CHECK_RUN_CONCLUSION[conclusion], conclusion_color)
