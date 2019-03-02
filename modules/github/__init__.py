@@ -136,6 +136,7 @@ class Module(ModuleManager.BaseModule):
 
     def _gh_pull(self, event, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
+        number = utils.irc.color("#%s" % number, COLOR_ID)
         branch_from = page.data["head"]["label"]
         branch_to = page.data["base"]["label"]
         added = self._added(page.data["additions"])
@@ -156,7 +157,7 @@ class Module(ModuleManager.BaseModule):
             state = utils.irc.color(state, state_color)
 
         event["stdout"].write(
-            "(%s pull#%s, %s) %s → %s [%s/%s] %s %s" % (
+            "(%s pull%s, %s) %s → %s [%s/%s] %s %s" % (
             repo, number, state, branch_from, branch_to,
             added, removed, page.data["title"], url))
     def _gh_get_pull(self, username, repository, number):
