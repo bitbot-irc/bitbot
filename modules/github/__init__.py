@@ -135,16 +135,17 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Could not find issue")
 
     def _gh_pull(self, event, page, username, repository, number):
-        repo_from = page.data["head"]["label"]
-        repo_to = page.data["base"]["label"]
+        repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
+        branch_from = page.data["head"]["label"]
+        branch_to = page.data["base"]["label"]
         added = self._added(page.data["additions"])
         removed = self._removed(page.data["deletions"])
         url = self._short_url(page.data["html_url"])
 
         event["stdout"].write(
-            "(%s/%s pull#%s, %s) [%s/%s] %s → %s - %s %s" % (
-            username, repository, number, page.data["state"],
-            added, removed, repo_from, repo_to, page.data["title"], url))
+            "(%s pull#%s, %s) %s → %s [%s/%s] - %s %s" % (
+            repo, number, page.data["state"], branch_from, branch_to,
+            added, removed, page.data["title"], url))
     def _gh_get_pull(self, username, repository, number):
         return utils.http.request(
             API_PULL_URL % (username, repository, number),
