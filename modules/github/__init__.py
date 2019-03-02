@@ -142,6 +142,19 @@ class Module(ModuleManager.BaseModule):
         removed = self._removed(page.data["deletions"])
         url = self._short_url(page.data["html_url"])
 
+        state = page.data["state"]
+        state_color = None
+        if page.data["merged"]:
+            state = "merged"
+            state_color = utils.consts.GREEN
+        elif state == "open":
+            state_color = utils.consts.GREEN
+        elif state == "closed":
+            state_color = utils.consts.RED
+
+        if state_color:
+            state = utils.irc.color(state, state_color)
+
         event["stdout"].write(
             "(%s pull#%s, %s) %s → %s [%s/%s] %s %s" % (
             repo, number, page.data["state"], branch_from, branch_to,
