@@ -109,11 +109,15 @@ class Module(ModuleManager.BaseModule):
 
     def _gh_issue(self, event, page, username, repository, number):
         labels = [label["name"] for label in page.data["labels"]]
+        labels_str = ""
+        if labels:
+            labels_str = "[%s] " % ", ".join(labels)
+
         url = self._short_url(page.data["html_url"])
 
-        event["stdout"].write("(%s/%s issue#%s, %s) %s [%s] %s" % (
+        event["stdout"].write("(%s/%s issue#%s, %s) %s %s%s" % (
             username, repository, number, page.data["state"],
-            page.data["title"], ", ".join(labels), url))
+            page.data["title"], labels_str, url))
     def _gh_get_issue(self, username, repository, number):
         return utils.http.request(
             API_ISSUE_URL % (username, repository, number),
