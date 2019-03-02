@@ -5,7 +5,7 @@ COLOR_BRANCH = utils.consts.ORANGE
 COLOR_REPO = utils.consts.GREY
 COLOR_POSITIVE = utils.consts.GREEN
 COLOR_NEGATIVE = utils.consts.RED
-COLOR_ID = utils.consts.PURPLE
+COLOR_ID = utils.consts.PINK
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
