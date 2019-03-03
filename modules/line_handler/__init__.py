@@ -1,5 +1,5 @@
 import enum
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 from . import channel, core, ircv3, message, user
 
 LABELED_BATCH = {
