@@ -29,8 +29,8 @@ def handle_005(events, event):
             isupport[key] = None
     event["server"].isupport.update(isupport)
 
-    if "NAMESX" in isupport and not "multi-prefix" in event[
-            "server"].agreed_capabilities:
+    if "NAMESX" in isupport and not event["server"].has_capability(
+            "multi-prefix"):
         event["server"].send("PROTOCTL NAMESX")
 
     if "PREFIX" in isupport:
