@@ -97,11 +97,12 @@ class Module(ModuleManager.BaseModule):
     def handle_366(self, event):
         channel.handle_366(event)
 
-    @utils.hook("raw.received.375")
+    @utils.hook("raw.received.375", priority=EventManager.PRIORITY_HIGH)
     def motd_start(self, event):
         core.motd_start(event)
 
     @utils.hook("raw.received.372")
+    @utils.hook("raw.received.375")
     def motd_line(self, event):
         core.motd_line(event)
 

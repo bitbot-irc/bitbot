@@ -57,7 +57,6 @@ def handle_005(events, event):
 
 def motd_start(event):
     event["server"].motd_lines.clear()
-    event["server"].motd_lines.append(event["args"][1])
 def motd_line(event):
     event["server"].motd_lines.append(event["args"][1])
 
@@ -67,7 +66,6 @@ def mode(events, event):
     is_channel = target[0] in event["server"].channel_types
     if is_channel:
         channel = event["server"].channels.get(target)
-        remove = False
         args  = event["args"][2:]
         _args = args[:]
         modes = RE_MODES.findall(event["args"][1])

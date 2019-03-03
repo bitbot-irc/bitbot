@@ -18,8 +18,7 @@ def topic(events, event):
 def handle_333(events, event):
     channel = event["server"].channels.get(event["args"][1])
 
-    topic_setter_hostmask = event["args"][2]
-    topic_setter = utils.irc.seperate_hostmask(topic_setter_hostmask)
+    topic_setter = utils.irc.seperate_hostmask(event["args"][2])
     topic_time = int(event["args"][3]) if event["args"][3].isdigit() else None
 
     channel.set_topic_setter(topic_setter.nickname, topic_setter.username,
@@ -113,10 +112,9 @@ def part(events, event):
 def handle_324(event):
     channel = event["server"].channels.get(event["args"][1])
     modes = event["args"][2]
-    if modes[0] == "+" and modes[1:]:
-        for mode in modes[1:]:
-            if mode in event["server"].channel_modes:
-                channel.add_mode(mode)
+    for mode in modes[1:]:
+        if mode in event["server"].channel_modes:
+            channel.add_mode(mode)
 
 def handle_329(event):
     channel = event["server"].channels.get(event["args"][1])
