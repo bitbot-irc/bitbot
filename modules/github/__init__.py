@@ -468,14 +468,9 @@ class Module(ModuleManager.BaseModule):
                 author = utils.irc.bold(data["pusher"]["name"])
                 url = self._short_url(COMMIT_URL % (full_name, id))
 
-                added = self._added(len(commit["added"]))
-                removed = self._removed(len(commit["removed"]))
-                modified = self._modified(len(commit["modified"]))
-
                 outputs.append(
-                    "%s %spushed to %s [%s/%s/%s files] %s - %s"
-                    % (author, forced, branch, added, removed, modified,
-                    message, url))
+                    "%s %spushed to %s: %s - %s"
+                    % (author, forced, branch, message, url))
         else:
             first_id = data["before"]
             last_id = data["commits"][-1]["id"]
@@ -483,15 +478,8 @@ class Module(ModuleManager.BaseModule):
             url = self._short_url(
                 COMMIT_RANGE_URL % (full_name, first_id, last_id))
 
-            commits = data["commits"]
-            added = self._added(len(self._flat_unique(commits, "added")))
-            removed = self._removed(len(self._flat_unique(commits, "removed")))
-            modified = self._modified(len(self._flat_unique(commits,
-                "modified")))
-
-            outputs.append("%s %spushed %d commits to %s [%s/%s/%s files] - %s"
-                % (pusher, forced, len(data["commits"]), branch,
-                added, removed, modified, url))
+            outputs.append("%s %spushed %d commits to %s - %s"
+                % (pusher, forced, len(data["commits"]), branch, url))
 
         return outputs
 
