@@ -135,8 +135,6 @@ def notice(events, event):
             user.buffer.add_notice(user_nickname, message, event["tags"],
                 True)
 
-# IRCv3 TAGMSG, used to send tags without any other information
-@utils.hook("raw.received.tagmsg")
 def tagmsg(events, event):
     from_self = _from_self(event["server"], event["direction"],
         event.get("prefix", None))
