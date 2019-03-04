@@ -30,6 +30,7 @@ arg_parser.add_argument("--add-server", "-a",
 
 arg_parser.add_argument("--verbose", "-V", action="store_true")
 arg_parser.add_argument("--log-level", "-L")
+arg_parser.add_argument("--no-logging", "-N", action="store_true")
 
 arg_parser.add_argument("--module", "-m",
     help="Execute an action against a specific module")
@@ -46,7 +47,7 @@ log_level = args.log_level
 if not log_level:
     log_level = "debug" if args.verbose else "info"
 
-log = Logging.Log(log_level, args.log_dir)
+log = Logging.Log(not args.no_logging, log_level, args.log_dir)
 database = Database.Database(log, args.database)
 
 if args.add_server:

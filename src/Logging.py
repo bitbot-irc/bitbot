@@ -16,7 +16,7 @@ class BitBotFormatter(logging.Formatter):
         return utils.iso8601_format(datetime_obj)
 
 class Log(object):
-    def __init__(self, level: str, location: str):
+    def __init__(self, to_file: bool, level: str, location: str):
         logging.addLevelName(LEVELS["trace"], "TRACE")
         self.logger = logging.getLogger(__name__)
 
@@ -35,16 +35,19 @@ class Log(object):
         stdout_handler.setFormatter(formatter)
         self.logger.addHandler(stdout_handler)
 
-        trace_handler = logging.handlers.TimedRotatingFileHandler(
-            os.path.join(location, "trace.log"), when="midnight", backupCount=5)
-        trace_handler.setLevel(LEVELS["trace"])
-        trace_handler.setFormatter(formatter)
-        self.logger.addHandler(trace_handler)
+        if to_file:
+            trace_path = os.path.join(location, "trace.log")
+            trace_handler = logging.handlers.TimedRotatingFileHandler(
+                trace_path, when="midnight", backupCount=5)
+            trace_handler.setLevel(LEVELS["trace"])
+            trace_handler.setFormatter(formatter)
+            self.logger.addHandler(trace_handler)
 
-        warn_handler = logging.FileHandler(os.path.join(location, "warn.log"))
-        warn_handler.setLevel(LEVELS["warn"])
-        warn_handler.setFormatter(formatter)
-        self.logger.addHandler(warn_handler)
+            warn_path = os.path.join(location, "warn.log")
+            warn_handler = logging.FileHandler(warn_path)
+            warn_handler.setLevel(LEVELS["warn"])
+            warn_handler.setFormatter(formatter)
+            self.logger.addHandler(warn_handler)
 
     def trace(self, message: str, params: typing.List, **kwargs):
         self._log(message, params, LEVELS["trace"], kwargs)
