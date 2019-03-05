@@ -19,6 +19,7 @@ class Module(ModuleManager.BaseModule):
         self.events.on("signal.interrupt").call(signum=signum)
 
         for server in self.bot.servers.values():
+            server.socket.clear_send_buffer()
             line = server.send_quit("Shutting down")
             server.send_enabled = False
             line.on_send(self._make_hook(server))

@@ -148,6 +148,9 @@ class Socket(IRCObject.Object):
 
         return sent_lines
 
+    def clear_send_buffer(self):
+        self._queued_lines.clear()
+
     def waiting_send(self) -> bool:
         return bool(len(self._write_buffer)) or bool(len(self._queued_lines))
 
