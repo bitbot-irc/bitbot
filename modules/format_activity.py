@@ -119,7 +119,7 @@ class Module(ModuleManager.BaseModule):
             event["channel"].topic, event["channel"])
 
         unix_dt = datetime.datetime.utcfromtimestamp(event["set_at"])
-        dt = datetime.datetime.strftime(unix_dt, DATETIME_FORMAT)
+        dt = datetime.datetime.strftime(unix_dt, utils.ISO8601_PARSE)
         line = "topic set at %s" % dt
         self._event("topic-timestamp", event["server"], line,
             event["channel"].name)

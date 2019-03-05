@@ -1,8 +1,6 @@
 import datetime
 from src import EventManager, ModuleManager, utils
 
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-
 class Module(ModuleManager.BaseModule):
     def _print_line(self, target, context, line):
         formatted_line = utils.irc.parse_format(line)
