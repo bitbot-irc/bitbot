@@ -20,6 +20,7 @@ class Module(ModuleManager.BaseModule):
 
         for server in self.bot.servers.values():
             line = server.send_quit("Shutting down")
+            server.send_enabled = False
             line.on_send(self._make_hook(server))
 
     def _make_hook(self, server):

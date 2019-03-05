@@ -58,7 +58,9 @@ class Server(IRCObject.Object):
         self.motd_done = False
 
         self.attempted_join = {} # type: typing.Dict[str, typing.Optional[str]]
+
         self.ping_sent = False
+        self.send_enabled = True
 
         self.events.on("timer.rejoin").hook(self.try_rejoin)
 
@@ -238,6 +240,9 @@ class Server(IRCObject.Object):
         return lines
 
     def send(self, line_parsed: IRCLine.ParsedLine):
+        if not self.send_enabled:
+            return None
+
         self.events.on("preprocess.send").on(line_parsed.command
             ).call_unsafe(server=self, line=line_parsed)
 
