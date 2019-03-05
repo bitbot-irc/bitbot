@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
             symbols.append(server.prefix_modes[mode])
         return "".join(symbols)
 
-    def _privmsg(self, event, channel, nickname):
+    def _privmsg(self, event, channel, user, nickname):
         symbols = ""
         if channel:
             symbols = self._mode_symbols(user, channel, event["server"])
@@ -28,11 +28,16 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("send.message.channel")
     @utils.hook("received.message.channel")
     def channel_message(self, event):
-        nickname = event["server"].nickname
-        if "user" in event:
+        nickname = None
+        user = None
+        if "user" in event and event["user"]:
+            user = event["user"]
             nickname = event["user"].nickname
+        else:
+            nickname = event["server"].nickname
+            user = event["server"].get_user(nickname)
 
-        line = self._privmsg(event, event["channel"], nickname)
+        line = self._privmsg(event, event["channel"], user, nickname)
         self._event("message.channel", event["server"], line,
             event["channel"].name)
 
