@@ -164,7 +164,7 @@ class Module(ModuleManager.BaseModule):
             state = utils.irc.color("closed", COLOR_NEGATIVE)
 
         event["stdout"].write(
-            "(%s pull%s, %s) %s → %s [%s/%s] %s %s" % (
+            "(%s PR%s, %s) %s → %s [%s/%s] %s %s" % (
             repo, number, state, branch_from, branch_to, added, removed,
             page.data["title"], url))
     def _gh_get_pull(self, username, repository, number):
