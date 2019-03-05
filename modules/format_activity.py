@@ -1,3 +1,4 @@
+import datetime
 from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
