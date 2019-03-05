@@ -42,21 +42,28 @@ class Module(ModuleManager.BaseModule):
             event["channel"].name)
 
     def _on_notice(self, event, sender, target):
-        line = "(notice->%s) <%s> %s" % (
-            target, sender, event["message"])
+        return "(notice->%s) <%s> %s" % (target, sender, event["message"])
+    def _channel_notice(self, event, sender, channel):
+        line = self._on_notice(event, sender, channel.name)
         self._event("notice.channel", event["server"], line, None)
+    def _private_notice(self, event, sender, target):
+        line = self._on_notice(event, sender, target)
+        self._event("notice.private", event["server"], line, None)
+
     @utils.hook("received.notice.channel", priority=EventManager.PRIORITY_HIGH)
     def channel_notice(self, event):
-        self._on_notice(event, event["user"].nickname, event["channel"].name)
+        self._channel_notice(event, event["user"].nickname, event["channel"])
     @utils.hook("send.notice.channel")
     def self_notice_channel(self, event):
-        self._on_notice(event, event["server"].nickname, event["channel"].name)
+        self._channel_notice(event, event["server"].nickname, event["channel"])
     @utils.hook("received.notice.private", priority=EventManager.PRIORITY_HIGH)
     def private_notice(self, event):
-        self._on_notice(event, event["user"].nickname, event["server"].nickname)
+        self._private_notice(event, event["user"].nickname,
+            event["server"].nickname)
     @utils.hook("send.notice.private")
     def self_private_notice(self, event):
-        self._on_notice(event, event["server"].nickname, event["user"].nickname)
+        self._private_notice(event, event["server"].nickname,
+            event["user"].nickname)
 
     def _on_join(self, event, nickname):
         line = "%s joined %s" % (nickname, event["channel"].name)
