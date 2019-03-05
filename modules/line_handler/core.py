@@ -101,31 +101,38 @@ def invite(events, event):
 
 def handle_352(event):
     nickname = event["args"][5]
-    if not event["server"].is_own_nickname(nickname):
-        target = event["server"].get_user(nickname)
-    else:
-        target = event["server"]
-    target.username = event["args"][2]
-    target.hostname = event["args"][3]
+    username = event["args"][2]
+    hostname = event["args"][3]
+
+    if event["server"].is_own_nickname(nickname):
+        event["server"].username = username
+        event["server"].hostname = hostname
+
+    target = event["server"].get_user(nickname)
+    target.username = username
+    target.hostname = hostname
 
 def handle_354(event):
     if event["args"][1] == "111":
         nickname = event["args"][4]
+        username = event["args"][2]
+        hostname = event["args"][3]
+        realname = event["args"][6]
+        account = event["args"][5]
 
-        if not event["server"].is_own_nickname(nickname):
-            target = event["server"].get_user(nickname)
+        if event["server"].is_own_nickname(nickname):
+            event["server"].username = username
+            event["server"].hostname = hostname
+            event["server"].realname = realname
 
-            account = event["args"][5]
-            if not account == "0":
-                target.identified_account = account
-            else:
-                target.identified_account = None
+        target = event["server"].get_user(nickname)
+        target.username = username
+        target.hostname = hostname
+        target.realname = realname
+        if not account == "0":
+            target.identified_account = account
         else:
-            target = event["server"]
-
-        target.username = event["args"][2]
-        target.hostname = event["args"][3]
-        target.realname = event["args"][6]
+            target.identified_account = None
 
 def handle_433(event):
     new_nick = "%s|" % event["server"].connection_params.nickname

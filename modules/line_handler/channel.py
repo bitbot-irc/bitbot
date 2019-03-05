@@ -64,50 +64,50 @@ def join(events, event):
             account = event["args"][1]
         realname = event["args"][2]
 
-    if not event["server"].is_own_nickname(event["prefix"].nickname):
-        channel = event["server"].channels.get(channel_name)
-        user = event["server"].get_user(event["prefix"].nickname)
-        if not user.username and not user.hostname:
-            user.username = event["prefix"].username
-            user.hostname = event["prefix"].hostname
+    user = event["server"].get_user(event["prefix"].nickname)
 
-        if account:
-            user.identified_account = account
-            user.identified_account_id = event["server"].get_user(
-                account).get_id()
-        if realname:
-            user.realname = realname
-
-        channel.add_user(user)
-        user.join_channel(channel)
-        events.on("received.join").call(channel=channel, user=user,
-            server=event["server"], account=account, realname=realname)
-    else:
+    if event["server"].is_own_nickname(event["prefix"].nickname):
         channel = event["server"].channels.add(channel_name)
         if channel.name in event["server"].attempted_join:
             del event["server"].attempted_join[channel.name]
         events.on("self.join").call(channel=channel, server=event["server"],
             account=account, realname=realname)
         channel.send_mode()
+    else:
+        channel = event["server"].channels.get(channel_name)
+        events.on("received.join").call(channel=channel, user=user,
+            server=event["server"], account=account, realname=realname)
+
+    if not user.username and not user.hostname:
+        user.username = event["prefix"].username
+        user.hostname = event["prefix"].hostname
+
+    if account:
+        user.identified_account = account
+        user.identified_account_id = event["server"].get_user(account).get_id()
+    if realname:
+        user.realname = realname
+
+    channel.add_user(user)
+    user.join_channel(channel)
 
 def part(events, event):
     channel = event["server"].channels.get(event["args"][0])
+    user = event["server"].get_user(event["prefix"].nickname)
     reason = event["args"].get(1)
 
     if not event["server"].is_own_nickname(event["prefix"].nickname):
-        user = event["server"].get_user(event["prefix"].nickname)
-
         events.on("received.part").call(channel=channel, reason=reason,
             user=user, server=event["server"])
-
-        channel.remove_user(user)
-        user.part_channel(channel)
-        if not len(user.channels):
-            event["server"].remove_user(user)
     else:
         events.on("self.part").call(channel=channel, reason=reason,
             server=event["server"])
         event["server"].channels.remove(channel)
+
+    channel.remove_user(user)
+    user.part_channel(channel)
+    if not len(user.channels):
+        event["server"].remove_user(user)
 
 def handle_324(event):
     channel = event["server"].channels.get(event["args"][1])
@@ -132,20 +132,20 @@ def kick(events, event):
     target = event["args"][1]
     channel = event["server"].channels.get(event["args"][0])
     reason = event["args"].get(2)
+    target_user = event["server"].get_user(target)
 
     if not event["server"].is_own_nickname(target):
-        target_user = event["server"].get_user(target)
         events.on("received.kick").call(channel=channel, reason=reason,
             target_user=target_user, user=user, server=event["server"])
-
-        channel.remove_user(target_user)
-        target_user.part_channel(channel)
-        if not len(target_user.channels):
-            event["server"].remove_user(target_user)
     else:
         event["server"].channels.remove(channel)
         events.on("self.kick").call(channel=channel, reason=reason, user=user,
             server=event["server"])
+
+    channel.remove_user(target_user)
+    target_user.part_channel(channel)
+    if not len(target_user.channels):
+        event["server"].remove_user(target_user)
 
 def rename(events, event):
     old_name = event["args"][0]

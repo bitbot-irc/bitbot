@@ -2,13 +2,19 @@ from src import utils
 
 def handle_311(event):
     nickname = event["args"][1]
+    username = event["args"][2]
+    hostname = event["args"][3]
+    realname = event["args"][4]
+
     if event["server"].is_own_nickname(nickname):
-        target = event["server"]
-    else:
-        target = event["server"].get_user(nickname)
-    target.username = event["args"][2]
-    target.hostname = event["args"][3]
-    target.realname = event["args"][4]
+        event["server"].username = username
+        event["server"].hostname = hostname
+        event["server"].realname = realname
+
+    target = event["server"].get_user(nickname)
+    target.username = username
+    target.hostname = hostname
+    target.realname = realname
 
 def quit(events, event):
     nickname = None
@@ -31,20 +37,19 @@ def quit(events, event):
 
 def nick(events, event):
     new_nickname = event["args"].get(0)
-    if not event["server"].is_own_nickname(event["prefix"].nickname):
-        user = event["server"].get_user(event["prefix"].nickname)
-        old_nickname = user.nickname
-        user.set_nickname(new_nickname)
-        event["server"].change_user_nickname(old_nickname, new_nickname)
+    user = event["server"].get_user(event["prefix"].nickname)
+    old_nickname = user.nickname
 
+    if not event["server"].is_own_nickname(event["prefix"].nickname):
         events.on("received.nick").call(new_nickname=new_nickname,
             old_nickname=old_nickname, user=user, server=event["server"])
     else:
-        old_nickname = event["server"].nickname
         event["server"].set_own_nickname(new_nickname)
-
         events.on("self.nick").call(server=event["server"],
             new_nickname=new_nickname, old_nickname=old_nickname)
+
+    user.set_nickname(new_nickname)
+    event["server"].change_user_nickname(old_nickname, new_nickname)
 
 def away(events, event):
     user = event["server"].get_user(event["prefix"].nickname)
@@ -64,10 +69,11 @@ def chghost(event):
     username = event["args"][0]
     hostname = event["args"][1]
 
-    if not event["server"].is_own_nickname(nickname):
-        target = event["server"].get_user(nickname)
-    else:
-        target = event["server"]
+    if event["server"].is_own_nickname(nickname):
+        event["server"].username = username
+        event["server"].hostname = hostname
+
+    target = event["server"].get_user(nickname)
     target.username = username
     target.hostname = hostname
 
