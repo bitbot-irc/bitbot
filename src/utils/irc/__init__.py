@@ -212,7 +212,16 @@ def parse_format(s: str) -> str:
 
         s = s.replace(token, replace, 1)
 
-    return s + utils.consts.ANSI_RESET
+    if has_foreground:
+        s += utils.consts.ANSI_FOREGROUND_RESET
+    if has_background:
+        s += utils.consts.ANSI_BACKGROUND_RESET
+    if bold:
+        s += utils.consts.ANSI_BOLD_RESET
+    if underline:
+        s += utils.consts.ANSI_UNDERLINE_RESET
+
+    return s
 
 OPT_STR = typing.Optional[str]
 class IRCConnectionParameters(object):
