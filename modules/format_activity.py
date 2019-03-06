@@ -141,7 +141,7 @@ class Module(ModuleManager.BaseModule):
         dt = datetime.datetime.strftime(unix_dt, utils.ISO8601_PARSE)
         line = "topic set at %s" % dt
         self._event("topic-timestamp", event["server"], line,
-            event["channel"].name)
+            event["channel"].name, channel=event["channel"])
 
     def _on_kick(self, event, nickname):
         reason = ""
