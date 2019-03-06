@@ -2,10 +2,6 @@ import datetime
 from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    def _print_line(self, target, context, line):
-        formatted_line = utils.irc.parse_format(line)
-        self.bot.log.info("%s%s | %s", [target, context or "", formatted_line])
-
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
     @utils.hook("formatted.join")
@@ -21,4 +17,5 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.rename")
     @utils.hook("formatted.motd")
     def formatted(self, event):
-        self._print_line(str(event["server"]), event["context"], event["line"])
+        self.bot.log.info("%s%s | %s", [
+            str(event["server"]), event["context"] or "", event["line"]])

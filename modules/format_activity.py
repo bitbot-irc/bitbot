@@ -3,8 +3,8 @@ from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def _event(self, type, server, line, context):
-        self.events.on("formatted").on(type).call(server=server, line=line,
-            context=context)
+        self.events.on("formatted").on(type).call(server=server,
+            context=context, line=utils.irc.parse_format(line))
 
     def _mode_symbols(self, user, channel, server):
         modes = channel.get_user_status(user)
