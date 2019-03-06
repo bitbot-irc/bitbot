@@ -19,4 +19,5 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.motd")
     def formatted(self, event):
         self.bot.log.info("%s%s | %s", [
-            str(event["server"]), event["context"] or "", event["line"]])
+            str(event["server"]), event["context"] or "",
+            utils.irc.parse_format(event["line"])])

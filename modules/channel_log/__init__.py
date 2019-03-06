@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
         if channel.get_setting("log", False):
             with self._log_file(str(event["server"]), str(channel)) as log:
                 timestamp = datetime.datetime.now().strftime("%x %X")
-                log.write("%s %s\n" % (timestamp, event["raw_line"]))
+                log.write("%s %s\n" % (timestamp, event["line"]))
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
