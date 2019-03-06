@@ -106,8 +106,8 @@ class Socket(IRCObject.Object):
             try:
                 decoded_line = line.decode(self._encoding)
             except UnicodeDecodeError:
-                self.log.trace("can't decode line with '%s', falling back",
-                    [self._encoding])
+                self.log.trace("can't decode line with '%s', falling back: %s",
+                    [self._encoding, line])
                 try:
                     decoded_line = line.decode(self._fallback_encoding)
                 except UnicodeDecodeError:
