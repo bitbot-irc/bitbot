@@ -2,9 +2,10 @@ import datetime
 from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    def _event(self, type, server, line, context):
+    def _event(self, type, server, line, context, channel=None, user=None):
         self.events.on("formatted").on(type).call(server=server,
-            context=context, line=utils.irc.parse_format(line))
+            context=context, line=utils.irc.parse_format(line), raw_line=line,
+            channel=channel, user=user)
 
     def _mode_symbols(self, user, channel, server):
         modes = channel.get_user_status(user)
@@ -39,7 +40,7 @@ class Module(ModuleManager.BaseModule):
 
         line = self._privmsg(event, event["channel"], user, nickname)
         self._event("message.channel", event["server"], line,
-            event["channel"].name)
+            event["channel"].name, channel=event["channel"], user=user)
 
     def _on_notice(self, event, sender, target):
         return "(notice->%s) <%s> %s" % (target, sender, event["message"])
@@ -65,35 +66,41 @@ class Module(ModuleManager.BaseModule):
         self._private_notice(event, event["server"].nickname,
             event["user"].nickname)
 
-    def _on_join(self, event, nickname):
-        line = "%s joined %s" % (nickname, event["channel"].name)
-        self._event("join", event["server"], line, event["channel"].name)
+    def _on_join(self, event, user):
+        line = "%s joined %s" % (user.nickname, event["channel"].name)
+        self._event("join", event["server"], line, event["channel"].name,
+            channel=event["channel"], user=user)
     @utils.hook("received.join")
     def join(self, event):
-        self._on_join(event, event["user"].nickname)
+        self._on_join(event, event["user"])
     @utils.hook("self.join")
     def self_join(self, event):
-        self._on_join(event, event["server"].nickname)
+        self._on_join(event, event["server"].get_user(event["server"].nickname))
 
-    def _on_part(self, event, nickname):
+    def _on_part(self, event, user):
         reason = ""
         if event["reason"]:
             reason = " (%s)" % event["reason"]
-        line = "%s left %s%s" % (nickname, event["channel"].name, reason)
-        self._event("part", event["server"], line, event["channel"].name)
+        line = "%s left %s%s" % (user.nickname, event["channel"].name, reason)
+        self._event("part", event["server"], line, event["channel"].name,
+            channel=event["channel"], user=user)
     @utils.hook("received.part")
     def part(self, event):
-        self._on_part(event, event["user"].nickname)
+        self._on_part(event, event["user"])
     @utils.hook("self.part")
     def self_part(self, event):
-        self._on_part(event, event["server"].nickname)
+        self._on_part(event, event["server"].get_user(event["server"].nickname))
 
-    @utils.hook("received.nick")
-    @utils.hook("self.nick")
-    def on_nick(self, event):
+    def _on_nick(self, event, user):
         line = "%s changed nickname to %s" % (
             event["old_nickname"], event["new_nickname"])
-        self._event("nick", event["server"], line, None)
+        self._event("nick", event["server"], line, None, user=user)
+    @utils.hook("received.nick")
+    def nick(self, event):
+        self._on_nick(event, event["user"])
+    @utils.hook("self.nick")
+    def self_nick(self, event):
+        self._on_nick(event, event["server"].get_user(event["server"].nickname))
 
     @utils.hook("received.server-notice", priority=EventManager.PRIORITY_HIGH)
     def server_notice(self, event):
@@ -116,11 +123,12 @@ class Module(ModuleManager.BaseModule):
         line = "%s set mode %s%s" % (
             event["user"].nickname, "".join(event["modes"]), args)
         self._event("mode.channel", event["server"], line,
-            event["channel"].name)
+            event["channel"].name, channel=event["channel"], user=event["user"])
 
     def _on_topic(self, event, setter, action, topic):
         line = "topic %s by %s: %s" % (action, setter, topic)
-        self._event("topic", event["server"], line, event["channel"].name)
+        self._event("topic", event["server"], line, event["channel"].name,
+            channel=event["channel"], user=event.get("user", None))
     @utils.hook("received.topic")
     def on_topic(self, event):
         self._on_topic(event, event["user"].nickname, "changed",
@@ -142,7 +150,8 @@ class Module(ModuleManager.BaseModule):
             reason = "(%s)" % event["reason"]
         line = "%s kicked %s from %s%s" % (
             event["user"].nickname, nickname, event["channel"].name, reason)
-        self._event("kick", event["server"], line, event["channel"].name)
+        self._event("kick", event["server"], line, event["channel"].name,
+            channel=event["channel"], user=event.get("user", None))
     @utils.hook("received.kick")
     def kick(self, event):
         self._on_kick(event, event["target_user"].nickname)
@@ -150,18 +159,19 @@ class Module(ModuleManager.BaseModule):
     def self_kick(self, event):
         self._on_kick(event, event["server"].nickname)
 
-    def _quit(self, event, nickname, reason):
+    def _quit(self, event, user, reason):
         reason = ""
         if reason:
             reason = " (%s)" % reason
-        line = "%s quit%s" % (nickname, reason)
+        line = "%s quit%s" % (user.nickname, reason)
         self._event("quit", event["server"], line, None)
     @utils.hook("received.quit")
     def on_quit(self, event):
-        self._quit(event, event["user"].nickname, event["reason"])
+        self._quit(event, event["user"], event["reason"])
     @utils.hook("send.quit")
     def send_quit(self, event):
-        self._quit(event, event["server"].nickname, event["reason"])
+        self._quit(event, event["server"].get_user(event["server"].nickname),
+            event["reason"])
 
     @utils.hook("received.rename")
     def rename(self, event):
