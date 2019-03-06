@@ -66,6 +66,14 @@ def join(events, event):
 
     user = event["server"].get_user(event["prefix"].nickname)
 
+    user.username = event["prefix"].username
+    user.hostname = event["prefix"].hostname
+    if account:
+        user.identified_account = account
+        user.identified_account_id = event["server"].get_user(account).get_id()
+    if realname:
+        user.realname = realname
+
     if event["server"].is_own_nickname(event["prefix"].nickname):
         channel = event["server"].channels.add(channel_name)
         if channel.name in event["server"].attempted_join:
@@ -77,15 +85,6 @@ def join(events, event):
         channel = event["server"].channels.get(channel_name)
         events.on("received.join").call(channel=channel, user=user,
             server=event["server"], account=account, realname=realname)
-
-    user.username = event["prefix"].username
-    user.hostname = event["prefix"].hostname
-
-    if account:
-        user.identified_account = account
-        user.identified_account_id = event["server"].get_user(account).get_id()
-    if realname:
-        user.realname = realname
 
     channel.add_user(user)
     user.join_channel(channel)
