@@ -11,7 +11,8 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # logging
-logs/*.log*
+*.log
+*.log.*
 
 # databases
 *.db
