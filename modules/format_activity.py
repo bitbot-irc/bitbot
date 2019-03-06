@@ -176,7 +176,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.rename")
     def rename(self, event):
         line = "%s was renamed to %s" % (event["old_name"], event["new_name"])
-        self._event("rename", event["server"], line, event["old_name"])
+        self._event("rename", event["server"], line, event["old_name"],
+            channel=event["channel"])
 
     @utils.hook("received.376")
     def motd_end(self, event):
