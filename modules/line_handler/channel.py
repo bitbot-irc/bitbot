@@ -78,9 +78,8 @@ def join(events, event):
         events.on("received.join").call(channel=channel, user=user,
             server=event["server"], account=account, realname=realname)
 
-    if not user.username and not user.hostname:
-        user.username = event["prefix"].username
-        user.hostname = event["prefix"].hostname
+    user.username = event["prefix"].username
+    user.hostname = event["prefix"].hostname
 
     if account:
         user.identified_account = account
