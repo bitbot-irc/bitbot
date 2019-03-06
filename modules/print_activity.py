@@ -4,6 +4,7 @@ from src import EventManager, ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
+    @utils.hook("formatted.notice.private")
     @utils.hook("formatted.join")
     @utils.hook("formatted.part")
     @utils.hook("formatted.nick")
