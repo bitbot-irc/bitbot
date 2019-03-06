@@ -4,6 +4,9 @@ from src import ModuleManager, utils
 ROOT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 LOGS_DIRECTORY = os.path.join(ROOT_DIRECTORY, "logs")
 
+@utils.export("channelset", {"setting": "log",
+    "help": "Enable/disable channel logging",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def _log_file(self, server_name, channel_name):
         return open(os.path.join(LOGS_DIRECTORY,
