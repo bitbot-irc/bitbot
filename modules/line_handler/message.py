@@ -44,10 +44,11 @@ def privmsg(events, event):
     ctcp_message = utils.irc.parse_ctcp(message)
     if ctcp_message:
         message = ctcp_message.message
-        event_type = "ctcp.%s" % ctcp_message.command
         if ctcp_message.command == "ACTION":
             action = True
             message = ctcp_message.message
+        else:
+            event_type = "ctcp.%s" % ctcp_message.command
 
     if user and "account" in event["tags"]:
         user.identified_account = event["tags"]["account"]
