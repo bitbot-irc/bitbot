@@ -66,7 +66,7 @@ class Module(ModuleManager.BaseModule):
             event["user"].nickname)
 
     def _on_join(self, event, user):
-        line = "%s joined %s" % (user.nickname, event["channel"].name)
+        line = - "%s joined %s" % (user.nickname, event["channel"].name)
         self._event("join", event["server"], line, event["channel"].name,
             channel=event["channel"], user=user)
     @utils.hook("received.join")
@@ -80,7 +80,7 @@ class Module(ModuleManager.BaseModule):
         reason = ""
         if event["reason"]:
             reason = " (%s)" % event["reason"]
-        line = "%s left %s%s" % (user.nickname, event["channel"].name, reason)
+        line = "- %s left %s%s" % (user.nickname, event["channel"].name, reason)
         self._event("part", event["server"], line, event["channel"].name,
             channel=event["channel"], user=user)
     @utils.hook("received.part")
@@ -91,7 +91,7 @@ class Module(ModuleManager.BaseModule):
         self._on_part(event, event["server"].get_user(event["server"].nickname))
 
     def _on_nick(self, event, user):
-        line = "%s changed nickname to %s" % (
+        line = "- %s changed nickname to %s" % (
             event["old_nickname"], event["new_nickname"])
         self._event("nick", event["server"], line, None, user=user)
     @utils.hook("received.nick")
@@ -162,7 +162,7 @@ class Module(ModuleManager.BaseModule):
         reason = ""
         if reason:
             reason = " (%s)" % reason
-        line = "%s quit%s" % (user.nickname, reason)
+        line = "- %s quit%s" % (user.nickname, reason)
         self._event("quit", event["server"], line, None)
     @utils.hook("received.quit")
     def on_quit(self, event):
