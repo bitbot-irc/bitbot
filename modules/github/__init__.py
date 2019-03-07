@@ -495,28 +495,30 @@ class Module(ModuleManager.BaseModule):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
             COLOR_ID)
         action = data["action"]
-        action_desc = action
+        action_desc = "%s %s" % (action, number)
         branch = data["pull_request"]["base"]["ref"]
         colored_branch = utils.irc.color(branch, COLOR_BRANCH)
 
         if action == "opened":
-            action_desc = "requested merge into %s" % colored_branch
+            action_desc = "requested %s merge into %s" % (number,
+                colored_branch)
         elif action == "closed":
             if data["pull_request"]["merged"]:
-                action_desc = "%s into %s" % (
-                    utils.irc.color("merged", COLOR_POSITIVE),
+                action_desc = "%s %s into %s" % (
+                    utils.irc.color("merged", COLOR_POSITIVE), number,
                     colored_branch)
             else:
-                action_desc = utils.irc.color("closed without merging",
-                    COLOR_NEGATIVE)
+                action_desc = "%s %s %s" % (
+                    utils.irc.color("closed", COLOR_NEGATIVE), number,
+                    utils.irc.color("without merging", COLOR_NEGATIVE))
         elif action == "synchronize":
-            action_desc = "committed to"
+            action_desc = "committed to %s" % number
 
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["pull_request"]["html_url"])
-        return ["[PR %s] %s %s: %s - %s" % (
-            number, author, action_desc, pr_title, url)]
+        return ["[PR] %s %s: %s - %s" % (
+            author, action_desc, pr_title, url)]
 
     def pull_request_review(self, full_name, data):
         if data["review"]["state"] == "commented":
