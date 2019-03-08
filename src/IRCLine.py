@@ -9,7 +9,10 @@ class IRCArgs(object):
         self._args = args
 
     def get(self, index: int) -> typing.Optional[str]:
-        if len(self._args) > index:
+        if index < 0:
+            if len(self._args) > (abs(index)-1):
+                return self._args[index]
+        elif len(self._args) > index:
             return self._args[index]
         return None
 
