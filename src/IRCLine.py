@@ -68,7 +68,8 @@ class ParsedLine(object):
 
         if self.args:
             for i, arg in enumerate(self._args):
-                if i == len(self._args)-1 and (" " in arg or arg[0] == ":"):
+                if arg and i == len(self._args)-1 and (
+                        " " in arg or arg[0] == ":"):
                     pieces.append(":%s" % arg)
                 else:
                     pieces.append(arg)
