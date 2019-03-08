@@ -93,9 +93,9 @@ class Bot(object):
     def connect(self, server: IRCServer.Server) -> bool:
         try:
             server.connect()
-        except:
-            self.log.warn("Failed to connect to %s", [str(server)],
-                exc_info=True)
+        except Exception as e:
+            self.log.warn("Failed to connect to %s",
+                [str(server), str(e)])
             return False
         self.servers[server.fileno()] = server
         self.poll.register(server.fileno(), select.EPOLLOUT)
