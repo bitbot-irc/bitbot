@@ -119,7 +119,7 @@ class Module(ModuleManager.BaseModule):
         if args:
             args = " %s" % args
 
-        line = "%s set mode %s%s" % (
+        line = "- %s set mode %s%s" % (
             event["user"].nickname, "".join(event["modes"]), args)
         self._event("mode.channel", event["server"], line,
             event["channel"].name, channel=event["channel"], user=event["user"])
