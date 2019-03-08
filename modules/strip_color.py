@@ -8,5 +8,6 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.send.notice")
     def preprocess(self, event):
         if event["server"].get_setting("strip-color", False):
-            line = event["line"]
-            line.args[-1] = utils.irc.strip_font(line.args[-1])
+            message = event["line"].args.get(-1)
+            if not message == None:
+                event["line"].args[-1] = utils.irc.strip_font(message)
