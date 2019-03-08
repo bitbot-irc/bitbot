@@ -77,9 +77,8 @@ class Module(ModuleManager.BaseModule):
         self._on_join(event, event["server"].get_user(event["server"].nickname))
 
     def _on_part(self, event, user):
-        reason = ""
-        if event["reason"]:
-            reason = " (%s)" % event["reason"]
+        reason = event["reason"]
+        reason = reason if not reason else " (%s)" % reason
         line = "- %s left %s%s" % (user.nickname, event["channel"].name, reason)
         self._event("part", event["server"], line, event["channel"].name,
             channel=event["channel"], user=user)
@@ -159,9 +158,7 @@ class Module(ModuleManager.BaseModule):
         self._on_kick(event, event["server"].nickname)
 
     def _quit(self, event, user, reason):
-        reason = ""
-        if reason:
-            reason = " (%s)" % reason
+        reason = reason if not reason else " (%s)" % reason
         line = "- %s quit%s" % (user.nickname, reason)
         self._event("quit", event["server"], line, None, user=user)
     @utils.hook("received.quit")
