@@ -94,7 +94,7 @@ class Bot(object):
         try:
             server.connect()
         except Exception as e:
-            self.log.warn("Failed to connect to %s",
+            self.log.warn("Failed to connect to %s: %s",
                 [str(server), str(e)])
             return False
         self.servers[server.fileno()] = server
