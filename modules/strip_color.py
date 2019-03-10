@@ -10,8 +10,12 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.send.privmsg")
     @utils.hook("preprocess.send.notice")
     def preprocess(self, event):
-        strip_color = event["channel"].get_setting("strip-color",
-            event["server"].get_setting("strip-color", False))
+        strip_color = event["server"].get_setting("strip-color", False)
+        target = event["line"].args[0]
+        if not strip_color and target in event["server"].channels:
+            channel = event["server"].channels.get(target)
+            strip_color = channel.get_setting("strip-color", False)
+
         if strip_color:
             message = event["line"].args.get(-1)
             if not message == None:
