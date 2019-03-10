@@ -463,14 +463,14 @@ class Module(ModuleManager.BaseModule):
 
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
-                id = commit["id"]
+                id = utils.irc.color(self._short_hash(commit["id"]), COLOR_ID)
                 message = commit["message"].split("\n")[0].strip()
                 author = utils.irc.bold(data["pusher"]["name"])
                 url = self._short_url(COMMIT_URL % (full_name, id))
 
                 outputs.append(
-                    "%s %spushed to %s: %s - %s"
-                    % (author, forced, branch, message, url))
+                    "%s %spushed %s to %s: %s - %s"
+                    % (author, forced, id, branch, message, url))
         else:
             first_id = data["before"]
             last_id = data["commits"][-1]["id"]
