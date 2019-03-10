@@ -2,8 +2,8 @@ import datetime, decimal, enum, io, ipaddress, re, threading, typing
 from src.utils import cli, consts, irc, http, parse, security
 
 class Direction(enum.Enum):
-    SEND = 0
-    RECV = 1
+    Send = 0
+    Recv = 1
 
 ISO8601_PARSE = "%Y-%m-%dT%H:%M:%S%z"
 

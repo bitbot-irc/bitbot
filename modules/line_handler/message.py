@@ -1,7 +1,7 @@
 from src import utils
 
 def _from_self(server, direction, prefix):
-    if direction == utils.Direction.SEND:
+    if direction == utils.Direction.Send:
         if server.has_capability("echo-message"):
             return None
         else:

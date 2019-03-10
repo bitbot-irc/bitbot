@@ -18,11 +18,11 @@ def handle_311(event):
 
 def quit(events, event):
     nickname = None
-    if event["direction"] == utils.Direction.RECV:
+    if event["direction"] == utils.Direction.Recv:
         nickname = event["prefix"].nickname
     reason = event["args"].get(0)
 
-    if event["direction"] == utils.Direction.RECV:
+    if event["direction"] == utils.Direction.Recv:
         nickname = event["prefix"].nickname
         if (not event["server"].is_own_nickname(nickname) and
                 not event["prefix"].hostmask == "*"):

@@ -16,7 +16,7 @@ class Module(ModuleManager.BaseModule):
         default_event = any(default_events)
 
         kwargs = {"args": line.args, "tags": line.tags, "server": server,
-            "prefix": line.prefix, "direction": utils.Direction.RECV}
+            "prefix": line.prefix, "direction": utils.Direction.Recv}
 
         self.events.on("raw.received").on(line.command).call_unsafe(**kwargs)
         if default_event or not hooks:
@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
     def handle_send(self, event):
         self.events.on("raw.send").on(event["line"].command).call_unsafe(
             args=event["line"].args, tags=event["line"].tags,
-            server=event["server"], direction=utils.Direction.SEND)
+            server=event["server"], direction=utils.Direction.Send)
 
     # ping from the server
     @utils.hook("raw.received.ping")
