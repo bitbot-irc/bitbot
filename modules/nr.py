@@ -125,8 +125,8 @@ class Module(ModuleManager.BaseModule):
         client = self.client
         colours = self.COLOURS
 
-        eagle_key = self.bot.config["eagle-api-key"]
-        eagle_url = self.bot.config["eagle-api-url"]
+        eagle_key = self.bot.config.get("eagle-api-key", None)
+        eagle_url = self.bot.config.get("eagle-api-url", None)
         schedule = {}
 
         location_code = event["args_split"][0].upper()
