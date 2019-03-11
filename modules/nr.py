@@ -1,3 +1,5 @@
+#--require-config nre-api-key
+
 import collections, re, time
 from datetime import datetime, date
 from collections import Counter
