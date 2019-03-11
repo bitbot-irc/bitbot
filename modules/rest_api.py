@@ -39,10 +39,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return [key_setting, minify]
 
     def _handle(self, method):
-        _log.debug("[HTTP] starting _handle for %s from %s:%d",
-            [method, self.client_address[0], self.client_address[1]])
-
         path, endpoint, args = self._path_data()
+
+        _log.debug("[HTTP] starting _handle for %s from %s:%d: %s",
+            [method, self.client_address[0], self.client_address[1], path])
+
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
         params = self._url_params()
         data = self._body()
@@ -104,7 +105,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self._handle("POST")
 
     def log_message(self, format, *args):
-        _log.debug("[HTTP] " + format, args)
+        return
 
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
