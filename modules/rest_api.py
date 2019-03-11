@@ -39,8 +39,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return [key_setting, minify]
 
     def _handle(self, method):
-        _log.debug("[HTTP] starting _handle for %s from %s",
-            [method, self.client_address])
+        _log.debug("[HTTP] starting _handle for %s from %s:%d",
+            [method, self.client_address[0], self.client_address[1]])
 
         path, endpoint, args = self._path_data()
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
@@ -94,8 +94,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         self._respond(code, headers, response)
 
-        _log.debug("[HTTP] finishing _handle for %s from %s",
-            [method, self.client_address])
+        _log.debug("[HTTP] finishing _handle for %s from %s:%d",
+            [method, self.client_address[0], self.client_address[1]])
 
     def do_GET(self):
         self._handle("GET")
