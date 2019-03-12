@@ -66,7 +66,7 @@ class Module(ModuleManager.BaseModule):
             event["user"].nickname)
 
     def _on_join(self, event, user):
-        line = "- %s joined %s" % (user.nickname, event["channel"].name)
+        line = "- %s joined %s" % (user.hostmask(), event["channel"].name)
         self._event("join", event["server"], line, event["channel"].name,
             channel=event["channel"], user=user)
     @utils.hook("received.join")
