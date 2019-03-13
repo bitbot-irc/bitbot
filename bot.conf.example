@@ -9,6 +9,7 @@ tls-certificate          =
 # key/cert used for REST API
 tls-api-key              =
 tls-api-certificate      =
+api-port                 =
 
 # the default channel BitBot automatically joins
 bot-channel              =

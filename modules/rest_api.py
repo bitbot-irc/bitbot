@@ -126,7 +126,8 @@ class Module(ModuleManager.BaseModule):
 
         self.httpd = None
         if self.bot.get_setting("rest-api", False):
-            self.httpd = http.server.HTTPServer(("", 5000), Handler)
+            port = int(self.bot.config.get("api-port", "5000"))
+            self.httpd = http.server.HTTPServer(("", port), Handler)
 
             self.httpd.socket = utils.security.ssl_wrap(self.httpd.socket,
                 cert=self.bot.config["tls-api-certificate"],
