@@ -1,0 +1,20 @@
+# This systemd script was made to be used in Ubuntu 18.04 LTS
+# Check your distro and make the appropriate changes if needed
+
+[Unit]
+Description=BitBot Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=$USER
+Group=$GROUP
+WorkingDirectory=/home/$USER/bitbot
+ExecStart=/usr/bin/env python3 start.py
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+# Remember to change $USER and $GROUP with your actual shell username
