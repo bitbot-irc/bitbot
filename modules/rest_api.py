@@ -95,8 +95,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         self._respond(code, headers, response)
 
-        _log.debug("[HTTP] finishing _handle for %s from %s:%d",
-            [method, self.client_address[0], self.client_address[1]])
+        _log.debug("[HTTP] finishing _handle for %s from %s:%d (%d)",
+            [method, self.client_address[0], self.client_address[1]], code)
 
     def do_GET(self):
         self._handle("GET")
