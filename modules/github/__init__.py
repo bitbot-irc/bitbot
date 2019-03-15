@@ -542,7 +542,7 @@ class Module(ModuleManager.BaseModule):
             state_desc = "dismissed a review"
 
         return ["[PR] %s %s on %s: %s - %s" %
-            (reviewer, state_desc, number, title, url)]
+            (reviewer, state_desc, number, pr_title, url)]
 
     def pull_request_review_comment(self, full_name, data):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
