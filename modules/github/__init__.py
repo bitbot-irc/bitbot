@@ -39,6 +39,13 @@ EVENT_CATEGORIES = {
     "pr-all": [
         "pull_request", "pull_request_review", "pull_request_review_comment"
     ],
+    "pr-review-minimal": [
+        "pull_request_review/submitted", "pull_request_review/dismissed"
+    ],
+    "pr-review-comment-minimal": [
+        "pull_request_review_comment/created",
+        "pull_request_review_comment/deleted"
+    ],
     "issue-minimal": [
         "issues/opened", "issues/closed", "issues/reopened", "issues/deleted"
     ],
@@ -48,6 +55,9 @@ EVENT_CATEGORIES = {
     ],
     "issue-all": [
         "issues", "issue_comment"
+    ],
+    "issue-comment-minimal": [
+        "issue_comment/created", "issue_comment/deleted"
     ],
     "repo": [
         "create", # a repository, branch or tag has been created
