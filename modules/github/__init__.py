@@ -522,19 +522,27 @@ class Module(ModuleManager.BaseModule):
             author, action_desc, pr_title, url)]
 
     def pull_request_review(self, full_name, data):
-        if data["review"]["state"] == "commented":
-            return []
         if not "submitted_at" in data["review"]:
             return []
 
+        state = data["review"]["state"]
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
             COLOR_ID)
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["review"]["html_url"])
-        return ["[PR] %s %s a review on %s: %s - %s" %
-            (reviewer, action, number, pr_title, url)]
+
+        state_desc = state
+        if state == "approved":
+            state_desc = "approved changes"
+        elif state == "changes_requested":
+            state_desc = "requested changes"
+        elif state == "dismissed":
+            state_desc = "dismissed a review"
+
+        return ["[PR] %s %s on %s: %s - %s" %
+            (reviewer, state_desc, number, title, url)]
 
     def pull_request_review_comment(self, full_name, data):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
