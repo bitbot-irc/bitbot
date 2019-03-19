@@ -44,7 +44,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("raw.received.error")
     def error(self, event):
-        self.log.error("ERROR received: %s", [event["args"][0]])
+        self.log.error("ERROR received from %s: %s",
+            [str(event["server"]), event["args"][0]])
     @utils.hook("raw.received.fail")
     def fail(self, event):
         command = event["args"][0]
