@@ -536,6 +536,9 @@ class Module(ModuleManager.BaseModule):
             return []
 
         state = data["review"]["state"]
+        if state == "commented":
+            return []
+
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
             COLOR_ID)
         action = data["action"]
