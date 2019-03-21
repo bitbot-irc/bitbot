@@ -225,7 +225,7 @@ class Module(ModuleManager.BaseModule):
         chosen_side = random.SystemRandom().choice(list(SIDES.keys()))
         win = side_name == chosen_side
 
-        coin_bet_str = self._coin_str(coin_bet)
+        coin_bet_str = self._coin_str_human(coin_bet)
         if win:
             new_total = self._give(event["server"], event["user"], coin_bet)
             event["stdout"].write(
