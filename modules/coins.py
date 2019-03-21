@@ -231,7 +231,8 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write(
                 "%s flips %s and wins %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
-                    "" if coin_bet == 1 else "s", self._coin_str(new_total)
+                    "" if coin_bet == 1 else "s",
+                    self._coin_str_human(new_total)
                 )
             )
         else:
@@ -240,7 +241,7 @@ class Module(ModuleManager.BaseModule):
                 "%s flips %s and loses %s coin%s! (new total: %s)" % (
                     event["user"].nickname, side_name, coin_bet_str,
                     "" if coin_bet == 1 else "s",
-                    self._coin_str(user_coins-coin_bet)
+                    self._coin_str_human(user_coins-coin_bet)
                 )
             )
 
