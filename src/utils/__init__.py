@@ -79,25 +79,25 @@ def to_pretty_time(total_seconds: int, minimum_unit: int=UNIT_SECOND,
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
     weeks, days = divmod(days, 7)
-    out = ""
+    out = []
 
     units = 0
     if weeks and minimum_unit >= UNIT_WEEK and units < max_units:
-        out += "%dw" % weeks
+        out.append("%dw" % weeks)
         units += 1
     if days and minimum_unit >= UNIT_DAY and units < max_units:
-        out += "%dd" % days
+        out.append("%dd" % days)
         units += 1
     if hours and minimum_unit >= UNIT_HOUR and units < max_units:
-        out += "%dh" % hours
+        out.append("%dh" % hours)
         units += 1
     if minutes and minimum_unit >= UNIT_MINUTE and units < max_units:
-        out += "%dm" % minutes
+        out.append("%dm" % minutes)
         units += 1
     if seconds and minimum_unit >= UNIT_SECOND and units < max_units:
-        out += "%ds" % seconds
+        out.append("%ds" % seconds)
         units += 1
-    return out
+    return " ".join(out)
 
 def parse_number(s: str) -> str:
     try:
