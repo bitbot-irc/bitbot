@@ -4,6 +4,8 @@ from src import ModuleManager, utils
 URL_CVE = "https://cve.circl.lu/api/cve/%s"
 
 class Module(ModuleManager.BaseModule):
+    _name = "CVE"
+
     @utils.hook("received.command.cve", min_args=1)
     def cve(self, event):
         """
