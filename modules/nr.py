@@ -315,8 +315,8 @@ class Module(ModuleManager.BaseModule):
             "S": "ship", "T": "trip", "1": "train", "2": "freight",
             "3": "trip", "4": "ship", "5": "bus"}
 
-        eagle_key = self.bot.config["eagle-api-key"]
-        eagle_url = self.bot.config["eagle-api-url"]
+        eagle_key = self.bot.config.get("eagle-api-key", None)
+        eagle_url = self.bot.config.get("eagle-api-url", None)
         schedule = {}
         sources = []
 
