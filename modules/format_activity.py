@@ -78,7 +78,7 @@ class Module(ModuleManager.BaseModule):
 
     def _on_part(self, event, user):
         reason = event["reason"]
-        reason = reason if not reason else " (%s)" % reason
+        reason = "" if not reason else " (%s)" % reason
         line = "- %s left %s%s" % (user.nickname, event["channel"].name, reason)
         self._event("part", event["server"], line, event["channel"].name,
             channel=event["channel"], user=user)
