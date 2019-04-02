@@ -78,8 +78,14 @@ def chghost(event):
     target.hostname = hostname
 
 def setname(event):
-    user = event["server"].get_user(event["prefix"].nickname)
-    user.realname = event["args"][0]
+    nickname = event["prefix"].nickname
+    realname = event["args"][0]
+
+    user = event["server"].get_user(nickname)
+    user.realname = realname
+
+    if event["server"].is_own_nickname(nickname):
+        event["server"].realname = realname
 
 def account(events, event):
     user = event["server"].get_user(event["prefix"].nickname)
