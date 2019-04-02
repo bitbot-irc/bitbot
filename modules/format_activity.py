@@ -158,7 +158,7 @@ class Module(ModuleManager.BaseModule):
         self._on_kick(event, event["server"].nickname)
 
     def _quit(self, event, user, reason):
-        reason = reason if not reason else " (%s)" % reason
+        reason = "" if not reason else " (%s)" % reason
         line = "- %s quit%s" % (user.nickname, reason)
         self._event("quit", event["server"], line, None, user=user)
     @utils.hook("received.quit")
