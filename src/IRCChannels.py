@@ -25,7 +25,7 @@ class Channels(object):
     def items(self):
         return self._channels.items()
 
-    def _get_id(self, channel_name: str) -> int:
+    def get_id(self, channel_name: str) -> int:
         self._bot.database.channels.add(self._server.id, channel_name)
         return self._bot.database.channels.get_id(self._server.id, channel_name)
 
@@ -37,7 +37,7 @@ class Channels(object):
         return name[0] in self._server.channel_types and lower in self._channels
 
     def add(self, name: str) -> IRCChannel.Channel:
-        id = self._get_id(name)
+        id = self.get_id(name)
         lower = self._name_lower(name)
         new_channel = IRCChannel.Channel(lower, id, self._server, self._bot)
         self._channels[lower] = new_channel
