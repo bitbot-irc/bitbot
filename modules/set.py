@@ -7,6 +7,8 @@ CHANNELSETADD_HELP = ("Add to a specified channel setting for the "
 
 class ConfigInvalidValue(Exception):
     pass
+class ConfigSettingInexistent(Exception):
+    pass
 
 class ConfigResults(enum.Enum):
     Changed = 1
@@ -30,6 +32,9 @@ class ConfigChannelTarget(object):
         channel_id = self._get_id()
         return self._bot.database.channel_settings.get(channel_id, setting,
             default)
+    def del_setting(self, setting):
+        channel_id = self._get_id()
+        self._bot.database.channel_settings.delete(channel_id, setting)
 
 class Module(ModuleManager.BaseModule):
     def _set(self, category, event, target, array, arg_index=0):
@@ -228,13 +233,20 @@ class Module(ModuleManager.BaseModule):
                 raise ConfigInvalidValue()
         else:
             existing_value = target.get_setting(setting, None)
-            return ConfigResult(ConfigResults.Retrieved, existing_value)
+            if not existing_value == None:
+                if setting.startswith("-"):
+                    setting = setting[1:]
+                    target.del_setting(setting)
+                else:
+                    return ConfigResult(ConfigResults.Retrieved, existing_value)
+            else:
+                raise ConfigSettingInexistent()
 
     @utils.hook("received.command.config", min_args=1)
     def config(self, event):
         """
         :help: Change config options
-        :usage: <context>[:name] [setting [value]]
+        :usage: <context>[:name] [-][setting [value]]
         :permission: config
         """
 
@@ -284,6 +296,9 @@ class Module(ModuleManager.BaseModule):
                 result = self._config(export_settings, target, setting, value)
             except ConfigInvalidValue:
                 raise utils.EventError("Invalid value")
+            except ConfigSettingInexistent:
+                raise utils.EventError("Setting not set")
+
             if result.result == ConfigResults.Changed:
                 event["stdout"].write("Config changed")
             elif result.result == ConfigResults.Retrieved:
