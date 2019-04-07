@@ -13,6 +13,7 @@ class ConfigSettingInexistent(Exception):
 class ConfigResults(enum.Enum):
     Changed = 1
     Retrieved = 2
+    Removed = 3
 class ConfigResult(object):
     def __init__(self, result, data=None):
         self.result = result
@@ -242,6 +243,7 @@ class Module(ModuleManager.BaseModule):
                 if unset:
                     setting = setting[1:]
                     target.del_setting(setting)
+                    return ConfigResult(ConfigResults.Removed)
                 else:
                     return ConfigResult(ConfigResults.Retrieved, existing_value)
             else:
@@ -308,6 +310,8 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write("Config changed")
             elif result.result == ConfigResults.Retrieved:
                 event["stdout"].write("%s: %s" % (setting, result.data))
+            elif result.result == ConfigResults.Removed:
+                event["stdout"].write("Unset setting")
         else:
             event["stdout"].write("Available config: %s" %
                 ", ".join(export_settings.keys()))
