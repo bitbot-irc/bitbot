@@ -294,7 +294,7 @@ class Module(ModuleManager.BaseModule):
 
         export_settings = self._get_export_setting(setting_key)
         if not setting == None:
-            if not setting in export_settings:
+            if not setting.lstrip("-") in export_settings:
                 raise utils.EventError("Setting not found")
 
             try:
