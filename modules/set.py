@@ -241,7 +241,6 @@ class Module(ModuleManager.BaseModule):
             existing_value = target.get_setting(setting, None)
             if not existing_value == None:
                 if unset:
-                    setting = setting[1:]
                     target.del_setting(setting)
                     return ConfigResult(ConfigResults.Removed)
                 else:
