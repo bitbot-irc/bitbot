@@ -232,9 +232,14 @@ class Module(ModuleManager.BaseModule):
             else:
                 raise ConfigInvalidValue()
         else:
+            unset = False
+            if setting.startswith("-"):
+                setting = setting[1:]
+                unset = True
+
             existing_value = target.get_setting(setting, None)
             if not existing_value == None:
-                if setting.startswith("-"):
+                if unset:
                     setting = setting[1:]
                     target.del_setting(setting)
                 else:
