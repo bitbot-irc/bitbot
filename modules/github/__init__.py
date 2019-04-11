@@ -519,9 +519,8 @@ class Module(ModuleManager.BaseModule):
                     utils.irc.color("merged", COLOR_POSITIVE), number,
                     colored_branch)
             else:
-                action_desc = "%s %s %s" % (
-                    utils.irc.color("closed", COLOR_NEGATIVE), number,
-                    utils.irc.color("without merging", COLOR_NEGATIVE))
+                action_desc = "%s %s" % (
+                    utils.irc.color("closed", COLOR_NEGATIVE), number)
         elif action == "synchronize":
             action_desc = "committed to %s" % number
 
