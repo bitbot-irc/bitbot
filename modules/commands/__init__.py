@@ -5,7 +5,7 @@ from . import outs
 COMMAND_METHOD = "command-method"
 COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
-REGEX_ARG_NUMBER = re.compile(r"\$(\d+)")
+REGEX_ARG_NUMBER = re.compile(r"\$(\d+)(-?)")
 
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
@@ -57,6 +57,21 @@ class Module(ModuleManager.BaseModule):
     def _set_aliases(self, server, aliases):
         server.set_setting("command-aliases", aliases)
 
+    def _alias_arg_replace(self, s, args_split):
+        for match in REGEX_ARG_NUMBER.finditer(s):
+            index = int(match.group(1))
+            continuous = match.group(2) == "-"
+
+            if index >= len(args_split):
+                raise IndexError("Unknown alias arg index")
+
+            if continuous:
+                replace = " ".join(args_split[index:])
+            else:
+                replace = args_split[index]
+            s = s.replace(match.group(0), replace)
+        return s.split(" ")
+
     def _command_method(self, target, server):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
@@ -67,13 +82,11 @@ class Module(ModuleManager.BaseModule):
             aliases = self._get_aliases(event["server"])
             if command.lower() in aliases:
                 command, _, new_args = aliases[command.lower()].partition(" ")
-                for match in REGEX_ARG_NUMBER.finditer(new_args):
-                    index = int(match.group(1))
-                    if index >= len(args_split):
-                        return
-                    new_args = new_args.replace(match.group(0),
-                        args_split[index])
-                args_split = new_args.split(" ")
+
+                try:
+                    args_split = self._alias_arg_replace(new_args, args_split)
+                except IndexError:
+                    return
 
         if self.has_command(command):
             ignore = event["user"].get_setting("ignore", False)
