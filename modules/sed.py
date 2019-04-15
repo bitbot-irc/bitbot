@@ -50,7 +50,7 @@ class Module(ModuleManager.BaseModule):
                     module_name="Sed", server=event["server"],
                     message="Invalid regex in pattern")
                 return
-            replace = sed_split[2].replace("\\/", "/")
+            replace = utils.irc.bold(sed_split[2].replace("\\/", "/"))
 
             for_user = event["user"].nickname if self._closest_setting(event,
                 "sed-sender-only", False) else None
