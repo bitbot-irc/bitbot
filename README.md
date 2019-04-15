@@ -7,8 +7,6 @@ Python3 event-driven modular IRC bot!
 ## Setup
 See [docs/help/setup.md](docs/help/setup.md).
 
-Run `./start.py` to run the bot with default settings (`--help` for more information) which will ask you for server details the first time you run it (run it again after filling out that information to get the bot going.) If you need to add more servers, use `./start.py --add-server`.
-
 ## Github web hooks
 I run BitBot as-a-serivce on most popular networks and offer github-to-IRC web hook notifications for free to FOSS projects. Contact me for more information!
 
