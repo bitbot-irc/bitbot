@@ -11,6 +11,16 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("new.user")
     def new_user(self, event):
         self._logout(event["user"])
+        event["user"].admin_master = False
+
+    def command_line(self, args: str):
+        if args == "master-password":
+            master_password = self._random_password()
+            hash, salt = self._make_hash(master_password)
+            self.bot.set_setting("master-password", [hash, salt])
+            print("master password: %s" % master_password)
+        else:
+            raise ValueError("Unknown command-line argument")
 
     @utils.hook("received.part")
     def on_part(self, event):
@@ -24,8 +34,13 @@ class Module(ModuleManager.BaseModule):
             (None, None))
         return hash, salt
 
+    def _random_string(self, n):
+        return base64.b64encode(os.urandom(n)).decode("utf8")
+
     def _make_salt(self):
-        return base64.b64encode(os.urandom(64)).decode("utf8")
+        return self._random_string(64)
+    def _random_password(self):
+        return self._random_string(32)
 
     def _make_hash(self, password, salt=None):
         salt = salt or self._make_salt()
@@ -39,6 +54,20 @@ class Module(ModuleManager.BaseModule):
     def _logout(self, user):
         user.identified_account_override = None
         user.identified_account_id_override = None
+
+    @utils.hook("received.command.masterlogin", private_only=True, min_args=1)
+    def master_login(self, event):
+        saved_hash, saved_salt = self.bot.get_setting("master-password",
+            (None, None))
+
+        if saved_hash and saved_salt:
+            given_hash, _ = self._make_hash(event["args"], saved_salt)
+            if utils.security.constant_time_compare(given_hash, saved_hash):
+                event["user"].admin_master = True
+                event["stdout"].write("Master login successful")
+                return
+        event["stderr"].write("Master login failed")
+
 
     @utils.hook("received.command.identify", private_only=True, min_args=1)
     def identify(self, event):
@@ -148,6 +177,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
+        if event["user"].admin_master:
+            return utils.consts.PERMISSION_FORCE_SUCCESS
+
         permission = event["hook"].get_kwarg("permission", None)
         authenticated = event["hook"].kwargs.get("authenticated", False)
 
