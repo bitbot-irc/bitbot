@@ -74,38 +74,43 @@ def join(events, event):
     if realname:
         user.realname = realname
 
-    if event["server"].is_own_nickname(event["prefix"].nickname):
+    is_self = event["server"].is_own_nickname(event["prefix"].nickname)
+    if is_self:
         channel = event["server"].channels.add(channel_name)
+    else:
+        channel = event["server"].channels.get(channel_name)
+
+
+    channel.add_user(user)
+    user.join_channel(channel)
+
+    if is_self:
         if channel.name in event["server"].attempted_join:
             del event["server"].attempted_join[channel.name]
         events.on("self.join").call(channel=channel, server=event["server"],
             account=account, realname=realname)
         channel.send_mode()
     else:
-        channel = event["server"].channels.get(channel_name)
         events.on("received.join").call(channel=channel, user=user,
             server=event["server"], account=account, realname=realname)
-
-    channel.add_user(user)
-    user.join_channel(channel)
 
 def part(events, event):
     channel = event["server"].channels.get(event["args"][0])
     user = event["server"].get_user(event["prefix"].nickname)
     reason = event["args"].get(1)
 
-    if not event["server"].is_own_nickname(event["prefix"].nickname):
-        events.on("received.part").call(channel=channel, reason=reason,
-            user=user, server=event["server"])
-    else:
-        events.on("self.part").call(channel=channel, reason=reason,
-            server=event["server"])
-        event["server"].channels.remove(channel)
-
     channel.remove_user(user)
     user.part_channel(channel)
     if not len(user.channels):
         event["server"].remove_user(user)
+
+    if not event["server"].is_own_nickname(event["prefix"].nickname):
+        events.on("received.part").call(channel=channel, reason=reason,
+            user=user, server=event["server"])
+    else:
+        event["server"].channels.remove(channel)
+        events.on("self.part").call(channel=channel, reason=reason,
+            server=event["server"])
 
 def handle_324(event):
     channel = event["server"].channels.get(event["args"][1])

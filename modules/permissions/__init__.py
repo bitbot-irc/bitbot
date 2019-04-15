@@ -14,7 +14,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.part")
     def on_part(self, event):
-        if len(event["user"].channels) == 1 and event["user"
+        if len(event["user"].channels) == 0 and event["user"
                 ].identified_account_override:
             event["user"].send_notice("You no longer share any channels "
                 "with me so you have been signed out")
