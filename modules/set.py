@@ -285,7 +285,12 @@ class Module(ModuleManager.BaseModule):
                     target = ConfigChannelTarget(self.bot, event["server"],
                         name)
             else:
-                target = event["target"]
+                if event["is_channel"]:
+                    target = event["target"]
+                else:
+                    raise utils.EventError(
+                        "Cannot change config for current channel when in "
+                        "private message")
         elif context == "server":
             setting_key = "serverset"
             target = event["server"]
