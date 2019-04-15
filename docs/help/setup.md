@@ -20,9 +20,13 @@ Configure the bot to use SASL to authenticate (usually used for `NickServ` ident
 `EXTERNAL` usually mean client TLS certificate authentication; `USERPASS` is a BitBot-specific term that selects the strongest user/password algorithm.
 
 > /msg <bot> config server sasl userpass &lt;username>:&lt;password>
+
 > /msg <bot> config server sasl plain &lt;username>:&lt;password>
+
 > /msg <bot> config server sasl scram-sha-1 &lt;username>:&lt;password>
+
 > /msg <bot> config server sasl scram-sha-256 &lt;username>:&lt;password>
+
 > /msg <bot> config server sasl external
 
 ### Commands on-connect
@@ -38,7 +42,11 @@ The `perform.py` module allows the bot to execute a saved list of raw IRC comman
 #### Set config options
 
 > /msg <bot> config bot <setting> <value>
+
 > /msg <bot> config server <setting> <value>
+
 > /msg <bot> config channel:#bitbot <setting> <value>
+
 > /msg <bot> config user <setting> <value>
+
 > /msg <bot> config user:other_user <setting> <value>
