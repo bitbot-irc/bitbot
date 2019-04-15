@@ -5,9 +5,9 @@
 * Run `./start.py -m permissions -M master-password` to get the master admin password (needed to add regular admin accounts)
 * Run `./start.py` to start the bot.
 * Join `#bitbot` on a server with the bot (or invite it to another channel)
-* `/msg &lt;bot> register &lt;password here>` to register your nickname with the bot
-* `/msg &lt;bot> masterlogin &lt;master admin password>` to login as master admin
-* `/msg &lt;bot> givepermission &lt;your nickname> *` to give your account admin permissions
+* `/msg <bot> register <password here>` to register your nickname with the bot
+* `/msg <bot> masterlogin <master admin password>` to login as master admin
+* `/msg <bot> givepermission <your nickname> *` to give your account admin permissions
 
 ### Configure client TLS certificate
 
@@ -31,7 +31,7 @@ Configure the bot to use SASL to authenticate (usually used for `NickServ` ident
 
 ### Commands on-connect
 
-The `perform.py` module allows the bot to execute a saved list of raw IRC commands against a server it's connecting to. Use `/msg &lt;bot> performadd &lt;raw irc command>` to add to the current server's list of commands (`%nick%` in a raw command will be replaced with the bot's current nick.)
+The `perform.py` module allows the bot to execute a saved list of raw IRC commands against a server it's connecting to. Use `/msg <bot> performadd <raw irc command>` to add to the current server's list of commands (`%nick%` in a raw command will be replaced with the bot's current nick.)
 
 ### Config options
 
