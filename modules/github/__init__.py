@@ -466,17 +466,20 @@ class Module(ModuleManager.BaseModule):
         outputs = []
         branch = data["ref"].split("/", 2)[2]
         branch = utils.irc.color(branch, COLOR_BRANCH)
+        author = utils.irc.bold(data["pusher"]["name"])
 
         forced = ""
         if data["forced"]:
             forced = "%s " % utils.irc.color("force", utils.consts.RED)
 
-        if len(data["commits"]) <= 3:
+        if len(data["commits"]) == 0:
+            outputs.append(
+                "%s %spushed to %s" % (author, forced, branch))
+        elif len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 hash = commit["id"]
                 hash_colored = utils.irc.color(self._short_hash(hash), COLOR_ID)
                 message = commit["message"].split("\n")[0].strip()
-                author = utils.irc.bold(data["pusher"]["name"])
                 url = self._short_url(COMMIT_URL % (full_name, hash))
 
                 outputs.append(
@@ -485,12 +488,11 @@ class Module(ModuleManager.BaseModule):
         else:
             first_id = data["before"]
             last_id = data["commits"][-1]["id"]
-            pusher = utils.irc.bold(data["pusher"]["name"])
             url = self._short_url(
                 COMMIT_RANGE_URL % (full_name, first_id, last_id))
 
             outputs.append("%s %spushed %d commits to %s - %s"
-                % (pusher, forced, len(data["commits"]), branch, url))
+                % (author, forced, len(data["commits"]), branch, url))
 
         return outputs
 
