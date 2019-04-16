@@ -145,7 +145,7 @@ class Module(ModuleManager.BaseModule):
     def _on_kick(self, event, nickname):
         reason = ""
         if event["reason"]:
-            reason = "(%s)" % event["reason"]
+            reason = " (%s)" % event["reason"]
         line = "%s kicked %s from %s%s" % (
             event["user"].nickname, nickname, event["channel"].name, reason)
         self._event("kick", event["server"], line, event["channel"].name,
