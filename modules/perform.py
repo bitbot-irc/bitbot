@@ -8,7 +8,7 @@ class Module(ModuleManager.BaseModule):
             for j, part in enumerate(command[:]):
                 command[j] = part.replace("%nick%", server.nickname)
             command = "%".join(command)
-            server.send(utils.irc.parse_line(command))
+            server.send_raw(command)
 
     @utils.hook("received.001", priority=EventManager.PRIORITY_URGENT)
     def on_connect(self, event):

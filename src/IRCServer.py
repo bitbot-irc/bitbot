@@ -252,6 +252,8 @@ class Server(IRCObject.Object):
             line_parsed)
         self.socket.send(line_obj)
         return line_obj
+    def send_raw(self, line: str):
+        return self.send(utils.irc.parse_line(line))
 
     def _send(self):
         lines = self.socket._send()
