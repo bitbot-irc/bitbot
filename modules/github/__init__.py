@@ -472,7 +472,7 @@ class Module(ModuleManager.BaseModule):
         if data["forced"]:
             forced = "%s " % utils.irc.color("force", utils.consts.RED)
 
-        if len(data["commits"]) == 0:
+        if len(data["commits"]) == 0 and data["forced"]:
             outputs.append(
                 "%s %spushed to %s" % (author, forced, branch))
         elif len(data["commits"]) <= 3:
