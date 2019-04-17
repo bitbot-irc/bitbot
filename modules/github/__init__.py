@@ -533,6 +533,9 @@ class Module(ModuleManager.BaseModule):
             author, action_desc, pr_title, url)]
 
     def pull_request_review(self, full_name, data):
+        if not data["action"] == "submitted":
+            return []
+
         if not "submitted_at" in data["review"]:
             return []
 
