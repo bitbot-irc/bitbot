@@ -7,9 +7,17 @@ class Direction(enum.Enum):
 
 ISO8601_PARSE = "%Y-%m-%dT%H:%M:%S%z"
 
-def iso8601_format(dt: datetime.datetime) -> str:
-    formatted = dt.isoformat(timespec="milliseconds")
+def iso8601_format(dt: datetime.datetime, milliseconds: bool=False) -> str:
+    timespec = "seconds"
+    if milliseconds:
+        timespec = "milliseconds"
+
+    formatted = dt.isoformat(timespec=timespec)
     return "%sZ" % formatted
+def iso8601_format_now() -> str:
+    return iso8601_format(datetime.datetime.utcnow())
+def iso8601_parse(s: str) -> datetime.datetime:
+    return datetime.datetime.strptime(s, ISO8601_PARSE)
 
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60

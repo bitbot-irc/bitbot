@@ -13,7 +13,7 @@ LEVELS = {
 class BitBotFormatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
         datetime_obj = datetime.datetime.fromtimestamp(record.created)
-        return utils.iso8601_format(datetime_obj)
+        return utils.iso8601_format(datetime_obj, milliseconds=True)
 
 class Log(object):
     def __init__(self, to_file: bool, level: str, location: str):
