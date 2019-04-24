@@ -34,7 +34,7 @@ class Module(ModuleManager.BaseModule):
         if not url:
             raise utils.EventError("No URL provided/found.")
 
-        if link:
+        if url:
             event["stdout"].write("Shortened URL: %s" % self._shortlink(url))
         else:
             event["stderr"].write("Unable to shorten that URL.")
