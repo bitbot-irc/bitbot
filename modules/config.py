@@ -225,7 +225,7 @@ class Module(ModuleManager.BaseModule):
 
     def _config(self, export_settings, target, setting, value=None):
         if not value == None:
-            validation = export_settings.get("validate", lambda x: x)
+            validation = export_settings[setting].get("validate", lambda x: x)
             validated_value = validation(value)
             if not validated_value == None:
                 target.set_setting(setting, validated_value)
