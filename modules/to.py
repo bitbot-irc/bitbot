@@ -5,9 +5,11 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         messages = event["channel"].get_user_setting(event["user"].get_id(),
             "to", [])
-        for nickname, message in messages:
-            event["channel"].send_message("%s: <%s> %s" % (
-                event["user"].nickname, nickname, message))
+        for nickname, message, timestamp in messages:
+            timestamp_parsed = utils.iso8601_parse(timestamp)
+            timestamp_human = utils.datetime_human(timestamp_parsed)
+            event["channel"].send_message("%s: <%s> %s (at %s UTC)" % (
+                event["user"].nickname, nickname, message, timestamp_human))
         if messages:
             event["channel"].del_user_setting(event["user"].get_id(), "to")
 
@@ -22,7 +24,8 @@ class Module(ModuleManager.BaseModule):
         messages = event["target"].get_user_setting(target_user.get_id(),
             "to", [])
         messages.append([event["user"].nickname,
-            " ".join(event["args_split"][1:])])
+            " ".join(event["args_split"][1:]),
+            utils.iso8601_format_now()])
         event["target"].set_user_setting(target_user.get_id(),
             "to", messages)
         event["stdout"].write("Message saved")
