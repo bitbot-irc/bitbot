@@ -44,15 +44,15 @@ class Module(ModuleManager.BaseModule):
                     first_details = event["channel"].get_setting(setting, None)
 
                     if first_details:
-                        first_nickname, first_timestamp = first_details
+                        first_nickname, first_timestamp, _ = first_details
                         timestamp_parsed = utils.iso8601_parse(first_timestamp)
                         timestamp_human = utils.datetime_human(timestamp_parsed)
                         message = "%s (first posted by %s at %s)" % (title,
                             first_nickname, timestamp_human)
                     else:
                         event["channel"].set_setting(setting,
-                            [event["user"].nickname,
-                            utils.iso8601_format_now()])
+                            [event["user"].nickname, utils.iso8601_format_now(),
+                            url])
 
 
                 self.events.on("send.stdout").call(target=event["channel"],
