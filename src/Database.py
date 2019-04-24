@@ -346,7 +346,8 @@ class Database(object):
             self.execute("""CREATE TABLE servers
                 (server_id INTEGER PRIMARY KEY, alias TEXT, hostname TEXT,
                 port INTEGER, password TEXT, ipv4 BOOLEAN, tls BOOLEAN,
-                bindhost TEXT, nickname TEXT, username TEXT, realname TEXT)""")
+                bindhost TEXT, nickname TEXT, username TEXT, realname TEXT,
+                UNIQUE (alias))""")
     def make_channels_table(self):
         if not self.has_table("channels"):
             self.execute("""CREATE TABLE channels
