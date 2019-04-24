@@ -10,7 +10,7 @@ class Server(IRCObject.Object):
             bot: "IRCBot.Bot",
             events: EventManager.EventHook,
             id: int,
-            alias: typing.Optional[str],
+            alias: str,
             connection_params: utils.irc.IRCConnectionParameters):
         self.bot = bot
         self.events = events
@@ -67,11 +67,7 @@ class Server(IRCObject.Object):
     def __repr__(self) -> str:
         return "IRCServer.Server(%s)" % self.__str__()
     def __str__(self) -> str:
-        if self.alias:
-            return self.alias
-        return "%s:%s%s" % (self.connection_params.hostname,
-            "+" if self.connection_params.tls else "",
-            self.connection_params.port)
+        return self.alias
 
     def fileno(self) -> int:
         return self.socket.fileno()
