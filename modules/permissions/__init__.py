@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
             master_password = self._random_password()
             hash, salt = self._make_hash(master_password)
             self.bot.set_setting("master-password", [hash, salt])
-            print("master password: %s" % master_password)
+            print("one-time master password: %s" % master_password)
         else:
             raise ValueError("Unknown command-line argument")
 
@@ -63,6 +63,7 @@ class Module(ModuleManager.BaseModule):
         if saved_hash and saved_salt:
             given_hash, _ = self._make_hash(event["args"], saved_salt)
             if utils.security.constant_time_compare(given_hash, saved_hash):
+                self.bot.del_setting("master-password")
                 event["user"].admin_master = True
                 event["stdout"].write("Master login successful")
                 return
