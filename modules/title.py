@@ -1,8 +1,6 @@
 import hashlib, re
 from src import EventManager, ModuleManager, utils
 
-REGEX_URL = re.compile("https?://\S+", re.I)
-
 @utils.export("channelset", {"setting": "auto-title",
     "help": "Disable/Enable automatically getting info titles from URLs",
     "validate": utils.bool_or_none})
@@ -32,7 +30,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
-        match = re.search(REGEX_URL, event["message"])
+        match = re.search(utils.http.REGEX_URL, event["message"])
         if match and event["channel"].get_setting("auto-title", False):
             url = match.group(0)
             title = self._get_title(match.group(0))
@@ -70,9 +68,9 @@ class Module(ModuleManager.BaseModule):
         if len(event["args"]) > 0:
             url = event["args_split"][0]
         else:
-            url = event["target"].buffer.find(REGEX_URL)
+            url = event["target"].buffer.find(utils.http.REGEX_URL)
             if url:
-                url = re.search(REGEX_URL, url.message).group(0)
+                url = re.search(utils.http.REGEX_URL, url.message).group(0)
         if not url:
             raise utils.EventError("No URL provided/found.")
 
