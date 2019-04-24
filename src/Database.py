@@ -24,7 +24,7 @@ class Servers(Table):
     def get_all(self):
         return self.database.execute_fetchall(
             "SELECT server_id, alias FROM servers")
-    def get(self, id: int) -> typing.Tuple[int, typing.Optional[str], str,
+    def get(self, id: int)-> typing.Tuple[int, typing.Optional[str], str,
             int, typing.Optional[str], bool, bool, typing.Optional[str], str,
             typing.Optional[str], typing.Optional[str]]:
         return self.database.execute_fetchone(
@@ -32,6 +32,13 @@ class Servers(Table):
             ipv4, bindhost, nickname, username, realname FROM servers WHERE
             server_id=?""",
             [id])
+    def get_by_alias(self, alias: str) -> typing.Optional[int]:
+        value = self.database.execute_fetchone(
+            "SELECT server_id FROM servers WHERE alias=? COLLATE NOCASE",
+            [alias])
+        if value:
+            return value[0]
+        return value
 
 class Channels(Table):
     def add(self, server_id: int, name: str):

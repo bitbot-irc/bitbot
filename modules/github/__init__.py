@@ -340,7 +340,7 @@ class Module(ModuleManager.BaseModule):
 
             if found_hook:
                 repo_hooked = True
-                server = self.bot.get_server(server_id)
+                server = self.bot.get_server_by_id(server_id)
                 if server and channel_name in server.channels:
                     if (branch and
                             found_hook["branches"] and

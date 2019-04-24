@@ -52,15 +52,12 @@ class Module(ModuleManager.BaseModule):
         :usage: <server id>
         :permission: connect
         """
-        id = event["args_split"][0]
-        if not id.isdigit():
-            raise utils.EventError("Please provide a numeric server ID")
+        alias = event["args"]
+        id = self.bot.database.servers.get_by_alias(alias)
+        if id == None:
+            raise utils.EventError("Unknown server alias")
 
-        id = int(id)
-        if not self.bot.database.servers.get(id):
-            raise utils.EventError("Unknown server ID")
-
-        existing_server = self.bot.get_server(id)
+        existing_server = self.bot.get_server_by_id(id)
         if existing_server:
             raise utils.EventError("Already connected to %s" % str(
                 existing_server))
@@ -77,14 +74,13 @@ class Module(ModuleManager.BaseModule):
         """
         id = event["server"].id
         if event["args"]:
-            id = event["args_split"][0]
-            if not id.isdigit():
-                raise utils.EventError("Please provide a numeric server ID")
-
-            id = int(id)
-            if not self.bot.database.servers.get(id):
-                raise utils.EventError("Unknown server ID")
-        server = self.bot.get_server(id)
+            print("alias")
+            alias = event["args"]
+            id = self.bot.database.servers.get_by_alias(alias)
+            if id == None:
+                raise utils.EventError("Unknown server alias")
+        print(id)
+        server = self.bot.get_server_by_id(id)
         server.disconnect()
         self.bot.disconnect(server)
 

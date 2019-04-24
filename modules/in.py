@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("timer.in")
     def timer_due(self, event):
-        server = self.bot.get_server(event["server_id"])
+        server = self.bot.get_server_by_id(event["server_id"])
         if server:
             message = "%s: this is your reminder: %s" % (
                 event["nickname"], event["message"])

@@ -73,7 +73,7 @@ class Module(ModuleManager.BaseModule):
                 return None
             server_id = int(server_id)
 
-            server = self.bot.get_server(server_id)
+            server = self.bot.get_server_by_id(server_id)
             if not server:
                 return None
             return self._server_stats(server)
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
                 return None
             server_id = int(server_id)
 
-            server = self.bot.get_server(server_id)
+            server = self.bot.get_server_by_id(server_id)
             if not server:
                 return None
             channels = {}

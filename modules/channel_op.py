@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("timer.unban")
     def _timer_unban(self, event):
-        server = self.bot.get_server(event["server_id"])
+        server = self.bot.get_server_by_id(event["server_id"])
         if event["channel_name"] in server.channels:
             channel = server.channels.get(event["channel_name"])
             channel.send_unban(event["hostmask"])

@@ -84,9 +84,15 @@ class Bot(object):
         del self.other_sockets[sock.fileno()]
         self.poll.unregister(sock.fileno())
 
-    def get_server(self, id: int) -> typing.Optional[IRCServer.Server]:
+    def get_server_by_id(self, id: int) -> typing.Optional[IRCServer.Server]:
         for server in self.servers.values():
             if server.id == id:
+                return server
+        return None
+    def get_server_by_alias(self, alias: str) -> typing.Optional[IRCServer.Server]:
+        alias_lower = alias.lower()
+        for server in self.servers.values():
+            if server.alias.lower() == alias_lower:
                 return server
         return None
 
@@ -235,7 +241,7 @@ class Bot(object):
                     self._events.on("server.disconnect").call(server=server)
                     self.disconnect(server)
 
-                    if not self.get_server(server.id):
+                    if not self.get_server_by_id(server.id):
                         reconnect_delay = self.config.get("reconnect-delay", 10)
                         self._timers.add("reconnect", reconnect_delay,
                             server_id=server.id)
