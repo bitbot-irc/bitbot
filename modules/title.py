@@ -1,4 +1,4 @@
-import hashlib, re
+import hashlib, re, urllib.parse
 from src import EventManager, ModuleManager, utils
 
 @utils.export("channelset", {"setting": "auto-title",
@@ -14,6 +14,14 @@ class Module(ModuleManager.BaseModule):
             ).hexdigest()
 
     def _get_title(self, url):
+        if not urllib.parse.urlparse(url).scheme:
+            url = "http://%s" % url
+
+        hostname = urllib.parse.urlparse(url).hostname
+        if utils.http.is_localhost(hostname):
+            self.log.warn("tried to get title of localhost: %s", [url])
+            return None
+
         try:
             page = utils.http.request(url, soup=True)
         except utils.http.HTTPWrongContentTypeException:

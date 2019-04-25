@@ -1,6 +1,7 @@
-import re, signal, traceback, typing, urllib.error, urllib.parse
+import ipaddress, re, signal, socket, traceback, typing
+import urllib.error, urllib.parse
 import json as _json
-import bs4, requests
+import bs4, netifaces, requests
 from src import utils
 
 REGEX_URL = re.compile("https?://\S+", re.I)
@@ -87,3 +88,30 @@ def request(url: str, method: str="GET", get_params: dict={},
 def strip_html(s: str) -> str:
     return bs4.BeautifulSoup(s, "lxml").get_text()
 
+def resolve_hostname(hostname: str) -> typing.List[str]:
+    try:
+        addresses = socket.getaddrinfo(hostname, None, 0, socket.SOCK_STREAM)
+    except:
+        return []
+    return [address[-1][0] for address in addresses]
+
+def is_ip(addr: str) -> bool:
+    try:
+        ipaddress.ip_address(addr)
+    except ValueError:
+        return False
+    return True
+
+def is_localhost(hostname: str) -> bool:
+    if is_ip(hostname):
+        ips = [ipaddress.ip_address(hostname)]
+    else:
+        ips = [ipaddress.ip_address(ip) for ip in resolve_hostname(hostname)]
+
+    for interface in netifaces.interfaces():
+        links = netifaces.ifaddresses(interface)
+        for link in links[netifaces.AF_INET]+links[netifaces.AF_INET6]:
+            address = ipaddress.ip_address(link["addr"].split("%", 1)[0])
+            if address in ips:
+                return True
+    return False
