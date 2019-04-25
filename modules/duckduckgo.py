@@ -8,7 +8,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.ddg", min_args=1)
     def duckduckgo(self, event):
         """
-        :help: Get first Google result for a given search term
+        :help: Get first DuckDuckGo result for a given search term
         :usage: [search term]
         """
 
