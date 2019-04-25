@@ -110,8 +110,11 @@ def is_localhost(hostname: str) -> bool:
 
     for interface in netifaces.interfaces():
         links = netifaces.ifaddresses(interface)
-        for link in links[netifaces.AF_INET]+links[netifaces.AF_INET6]:
+
+        for link in links.get(netifaces.AF_INET, []
+                )+links.get(netifaces.AF_INET6, [])
             address = ipaddress.ip_address(link["addr"].split("%", 1)[0])
             if address in ips:
                 return True
+
     return False
