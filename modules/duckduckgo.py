@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
                 "q": phrase, "format": "json", "no_html": "1",
                 "no_redirect": "1"}, json=True)
 
-            if page:
+            if page and page.data["AbstractURL"]:
                 event["stdout"].write(page.data["AbstractURL"])
             else:
                 event["stderr"].write("No results found")
