@@ -17,7 +17,7 @@ class InvalidTimeoutException(Exception):
 @utils.export("channelset", {"setting": "ban-format",
     "help": "Set ban format ($n = nick, $u = username, $h = hostname)"})
 class Module(ModuleManager.BaseModule):
-    _name = "Channel Op"
+    _name = "ChanOp"
 
     @utils.hook("timer.unban")
     def _timer_unban(self, event):
