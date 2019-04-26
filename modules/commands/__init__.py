@@ -335,7 +335,7 @@ class Module(ModuleManager.BaseModule):
         if not user.get_setting("ignore", False):
             event["stderr"].write("I'm not ignoring '%s'" % user.nickname)
         else:
-            user.set_setting("ignore", False)
+            user.del_setting("ignore")
             event["stdout"].write("Removed ignore for '%s'" % user.nickname)
 
     @utils.hook("send.stdout")
