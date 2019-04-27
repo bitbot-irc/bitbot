@@ -31,6 +31,9 @@ def _command_method_validate(s):
     "help": "Disable/enable responding to prefixed commands in-channel",
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
+    def on_load(self):
+        self.exports.add("is-ignored", self._is_ignored)
+
     @utils.hook("new.user|channel")
     def new(self, event):
         if "user" in event:
@@ -76,6 +79,13 @@ class Module(ModuleManager.BaseModule):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
 
+    def _is_ignored(self, user, command):
+        if user.get_setting("ignore", False):
+            return True
+        elif user.get_setting("ignore-%s" % command, False):
+            return True
+        return False
+
     def message(self, event, command, args_index=1):
         args_split = event["message_split"][args_index:]
         if not self.has_command(command):
@@ -89,8 +99,7 @@ class Module(ModuleManager.BaseModule):
                     return
 
         if self.has_command(command):
-            ignore = event["user"].get_setting("ignore", False)
-            if ignore:
+            if self._is_ignored(event["user"], command):
                 return
 
             hook = None
@@ -313,30 +322,47 @@ class Module(ModuleManager.BaseModule):
     def ignore(self, event):
         """
         :help: Ignore commands from a given user
-        :usage: <nickname>
+        :usage: <nickname> [command]
         :permission: ignore
         """
+        setting = "ignore"
+        for_str = ""
+        if len(event["args_split"]) > 1:
+            command = event["args_split"][1].lower()
+            setting = "ignore-%s" % command
+            for_str = " for '%s'" % command
+
         user = event["server"].get_user(event["args_split"][0])
-        if user.get_setting("ignore", False):
-            event["stderr"].write("I'm already ignoring '%s'" %
-                user.nickname)
+        if user.get_setting(setting, False):
+            event["stderr"].write("I'm already ignoring '%s'%s" %
+                (user.nickname, for_str))
         else:
-            user.set_setting("ignore", True)
-            event["stdout"].write("Now ignoring '%s'" % user.nickname)
+            user.set_setting(setting, True)
+            event["stdout"].write("Now ignoring '%s'%s" %
+                (user.nickname, for_str))
 
     @utils.hook("received.command.unignore", min_args=1)
     def unignore(self, event):
         """
         :help: Unignore commands from a given user
-        :usage: <nickname>
+        :usage: <nickname> [command]
         :permission: unignore
         """
+        setting = "ignore"
+        for_str = ""
+        if len(event["args_split"]) > 1:
+            command = event["args_split"][1].lower()
+            setting = "ignore-%s" % command
+            for_str = " for '%s'" % command
+
         user = event["server"].get_user(event["args_split"][0])
-        if not user.get_setting("ignore", False):
-            event["stderr"].write("I'm not ignoring '%s'" % user.nickname)
+        if not user.get_setting(setting, False):
+            event["stderr"].write("I'm not ignoring '%s'%s" %
+                (user.nickname, for_str))
         else:
-            user.del_setting("ignore")
-            event["stdout"].write("Removed ignore for '%s'" % user.nickname)
+            user.del_setting(setting)
+            event["stdout"].write("Removed ignore for '%s'%s" %
+                (user.nickname, for_str))
 
     @utils.hook("send.stdout")
     def send_stdout(self, event):
