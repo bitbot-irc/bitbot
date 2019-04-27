@@ -22,6 +22,10 @@ class Module(ModuleManager.BaseModule):
             if event["action"] or not self._closest_setting(event, "sed",
                     False):
                 return
+            is_ignored_f = short_url = self.exports.get_one("is-ignored",
+                lambda _1, _2: False)
+            if is_ignored_f(event["user"], "sed"):
+                return
 
             regex_flags = 0
             flags = (sed_split[3:] or [""])[0]
