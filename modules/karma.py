@@ -29,6 +29,11 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         match = re.match(REGEX_KARMA, event["message"].strip())
         if match and not event["action"]:
+            is_ignored_f = short_url = self.exports.get_one("is-ignored",
+                lambda _1, _2: False)
+            if is_ignored_f(event["user"], "karma"):
+                return
+
             verbose = event["channel"].get_setting("karma-verbose", False)
             nickname_only = event["server"].get_setting("karma-nickname-only",
                 False)
