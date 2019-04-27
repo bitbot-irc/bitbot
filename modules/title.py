@@ -4,6 +4,9 @@ from src import EventManager, ModuleManager, utils
 @utils.export("channelset", {"setting": "auto-title",
     "help": "Disable/Enable automatically getting info titles from URLs",
     "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "title-shorten",
+    "help": "Enable/disable shortening URLs when getting their title",
+    "validate": utils.bool_or_none})
 @utils.export("channelset", {"setting": "auto-title-first",
     "help": ("Enable/disable showing who first posted a URL that was "
         "auto-titled"),
@@ -13,7 +16,7 @@ class Module(ModuleManager.BaseModule):
         return "sha256:%s" % hashlib.sha256(url.lower().encode("utf8")
             ).hexdigest()
 
-    def _get_title(self, url):
+    def _get_title(self, channel, url):
         if not urllib.parse.urlparse(url).scheme:
             url = "http://%s" % url
 
@@ -30,8 +33,14 @@ class Module(ModuleManager.BaseModule):
             self.log.error("failed to get URL title", [], exc_info=True)
             return None
         if page.data.title:
-            return page.data.title.text.replace("\n", " ").replace(
+            title = page.data.title.text.replace("\n", " ").replace(
                 "\r", "").replace("  ", " ").strip()
+
+            if channel.get_setting("title-shorten", False):
+                short_url = self.exports.get_one("shortlink", lambda x: x
+                    )(url)
+                return "%s - %s" % (title, short_url)
+            return title
         else:
             return None
 
@@ -46,7 +55,7 @@ class Module(ModuleManager.BaseModule):
                 return
 
             url = match.group(0)
-            title = self._get_title(match.group(0))
+            title = self._get_title(event["channel"], match.group(0))
 
             if title:
                 message = title
@@ -87,7 +96,7 @@ class Module(ModuleManager.BaseModule):
         if not url:
             raise utils.EventError("No URL provided/found.")
 
-        title = self._get_title(url)
+        title = self._get_title(event["target"], url)
 
         if title:
             event["stdout"].write(title)
