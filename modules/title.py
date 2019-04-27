@@ -40,6 +40,11 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         match = re.search(utils.http.REGEX_URL, event["message"])
         if match and event["channel"].get_setting("auto-title", False):
+            is_ignored_f = short_url = self.exports.get_one("is-ignored",
+                lambda _1, _2: False)
+            if is_ignored_f(event["user"], "title"):
+                return
+
             url = match.group(0)
             title = self._get_title(match.group(0))
 
