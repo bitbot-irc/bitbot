@@ -32,7 +32,7 @@ class Exports(object):
     def get_one(self, setting: str, default: typing.Any=None
             ) -> typing.Optional[typing.Any]:
         values = self.get_all(setting)
-        return values[0] if values else None
+        return values[0] if values else default
 
     def purge_context(self, context: str):
         if context in self._context_exports:
