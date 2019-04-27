@@ -5,6 +5,8 @@ URL_URBANDICTIONARY = "http://api.urbandictionary.com/v0/define"
 REGEX_DEFNUMBER = re.compile("-n(\d+) \S+")
 
 class Module(ModuleManager.BaseModule):
+    _name = "UrbanDictionary"
+
     @utils.hook("received.command.ud", alias_of="urbandictionary")
     @utils.hook("received.command.urbandictionary", min_args=1)
     def ud(self, event):
