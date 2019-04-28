@@ -10,6 +10,7 @@ class Module(ModuleManager.BaseModule):
         if not user_location == None:
             return "%s, %s" % (user_location["city"], user_location["country"])
 
+    @utils.hook("received.command.w", alias_of="weather")
     @utils.hook("received.command.weather")
     def weather(self, event):
         """
