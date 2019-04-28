@@ -5,15 +5,32 @@ from src import ModuleManager, utils
 URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.weather", min_args=1, usage="<location>")
+    def _user_location(self, user):
+        user_location = user.get_setting("location", None)
+        if not user_location == None:
+            return "%s, %s" % (user_location["city"], user_location["country"])
+
+    @utils.hook("received.command.weather", usage="<location>")
     def weather(self, event):
         """
-        :help: Get current weather data for a provided location
-        :usage: <location>
+        :help: Get current weather for you or someone else
+        :usage: [nickname]
         """
         api_key = self.bot.config["openweathermap-api-key"]
+
+        location = None
+        if event["args"]:
+            target_user = event["server"].get_user(event["args_split"][0])
+            location = self._user_location(target_user)
+            if location == None:
+                raise utils.EventError("%s doesn't have a location set")
+        else:
+            location = self._user_location(event["user"])
+            if location == None:
+                raise utils.EventError("You don't have a location set")
+
         page = utils.http.request(URL_WEATHER, get_params={
-            "q": event["args"], "units": "metric",
+            "q": location, "units": "metric",
             "APPID": api_key},
             json=True)
         if page:
