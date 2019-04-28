@@ -72,3 +72,6 @@ imgur-api-key            =
 # https://developer.spotify.com/dashboard/
 spotify-client-id        =
 spotify-client-secret    =
+
+# https://opencagedata.com/users/sign_up
+opencagedata-api-key     =
