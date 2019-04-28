@@ -8,7 +8,6 @@ for tz in pytz.all_timezones:
     _lower_timezones[tz.lower()] = tz
 
 def _find_tz(s):
-    print(_lower_timezones.get(s.lower(), None))
     return _lower_timezones.get(s.lower(), None)
 
 @utils.export("set", {"setting": "location", "help": "Set your location",
