@@ -8,7 +8,7 @@ class Module(ModuleManager.BaseModule):
     def _user_location(self, user):
         user_location = user.get_setting("location", None)
         if not user_location == None:
-            return "%s, %s" % (user_location["city"], user_location["country"])
+            return [user_location["lat"], user_location["lon"]]
 
     @utils.hook("received.command.w", alias_of="weather")
     @utils.hook("received.command.weather")
@@ -31,9 +31,9 @@ class Module(ModuleManager.BaseModule):
             if location == None:
                 raise utils.EventError("You don't have a location set")
 
+        lat, lon = location
         page = utils.http.request(URL_WEATHER, get_params={
-            "q": location, "units": "metric",
-            "APPID": api_key},
+            "units": "metric", "lat": lat, "lon": lon, "APPID": api_key},
             json=True)
         if page:
             if "weather" in page.data:

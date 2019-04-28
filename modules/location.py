@@ -16,10 +16,7 @@ class Module(ModuleManager.BaseModule):
         if page and page.data["results"]:
             result = page.data["results"][0]
             timezone = result["annotations"]["timezone"]["name"]
-            continent = result["components"]["continent"]
-            country = result["components"]["country"]
-            city = result["components"]["city"]
+            lat = result["geometry"]["lat"]
+            lon = result["geometry"]["lng"]
 
-            print("yes")
-            return {"timezone": timezone, "continent": continent,
-                "country": country, "city": city}
+            return {"timezone": timezone, "lat": lat, "lon": lon}
