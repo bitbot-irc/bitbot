@@ -49,7 +49,7 @@ class Module(ModuleManager.BaseModule):
             if token:
                 timestamp = event["server"]._resume_timestamp
 
-                event["server"].send("RESUME %s%s" %
+                event["server"].send_raw("RESUME %s%s" %
                     (token, " %s" % timestamp if timestamp else ""))
                 cap_done = False
 
