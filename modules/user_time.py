@@ -30,4 +30,5 @@ class Module(ModuleManager.BaseModule):
             else:
                 raise utils.EventsResultsError()
         else:
-            event["stderr"].write("%s doesn't have a location set")
+            event["stderr"].write("%s doesn't have a location set" %
+                target_user.nickname)
