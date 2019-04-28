@@ -229,7 +229,7 @@ class Module(ModuleManager.BaseModule):
             validated_value = validation(value)
             if not validated_value == None:
                 target.set_setting(setting, validated_value)
-                return ConfigResult(ConfigResults.Changed)
+                return ConfigResult(ConfigResults.Changed, validated_value)
             else:
                 raise ConfigInvalidValue()
         else:
@@ -311,7 +311,8 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Setting not set")
 
             if result.result == ConfigResults.Changed:
-                event["stdout"].write("Config changed")
+                event["stdout"].write("Config '%s' set to %s" %
+                    (setting, result.data))
             elif result.result == ConfigResults.Retrieved:
                 event["stdout"].write("%s: %s" % (setting, result.data))
             elif result.result == ConfigResults.Removed:
