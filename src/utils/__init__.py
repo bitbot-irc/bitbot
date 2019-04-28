@@ -6,6 +6,7 @@ class Direction(enum.Enum):
     Recv = 1
 
 ISO8601_PARSE = "%Y-%m-%dT%H:%M:%S%z"
+ISO8601_PARSE_MICROSECONDS = "%Y-%m-%dT%H:%M:%S.%f%z"
 DATETIME_HUMAN = "%Y/%m/%d %H:%M:%S"
 
 def iso8601_format(dt: datetime.datetime, milliseconds: bool=False) -> str:
@@ -17,8 +18,9 @@ def iso8601_format(dt: datetime.datetime, milliseconds: bool=False) -> str:
     return "%sZ" % formatted
 def iso8601_format_now() -> str:
     return iso8601_format(datetime.datetime.utcnow())
-def iso8601_parse(s: str) -> datetime.datetime:
-    return datetime.datetime.strptime(s, ISO8601_PARSE)
+def iso8601_parse(s: str, microseconds: bool=False) -> datetime.datetime:
+    fmt = ISO8601_PARSE_MICROSECONDS if microseconds else ISO8601_PARSE
+    return datetime.datetime.strptime(s, fmt)
 
 def datetime_human(dt: datetime.datetime):
     return datetime.datetime.strftime(dt, DATETIME_HUMAN)
