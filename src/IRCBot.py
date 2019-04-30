@@ -2,7 +2,7 @@ import queue, os, select, socket, threading, time, traceback, typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
 
-VERSION = "v1.4.0"
+VERSION = "v1.5.0"
 
 TRIGGER_RETURN = 1
 TRIGGER_EXCEPTION = 2
