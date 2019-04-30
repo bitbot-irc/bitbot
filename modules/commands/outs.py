@@ -38,7 +38,7 @@ class Out(object):
             elif method == "NOTICE":
                 line = self.server.send_notice(target_str, full_text, tags=tags)
             else:
-                raise ValueError("Unknown command methd '%s'" % method)
+                raise ValueError("Unknown command method '%s'" % method)
 
             line.truncate_marker = STR_MORE
             if line.truncated():
