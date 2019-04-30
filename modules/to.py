@@ -23,6 +23,10 @@ class Module(ModuleManager.BaseModule):
         target_user = event["server"].get_user(event["args_split"][0])
         messages = event["target"].get_user_setting(target_user.get_id(),
             "to", [])
+
+        if len(messages) == 5:
+            raise utils.EventError("Users can only have 5 messages stored")
+
         messages.append([event["user"].nickname,
             " ".join(event["args_split"][1:]),
             utils.iso8601_format_now()])
