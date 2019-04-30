@@ -59,11 +59,11 @@ class Bot(object):
             return returned
 
     def add_server(self, server_id: int, connect: bool = True,
-            connection_params: typing.Optional[
-            utils.irc.IRCConnectionParameters]=None) -> IRCServer.Server:
-        if not connection_params:
-            connection_params = utils.irc.IRCConnectionParameters(
-                *self.database.servers.get(server_id))
+            connection_param_args: typing.Dict[str, str]={}
+            ) -> IRCServer.Server:
+        connection_params = utils.irc.IRCConnectionParameters(
+            *self.database.servers.get(server_id))
+        connection_params.args = connection_param_args
 
         new_server = IRCServer.Server(self, self._events,
             connection_params.id, connection_params.alias, connection_params)
@@ -164,7 +164,7 @@ class Bot(object):
             event["timer"].redo()
     def reconnect(self, server_id: int, connection_params: typing.Optional[
             utils.irc.IRCConnectionParameters]=None) -> bool:
-        server = self.add_server(server_id, False, connection_params)
+        server = self.add_server(server_id, False, connection_params.args)
         if self.connect(server):
             self.servers[server.fileno()] = server
             return True
