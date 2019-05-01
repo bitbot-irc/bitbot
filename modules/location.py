@@ -1,5 +1,4 @@
 from src import ModuleManager, utils
-import pytz
 
 URL_OPENCAGE = "https://api.opencagedata.com/geocode/v1/json"
 
