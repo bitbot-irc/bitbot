@@ -1,9 +1,13 @@
+#--require-config bitly-api-key
+
 import re
 from src import ModuleManager, utils
 
-ISGD_API_URL = "https://is.gd/create.php"
+URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
 
 class Module(ModuleManager.BaseModule):
+    _name = "Short"
+
     def on_load(self):
         self.exports.add("shortlink", self._shortlink)
 
@@ -11,11 +15,12 @@ class Module(ModuleManager.BaseModule):
         if not re.match(utils.http.REGEX_URL, url):
             url = "http://%s" % url
 
-        page = utils.http.request(ISGD_API_URL, get_params=
-            {"format": "json", "url": url}, json=True)
+        page = utils.http.request(URL_BITLYSHORTEN, get_params={
+            "access_token": self.bot.config["bitly-api-key"],
+            "longUrl": url}, json=True)
 
-        if page and page.data["shorturl"]:
-            return page.data["shorturl"]
+        if page and page.data["data"]:
+            return page.data["data"]["url"]
 
     @utils.hook("received.command.shorten")
     def shorten(self, event):

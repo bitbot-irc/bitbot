@@ -75,3 +75,6 @@ spotify-client-secret    =
 
 # https://opencagedata.com/users/sign_up
 opencagedata-api-key     =
+
+# https://bitly.com/a/oauth_apps
+bitly-api-key            =
