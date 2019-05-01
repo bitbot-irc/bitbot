@@ -1,11 +1,12 @@
-import queue, os, select, socket, threading, time, traceback, typing, uuid
+import enum, queue, os, select, socket, threading, time, traceback, typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
 
 VERSION = "v1.5.0"
 
-TRIGGER_RETURN = 1
-TRIGGER_EXCEPTION = 2
+class TriggerResult(enum.Enum):
+    Return = 1
+    Exception = 2
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
@@ -53,9 +54,9 @@ class Bot(object):
         self._trigger_client.send(b"TRIGGER")
 
         type, returned = func_queue.get(block=True)
-        if type == TRIGGER_EXCEPTION:
+        if type == TriggerResult.Exception:
             raise returned
-        elif type == TRIGGER_RETURN:
+        elif type == TriggerResult.Return:
             return returned
 
     def add_server(self, server_id: int, connect: bool = True,
@@ -197,10 +198,10 @@ class Bot(object):
             for func, func_queue in self._trigger_functions:
                 try:
                     returned = func()
-                    type = TRIGGER_RETURN
+                    type = TriggerResult.Return
                 except Exception as e:
                     returned = e
-                    type = TRIGGER_EXCEPTION
+                    type = TriggerResult.Exception
                 func_queue.put([type, returned])
             self._trigger_functions.clear()
 
