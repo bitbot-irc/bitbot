@@ -165,7 +165,12 @@ class Bot(object):
             event["timer"].redo()
     def reconnect(self, server_id: int, connection_params: typing.Optional[
             utils.irc.IRCConnectionParameters]=None) -> bool:
-        server = self.add_server(server_id, False, connection_params.args)
+        args = {} # type: typing.Dict[str, str]
+        if not connection_params == None:
+            args = typing.cast(utils.irc.IRCConnectionParameters,
+                connection_params).args
+
+        server = self.add_server(server_id, False, args)
         if self.connect(server):
             self.servers[server.fileno()] = server
             return True
