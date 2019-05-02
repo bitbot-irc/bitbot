@@ -1,7 +1,14 @@
 import datetime
 from src import EventManager, ModuleManager, utils
 
+@utils.export("botset", {"setting": "print-motd",
+    "help": "Set whether I print /motd", "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
+    def _print(self, event):
+        self.bot.log.info("%s%s | %s", [
+            str(event["server"]), event["context"] or "",
+            utils.irc.parse_format(event["line"])])
+
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
     @utils.hook("formatted.notice.private")
@@ -16,8 +23,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.kick")
     @utils.hook("formatted.quit")
     @utils.hook("formatted.rename")
-    @utils.hook("formatted.motd")
     def formatted(self, event):
-        self.bot.log.info("%s%s | %s", [
-            str(event["server"]), event["context"] or "",
-            utils.irc.parse_format(event["line"])])
+        self._print(event)
+
+    @utils.hook("formatted.motd")
+    def motd(self, event):
+        if self.bot.get_setting("print-motd", True):
+            self._print(event)
