@@ -87,3 +87,36 @@ class Module(ModuleManager.BaseModule):
             self._no_duck(event["target"], event["user"], event["stderr"],
                 "shoot")
 
+    @utils.hook("received.command.friends")
+    def friends(self, event):
+        stats = self._duck_stats(event["server"], "ducks-befriended", "friends",
+            event["args_split"][0] if event["args"] else None)
+        event["stdout"].write(stats)
+    @utils.hook("received.command.enemies")
+    def enemies(self, event):
+        stats = self._duck_stats(event["server"], "ducks-shot", "enemies",
+            event["args_split"][0] if event["args"] else None)
+        event["stdout"].write(stats)
+
+    def _duck_stats(self, server, setting, description, channel_query):
+        channel_query_str = ""
+        if not channel_query == None:
+            channel_query = server.irc_lower(channel_query)
+            channel_query_str = " in %s" % channel_query
+
+        stats = server.find_all_user_channel_settings(setting)
+
+        user_stats = {}
+        for channel, nickname, value in stats:
+            if not channel_query or channel_query == channel:
+                if not nickname in user_stats:
+                    user_stats[nickname] = 0
+                user_stats[nickname] += value
+
+        nick_func = lambda nickname: utils.prevent_highlight(
+            server.get_user(nickname).nickname)
+
+        top_10 = utils.top_10(user_stats, convert_key=nick_func)
+        return "Top duck %s%s: %s" % (description, channel_query_str,
+            ", ".join(top_10))
+
