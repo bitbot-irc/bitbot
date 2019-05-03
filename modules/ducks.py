@@ -35,6 +35,7 @@ class Module(ModuleManager.BaseModule):
                 show_duck = random.SystemRandom().randint(1, 10) == 1
 
                 if show_duck:
+                    channel.duck_lines = 0
                     self._trigger_duck(channel)
 
     @utils.hook("received.join")
