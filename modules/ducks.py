@@ -1,5 +1,5 @@
 import random
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 
 DUCK = "・゜゜・。。・゜゜\_o< QUACK!"
 NO_DUCK = "There was no duck!"
