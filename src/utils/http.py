@@ -4,7 +4,7 @@ import json as _json
 import bs4, netifaces, requests
 from src import utils
 
-REGEX_URL = re.compile("https?://\S+", re.I)
+REGEX_URL = re.compile("https?://[A-Z0-9{}]+".format(re.escape("-._~:/?#[]@!$&'()*+,;=")), re.I)
 
 USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
