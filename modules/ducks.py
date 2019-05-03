@@ -18,9 +18,9 @@ class Module(ModuleManager.BaseModule):
         self.bootstrap_channel(event["channel"])
 
     def bootstrap_channel(self, channel):
-        if not hasattr(event["channel"], "duck_active"):
-            event["channel"].duck_active = False
-            event["channel"].duck_lines = 0
+        if not hasattr(channel, "duck_active"):
+            channel.duck_active = False
+            channel.duck_lines = 0
 
     def _activity(self, channel):
         self.bootstrap_channel(channel)
