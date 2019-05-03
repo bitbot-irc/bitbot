@@ -15,11 +15,18 @@ NO_DUCK = "There was no duck!"
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.channel")
     def new_channel(self, event):
-        event["channel"].duck_active = False
-        event["channel"].duck_lines = 0
+        self.bootstrap_channel(event["channel"])
+
+    def bootstrap_channel(self, channel):
+        if not hasattr(event["channel"], "duck_active"):
+            event["channel"].duck_active = False
+            event["channel"].duck_lines = 0
 
     def _activity(self, channel):
+        self.bootstrap_channel(channel)
+
         ducks_enabled = channel.get_setting("ducks-enabled", False)
+
         if ducks_enabled and not channel.duck_active:
             channel.duck_lines += 1
             min_lines = channel.get_setting("ducks-min-messages", 20)
