@@ -29,10 +29,10 @@ class Module(ModuleManager.BaseModule):
 
         if ducks_enabled and not channel.duck_active:
             channel.duck_lines += 1
-            min_lines = channel.get_setting("ducks-min-messages", 20)
+            min_lines = channel.get_setting("ducks-min-messages", 40)
 
             if channel.duck_lines >= min_lines:
-                show_duck = random.SystemRandom().randint(1, 10) == 1
+                show_duck = random.SystemRandom().randint(1, 20) == 1
 
                 if show_duck:
                     channel.duck_lines = 0
