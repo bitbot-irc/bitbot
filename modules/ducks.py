@@ -41,7 +41,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.join")
     def join(self, event):
         self._activity(event["channel"])
-    @utils.hook("received.message.channel")
+    @utils.hook("received.message.channel",
+        priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         self._activity(event["channel"])
 
