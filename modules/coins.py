@@ -158,8 +158,8 @@ class Module(ModuleManager.BaseModule):
         :help: Show the top 10 richest users
         """
         top_10 = utils.top_10(self._all_coins(event["server"]),
-            convert_key=lambda nickname: utils.prevent_highlight(
-                event["server"].get_user(nickname).nickname),
+            convert_key=lambda nickname:
+            event["server"].get_user(nickname).nickname,
             value_format=lambda value: self._coin_str_human(value))
         event["stdout"].write("Richest users: %s" % ", ".join(top_10))
 

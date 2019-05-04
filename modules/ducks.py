@@ -114,10 +114,8 @@ class Module(ModuleManager.BaseModule):
                     user_stats[nickname] = 0
                 user_stats[nickname] += value
 
-        nick_func = lambda nickname: utils.prevent_highlight(
-            server.get_user(nickname).nickname)
-
-        top_10 = utils.top_10(user_stats, convert_key=nick_func)
+        top_10 = utils.top_10(user_stats,
+            convert_key=lambda nickname: server.get_user(nickname).nickname)
         return "Top duck %s%s: %s" % (description, channel_query_str,
             ", ".join(top_10))
 

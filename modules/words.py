@@ -102,8 +102,8 @@ class Module(ModuleManager.BaseModule):
             items = [(word_user[0], word_user[1]) for word_user in word_users]
             word_users = dict(items)
             top_10 = utils.top_10(word_users,
-                convert_key=lambda nickname: utils.prevent_highlight(
-                    event["server"].get_user(nickname).nickname))
+                convert_key=lambda nickname:
+                event["server"].get_user(nickname).nickname)
             event["stdout"].write("Top '%s' users: %s" % (word,
                 ", ".join(top_10)))
         else:
@@ -130,7 +130,7 @@ class Module(ModuleManager.BaseModule):
                 user_words[nickname] += word_count
 
         top_10 = utils.top_10(user_words,
-            convert_key=lambda nickname: utils.prevent_highlight(
-                event["server"].get_user(nickname).nickname))
+            convert_key=lambda nickname:
+            event["server"].get_user(nickname).nickname)
         event["stdout"].write("wordiest%s: %s" % (
             word_prefix, ", ".join(top_10)))
