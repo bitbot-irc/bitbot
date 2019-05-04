@@ -21,20 +21,28 @@ class Module(ModuleManager.BaseModule):
 
         location = None
         if event["args"]:
-            target_user = event["server"].get_user(event["args_split"][0])
-            location = self._user_location(target_user)
-            if location == None:
-                raise utils.EventError("%s doesn't have a location set"
-                    % target_user.nickname)
+            if len(event["args_split"]) == 1 and event["server"].has_user_id(
+                    event["args_split"][0]):
+                target_user = event["server"].get_user(event["args_split"][0])
+                location = self._user_location(target_user)
+                if location == None:
+                    raise utils.EventError("%s doesn't have a location set"
+                        % target_user.nickname)
         else:
             location = self._user_location(event["user"])
             if location == None:
                 raise utils.EventError("You don't have a location set")
 
-        lat, lon = location
-        page = utils.http.request(URL_WEATHER, get_params={
-            "units": "metric", "lat": lat, "lon": lon, "APPID": api_key},
-            json=True)
+        args = {"units": "metric", "APPID": api_key}
+
+        if location:
+            lat, lon = location
+            args["lat"] = lat
+            args["lon"] = lon
+        else:
+            args["q"] = event["args"]
+
+        page = utils.http.request(URL_WEATHER, get_params=args, json=True)
         if page:
             if "weather" in page.data:
                 location = "%s, %s" % (page.data["name"], page.data["sys"][
