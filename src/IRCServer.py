@@ -174,6 +174,9 @@ class Server(IRCObject.Object):
         nickname_lower = self.irc_lower(nickname)
         self.bot.database.users.add(self.id, nickname_lower)
         return self.bot.database.users.get_id(self.id, nickname_lower)
+    def has_user_id(self, nickname: str) -> bool:
+        id = self.bot.database.users.get_id(self.id, self.irc_lower(nickname))
+        return not id == None
     def remove_user(self, user: IRCUser.User):
         del self.users[user.nickname_lower]
         for channel in user.channels:
