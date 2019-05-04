@@ -438,7 +438,7 @@ class Module(ModuleManager.BaseModule):
             return page.headers["Location"]
         except utils.http.HTTPTimeoutException:
             self.log.warn(
-                "HTTPTimeoutException while waiting for github short URL")
+                "HTTPTimeoutException while waiting for github short URL", [])
             return url
 
     def _iso8601(self, s):
