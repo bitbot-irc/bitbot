@@ -101,7 +101,7 @@ class Module(ModuleManager.BaseModule):
                     return
 
         if self.has_command(command):
-            if self._is_ignored(event["user"], command):
+            if self._is_ignored(event["server"], event["user"], command):
                 return
 
             hook = None
