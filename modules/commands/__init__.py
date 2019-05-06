@@ -375,7 +375,7 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("I'm already ignoring '%s' for %s" %
                 (command, str(event["server"])))
         else:
-            server.set_setting(setting, True)
+            event["server"].set_setting(setting, True)
             event["stdout"].write("Now ignoring '%s' for %s" %
                 (command, str(event["server"])))
 
