@@ -368,10 +368,13 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.serverignore", in_args=1)
     def server_ignore(self, event):
+        """
+        :permission: server-ignore
+        """
         command = event["args_split"][0].lower()
         setting = "ignore-%s" % command
 
-        if event["server"].get_setting(setting):
+        if event["server"].get_setting(setting, False):
             event["stderr"].write("I'm already ignoring '%s' for %s" %
                 (command, str(event["server"])))
         else:
