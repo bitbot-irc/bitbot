@@ -213,6 +213,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
+        if event["action"]:
+            return
+
         commands_enabled = event["channel"].get_setting("commands", True)
         if not commands_enabled:
             return
@@ -232,7 +235,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.private", priority=EventManager.PRIORITY_LOW)
     def private_message(self, event):
-        if event["message_split"]:
+        if event["message_split"] and not event["action"]:
             command = event["message_split"][0].lower()
             self.message(event, command)
 
