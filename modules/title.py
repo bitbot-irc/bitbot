@@ -51,7 +51,7 @@ class Module(ModuleManager.BaseModule):
         if match and event["channel"].get_setting("auto-title", False):
             is_ignored_f = short_url = self.exports.get_one("is-ignored",
                 lambda _1, _2: False)
-            if is_ignored_f(event["user"], "title"):
+            if is_ignored_f(event["server"], event["user"], "title"):
                 return
 
             url = match.group(0)

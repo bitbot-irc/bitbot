@@ -79,10 +79,12 @@ class Module(ModuleManager.BaseModule):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
 
-    def _is_ignored(self, user, command):
+    def _is_ignored(self, server, user, command):
         if user.get_setting("ignore", False):
             return True
         elif user.get_setting("ignore-%s" % command, False):
+            return True
+        elif server.get_setting("ignore-%s" % command, False):
             return True
         return False
 
@@ -363,6 +365,19 @@ class Module(ModuleManager.BaseModule):
             user.del_setting(setting)
             event["stdout"].write("Removed ignore for '%s'%s" %
                 (user.nickname, for_str))
+
+    @utils.hook("received.command.serverignore", in_args=1)
+    def server_ignore(self, event):
+        command = event["args_split"][0].lower()
+        setting = "ignore-%s" % command
+
+        if event["server"].get_setting(setting):
+            event["stderr"].write("I'm already ignoring '%s' for %s" %
+                (command, str(event["server"])))
+        else:
+            server.set_setting(setting, True)
+            event["stdout"].write("Now ignoring '%s' for %s" %
+                (command, str(event["server"])))
 
     @utils.hook("send.stdout")
     def send_stdout(self, event):
