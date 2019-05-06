@@ -47,8 +47,8 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write("%s is %d in %d days" % (
                     target_user.nickname, age, days))
             else:
-                event["stdout"].write("%s is %d today!" % (target_user.nickname,
-                    age))
+                event["stdout"].write("%s is %d today! 🎉" % (
+                    target_user.nickname, age))
         else:
             event["stderr"].write("No birthday set for %s" %
                 target_user.nickname)
