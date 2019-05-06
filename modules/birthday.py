@@ -1,20 +1,34 @@
 import datetime
 from src import ModuleManager, utils
 
-DATE_FORMAT = "%Y-%m-%d"
+DATE_YEAR_FORMAT = "%Y-%m-%d"
+DATE_FORMAT = "%d-%b"
 
 def _parse(s):
-    try:
-        return datetime.datetime.strptime(s, DATE_FORMAT)
-    except ValueError:
-        return None
-def _format(dt):
-    return datetime.datetime.strftime(dt, DATE_FORMAT)
+    if s.count("-") == 1:
+        try:
+            return False, datetime.datetime.strptime(s, DATE_FORMAT)
+        except ValueError:
+            return None
+    else:
+        try:
+            return True, datetime.datetime.strptime(s, DATE_YEAR_FORMAT)
+        except ValueError:
+            return None
+def _format(years, dt):
+    return datetime.datetime.strftime(dt,
+        DATE_YEAR_FORMAT if years else DATE_FORMAT)
 def _check(s):
     parsed = _parse(s)
     if parsed:
-        return _format(parsed)
+        years, parsed = parsed
+        return _format(years, parsed)
     return None
+
+def _apostrophe(nickname):
+    if nickname[-1].lower() == "s":
+        return "%s'" % nickname
+    return "%s's" % nickname
 
 @utils.export("set", {"setting": "birthday", "help": "Set your birthday",
     "validate": _check})
@@ -33,7 +47,8 @@ class Module(ModuleManager.BaseModule):
         birthday = target_user.get_setting("birthday", None)
 
         if not birthday == None:
-            birthday_parsed = _parse(birthday).date()
+            years, birthday_parsed = _parse(birthday)
+            birthday_parsed = birthday_parsed.date()
             now = datetime.datetime.utcnow().date()
 
             next_birthday = datetime.date(year=now.year,
@@ -44,11 +59,19 @@ class Module(ModuleManager.BaseModule):
             age = next_birthday.year-birthday_parsed.year
 
             if days > 0:
-                event["stdout"].write("%s is %d in %d days" % (
-                    target_user.nickname, age, days))
+                if years:
+                    event["stdout"].write("%s is %d in %d days" % (
+                        target_user.nickname, age, days))
+                else:
+                    event["stdout"].write("%s birthday is in %d days" % (
+                        _apostrophe(target_user.nickname), days))
             else:
-                event["stdout"].write("%s is %d today! 🎉" % (
-                    target_user.nickname, age))
+                if years:
+                    event["stdout"].write("%s is %d today! 🎉" % (
+                        target_user.nickname, age))
+                else:
+                    event["stdout"].write("%s birthday is today! 🎉" %
+                        _apostrophe(target_user.nickname))
         else:
             event["stderr"].write("No birthday set for %s" %
                 target_user.nickname)
@@ -60,14 +83,18 @@ class Module(ModuleManager.BaseModule):
 
         today = datetime.datetime.utcnow().date()
         for nickname, birthday in birthday_settings:
-            birthday_parsed = _parse(birthday).date()
+            years, birthday_parsed = _parse(birthday)
+            birthday_parsed = birthday_parsed.date()
             if birthday_parsed.replace(year=today.year) == today:
-                birthdays[nickname] = today.year-birthday_parsed.year
+                birthdays[nickname] = [years, today.year-birthday_parsed.year]
         if birthdays:
             birthdays_str = []
-            for nickname, age in birthdays.items():
+            for nickname, (years, age) in birthdays.items():
                 nickname = event["server"].get_user(nickname).nickname
-                birthdays_str.append("%s (%d)" % (nickname, age))
+                if years:
+                    birthdays_str.append("%s (%d)" % (nickname, age))
+                else:
+                    birthdays_str.append(nickname)
 
             event["stdout"].write("Birthdays today: %s" %
                 ", ".join(birthdays_str))
