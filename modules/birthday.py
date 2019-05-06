@@ -52,3 +52,24 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("No birthday set for %s" %
                 target_user.nickname)
+
+    @utils.hook("received.command.birthdays")
+    def birthdays(self, event):
+        birthday_settings = event["server"].get_all_user_settings("birthday")
+        birthdays = {}
+
+        today = datetime.datetime.utcnow().date()
+        for nickname, birthday in birthday_settings:
+            birthday_parsed = _parse(birthday).date()
+            if birthday_parsed.replace(year=today.year) == today:
+                birthdays[nickname] = today.year-birthday_parsed.year
+        if birthdays:
+            birthdays_str = []
+            for nickname, age in birthdays.items():
+                nickname = event["server"].get_user(nickname).nickname
+                birthdays_str.append("%s (%d)" % (nickname, age))
+
+            event["stdout"].write("Birthdays today: %s" %
+                ", ".join(birthdays_str))
+        else:
+            event["stdout"].write("There are no birthdays today")
