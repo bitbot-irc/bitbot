@@ -382,6 +382,22 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Now ignoring '%s' for %s" %
                 (command, str(event["server"])))
 
+    @utils.hook("received.command.serverunignore", in_args=1)
+    def server_unignore(self, event):
+        """
+        :permission: server-unignore
+        """
+        command = event["args_split"][0].lower()
+        setting = "ignore-%s" % command
+
+        if not event["server"].get_setting(setting, False):
+            event["stderr"].write("I'm not ignoring '%s' for %s" %
+                (command, str(event["server"])))
+        else:
+            event["server"].del_setting(setting)
+            event["stdout"].write("No longer ignoring '%s' for %s" %
+                (command, str(event["server"])))
+
     @utils.hook("send.stdout")
     def send_stdout(self, event):
         stdout = outs.StdOut(event["server"], event["module_name"],
