@@ -33,11 +33,10 @@ def _apostrophe(nickname):
 @utils.export("set", {"setting": "birthday", "help": "Set your birthday",
     "validate": _check})
 class Module(ModuleManager.BaseModule):
-
     @utils.hook("received.command.birthday")
     def birthday(self, event):
         """
-        :help: Get your, or someone else's, pronouns
+        :help: Get your, or someone else's, birthday
         :usage: [nickname]
         """
         target_user = event["user"]
