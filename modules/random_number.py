@@ -37,9 +37,9 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("%s tosses a coin and gets %s" %
             (event["user"].nickname, chosen_side))
 
-    @utils.hook("received.command.uuid")
+    @utils.hook("received.command.uuid4")
     def uuid(self, event):
         """
-        :help: Get a random uuid
+        :help: Get a random uuid4
         """
         event["stdout"].write(str(uuid.uuid4()))
