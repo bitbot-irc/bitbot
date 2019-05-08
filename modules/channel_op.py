@@ -38,7 +38,7 @@ class Module(ModuleManager.BaseModule):
 
         try:
             self._kick(event["server"], channel, target, reason)
-        except UserNotFoundException:
+        except UserNotFoundException as e:
             event["stderr"].write(str(e))
 
     @utils.hook("received.command.kick", private_only=True, min_args=2)
