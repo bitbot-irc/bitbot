@@ -30,6 +30,11 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         match = REGEX_FACTOID.search(event["message"])
         if match:
+            is_ignored_f = short_url = self.exports.get_one("is-ignored",
+                lambda _1, _2: False)
+            if is_ignored_f(event["server"], event["user"], "factoid"):
+                return
+
             name, value = self._get_factoid(event["server"], match.group(1))
             if not value == None:
                 self.events.on("send.stdout").call(target=event["channel"],
