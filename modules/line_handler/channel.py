@@ -29,7 +29,7 @@ def handle_333(events, event):
 
 def handle_353(event):
     channel = event["server"].channels.get(event["args"][2])
-    nicknames = event["args"].get(3).split()
+    nicknames = event["args"].get(3).split(" ")
     for nickname in nicknames:
         modes = set([])
 
