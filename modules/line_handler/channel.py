@@ -30,6 +30,11 @@ def handle_333(events, event):
 def handle_353(event):
     channel = event["server"].channels.get(event["args"][2])
     nicknames = event["args"].get(3).split(" ")
+
+    # there can sometimes be a dangling space at the end of a 353
+    if nicknames and not nicknames[-1]:
+        nicknames.pop(-1)
+
     for nickname in nicknames:
         modes = set([])
 
