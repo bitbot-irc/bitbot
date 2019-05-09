@@ -207,7 +207,8 @@ class Server(IRCObject.Object):
             return
 
         self.bot.log.debug("%s (raw recv) | %s", [str(self), line])
-        self.events.on("raw.received").call_unsafe(server=self, line=line)
+        self.events.on("raw.received").call_unsafe(server=self,
+            line=utils.irc.parse_line(line))
         self.check_users()
     def check_users(self):
         for user in self.new_users:

@@ -24,12 +24,11 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("raw.received")
     def handle_raw(self, event):
-        line = utils.irc.parse_line(event["line"])
-        if "batch" in line.tags and line.tags["batch"] in event[
-                "server"].batches:
-            server.batches[tag["batch"]].lines.append(line)
+        if ("batch" in event["line"].tags and
+                event["line"].tags["batch"] in event["server"].batches):
+            server.batches[tag["batch"]].lines.append(event["line"])
         else:
-            self._handle(event["server"], line)
+            self._handle(event["server"], event["line"])
 
     @utils.hook("raw.send")
     def handle_send(self, event):
