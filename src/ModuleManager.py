@@ -91,6 +91,18 @@ class ModuleManager(object):
     def _import_name(self, name: str) -> str:
         return "bitbot_%s" % name
 
+    def from_context(self, context: str) -> typing.Optional[LoadedModule]:
+        for module in self.modules.values():
+            if module.context == context:
+                return  module
+        return None
+    def from_name(self, name: str) -> typing.Optional[LoadedModule]:
+        name_lower = name.lower()
+        for module in self.modules.values():
+            if module.name.lower() == name_lower:
+                return module
+        return None
+
     def _get_magic(self, obj: typing.Any, magic: str, default: typing.Any
             ) -> typing.Any:
         return getattr(obj, magic) if hasattr(obj, magic) else default

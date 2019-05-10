@@ -29,11 +29,12 @@ class Event(object):
 
 class EventCallback(object):
     def __init__(self, function: CALLBACK_TYPE, priority: int, kwargs: dict,
-            one_shot: bool=False):
+            context: typing.Optional[str], one_shot: bool=False):
         self.function = function
         self.priority = priority
         self.kwargs = kwargs
         self.docstring = utils.parse.docstring(function.__doc__ or "")
+        self.context = context
         self._one_shot = one_shot
 
     def call(self, event: Event) -> typing.Any:
@@ -83,7 +84,7 @@ class EventHook(object):
         return self._hook(function, context, priority, replay, kwargs)
     def _hook(self, function: CALLBACK_TYPE, context: typing.Optional[str],
             priority: int, replay: bool, kwargs: dict) -> EventCallback:
-        callback = EventCallback(function, priority, kwargs)
+        callback = EventCallback(function, priority, kwargs, context)
 
         if context == None:
             self._hooks.append(callback)
