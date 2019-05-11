@@ -4,6 +4,8 @@ from src import EventManager, ModuleManager, utils
 DUCK = "・゜゜・。。・゜゜\_o< QUACK!"
 NO_DUCK = "There was no duck!"
 
+DEFAUL_MIN_MESSAGES = 100
+
 @utils.export("channelset", {"setting": "ducks-enabled",
     "help": "Whether or not to spawn ducks", "validate": utils.bool_or_none})
 @utils.export("channelset", {"setting": "ducks-min-messages",
@@ -29,7 +31,8 @@ class Module(ModuleManager.BaseModule):
 
         if ducks_enabled and not channel.duck_active:
             channel.duck_lines += 1
-            min_lines = channel.get_setting("ducks-min-messages", 40)
+            min_lines = channel.get_setting("ducks-min-messages",
+                DEFAULT_MIN_MESSAGES)
 
             if channel.duck_lines >= min_lines:
                 show_duck = random.SystemRandom().randint(1, 20) == 1
