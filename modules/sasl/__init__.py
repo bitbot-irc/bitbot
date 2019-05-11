@@ -13,15 +13,6 @@ def _validate(self, s):
     mechanism, _, arguments = s.partition(" ")
     return {"mechanism": mechanism, "args": arguments}
 
-def _scram_nonce():
-    return str(uuid.uuid4().hex)
-def _scram_escape(s):
-    return s.replace("=", "=3D").replace(",", "=2C")
-def _scram_unescape(s):
-    return s.replace("=3D", "=").replace("=2C", ",")
-def _scram_xor(s1, s2):
-    return bytes(a ^ b for a, b in zip(s1, s2))
-
 @utils.export("serverset", {"setting": "sasl",
     "help": "Set the sasl username/password for this server",
     "validate": _validate})
