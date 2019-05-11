@@ -272,7 +272,7 @@ class Module(ModuleManager.BaseModule):
     def help(self, event):
         """
         :help: Show help for a given command
-        :usage: [command]
+        :usage: [module [command]]
         """
         if event["args"]:
             module_name = event["args_split"][0]
