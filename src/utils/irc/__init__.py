@@ -275,3 +275,14 @@ class IRCSendBatch(IRCBatch):
         self._add_line(utils.irc.protocol.message(target, message, tags))
     def notice(self, target: str, message: str, tags: dict={}):
         self._add_line(utils.irc.protocol.notice(target, message, tags))
+
+class Capability(object):
+    def __init__(self, name, draft_name=None):
+        self._caps = set([name, draft_name])
+        self._name = name
+        self._draft_name = draft_name
+    def available(self, capabilities: typing.List[str]) -> str:
+        match = list(set(capabilities)&self._caps)
+        return match[0] if match else None
+    def enabled(self, capability: str) -> bool:
+        return capability in self._caps

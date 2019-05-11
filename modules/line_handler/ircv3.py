@@ -1,13 +1,31 @@
 from src import utils
 
-CAPABILITIES = {"multi-prefix", "chghost", "invite-notify", "account-tag",
-    "account-notify", "extended-join", "away-notify", "userhost-in-names",
-    "draft/message-tags-0.2", "message-tags", "server-time", "cap-notify",
-    "batch", "draft/labeled-response", "draft/rename", "echo-message",
-    "draft/setname"}
+CAPABILITIES = [
+    utils.irc.Capability("multi-prefix"),
+    utils.irc.Capability("chghost"),
+    utils.irc.Capability("invite-notify"),
+    utils.irc.Capability("account-tag"),
+    utils.irc.Capability("account-notify"),
+    utils.irc.Capability("extended-join"),
+    utils.irc.Capability("away-notify"),
+    utils.irc.Capability("userhost-in-names"),
+    utils.irc.Capability("message-tags", "draft/message-tags-0.2"),
+    utils.irc.Capability("server-time"),
+    utils.irc.Capability("cap-notify"),
+    utils.irc.Capability("batch"),
+    utils.irc.Capability("echo-message"),
+    utils.irc.Capability(None, "draft/labeled-response"),
+    utils.irc.Capability(None, "draft/rename"),
+    utils.irc.Capability(None, "draft/setname")
+]
 
 def _match_caps(capabilities):
-    return set(capabilities) & CAPABILITIES
+    matched = []
+    for capability in CAPABILITIES:
+        available = capability.available(capabilities)
+        if available:
+            matched.append(available)
+    return matched
 
 def cap(events, event):
     capabilities = utils.parse.keyvalue(event["args"][-1])
