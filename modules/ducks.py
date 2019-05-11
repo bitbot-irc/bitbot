@@ -4,7 +4,7 @@ from src import EventManager, ModuleManager, utils
 DUCK = "・゜゜・。。・゜゜\_o< QUACK!"
 NO_DUCK = "There was no duck!"
 
-DEFAUL_MIN_MESSAGES = 100
+DEFAULT_MIN_MESSAGES = 100
 
 @utils.export("channelset", {"setting": "ducks-enabled",
     "help": "Whether or not to spawn ducks", "validate": utils.bool_or_none})
