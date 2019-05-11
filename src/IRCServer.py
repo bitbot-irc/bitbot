@@ -24,10 +24,10 @@ class Server(IRCObject.Object):
         self.realname = None # type: typing.Optional[str]
         self.hostname = None # type: typing.Optional[str]
 
-        self._capability_queue = set([]) # type: typing.Set[str]
+        self.capability_queue = {
+            } # type: typing.Dict[str, utils.irc.Capability]
         self._capabilities_waiting = set([]) # type: typing.Set[str]
         self.agreed_capabilities = set([]) # type: typing.Set[str]
-        self.requested_capabilities = [] # type: typing.List[str]
         self.server_capabilities = {} # type: typing.Dict[str, str]
         self.batches = {} # type: typing.Dict[str, IRCLine.ParsedLine]
         self.cap_started = False
@@ -269,21 +269,12 @@ class Server(IRCObject.Object):
 
     def send_capibility_ls(self) -> IRCLine.SentLine:
         return self.send(utils.irc.protocol.capability_ls())
-    def queue_capability(self, capability: str):
-        self._capability_queue.add(capability)
-    def queue_capabilities(self, capabilities: typing.List[str]):
-        self._capability_queue.update(capabilities)
     def send_capability_queue(self):
-        if self.has_capability_queue():
-            capability_queue = list(self._capability_queue)
-            self._capability_queue.clear()
+        capability_queue = [cap for cap in self.capability_queue.keys()]
 
-            for i in range(0, len(capability_queue), 10):
-                capability_batch = capability_queue[i:i+10]
-                self.requested_capabilities += capability_batch
-                self.send_capability_request(" ".join(capability_batch))
-    def has_capability_queue(self):
-        return bool(len(self._capability_queue))
+        for i in range(0, len(capability_queue), 10):
+            capability_batch = capability_queue[i:i+10]
+            self.send_capability_request(" ".join(capability_batch))
     def send_capability_request(self, capability: str) -> IRCLine.SentLine:
         return self.send(utils.irc.protocol.capability_request(capability))
     def send_capability_end(self) -> IRCLine.SentLine:

@@ -41,22 +41,22 @@ class Module(ModuleManager.BaseModule):
                 do_sasl = True
 
         if do_sasl:
-            event["server"].queue_capability("sasl")
+            cap = utils.irc.Capability("sasl")
+            cap.on_ack(lambda: self._sasl_ack(event["server"]))
+            return cap
 
-    @utils.hook("received.cap.ack")
-    def on_cap_ack(self, event):
-        if "sasl" in event["capabilities"]:
-            sasl = event["server"].get_setting("sasl")
-            mechanism = sasl["mechanism"].upper()
-            if mechanism == "USERPASS":
-                server_mechanisms = event["server"].server_capabilities["sasl"]
-                server_mechanisms = server_mechanisms or [
-                    USERPASS_MECHANISMS[0]]
-                mechanism = self._best_userpass_mechanism(server_mechanisms)
+    def _sasl_ack(self, server):
+        sasl = server.get_setting("sasl")
+        mechanism = sasl["mechanism"].upper()
+        if mechanism == "USERPASS":
+            server_mechanisms = server.server_capabilities["sasl"]
+            server_mechanisms = server_mechanisms or [
+                USERPASS_MECHANISMS[0]]
+            mechanism = self._best_userpass_mechanism(server_mechanisms)
 
-            event["server"].send_authenticate(mechanism)
-            event["server"].sasl_mechanism = mechanism
-            event["server"].wait_for_capability("sasl")
+        server.send_authenticate(mechanism)
+        server.sasl_mechanism = mechanism
+        server.wait_for_capability("sasl")
 
     @utils.hook("received.authenticate")
     def on_authenticate(self, event):

@@ -23,12 +23,12 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
         if CAP in event["capabilities"]:
-            event["server"].queue_capability(CAP)
+            cap = utils.irc.Capability(CAP)
+            cap.on_ack(lambda: self._cap_ack(event["server"]))
+            return cap
 
-    @utils.hook("received.cap.ack")
-    def on_cap_ack(self, event):
-        if CAP in event["capabilities"]:
-            event["server"].wait_for_capability("resume")
+    def _cap_ack(self, server):
+        server.wait_for_capability("resume")
 
     @utils.hook("received.resume")
     def on_resume(self, event):

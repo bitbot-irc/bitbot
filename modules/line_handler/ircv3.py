@@ -19,13 +19,19 @@ CAPABILITIES = [
     utils.irc.Capability(None, "draft/setname")
 ]
 
-def _match_caps(capabilities):
-    matched = []
-    for capability in CAPABILITIES:
-        available = capability.available(capabilities)
+def _match_caps(our_capabilities, offered_capabilities):
+    matched = {}
+    for capability in our_capabilities:
+        available = capability.available(offered_capabilities)
         if available:
-            matched.append(available)
+            matched[available] = capability
     return matched
+
+def _caps_offered(server, caps):
+    blacklist = server.get_setting("blacklisted-caps", [])
+    for cap_name, cap in caps.items():
+        if not cap_name in blacklist:
+            server.capability_queue[cap_name] = cap
 
 def cap(events, event):
     capabilities = utils.parse.keyvalue(event["args"][-1])
@@ -36,20 +42,18 @@ def cap(events, event):
         event["server"].cap_started = True
         event["server"].server_capabilities.update(capabilities)
         if not is_multiline:
-            matched_caps = _match_caps(
-                list(event["server"].server_capabilities.keys()))
-            blacklisted_caps = event["server"].get_setting(
-                "blacklisted-caps", [])
-            matched_caps = list(
-                set(matched_caps)-set(blacklisted_caps))
+            server_caps = list(event["server"].server_capabilities.keys())
+            matched_caps = _match_caps(CAPABILITIES, server_caps)
 
-            event["server"].queue_capabilities(matched_caps)
-
-            events.on("received.cap.ls").call(
+            module_caps = events.on("received.cap.ls").call(
                 capabilities=event["server"].server_capabilities,
                 server=event["server"])
+            module_caps = list(filter(None, module_caps))
+            matched_caps.update(_match_caps(module_caps, server_caps))
 
-            if event["server"].has_capability_queue():
+            _caps_offered(event["server"], matched_caps)
+
+            if event["server"].capability_queue:
                 event["server"].send_capability_queue()
             else:
                 event["server"].send_capability_end()
@@ -58,12 +62,15 @@ def cap(events, event):
         event["server"].server_capabilities.update(capabilities)
 
         matched_caps = _match_caps(list(capabilities_keys))
-        event["server"].queue_capabilities(matched_caps)
 
-        events.on("received.cap.new").call(server=event["server"],
-            capabilities=capabilities)
+        module_caps = events.on("received.cap.new").call(
+            server=event["server"], capabilities=capabilities)
+        module_caps = list(filter(None, module_caps))
+        matched_caps.update(_match_caps(module_caps, capabilities_keys))
 
-        if event["server"].has_capability_queue():
+        _caps_offered(event["server"], matched_caps)
+
+        if event["server"].capability_queue:
             event["server"].send_capability_queue()
     elif subcommand == "del":
         for capability in capabilities.keys():
@@ -78,11 +85,17 @@ def cap(events, event):
            server=event["server"])
 
     if subcommand == "ack" or subcommand == "nak":
+        ack = subcommand == "ack"
         for capability in capabilities:
-            event["server"].requested_capabilities.remove(capability)
+            cap_obj = event["server"].capability_queue[capability]
+            del event["server"].capability_queue[capability]
+            if ack:
+                cap_obj.ack()
+            else:
+                cap_obj.nak()
 
         if (event["server"].cap_started and
-                not event["server"].requested_capabilities and
+                not event["server"].capability_queue and
                 not event["server"].waiting_for_capabilities()):
             event["server"].cap_started = False
             event["server"].send_capability_end()

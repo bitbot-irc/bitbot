@@ -281,8 +281,17 @@ class Capability(object):
         self._caps = set([name, draft_name])
         self._name = name
         self._draft_name = draft_name
+        self._on_ack_callbacks = []
     def available(self, capabilities: typing.List[str]) -> str:
         match = list(set(capabilities)&self._caps)
         return match[0] if match else None
     def enabled(self, capability: str) -> bool:
         return capability in self._caps
+
+    def on_ack(self, callback: typing.Callable[[], None]):
+        self._on_ack_callbacks.append(callback)
+    def ack(self):
+        for callback in self._on_ack_callbacks:
+            callback()
+    def nak(self):
+        pass
