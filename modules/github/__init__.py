@@ -614,7 +614,7 @@ class Module(ModuleManager.BaseModule):
         tag = data["release"]["tag_name"]
         name = data["release"]["name"] or ""
         if name:
-            name = ": %s"
+            name = ": %s" % name
         author = utils.irc.bold(data["release"]["author"]["login"])
         url = self._short_url(data["release"]["html_url"])
         return ["%s %s a release%s - %s" % (author, action, name, url)]
