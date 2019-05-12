@@ -5,7 +5,7 @@ class Module(ModuleManager.BaseModule):
         target_nick = server.connection_params.nickname
         if not server.irc_equals(server.nickname, target_nick):
             if "MONITOR" in server.isupport:
-                server.send("MONITOR + %s" % target_nick)
+                server.send_raw("MONITOR + %s" % target_nick)
             else:
                 self.timers.add("ison-check", 30, server=server)
 
@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
         target_nick = event["server"].connection_params.nickname
         if event["server"].irc_equals(event["new_nickname"], target_nick):
             if "MONITOR" in event["server"].isupport:
-                event["server"].send("MONITOR - %s " % target_nick)
+                event["server"].send_raw("MONITOR - %s " % target_nick)
 
     @utils.hook("received.731")
     def mon_offline(self, event):
@@ -36,7 +36,7 @@ class Module(ModuleManager.BaseModule):
         target_nick = event["server"].connection_params.nickname
         if not event["server"].irc_equals(
                 event["server"].nickname, target_nick):
-            event["server"].send("ISON %s" % target_nick)
+            event["server"].send_raw("ISON %s" % target_nick)
             event["timer"].redo()
 
     @utils.hook("received.303")
