@@ -59,6 +59,13 @@ class Bot(object):
         elif type == TriggerResult.Return:
             return returned
 
+    def load_modules(self, safe: bool=False
+            ) -> typing.Tuple[typing.List[str], typing.List[str]]:
+        whitelist = self.get_setting("module-whitelist", [])
+        blacklist = self.get_setting("module-blacklist", [])
+        return self.modules.load_modules(self, whitelist=whitelist,
+            blacklist=blacklist, safe=safe)
+
     def add_server(self, server_id: int, connect: bool = True,
             connection_param_args: typing.Dict[str, str]={}
             ) -> IRCServer.Server:

@@ -193,14 +193,26 @@ class ModuleManager(object):
         return loaded_module
 
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
-            blacklist: typing.List[str]=[]):
+            blacklist: typing.List[str]=[], safe: bool=False
+            ) -> typing.Tuple[typing.List[str], typing.List[str]]:
+        fail = []
+        success = []
         for type, path in self.list_modules():
             name = self._module_name(path)
             if name in whitelist or (not whitelist and not name in blacklist):
                 try:
                     self.load_module(bot, name)
                 except ModuleWarning:
-                    pass
+                    fail.append(name)
+                    continue
+                except Exception as e:
+                    if safe:
+                        fail.append(name)
+                        continue
+                    else:
+                        raise
+                success.append(name)
+        return success, fail
 
     def unload_module(self, name: str):
         if not name in self.modules:

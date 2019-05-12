@@ -71,12 +71,11 @@ if args.module:
     module.module.command_line(args.module_args)
     sys.exit(0)
 
-whitelist = bot.get_setting("module-whitelist", [])
-blacklist = bot.get_setting("module-blacklist", [])
 
 server_configs = bot.database.servers.get_all()
+
 if len(server_configs):
-    modules.load_modules(bot, whitelist=whitelist, blacklist=blacklist)
+    bot.load_modules()
 
     servers = []
     for server_id, alias in server_configs:
