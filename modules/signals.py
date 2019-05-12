@@ -48,17 +48,18 @@ class Module(ModuleManager.BaseModule):
     def _reload_modules(self):
         self.bot.log.info("Reloading modules", [])
 
-        reloaded = []
-        failed = []
+        success = []
+        fail = []
         for name in list(self.bot.modules.modules.keys()):
             try:
-                self._reload(name)
+                self.bot.modules.unload_module(name)
             except ModuleManager.ModuleWarning:
                 continue
             except Exception as e:
                 failed.append(name)
                 continue
-            reloaded.append(name)
+        load_success, load_fail = self.bot.load_modules(safe=True)
+        fail.extend(load_fail)
 
         self.bot.log.info("Reloaded %d modules (%d failed)",
-            [len(reloaded), len(failed)])
+            [len(load_success), len(fail)])
