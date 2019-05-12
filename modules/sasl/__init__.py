@@ -137,3 +137,7 @@ class Module(ModuleManager.BaseModule):
         self.log.warn("SASL failure for %s: %s",
             [str(event["server"]), event["args"][1]])
         self._end_sasl(event["server"])
+
+    @utils.hook("received.907")
+    def sasl_already(self, event):
+        self._end_sasl(event["server"])
