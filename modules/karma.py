@@ -34,7 +34,7 @@ class Module(ModuleManager.BaseModule):
             if is_ignored_f(event["server"], event["user"], "karma"):
                 return
 
-            if_silenced_f = self.exports.get_one("is-silenced", lambda _: False)
+            is_silenced_f = self.exports.get_one("is-silenced", lambda _: False)
             if is_silenced_f(event["channel"]):
                 return
 
