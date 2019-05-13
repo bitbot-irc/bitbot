@@ -29,7 +29,7 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         match = re.match(REGEX_KARMA, event["message"].strip())
         if match and not event["action"]:
-            is_ignored_f = short_url = self.exports.get_one("is-ignored",
+            is_ignored_f = self.exports.get_one("is-ignored",
                 lambda _1, _2: False)
             if is_ignored_f(event["server"], event["user"], "karma"):
                 return
