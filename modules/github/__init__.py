@@ -422,6 +422,9 @@ class Module(ModuleManager.BaseModule):
 
     def _prevent_highlight(self, server, channel, s):
         for user in channel.users:
+            if len(user.nickname) == 1:
+                continue
+
             s_lower = server.irc_lower(s)
             while user.nickname_lower in s_lower:
                 index = s_lower.index(user.nickname_lower)
