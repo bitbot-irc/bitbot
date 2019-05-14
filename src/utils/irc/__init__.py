@@ -296,8 +296,8 @@ class Capability(object):
     def nak(self):
         pass
 
-def MessageTag(object):
-    def __init__(self, name, draft_name=None):
+class MessageTag(object):
+    def __init__(self, name: str, draft_name: str=None):
         self._names = set([name, draft_name])
     def get_value(self, tags: typing.Dict[str, str]) -> typing.Optional[str]:
         key = list(set(tags.keys())&self._names)
