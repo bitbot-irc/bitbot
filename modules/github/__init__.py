@@ -423,6 +423,8 @@ class Module(ModuleManager.BaseModule):
     def _prevent_highlight(self, server, channel, s):
         for user in channel.users:
             if len(user.nickname) == 1:
+                # if we don't ignore 1-letter nicknames, the below while loop
+                # will fire indefininitely.
                 continue
 
             s_lower = server.irc_lower(s)
