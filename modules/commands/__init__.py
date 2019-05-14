@@ -7,6 +7,8 @@ COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
 REGEX_ARG_NUMBER = re.compile(r"\$(\d+)(-?)")
 
+MSGID_TAG = utils.irc.MessageTag("msgid", "draft/msgid")
+
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
         return s.upper()
@@ -133,7 +135,7 @@ class Module(ModuleManager.BaseModule):
             if not module_name and hasattr(hook.function, "__self__"):
                 module_name = hook.function.__self__._name
 
-            msgid = event["tags"].get("draft/msgid", None)
+            msgid = MSGID_TAG.get_value(event["tags"])
             statusmsg = "".join(event.get("statusmsg", []))
             stdout = outs.StdOut(event["server"], module_name, target, msgid,
                 statusmsg)

@@ -295,3 +295,10 @@ class Capability(object):
             callback()
     def nak(self):
         pass
+
+def MessageTag(object):
+    def __init__(self, name, draft_name=None):
+        self._names = set([name, draft_name])
+    def get_value(self, tags: typing.Dict[str, str]) -> typing.Optional[str]:
+        key = list(set(tags.keys())&self._names)
+        return tags[key[0]] if key else None
