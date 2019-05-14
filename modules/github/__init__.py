@@ -421,14 +421,16 @@ class Module(ModuleManager.BaseModule):
 
     def _prevent_highlight(self, channel, s):
         for user in channel.users:
-            while user.nickname.lower() in s.lower():
-                index = s.lower().index(user.nickname.lower())
-                length = len(user.nickname.lower())
+            s_lower = event["server"].irc_lower(s)
+            while user.nickname_lower in s_lower:
+                index = s_lower.index(user.nickname_lower)
+                length = len(user.nickname_lower)
 
                 original = s[index:index+length]
                 original = utils.prevent_highlight(original)
 
                 s = s[:index] + original + s[index+length:]
+                s_lower = event["server"].irc_lower(s)
         return s
 
     def _short_url(self, url):
