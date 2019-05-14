@@ -410,7 +410,8 @@ class Module(ModuleManager.BaseModule):
                         utils.irc.color(source, COLOR_REPO), output)
 
                     if channel.get_setting("github-prevent-highlight", False):
-                        output = self._prevent_highlight(channel, output)
+                        output = self._prevent_highlight(server, channel,
+                            output)
 
                     self.events.on("send.stdout").call(target=channel,
                         module_name="Github", server=server, message=output,
@@ -419,9 +420,9 @@ class Module(ModuleManager.BaseModule):
 
         return {"state": "success", "deliveries": len(targets)}
 
-    def _prevent_highlight(self, channel, s):
+    def _prevent_highlight(self, server, channel, s):
         for user in channel.users:
-            s_lower = event["server"].irc_lower(s)
+            s_lower = server.irc_lower(s)
             while user.nickname_lower in s_lower:
                 index = s_lower.index(user.nickname_lower)
                 length = len(user.nickname_lower)
@@ -430,7 +431,7 @@ class Module(ModuleManager.BaseModule):
                 original = utils.prevent_highlight(original)
 
                 s = s[:index] + original + s[index+length:]
-                s_lower = event["server"].irc_lower(s)
+                s_lower = server.irc_lower(s)
         return s
 
     def _short_url(self, url):
