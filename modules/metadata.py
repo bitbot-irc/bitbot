@@ -1,4 +1,4 @@
-from src import ModuleManager, utils
+from src import IRCBot, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.new")
