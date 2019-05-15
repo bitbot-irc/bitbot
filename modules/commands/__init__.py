@@ -7,7 +7,7 @@ COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
 REGEX_ARG_NUMBER = re.compile(r"\$(\d+)(-?)")
 
-MSGID_TAG = utils.irc.MessageTag(None, "draft/msgid")
+MSGID_TAG = utils.irc.MessageTag("msgid", "draft/msgid")
 
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
