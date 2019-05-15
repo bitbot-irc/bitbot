@@ -3,6 +3,7 @@ from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
 
 VERSION = "v1.5.0"
+SOURCE = "https://git.io/bitbot"
 
 class TriggerResult(enum.Enum):
     Return = 1

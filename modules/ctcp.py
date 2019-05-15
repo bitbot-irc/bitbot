@@ -1,8 +1,6 @@
 import datetime
 from src import IRCBot, ModuleManager, utils
 
-VERSION_DEFAULT = "BitBot %s (https://git.io/bitbot)" % IRCBot.VERSION
-SOURCE_DEFAULT = "https://git.io/bitbot"
 
 @utils.export("serverset", {"setting": "ctcp-responses",
     "help": "Set whether I respond to CTCPs on this server",
@@ -10,13 +8,15 @@ SOURCE_DEFAULT = "https://git.io/bitbot"
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.ctcp.version.private")
     def ctcp_version(self, event):
+        default = "BitBot %s (%s)" % (IRCBot.VERSION, IRCBot.SOURCE)
+
         event["user"].send_ctcp_response("VERSION",
-            self.bot.config.get("ctcp-version", VERSION_DEFAULT))
+            self.bot.config.get("ctcp-version", default))
 
     @utils.hook("received.ctcp.source.private")
     def ctcp_source(self, event):
         event["user"].send_ctcp_response("SOURCE",
-            self.bot.config.get("ctcp-source", SOURCE_DEFAULT))
+            self.bot.config.get("ctcp-source", IRCBot.SOURCE))
 
     @utils.hook("received.ctcp.ping.private")
     def ctcp_ping(self, event):
