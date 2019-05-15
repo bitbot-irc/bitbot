@@ -55,6 +55,9 @@ def handle_005(events, event):
     events.on("received.005").call(isupport=isupport,
         server=event["server"])
 
+def handle_004(event):
+    event["server"].version = event["args"][2]
+
 def motd_start(event):
     event["server"].motd_lines.clear()
 def motd_line(event):

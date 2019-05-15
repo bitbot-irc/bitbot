@@ -67,6 +67,11 @@ class Module(ModuleManager.BaseModule):
     def handle_005(self, event):
         core.handle_005(self.events, event)
 
+    # RPL_MYINFO
+    @utils.hook("raw.received.004")
+    def handle_004(self, event):
+        core.handle_004(event)
+
     # whois respose (nickname, username, realname, hostname)
     @utils.hook("raw.received.311", default_event=True)
     def handle_311(self, event):
