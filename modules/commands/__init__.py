@@ -171,6 +171,7 @@ class Module(ModuleManager.BaseModule):
                 for returned in returns:
                     if returned == utils.consts.PERMISSION_HARD_FAIL:
                         hard_fail = True
+                        break
                     elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
                         force_success = True
                     elif returned:
