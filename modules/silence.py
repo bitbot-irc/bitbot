@@ -1,5 +1,5 @@
 import time
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 
 SILENCE_TIME = 60*5 # 5 minutes
 
@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
         event["target"].set_setting("silence-until", silence_until)
         event["stdout"].write("Ok, I'll be back")
 
-    @utils.hook("preprocess.command")
+    @utils.hook("preprocess.command", priority=EventManager.PRIORITY_HIGH)
     def preprocess_command(self, event):
         if event["is_channel"]:
             silence_until = event["target"].get_setting("silence-until", None)
