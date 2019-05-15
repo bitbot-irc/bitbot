@@ -38,7 +38,6 @@ class Module(ModuleManager.BaseModule):
                 show_duck = random.SystemRandom().randint(1, 20) == 1
 
                 if show_duck:
-                    channel.duck_lines = 0
                     self._trigger_duck(channel)
 
     @utils.hook("received.join")
@@ -50,6 +49,11 @@ class Module(ModuleManager.BaseModule):
         self._activity(event["channel"])
 
     def _trigger_duck(self, channel):
+        is_silenced_f = self.exports.get_one("is-silenced", lambda _: False)
+        if is_silenced_f(channel):
+            return
+
+        channel.duck_lines = 0
         channel.duck_active = True
         channel.send_message(DUCK)
 
