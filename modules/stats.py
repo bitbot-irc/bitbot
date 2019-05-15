@@ -62,7 +62,8 @@ class Module(ModuleManager.BaseModule):
             "channels": {
                 c.name: self._channel_stats(c) for c in server.channels
             },
-            "capabilities": list(server.agreed_capabilities)
+            "capabilities": list(server.agreed_capabilities),
+            "version": server.version
         }
 
     @utils.hook("api.get.servers")
