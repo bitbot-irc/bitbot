@@ -9,6 +9,6 @@ class Module(ModuleManager.BaseModule):
             cap.on_ack(lambda: self._ack(event["server"]))
             return cap
 
-    def _cap(self, server):
+    def _ack(self, server):
         url = self.bot.get_setting("bot-url", IRCBot.SOURCE)
         server.send_raw("METADATA * SET bot-url :%s" % url)
