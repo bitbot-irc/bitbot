@@ -1,6 +1,8 @@
 import time
 from src import ModuleManager, utils
 
+CAP = utils.irc.Capability("sts", "draft/sts")
+
 class Module(ModuleManager.BaseModule):
     def _get_policy(self, server):
         return server.get_setting("sts-policy", None)
@@ -26,14 +28,12 @@ class Module(ModuleManager.BaseModule):
                 port = int(info["port"])
             self.set_policy(server, port, duration)
 
-    def _get_sts(self, capabilities):
-        return capabilities.get("sts", capabilities.get("draft/sts", None))
-
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
-        sts = self._get_sts(event["capabilities"])
+        sts = CAP.available(event["capabilities"])
         if sts:
-            info = utils.parse.keyvalue(sts, delimiter=",")
+            info = utils.parse.keyvalue(event["capabilities"][sts],
+                delimiter=",")
             if not event["server"].connection_params.tls:
                 self.set_policy(event["server"], int(info["port"]), None)
                 event["server"].disconnect()
