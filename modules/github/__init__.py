@@ -1,4 +1,4 @@
-import datetime, itertools, json, math, urllib.parse
+import datetime, itertools, json, math, re, urllib.parse
 from src import ModuleManager, utils
 
 COLOR_BRANCH = utils.consts.ORANGE
@@ -7,6 +7,8 @@ COLOR_POSITIVE = utils.consts.GREEN
 COLOR_NEUTRAL = utils.consts.LIGHTGREY
 COLOR_NEGATIVE = utils.consts.RED
 COLOR_ID = utils.consts.PINK
+
+REGEX_ISSUE = re.compile("(\s+/\s+)?#\d+")
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
@@ -102,6 +104,9 @@ CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 @utils.export("channelset", {"setting": "github-prevent-highlight",
     "help": "Enable/disable preventing highlights",
     "validate": utils.bool_or_none})
+@utils.export("channelset", {"setting": "auto-github",
+    "help": "Enable/disable automatically getting github issue/PR info",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
         repo, _, number = ref.rpartition("#")
@@ -118,7 +123,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Issue number must be a number")
         return username, repository, number
 
-    def _gh_issue(self, event, page, username, repository, number):
+    def _parse_issue(self, event, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
         number = utils.irc.color("#%s" % number, COLOR_ID)
         labels = [label["name"] for label in page.data["labels"]]
@@ -134,9 +139,9 @@ class Module(ModuleManager.BaseModule):
         elif state == "closed":
             state = utils.irc.color("closed", COLOR_NEGATIVE)
 
-        event["stdout"].write("(%s issue%s, %s) %s %s%s" % (
-            repo, number, state, page.data["title"], labels_str, url))
-    def _gh_get_issue(self, username, repository, number):
+        return "(%s issue%s, %s) %s %s%s" % (
+            repo, number, state, page.data["title"], labels_str, url)
+    def _get_issue(self, username, repository, number):
         return utils.http.request(
             API_ISSUE_URL % (username, repository, number),
             json=True)
@@ -156,7 +161,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Could not find issue")
 
-    def _gh_pull(self, event, page, username, repository, number):
+    def _parse_pull(self, event, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
         number = utils.irc.color("#%s" % number, COLOR_ID)
         branch_from = page.data["head"]["label"]
@@ -173,11 +178,10 @@ class Module(ModuleManager.BaseModule):
         elif state == "closed":
             state = utils.irc.color("closed", COLOR_NEGATIVE)
 
-        event["stdout"].write(
-            "(%s PR%s, %s) %s → %s [%s/%s] %s %s" % (
+        return "(%s PR%s, %s) %s → %s [%s/%s] %s %s" % (
             repo, number, state, branch_from, branch_to, added, removed,
-            page.data["title"], url))
-    def _gh_get_pull(self, username, repository, number):
+            page.data["title"], url)
+    def _get_pull(self, username, repository, number):
         return utils.http.request(
             API_PULL_URL % (username, repository, number),
             json=True)
@@ -196,24 +200,40 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Could not find pull request")
 
+    def _get_info(self, target, ref):
+        username, repository, number = self._parse_ref(target, ref)
+        page = self._gh_get_issue(username, repository, number)
+        if page and page.code == 200:
+            if "pull_request" in page.data:
+                pull = self._gh_get_pull(username, repository, number)
+                return self._gh_pull(event, pull, username, repository, number)
+            else:
+                return self._gh_issue(event, page, username, repository, number)
+        else:
+            return None
+
     @utils.hook("received.command.gh", alias_of="github")
     @utils.hook("received.command.github", min_args=1)
     def github(self, event):
         if event["target"].get_setting("github-hide-prefix", False):
             event["stdout"].hide_prefix()
             event["stderr"].hide_prefix()
-
-        username, repository, number = self._parse_ref(
-            event["target"], event["args_split"][0])
-        page = self._gh_get_issue(username, repository, number)
-        if page and page.code == 200:
-            if "pull_request" in page.data:
-                pull = self._gh_get_pull(username, repository, number)
-                self._gh_pull(event, pull, username, repository, number)
-            else:
-                self._gh_issue(event, page, username, repository, number)
+        result = self._get_info(event["target"], event["args_split"][0])
+        if not result == None:
+            event["stdout"].write(result)
         else:
             event["stderr"].write("Issue/PR not found")
+
+    @utils.hook("received.message.channel")
+    def channel_message(self, event):
+        match = REGEX_ISSUE.search(event["message"])
+        if match and event["channel"].get_setting("auto-github", False):
+            result = self._get_info(event["channel"], match.group(0))
+            if result:
+                hide_prefix = channel.get_setting("github-hide-prefix", False)
+                self.events.on("send.stdout").call(target=event["channel"],
+                    module_name="Github", server=server, message=result,
+                    hide_prefix=hide_prefix)
 
     @utils.hook("received.command.ghwebhook", min_args=1, channel_only=True)
     def github_webhook(self, event):
