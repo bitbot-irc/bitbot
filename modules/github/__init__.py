@@ -8,7 +8,7 @@ COLOR_NEUTRAL = utils.consts.LIGHTGREY
 COLOR_NEGATIVE = utils.consts.RED
 COLOR_ID = utils.consts.PINK
 
-REGEX_ISSUE = re.compile("(\s+/\s+)?#\d+")
+REGEX_ISSUE = re.compile("(\S+/\S+)?#\d+")
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
