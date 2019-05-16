@@ -236,8 +236,8 @@ class Module(ModuleManager.BaseModule):
                 hide_prefix = event["channel"].get_setting(
                     "github-hide-prefix", False)
                 self.events.on("send.stdout").call(target=event["channel"],
-                    module_name="Github", server=server, message=result,
-                    hide_prefix=hide_prefix)
+                    module_name="Github", server=event["server"],
+                    message=result, hide_prefix=hide_prefix)
 
     @utils.hook("received.command.ghwebhook", min_args=1, channel_only=True)
     def github_webhook(self, event):
