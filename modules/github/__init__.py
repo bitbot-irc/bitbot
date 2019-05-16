@@ -228,7 +228,10 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         match = REGEX_ISSUE.search(event["message"])
         if match and event["channel"].get_setting("auto-github", False):
-            result = self._get_info(event["channel"], match.group(0))
+            try:
+                result = self._get_info(event["channel"], match.group(0))
+            except utils.EventError:
+                return
             if result:
                 hide_prefix = channel.get_setting("github-hide-prefix", False)
                 self.events.on("send.stdout").call(target=event["channel"],
