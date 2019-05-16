@@ -18,6 +18,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Silence me for 5 minutes
         :require_mode: high
+        :permission: silence
         """
         silence_until = time.time()+SILENCE_TIME
         event["target"].set_setting("silence-until", silence_until)
