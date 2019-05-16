@@ -233,7 +233,8 @@ class Module(ModuleManager.BaseModule):
             except utils.EventError:
                 return
             if result:
-                hide_prefix = channel.get_setting("github-hide-prefix", False)
+                hide_prefix = event["channel"].get_setting(
+                    "github-hide-prefix", False)
                 self.events.on("send.stdout").call(target=event["channel"],
                     module_name="Github", server=server, message=result,
                     hide_prefix=hide_prefix)
