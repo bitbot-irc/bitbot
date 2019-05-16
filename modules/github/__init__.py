@@ -123,7 +123,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Issue number must be a number")
         return username, repository, number
 
-    def _parse_issue(self, event, page, username, repository, number):
+    def _parse_issue(self, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
         number = utils.irc.color("#%s" % number, COLOR_ID)
         labels = [label["name"] for label in page.data["labels"]]
@@ -157,11 +157,11 @@ class Module(ModuleManager.BaseModule):
 
         page = self._get_issue(username, repository, number)
         if page and page.code == 200:
-            self._parse_issue(event, page, username, repository, number)
+            self._parse_issue(page, username, repository, number)
         else:
             event["stderr"].write("Could not find issue")
 
-    def _parse_pull(self, event, page, username, repository, number):
+    def _parse_pull(self, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
         number = utils.irc.color("#%s" % number, COLOR_ID)
         branch_from = page.data["head"]["label"]
@@ -196,7 +196,7 @@ class Module(ModuleManager.BaseModule):
         page = self._get_pull(username, repository, number)
 
         if page and page.code == 200:
-            self._parse_pull(event, page, username, repository, number)
+            self._parse_pull(page, username, repository, number)
         else:
             event["stderr"].write("Could not find pull request")
 
@@ -206,11 +206,9 @@ class Module(ModuleManager.BaseModule):
         if page and page.code == 200:
             if "pull_request" in page.data:
                 pull = self._get_pull(username, repository, number)
-                return self._parse_pull(event, pull, username, repository,
-                    number)
+                return self._parse_pull(pull, username, repository, number)
             else:
-                return self._parse_issue(event, page, username, repository,
-                    number)
+                return self._parse_issue(page, username, repository, number)
         else:
             return None
 
