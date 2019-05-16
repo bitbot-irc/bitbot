@@ -155,9 +155,9 @@ class Module(ModuleManager.BaseModule):
         username, repository, number = self._parse_ref(
             event["target"], event["args_split"][0])
 
-        page = self._gh_get_issue(username, repository, number)
+        page = self._get_issue(username, repository, number)
         if page and page.code == 200:
-            self._gh_issue(event, page, username, repository, number)
+            self._parse_issue(event, page, username, repository, number)
         else:
             event["stderr"].write("Could not find issue")
 
@@ -193,22 +193,24 @@ class Module(ModuleManager.BaseModule):
 
         username, repository, number = self._parse_ref(
             event["target"], event["args_split"][0])
-        page = self._gh_get_pull(username, repository, number)
+        page = self._get_pull(username, repository, number)
 
         if page and page.code == 200:
-            self._gh_pull(event, page, username, repository, number)
+            self._parse_pull(event, page, username, repository, number)
         else:
             event["stderr"].write("Could not find pull request")
 
     def _get_info(self, target, ref):
         username, repository, number = self._parse_ref(target, ref)
-        page = self._gh_get_issue(username, repository, number)
+        page = self._get_issue(username, repository, number)
         if page and page.code == 200:
             if "pull_request" in page.data:
-                pull = self._gh_get_pull(username, repository, number)
-                return self._gh_pull(event, pull, username, repository, number)
+                pull = self._get_pull(username, repository, number)
+                return self._parse_pull(event, pull, username, repository,
+                    number)
             else:
-                return self._gh_issue(event, page, username, repository, number)
+                return self._parse_issue(event, page, username, repository,
+                    number)
         else:
             return None
 
