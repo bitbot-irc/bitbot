@@ -110,18 +110,19 @@ CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
         repo, _, number = ref.rpartition("#")
-        if not repo:
-            repo = channel.get_setting("github-default-repo", None)
+        org, _, repo = repo.partition("/")
 
-        username, repository = None, None
-        if repo:
-            username, _, repository = repo.partition("/")
+        default_repo = channel.get_setting("github-default-repo", "")
+        default_org, _, default_repo = default_repo.partition("/")
 
-        if not username or not repository or not number:
+        org = org or default_org
+        repo = repo or default_repo
+
+        if not org or not repo or not number:
             raise utils.EventError("Please provide username/repo#number")
         if not number.isdigit():
             raise utils.EventError("Issue number must be a number")
-        return username, repository, number
+        return org, repo, number
 
     def _parse_issue(self, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
