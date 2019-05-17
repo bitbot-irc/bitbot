@@ -116,8 +116,8 @@ class Module(ModuleManager.BaseModule):
         default_org, _, default_repo = default_repo.partition("/")
 
         if org and not repo:
-            org = default_org
             repo = org or default_repo
+            org = default_org
         else:
             org = org or default_org
             repo = repo or default_repo
