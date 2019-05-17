@@ -115,8 +115,12 @@ class Module(ModuleManager.BaseModule):
         default_repo = channel.get_setting("github-default-repo", "")
         default_org, _, default_repo = default_repo.partition("/")
 
-        org = org or default_org
-        repo = repo or default_repo
+        if org and not repo:
+            org = default_org
+            repo = org or default_repo
+        else:
+            org = org or default_org
+            repo = repo or default_repo
 
         if not org or not repo or not number:
             raise utils.EventError("Please provide username/repo#number")
