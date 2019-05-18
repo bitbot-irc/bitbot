@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
         """
         :command: imgur
         """
-        if event["channel"].get_setting("auto-imgur", False):
+        if event["target"].get_setting("auto-imgur", False):
             event["stdout"].write(self._parse_image(event["match"].group(1)))
             event.eat()
     @utils.hook("command.regex", pattern=REGEX_GALLERY)
@@ -39,7 +39,7 @@ class Module(ModuleManager.BaseModule):
         """
         :command: imgur
         """
-        if event["channel"].get_setting("auto-imgur", False):
+        if event["target"].get_setting("auto-imgur", False):
             event["stdout"].write(self._parse_gallery(event["match"].group(1)))
             event.eat()
 
