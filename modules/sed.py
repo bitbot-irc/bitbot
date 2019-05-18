@@ -12,19 +12,18 @@ REGEX_SED = re.compile("^s/")
     "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     def _closest_setting(self, event, setting, default):
-        return event["channel"].get_setting(setting,
+        return event["target"].get_setting(setting,
             event["server"].get_setting(setting, default))
 
-    @utils.hook("received.message.channel")
+    @utils.hook("command.regex")
     def channel_message(self, event):
+        """
+        :command: sed
+        :pattern: ^s/
+        """
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
         if event["message"].startswith("s/") and len(sed_split) > 2:
-            if event["action"] or not self._closest_setting(event, "sed",
-                    False):
-                return
-            is_ignored_f = short_url = self.exports.get_one("is-ignored",
-                lambda _1, _2: False)
-            if is_ignored_f(event["server"], event["user"], "sed"):
+            if not self._closest_setting(event, "sed", False):
                 return
 
             regex_flags = 0
@@ -50,15 +49,13 @@ class Module(ModuleManager.BaseModule):
                 pattern = re.compile(sed_split[1], regex_flags)
             except:
                 traceback.print_exc()
-                self.events.on("send.stderr").call(target=event["channel"],
-                    module_name="Sed", server=event["server"],
-                    message="Invalid regex in pattern")
+                event["stderr"].write("Invalid regex in pattern")
                 return
             replace = utils.irc.bold(sed_split[2].replace("\\/", "/"))
 
             for_user = event["user"].nickname if self._closest_setting(event,
                 "sed-sender-only", False) else None
-            line = event["channel"].buffer.find(pattern, from_self=False,
+            line = event["target"].buffer.find(pattern, from_self=False,
                 for_user=for_user, not_pattern=REGEX_SED)
             if line:
                 new_message = re.sub(pattern, replace, line.message, count)
@@ -66,6 +63,4 @@ class Module(ModuleManager.BaseModule):
                     prefix = "* %s" % line.sender
                 else:
                     prefix = "<%s>" % line.sender
-                self.events.on("send.stdout").call(target=event[
-                    "channel"], module_name="Sed", server=event["server"],
-                    message="%s %s" % (prefix, new_message))
+                event["stdout"].write("%s %s" % (prefix, new_message))

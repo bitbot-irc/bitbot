@@ -20,68 +20,53 @@ class Module(ModuleManager.BaseModule):
             return utils.irc.color(str(karma), utils.consts.LIGHTGREEN)
         return str(karma)
 
-
     @utils.hook("new.user")
     def new_user(self, event):
         event["user"].last_karma = None
 
-    @utils.hook("received.message.channel")
+    @utils.hook("command.regex")
     def channel_message(self, event):
-        match = re.match(REGEX_KARMA, event["message"].strip())
-        if match and not event["action"]:
-            is_ignored_f = self.exports.get_one("is-ignored",
-                lambda _1, _2: False)
-            if is_ignored_f(event["server"], event["user"], "karma"):
+        """
+        :command: karma
+        :pattern: ^(.*[^-+])[-+]*(\+{2,}|\-{2,})$
+        """
+        verbose = event["target"].get_setting("karma-verbose", False)
+        nickname_only = event["server"].get_setting("karma-nickname-only",
+            False)
+
+        if not event["user"].last_karma or (time.time()-event["user"
+                ].last_karma) >= KARMA_DELAY_SECONDS:
+            target = event["match"].group(1).strip().rstrip("".join(WORD_STOP))
+            if event["server"].irc_lower(target) == event["user"].name:
+                if verbose:
+                    event["stdout"].write("You cannot change your own karma")
                 return
 
-            is_silenced_f = self.exports.get_one("is-silenced", lambda _: False)
-            if is_silenced_f(event["channel"]):
-                return
-
-            verbose = event["channel"].get_setting("karma-verbose", False)
-            nickname_only = event["server"].get_setting("karma-nickname-only",
-                False)
-
-            if not event["user"].last_karma or (time.time()-event["user"
-                    ].last_karma) >= KARMA_DELAY_SECONDS:
-                target = match.group(1).strip().rstrip("".join(WORD_STOP))
-                if event["server"].irc_lower(target) == event["user"].name:
-                    if verbose:
-                        self.events.on("send.stderr").call(
-                            module_name="Karma", target=event["channel"],
-                            message="You cannot change your own karma",
-                            server=event["server"])
+            setting = "karma-%s" % target
+            setting_target = event["server"]
+            if nickname_only:
+                user = event["server"].get_user(target)
+                setting = "karma"
+                setting_target = user
+                if not event["target"].has_user(user):
                     return
 
-                setting = "karma-%s" % target
-                setting_target = event["server"]
-                if nickname_only:
-                    user = event["server"].get_user(target)
-                    setting = "karma"
-                    setting_target = user
-                    if not event["channel"].has_user(user):
-                        return
+            positive = event["match"].group(2)[0] == "+"
+            karma = setting_target.get_setting(setting, 0)
+            karma += 1 if positive else -1
 
-                positive = match.group(2)[0] == "+"
-                karma = setting_target.get_setting(setting, 0)
-                karma += 1 if positive else -1
+            if not karma == 0:
+                setting_target.set_setting(setting, karma)
+            else:
+                setting_target.del_setting(setting)
 
-                if not karma == 0:
-                    setting_target.set_setting(setting, karma)
-                else:
-                    setting_target.del_setting(setting)
-
-                karma_str = self._karma_str(karma)
-                if verbose:
-                    self.events.on("send.stdout").call(
-                       module_name="Karma", target=event["channel"],
-                       message="%s now has %s karma" % (target, karma_str),
-                       server=event["server"])
-                event["user"].last_karma = time.time()
-            elif verbose:
-                self.events.on("send.stderr").call(module_name="Karma",
-                    target=event["channel"], server=event["server"],
-                    message="Try again in a couple of seconds")
+            karma_str = self._karma_str(karma)
+            if verbose:
+                event["stdout"].write(
+                    "%s now has %s karma" % (target, karma_str))
+            event["user"].last_karma = time.time()
+        elif verbose:
+            event["stderr"].write("Try again in a couple of seconds")
 
     @utils.hook("received.command.karma")
     def karma(self, event):

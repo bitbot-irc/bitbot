@@ -44,40 +44,33 @@ class Module(ModuleManager.BaseModule):
         else:
             return None
 
-    @utils.hook("received.message.channel",
+    @utils.hook("command.regex",
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
-        match = re.search(utils.http.REGEX_URL, event["message"])
-        if match and event["channel"].get_setting("auto-title", False):
-            is_ignored_f = short_url = self.exports.get_one("is-ignored",
-                lambda _1, _2: False)
-            if is_ignored_f(event["server"], event["user"], "title"):
-                return
+        """
+        :command: title
+        :pattern-url: 1
+        """
+        url = event["match"].group(0)
+        title = self._get_title(event["target"], event["match"].group(0))
 
-            url = match.group(0)
-            title = self._get_title(event["channel"], match.group(0))
+        if title:
+            message = title
+            if event["target"].get_setting("auto-title-first", False):
+                setting = "url-last-%s" % self._url_hash(url)
+                first_details = event["target"].get_setting(setting, None)
 
-            if title:
-                message = title
-                if event["channel"].get_setting("auto-title-first", False):
-                    setting = "url-last-%s" % self._url_hash(url)
-                    first_details = event["channel"].get_setting(setting, None)
-
-                    if first_details:
-                        first_nickname, first_timestamp, _ = first_details
-                        timestamp_parsed = utils.iso8601_parse(first_timestamp)
-                        timestamp_human = utils.datetime_human(timestamp_parsed)
-                        message = "%s (first posted by %s at %s)" % (title,
-                            first_nickname, timestamp_human)
-                    else:
-                        event["channel"].set_setting(setting,
-                            [event["user"].nickname, utils.iso8601_format_now(),
-                            url])
-
-
-                self.events.on("send.stdout").call(target=event["channel"],
-                    message=message, module_name="Title",
-                    server=event["server"])
+                if first_details:
+                    first_nickname, first_timestamp, _ = first_details
+                    timestamp_parsed = utils.iso8601_parse(first_timestamp)
+                    timestamp_human = utils.datetime_human(timestamp_parsed)
+                    message = "%s (first posted by %s at %s)" % (title,
+                        first_nickname, timestamp_human)
+                else:
+                    event["target"].set_setting(setting,
+                        [event["user"].nickname, utils.iso8601_format_now(),
+                        url])
+            event["stdout"].write(message)
 
     @utils.hook("received.command.t", alias_of="title")
     @utils.hook("received.command.title", usage="[URL]")

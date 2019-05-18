@@ -90,10 +90,9 @@ class Module(ModuleManager.BaseModule):
             return True
         return False
 
-    def message(self, event, command, args_index=1):
-        args_split = event["message_split"][args_index:]
+    def _find_command_hook(self, server, command, is_channel):
         if not self.has_command(command):
-            aliases = self._get_aliases(event["server"])
+            aliases = self._get_aliases(server)
             if command.lower() in aliases:
                 command, _, new_args = aliases[command.lower()].partition(" ")
 
@@ -102,12 +101,8 @@ class Module(ModuleManager.BaseModule):
                 except IndexError:
                     return
 
+        hook = None
         if self.has_command(command):
-            if self._is_ignored(event["server"], event["user"], command):
-                return
-
-            hook = None
-            target = None
             for potential_hook in self.get_hooks(command):
                 alias_of = self._get_alias_of(potential_hook)
                 if alias_of:
@@ -118,97 +113,92 @@ class Module(ModuleManager.BaseModule):
                             "'%s' is an alias of unknown command '%s'"
                            % (command.lower(), alias_of.lower()))
 
-                is_channel = "channel" in event
                 if not is_channel and potential_hook.kwargs.get("channel_only"):
                     continue
                 if is_channel and potential_hook.kwargs.get("private_only"):
                     continue
 
                 hook = potential_hook
-                target = event["user"] if not is_channel else event["channel"]
                 break
 
-            if not hook:
-                return
+        return hook
 
-            module_name = self._get_prefix(hook) or ""
-            if not module_name and hasattr(hook.function, "__self__"):
-                module_name = hook.function.__self__._name
+    def command(self, server, target, is_channel, user, command, args_split,
+            tags, statusmsg, hook, **kwargs):
+        if self._is_ignored(server, user, command):
+            return False
 
-            msgid = MSGID_TAG.get_value(event["tags"])
-            statusmsg = "".join(event.get("statusmsg", []))
-            stdout = outs.StdOut(event["server"], module_name, target, msgid,
-                statusmsg)
-            stderr = outs.StdErr(event["server"], module_name, target, msgid,
-                statusmsg)
-            command_method = self._command_method(target, event["server"])
+        module_name = self._get_prefix(hook) or ""
+        if not module_name and hasattr(hook.function, "__self__"):
+            module_name = hook.function.__self__._name
 
-            if hook.kwargs.get("remove_empty", True):
-                args_split = list(filter(None, args_split))
+        msgid = MSGID_TAG.get_value(tags)
+        stdout = outs.StdOut(server, module_name, target, msgid, statusmsg)
+        stderr = outs.StdErr(server, module_name, target, msgid, statusmsg)
+        command_method = self._command_method(target, server)
 
-            min_args = hook.kwargs.get("min_args")
-            if min_args and len(args_split) < min_args:
-                command_prefix = ""
-                if is_channel:
-                    command_prefix = self._command_prefix(event["server"],
-                        target)
-                usage = self._get_usage(hook, command, command_prefix)
-                if usage:
-                    stderr.write("Not enough arguments, usage: %s" %
-                        usage).send(command_method)
-                else:
-                    stderr.write("Not enough arguments (minimum: %d)" %
-                        min_args).send(command_method)
+        if hook.kwargs.get("remove_empty", True):
+            args_split = list(filter(None, args_split))
+
+        target.buffer.skip_next()
+
+        min_args = hook.kwargs.get("min_args")
+        if min_args and len(args_split) < min_args:
+            command_prefix = ""
+            if is_channel:
+                command_prefix = self._command_prefix(server, target)
+            usage = self._get_usage(hook, command, command_prefix)
+            if usage:
+                stderr.write("Not enough arguments, usage: %s" %
+                    usage).send(command_method)
             else:
-                returns = self.events.on("preprocess.command").call_unsafe(
-                    hook=hook, user=event["user"], server=event["server"],
-                    target=target, is_channel=is_channel, tags=event["tags"],
-                    args_split=args_split)
+                stderr.write("Not enough arguments (minimum: %d)" %
+                    min_args).send(command_method)
+        else:
+            returns = self.events.on("preprocess.command").call_unsafe(
+                hook=hook, user=user, server=server, target=target,
+                is_channel=is_channel, tags=tags, args_split=args_split,
+                command=command)
 
-                hard_fail = False
-                force_success = False
-                error = None
-                for returned in returns:
-                    if returned == utils.consts.PERMISSION_HARD_FAIL:
-                        hard_fail = True
-                        break
-                    elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
-                        force_success = True
-                    elif returned:
-                        error = returned
+            hard_fail = False
+            force_success = False
+            error = None
+            for returned in returns:
+                if returned == utils.consts.PERMISSION_HARD_FAIL:
+                    hard_fail = True
+                    break
+                elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
+                    force_success = True
+                elif returned:
+                    error = returned
 
-                if hard_fail or (not force_success and error):
-                    if error:
-                        stderr.write(error).send(command_method)
-                        target.buffer.skip_next()
-                    return
+            if hard_fail or (not force_success and error):
+                if error:
+                    stderr.write(error).send(command_method)
+                    target.buffer.skip_next()
+                return True
 
-                args = " ".join(args_split)
-                server = event["server"]
-                user = event["user"]
+            args = " ".join(args_split)
 
-                new_event = self.events.on("received.command").on(command
-                    ).make_event(user=user, server=server, target=target,
-                    args=args, tags=event["tags"], args_split=args_split,
-                    stdout=stdout, stderr=stderr, command=command.lower(),
-                    is_channel=is_channel)
+            new_event = self.events.on(hook.event_name).make_event(user=user,
+                server=server, target=target, args=args, tags=tags,
+                args_split=args_split, stdout=stdout, stderr=stderr,
+                is_channel=is_channel, command=command, **kwargs)
 
-                self.log.trace("calling command '%s': %s",
-                    [command, new_event.kwargs])
-                try:
-                    hook.call(new_event)
-                except utils.EventError as e:
-                    stderr.write(str(e))
+            self.log.trace("calling command '%s': %s",
+                [command, new_event.kwargs])
+            try:
+                hook.call(new_event)
+            except utils.EventError as e:
+                stderr.write(str(e))
 
-                if not hook.kwargs.get("skip_out", False):
-                    command_method = self._command_method(
-                        target, event["server"])
-                    stdout.send(command_method)
-                    stderr.send(command_method)
-                    target.last_stdout = stdout
-                    target.last_stderr = stderr
-            target.buffer.skip_next()
-        event.eat()
+            if not hook.kwargs.get("skip_out", False):
+                command_method = self._command_method(target, server)
+                stdout.send(command_method)
+                stderr.send(command_method)
+                target.last_stdout = stdout
+                target.last_stderr = stderr
+            return new_event.eaten
 
     def _command_prefix(self, server, channel):
         return channel.get_setting("command-prefix",
@@ -225,22 +215,53 @@ class Module(ModuleManager.BaseModule):
         prefixed_commands = event["channel"].get_setting("prefixed-commands", True)
 
         command_prefix = self._command_prefix(event["server"], event["channel"])
+        command = None
+        args_split = None
         if event["message_split"][0].startswith(command_prefix):
             if not prefixed_commands:
                 return
             command = event["message_split"][0].replace(
                 command_prefix, "", 1).lower()
-            self.message(event, command)
+            args_split = event["message_split"][1:]
         elif len(event["message_split"]) > 1 and self.is_highlight(
                 event["server"], event["message_split"][0]):
             command = event["message_split"][1].lower()
-            self.message(event, command, 2)
+            args_split = event["message_split"][2:]
+
+        if command:
+            hook = self._find_command_hook(event["server"], command, True)
+            if hook:
+                self.command(event["server"], event["channel"], True,
+                    event["user"], command, args_split, event["tags"],
+                    "".join(event["statusmsg"]), hook)
+        else:
+            regex_hook = self.events.on("command.regex").get_hooks()
+            for hook in regex_hook:
+                pattern = hook.get_kwarg("pattern", None)
+                if not pattern and hook.get_kwarg("pattern-url", None) == "1":
+                    pattern = utils.http.REGEX_URL
+
+                if pattern:
+                    match = re.match(pattern, event["message"])
+                    if match:
+                        command = hook.get_kwarg("command", "")
+                        res = self.command(event["server"], event["channel"],
+                            True, event["user"], command, "", event["tags"],
+                            "".join(event["statusmsg"]), hook, match=match,
+                            message=event["message"])
+
+                        if res:
+                            break
 
     @utils.hook("received.message.private", priority=EventManager.PRIORITY_LOW)
     def private_message(self, event):
         if event["message_split"] and not event["action"]:
             command = event["message_split"][0].lower()
-            self.message(event, command)
+            hook = self._find_command_hook(event["server"], command, False)
+            if hook:
+                self.command(event["server"], event["user"], False,
+                    event["user"], command, event["message_split"][1:],
+                    event["tags"], "", hook)
 
     def _get_help(self, hook):
         return hook.get_kwarg("help", None) or hook.docstring.description

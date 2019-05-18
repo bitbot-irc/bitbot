@@ -125,20 +125,17 @@ class Module(ModuleManager.BaseModule):
         else:
            event["stderr"].write("No search phrase provided")
 
-    @utils.hook("received.message.channel",
+    @utils.hook("command.regex",
         priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
-        match = re.search(REGEX_YOUTUBE, event["message"])
-        if match and event["channel"].get_setting("auto-youtube", False):
-            is_ignored_f = short_url = self.exports.get_one("is-ignored",
-                lambda _1, _2: False)
-            if is_ignored_f(event["server"], event["user"], "youtube"):
-                return
-
-            youtube_id = match.group(1)
+        """
+        :command: youtube
+        :-pattern: https?://(?:www.)?
+            (?:youtu.be/|youtube.com/watch\?[\S]*v=)([\w\-]{11})
+        """
+        if event["target"].get_setting("auto-youtube", False):
+            youtube_id = event["match"].group(1)
             video_details = self.video_details(youtube_id)
             if video_details:
-                self.events.on("send.stdout").call(target=event["channel"],
-                    message=video_details, module_name="Youtube",
-                    server=event["server"])
+                event["stdout"].write(video_details)
             event.eat()
