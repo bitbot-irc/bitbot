@@ -46,7 +46,7 @@ class EventCallback(object):
         return item or self.docstring.items.get(name, default)
 
 class EventHook(object):
-    def __init__(self, log: Logging.Log, name: str = "",
+    def __init__(self, log: Logging.Log, name: str = None,
             parent: "EventHook" = None):
         self.log = log
         self.name = name
@@ -85,7 +85,8 @@ class EventHook(object):
         return self._hook(function, context, priority, replay, kwargs)
     def _hook(self, function: CALLBACK_TYPE, context: typing.Optional[str],
             priority: int, replay: bool, kwargs: dict) -> EventCallback:
-        callback = EventCallback(self.name, function, priority, kwargs,
+        event_name = typing.cast(str, self.name)
+        callback = EventCallback(event_name, function, priority, kwargs,
             context)
 
         if context == None:
