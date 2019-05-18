@@ -247,7 +247,7 @@ class Module(ModuleManager.BaseModule):
 
         if ref and event["channel"].get_setting("auto-github", False):
             try:
-                result = self._get_info(event["channel"], match.group(0))
+                result = self._get_info(event["channel"], ref)
             except utils.EventError:
                 return
             if result:
