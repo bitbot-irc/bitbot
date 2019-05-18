@@ -10,7 +10,7 @@ COLOR_ID = utils.consts.PINK
 
 REGEX_ISSUE = re.compile("(?:\S+(?:\/\S+)?)?#\d+")
 REGEX_ISSUE_URL = re.compile(
-    "https?://github.com/([^/]+)/([^/])+/(pull|issues)/(\d+)", re.I)
+    "https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)", re.I)
 #https://github.com/ircv3/ircv3-specifications/pull/347
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
