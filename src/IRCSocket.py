@@ -143,7 +143,7 @@ class Socket(IRCObject.Object):
         self.bytes_written += bytes_written_i
 
         now = time.monotonic()
-        self._recent_sends.append(now)
+        self._recent_sends.extend([now]*lines_sent)
         self.last_send = now
 
         return sent_lines
