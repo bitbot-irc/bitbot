@@ -1,8 +1,6 @@
 import re
 from src import ModuleManager, utils
 
-REGEX_FACTOID = re.compile("{!factoid ([^}]+)}", re.I)
-
 class Module(ModuleManager.BaseModule):
     def _get_factoid(self, server, factoid):
         name = factoid.lower().strip()
@@ -26,17 +24,13 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Unknown factoid '%s'" % name)
             event["stdout"].write("%s: %s" % (name, value))
 
-    @utils.hook("received.message.channel")
+    @utils.hook("command.regex")
     def channel_message(self, event):
-        match = REGEX_FACTOID.search(event["message"])
-        if match:
-            is_ignored_f = short_url = self.exports.get_one("is-ignored",
-                lambda _1, _2: False)
-            if is_ignored_f(event["server"], event["user"], "factoid"):
-                return
-
-            name, value = self._get_factoid(event["server"], match.group(1))
-            if not value == None:
-                self.events.on("send.stdout").call(target=event["channel"],
-                    module_name="Factoids", server=event["server"],
-                    message="%s: %s" % (name, value))
+        """
+        :command: factoid
+        :pattern: {!factoid ([^}]+)}
+        """
+        name, value = self._get_factoid(event["server"],
+            event["match"].group(1))
+        if not value == None:
+            event["stdout"].write("%s: %s" % (name, value))
