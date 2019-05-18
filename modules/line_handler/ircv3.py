@@ -35,10 +35,10 @@ def _caps_offered(server, caps):
 
 def cap(events, event):
     capabilities = utils.parse.keyvalue(event["args"][-1])
-    subcommand = event["args"][1].lower()
+    subcommand = event["args"][1].upper()
     is_multiline = len(event["args"]) > 3 and event["args"][2] == "*"
 
-    if subcommand == "ls":
+    if subcommand == "LS":
         event["server"].cap_started = True
         event["server"].server_capabilities.update(capabilities)
         if not is_multiline:
@@ -57,7 +57,7 @@ def cap(events, event):
                 event["server"].send_capability_queue()
             else:
                 event["server"].send_capability_end()
-    elif subcommand == "new":
+    elif subcommand == "NEW":
         capabilities_keys = capabilities.keys()
         event["server"].server_capabilities.update(capabilities)
 
@@ -72,20 +72,20 @@ def cap(events, event):
 
         if event["server"].capability_queue:
             event["server"].send_capability_queue()
-    elif subcommand == "del":
+    elif subcommand == "DEL":
         for capability in capabilities.keys():
             event["server"].agreed_capabilities.discard(capability)
             del event["server"].server_capabilities[capability]
 
         events.on("received.cap.del").call(server=event["server"],
             capabilities=capabilities)
-    elif subcommand == "ack":
+    elif subcommand == "ACK":
         event["server"].agreed_capabilities.update(capabilities)
         events.on("received.cap.ack").call(capabilities=capabilities,
            server=event["server"])
 
-    if subcommand == "ack" or subcommand == "nak":
-        ack = subcommand == "ack"
+    if subcommand == "ACK" or subcommand == "NAK":
+        ack = subcommand == "ACK"
         for capability in capabilities:
             cap_obj = event["server"].capability_queue[capability]
             del event["server"].capability_queue[capability]
