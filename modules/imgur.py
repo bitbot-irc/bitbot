@@ -26,24 +26,22 @@ class Module(ModuleManager.BaseModule):
             text += "%s " % data["account_url"]
         return text
 
-    @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
-    def channel_message(self, event):
+    @utils.hook("command.regex", pattern=REGEX_IMAGE)
+    def _regex_image(self, event):
+        """
+        :command: imgur
+        """
         if event["channel"].get_setting("auto-imgur", False):
-            match_gallery = REGEX_GALLERY.match(event["message"])
-            match_image = REGEX_IMAGE.match(event["message"])
-
-            result = None
-            if match_gallery:
-                result = self._parse_gallery(match_gallery.group(1))
-            elif match_image:
-                result = self._parse_image(match_image.group(1))
-            else:
-                return
-
+            event["stdout"].write(self._parse_image(event["match"].group(1)))
             event.eat()
-
-            self.events.on("send.stdout").call(target=event["channel"],
-                module_name="Imgur", server=event["server"], message=result)
+    @utils.hook("command.regex", pattern=REGEX_GALLERY)
+    def _regex_gallery(self, event):
+        """
+        :command: imgur
+        """
+        if event["channel"].get_setting("auto-imgur", False):
+            event["stdout"].write(self._parse_gallery(event["match"].group(1)))
+            event.eat()
 
     def _parse_gallery(self, hash):
         api_key = self.bot.config["imgur-api-key"]
