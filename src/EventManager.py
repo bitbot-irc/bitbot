@@ -28,8 +28,9 @@ class Event(object):
         self.eaten = True
 
 class EventCallback(object):
-    def __init__(self, function: CALLBACK_TYPE, priority: int, kwargs: dict,
-            context: typing.Optional[str], one_shot: bool=False):
+    def __init__(self, event_name: str, function: CALLBACK_TYPE, priority: int,
+            kwargs: dict, context: typing.Optional[str], one_shot: bool=False):
+        self.event_name = event_name
         self.function = function
         self.priority = priority
         self.kwargs = kwargs
@@ -45,7 +46,7 @@ class EventCallback(object):
         return item or self.docstring.items.get(name, default)
 
 class EventHook(object):
-    def __init__(self, log: Logging.Log, name: str = None,
+    def __init__(self, log: Logging.Log, name: str = "",
             parent: "EventHook" = None):
         self.log = log
         self.name = name
@@ -84,7 +85,8 @@ class EventHook(object):
         return self._hook(function, context, priority, replay, kwargs)
     def _hook(self, function: CALLBACK_TYPE, context: typing.Optional[str],
             priority: int, replay: bool, kwargs: dict) -> EventCallback:
-        callback = EventCallback(function, priority, kwargs, context)
+        callback = EventCallback(self.name, function, priority, kwargs,
+            context)
 
         if context == None:
             self._hooks.append(callback)
