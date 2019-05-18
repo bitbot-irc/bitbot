@@ -1,5 +1,5 @@
 import datetime, itertools, json, math, re, urllib.parse
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 
 COLOR_BRANCH = utils.consts.ORANGE
 COLOR_REPO = utils.consts.GREY
@@ -9,6 +9,9 @@ COLOR_NEGATIVE = utils.consts.RED
 COLOR_ID = utils.consts.PINK
 
 REGEX_ISSUE = re.compile("(?:\S+(?:\/\S+)?)?#\d+")
+REGEX_ISSUE_URL = re.compile(
+    "https?://github.com/([^/]+)/([^/])+/(pull|issues)/(\d+)", re.I)
+#https://github.com/ircv3/ircv3-specifications/pull/347
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
@@ -229,10 +232,20 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Issue/PR not found")
 
-    @utils.hook("received.message.channel")
+    @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
-        match = REGEX_ISSUE.search(event["message"])
-        if match and event["channel"].get_setting("auto-github", False):
+        url_match = REGEX_ISSUE_URL.search(event["message"])
+        ref = None
+        if url_match:
+            ref = "%s/%s#%s" % (
+                url_match.group(1), url_match.group(2), url_match.group(4))
+            event.eat()
+        else:
+            match = REGEX_ISSUE.search(event["message"])
+            if match:
+                ref = match.group(0)
+
+        if ref and event["channel"].get_setting("auto-github", False):
             try:
                 result = self._get_info(event["channel"], match.group(0))
             except utils.EventError:
