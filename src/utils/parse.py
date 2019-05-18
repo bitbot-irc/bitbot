@@ -30,6 +30,7 @@ class Docstring(object):
 def docstring(s: str) -> Docstring:
     description = ""
     last_item = None
+    last_item_no_space = False
     items = {} # type: typing.Dict[str, str]
     var_items = {} # type: typing.Dict[str, typing.List[str]]
     if s:
@@ -39,17 +40,21 @@ def docstring(s: str) -> Docstring:
             if line:
                 if line[0] == ":":
                     key, _, value = line[1:].partition(": ")
-                    last_item = key
+                    last_item = key.lstrip("-")
+                    last_item_no_space = key.startswith("-")
 
                     if key in var_items:
-                        var_items[key].append(value)
+                        var_items[last_item].append(value)
                     elif key in items:
-                        var_items[key] = [items.pop(key), value]
+                        var_items[last_item] = [items.pop(last_item), value]
                     else:
-                        items[key] = value
+                        items[last_item] = value
                 else:
                     if last_item:
-                        items[last_item] += " %s" % line
+                        if last_item_no_space:
+                            items[last_item] += line
+                        else:
+                            items[last_item] += " %s" % line
                     else:
                         if description:
                             description += " "
