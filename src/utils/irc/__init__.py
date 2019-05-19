@@ -1,4 +1,4 @@
-import json, string, re, typing
+import fnmatch, json, string, re, typing
 from src import IRCLine, utils
 from . import protocol
 
@@ -303,3 +303,6 @@ class MessageTag(object):
     def get_value(self, tags: typing.Dict[str, str]) -> typing.Optional[str]:
         key = list(set(tags.keys())&self._names)
         return tags[key[0]] if key else None
+
+def hostmask_match(hostmask: str, pattern: str) -> bool:
+    return fnmatch.fnmatch(hostmask, pattern)

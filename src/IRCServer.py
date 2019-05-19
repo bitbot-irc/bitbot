@@ -203,6 +203,10 @@ class Server(IRCObject.Object):
     def irc_equals(self, s1: str, s2: str) -> bool:
         return utils.irc.equals(self.case_mapping, s1, s2)
 
+    def hostmask_match(self, hostmask: str, pattern: str) -> bool:
+        return utils.irc.hostmask_match(self.irc_lower(hostmask),
+            self.irc_lower(pattern))
+
     def parse_data(self, line: str):
         if not line:
             return
