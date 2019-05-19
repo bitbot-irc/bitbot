@@ -242,7 +242,7 @@ class Module(ModuleManager.BaseModule):
                     pattern = utils.http.REGEX_URL
 
                 if pattern:
-                    match = re.match(pattern, event["message"])
+                    match = re.search(pattern, event["message"])
                     if match:
                         command = hook.get_kwarg("command", "")
                         res = self.command(event["server"], event["channel"],
