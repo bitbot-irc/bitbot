@@ -44,6 +44,7 @@ def cap(events, event):
         if not is_multiline:
             server_caps = list(event["server"].server_capabilities.keys())
             matched_caps = _match_caps(CAPABILITIES, server_caps)
+            matched_caps = list(map(lambda cap: cap.copy(), matched_caps))
 
             module_caps = events.on("received.cap.ls").call(
                 capabilities=event["server"].server_capabilities,
