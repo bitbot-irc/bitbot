@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
         if CAP in event["capabilities"]:
-            cap = utils.irc.Capability(CAP)
+            cap = utils.irc.Capability(None, CAP)
             cap.on_ack(lambda: self._cap_ack(event["server"]))
             return cap
 
