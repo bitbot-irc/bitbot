@@ -305,4 +305,4 @@ class MessageTag(object):
         return tags[key[0]] if key else None
 
 def hostmask_match(hostmask: str, pattern: str) -> bool:
-    return fnmatch.fnmatch(hostmask, pattern)
+    return fnmatch.fnmatchcase(hostmask, pattern)
