@@ -51,26 +51,27 @@ class Module(ModuleManager.BaseModule):
         :command: title
         :pattern-url: 1
         """
-        url = event["match"].group(0)
-        title = self._get_title(event["target"], event["match"].group(0))
+        if event["target"].get_setting("auto-title", False):
+            url = event["match"].group(0)
+            title = self._get_title(event["target"], event["match"].group(0))
 
-        if title:
-            message = title
-            if event["target"].get_setting("auto-title-first", False):
-                setting = "url-last-%s" % self._url_hash(url)
-                first_details = event["target"].get_setting(setting, None)
+            if title:
+                message = title
+                if event["target"].get_setting("auto-title-first", False):
+                    setting = "url-last-%s" % self._url_hash(url)
+                    first_details = event["target"].get_setting(setting, None)
 
-                if first_details:
-                    first_nickname, first_timestamp, _ = first_details
-                    timestamp_parsed = utils.iso8601_parse(first_timestamp)
-                    timestamp_human = utils.datetime_human(timestamp_parsed)
-                    message = "%s (first posted by %s at %s)" % (title,
-                        first_nickname, timestamp_human)
-                else:
-                    event["target"].set_setting(setting,
-                        [event["user"].nickname, utils.iso8601_format_now(),
-                        url])
-            event["stdout"].write(message)
+                    if first_details:
+                        first_nickname, first_timestamp, _ = first_details
+                        timestamp_parsed = utils.iso8601_parse(first_timestamp)
+                        timestamp_human = utils.datetime_human(timestamp_parsed)
+                        message = "%s (first posted by %s at %s)" % (title,
+                            first_nickname, timestamp_human)
+                    else:
+                        event["target"].set_setting(setting,
+                            [event["user"].nickname, utils.iso8601_format_now(),
+                            url])
+                event["stdout"].write(message)
 
     @utils.hook("received.command.t", alias_of="title")
     @utils.hook("received.command.title", usage="[URL]")
