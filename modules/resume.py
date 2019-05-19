@@ -1,6 +1,6 @@
 from src import ModuleManager, utils
 
-CAP = "draft/resume-0.3"
+CAP = "draft/resume-0.4"
 
 class Module(ModuleManager.BaseModule):
     def _setting(self, new):
