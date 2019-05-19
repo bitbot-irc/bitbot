@@ -140,8 +140,6 @@ class Module(ModuleManager.BaseModule):
         if hook.kwargs.get("remove_empty", True):
             args_split = list(filter(None, args_split))
 
-        target.buffer.skip_next()
-
         min_args = hook.kwargs.get("min_args")
         if min_args and len(args_split) < min_args:
             command_prefix = ""
@@ -234,6 +232,7 @@ class Module(ModuleManager.BaseModule):
                 self.command(event["server"], event["channel"], True,
                     event["user"], command, args_split, event["tags"],
                     "".join(event["statusmsg"]), hook)
+                target.buffer.skip_next()
         else:
             regex_hook = self.events.on("command.regex").get_hooks()
             for hook in regex_hook:
@@ -262,6 +261,7 @@ class Module(ModuleManager.BaseModule):
                 self.command(event["server"], event["user"], False,
                     event["user"], command, event["message_split"][1:],
                     event["tags"], "", hook)
+                target.buffer.skip_next()
 
     def _get_help(self, hook):
         return hook.get_kwarg("help", None) or hook.docstring.description
