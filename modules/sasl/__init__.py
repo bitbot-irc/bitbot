@@ -2,6 +2,8 @@ import base64, hashlib, hmac, uuid
 from src import ModuleManager, utils
 from . import scram
 
+CAP = utils.irc.Capability("sasl")
+
 USERPASS_MECHANISMS = [
     "SCRAM-SHA-512",
     "SCRAM-SHA-256",
@@ -41,7 +43,7 @@ class Module(ModuleManager.BaseModule):
                 do_sasl = True
 
         if do_sasl:
-            cap = utils.irc.Capability("sasl")
+            cap = CAP.copy()
             cap.on_ack(lambda: self._sasl_ack(event["server"]))
             return cap
 
