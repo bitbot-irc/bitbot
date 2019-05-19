@@ -46,10 +46,11 @@ class Module(ModuleManager.BaseModule):
             video_duration = content["duration"]
             video_opinions = ""
             if video_likes and video_dislikes:
-                video_opinions = " (%s%s%s%s)" % (video_likes,
-                    utils.irc.color(ARROW_UP, utils.consts.GREEN),
-                    utils.irc.color(ARROW_DOWN, utils.consts.RED),
-                    video_dislikes)
+                likes = utils.irc.colr("%s%s" % (video_likes, ARROW_UP),
+                    utils.consts.GREEN)
+                dislikes = utils.irc.colr("%s%s" % (ARROW_DOWN, video_dislikes),
+                    utils.consts.RED)
+                video_opinions = " (%s%s)" % (likes, dislikes)
 
             match = re.match(REGEX_ISO8601, video_duration)
             video_duration = ""
