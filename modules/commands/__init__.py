@@ -232,7 +232,7 @@ class Module(ModuleManager.BaseModule):
                 self.command(event["server"], event["channel"], True,
                     event["user"], command, args_split, event["tags"],
                     "".join(event["statusmsg"]), hook)
-                target.buffer.skip_next()
+                event["channel"].buffer.skip_next()
         else:
             regex_hook = self.events.on("command.regex").get_hooks()
             for hook in regex_hook:
@@ -261,7 +261,7 @@ class Module(ModuleManager.BaseModule):
                 self.command(event["server"], event["user"], False,
                     event["user"], command, event["message_split"][1:],
                     event["tags"], "", hook)
-                target.buffer.skip_next()
+                event["user"].buffer.skip_next()
 
     def _get_help(self, hook):
         return hook.get_kwarg("help", None) or hook.docstring.description
