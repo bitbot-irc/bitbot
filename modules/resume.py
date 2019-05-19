@@ -1,6 +1,6 @@
 from src import ModuleManager, utils
 
-CAP = "draft/resume-0.4"
+CAP = utils.irc.Capability(None, "draft/resume-0.4")
 
 class Module(ModuleManager.BaseModule):
     def _setting(self, new):
@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
         if CAP in event["capabilities"]:
-            cap = utils.irc.Capability(None, CAP)
+            cap = CAP.copy()
             cap.on_ack(lambda: self._cap_ack(event["server"]))
             return cap
 
