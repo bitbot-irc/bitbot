@@ -279,14 +279,15 @@ class IRCSendBatch(IRCBatch):
 class Capability(object):
     def __init__(self, name, draft_name=None):
         self._caps = set([name, draft_name])
-        self._name = name
-        self._draft_name = draft_name
         self._on_ack_callbacks = []
     def available(self, capabilities: typing.List[str]) -> str:
         match = list(set(capabilities)&self._caps)
         return match[0] if match else None
     def enabled(self, capability: str) -> bool:
         return capability in self._caps
+
+    def copy(self):
+        return Capability(*self._caps)
 
     def on_ack(self, callback: typing.Callable[[], None]):
         self._on_ack_callbacks.append(callback)
