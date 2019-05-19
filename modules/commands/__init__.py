@@ -173,7 +173,6 @@ class Module(ModuleManager.BaseModule):
             if hard_fail or (not force_success and error):
                 if error:
                     stderr.write(error).send(command_method)
-                    target.buffer.skip_next()
                 return True
 
             args = " ".join(args_split)
