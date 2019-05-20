@@ -90,7 +90,7 @@ class Module(ModuleManager.BaseModule):
             return True
         return False
 
-    def _find_command_hook(self, server, command, is_channel):
+    def _find_command_hook(self, server, command, is_channel, args_split):
         if not self.has_command(command):
             aliases = self._get_aliases(server)
             if command.lower() in aliases:
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
                 try:
                     args_split = self._alias_arg_replace(new_args, args_split)
                 except IndexError:
-                    return
+                    return None, None
 
         hook = None
         if self.has_command(command):
@@ -121,7 +121,7 @@ class Module(ModuleManager.BaseModule):
                 hook = potential_hook
                 break
 
-        return hook
+        return hook, args_split
 
     def command(self, server, target, is_channel, user, command, args_split,
             tags, statusmsg, hook, **kwargs):
@@ -226,7 +226,8 @@ class Module(ModuleManager.BaseModule):
             args_split = event["message_split"][2:]
 
         if command:
-            hook = self._find_command_hook(event["server"], command, True)
+            hook, args_split = self._find_command_hook(event["server"], command,
+                True)
             if hook:
                 self.command(event["server"], event["channel"], True,
                     event["user"], command, args_split, event["tags"],
@@ -255,11 +256,14 @@ class Module(ModuleManager.BaseModule):
     def private_message(self, event):
         if event["message_split"] and not event["action"]:
             command = event["message_split"][0].lower()
-            hook = self._find_command_hook(event["server"], command, False)
+            args_split = event["message_split"][1:]
+
+            hook, args_split = self._find_command_hook(event["server"], command,
+                False)
+
             if hook:
                 self.command(event["server"], event["user"], False,
-                    event["user"], command, event["message_split"][1:],
-                    event["tags"], "", hook)
+                    event["user"], command, args_split, event["tags"], "", hook)
                 event["user"].buffer.skip_next()
 
     def _get_help(self, hook):
