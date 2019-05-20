@@ -39,7 +39,7 @@ class Module(ModuleManager.BaseModule):
             target = event["match"].group(1).strip().rstrip("".join(WORD_STOP))
             if event["server"].irc_lower(target) == event["user"].name:
                 if verbose:
-                    event["stdout"].write("You cannot change your own karma")
+                    event["stderr"].write("You cannot change your own karma")
                 return
 
             setting = "karma-%s" % target
