@@ -227,7 +227,7 @@ class Module(ModuleManager.BaseModule):
 
         if command:
             hook, args_split = self._find_command_hook(event["server"], command,
-                True)
+                True, args_split)
             if hook:
                 self.command(event["server"], event["channel"], True,
                     event["user"], command, args_split, event["tags"],
@@ -259,7 +259,7 @@ class Module(ModuleManager.BaseModule):
             args_split = event["message_split"][1:]
 
             hook, args_split = self._find_command_hook(event["server"], command,
-                False)
+                False, args_split)
 
             if hook:
                 self.command(event["server"], event["user"], False,
