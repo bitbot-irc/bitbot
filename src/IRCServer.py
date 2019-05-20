@@ -285,7 +285,9 @@ class Server(IRCObject.Object):
         return self.send(utils.irc.protocol.capability_end())
     def send_authenticate(self, text: str) -> IRCLine.SentLine:
         return self.send(utils.irc.protocol.authenticate(text))
-    def has_capability(self, capability: str) -> bool:
+    def has_capability(self, capability: utils.irc.Capability) -> bool:
+        return bool(capability.available(self.agreed_capabilities))
+    def has_capability_str(self, capability: str) -> bool:
         return capability in self.agreed_capabilities
 
     def waiting_for_capabilities(self) -> bool:

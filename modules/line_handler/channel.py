@@ -42,7 +42,7 @@ def handle_353(event):
             modes.add(event["server"].prefix_symbols[nickname[0]])
             nickname = nickname[1:]
 
-        if event["server"].has_capability("userhost-in-names"):
+        if event["server"].has_capability_str("userhost-in-names"):
             hostmask = utils.irc.seperate_hostmask(nickname)
             nickname = hostmask.nickname
             user = event["server"].get_user(hostmask.nickname)
