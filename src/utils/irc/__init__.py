@@ -280,7 +280,7 @@ class Capability(object):
     def __init__(self, name, draft_name=None):
         self._caps = set([name, draft_name])
         self._on_ack_callbacks = []
-    def available(self, capabilities: typing.List[str]) -> str:
+    def available(self, capabilities: typing.Iterable[str]) -> str:
         match = list(set(capabilities)&self._caps)
         return match[0] if match else None
     def enabled(self, capability: str) -> bool:
