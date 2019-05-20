@@ -283,8 +283,6 @@ class Capability(object):
     def available(self, capabilities: typing.Iterable[str]) -> str:
         match = list(set(capabilities)&self._caps)
         return match[0] if match else None
-    def enabled(self, capability: str) -> bool:
-        return capability in self._caps
 
     def copy(self):
         return Capability(*self._caps)
