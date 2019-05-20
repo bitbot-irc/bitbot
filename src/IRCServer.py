@@ -253,7 +253,6 @@ class Server(IRCObject.Object):
             ).call_unsafe(server=self, line=line_parsed)
 
         line = line_parsed.format()
-        line_stripped = line.split("\n", 1)[0].strip("\r")
         line_obj = IRCLine.SentLine(datetime.datetime.utcnow(), self.hostmask(),
             line_parsed)
         self.socket.send(line_obj)
