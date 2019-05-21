@@ -13,11 +13,15 @@ class Module(ModuleManager.BaseModule):
         self._logout(event["user"])
         event["user"].admin_master = False
 
-    def command_line(self, args: str):
-        if args == "master-password":
+    def _master_password(self):
             master_password = self._random_password()
             hash, salt = self._make_hash(master_password)
             self.bot.set_setting("master-password", [hash, salt])
+            return master_password
+
+    def command_line(self, args: str):
+        if args == "master-password":
+            master_password = self._master_password()
             print("one-time master password: %s" % master_password)
         else:
             raise ValueError("Unknown command-line argument")
