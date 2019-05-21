@@ -52,6 +52,7 @@ class Module(ModuleManager.BaseModule):
         :pattern-url: 1
         """
         if event["target"].get_setting("auto-title", False):
+            event.eat()
             url = event["match"].group(0)
             title = self._get_title(event["target"], event["match"].group(0))
 
