@@ -132,13 +132,13 @@ class Module(ModuleManager.BaseModule):
         if not module_name and hasattr(hook.function, "__self__"):
             module_name = hook.function.__self__._name
 
-        tags = {}
+        send_tags = {}
         msgid = MSGID_TAG.get_value(tags)
         if msgid:
-            tags["+draft/reply"] = msgid
+            send_tags["+draft/reply"] = msgid
 
-        stdout = outs.StdOut(server, module_name, target, tags, statusmsg)
-        stderr = outs.StdErr(server, module_name, target, tags, statusmsg)
+        stdout = outs.StdOut(server, module_name, target, send_tags, statusmsg)
+        stderr = outs.StdErr(server, module_name, target, send_tags, statusmsg)
         command_method = self._command_method(target, server)
 
         if hook.kwargs.get("remove_empty", True):
