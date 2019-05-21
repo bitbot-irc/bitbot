@@ -119,7 +119,7 @@ class Module(ModuleManager.BaseModule):
 
         hostmask = utils.irc.seperate_hostmask(event["args_split"][2])
         nickname = hostmask.nickname
-        username = hostmask.usernaame or nickname
+        username = hostmask.username or nickname
         realname = nickname
         bindhost = hostmask.hostname or None
 
