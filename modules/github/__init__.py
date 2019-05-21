@@ -8,11 +8,6 @@ COLOR_NEUTRAL = utils.consts.LIGHTGREY
 COLOR_NEGATIVE = utils.consts.RED
 COLOR_ID = utils.consts.PINK
 
-REGEX_ISSUE = re.compile("(?:\S+(?:\/\S+)?)?#\d+")
-REGEX_ISSUE_URL = re.compile(
-    "https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)", re.I)
-#https://github.com/ircv3/ircv3-specifications/pull/347
-
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
@@ -232,30 +227,40 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Issue/PR not found")
 
-    @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
-    def channel_message(self, event):
-        url_match = REGEX_ISSUE_URL.search(event["message"])
-        ref = None
-        if url_match:
+    @utils.hook("command.regex")
+    def url_regex(self, event):
+        """
+        :command: github
+        :pattern: https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)
+        """
+        if event["channel"].get_setting("auto-github", False):
             ref = "%s/%s#%s" % (
                 url_match.group(1), url_match.group(2), url_match.group(4))
-            event.eat()
-        else:
-            match = REGEX_ISSUE.search(event["message"])
-            if match:
-                ref = match.group(0)
-
-        if ref and event["channel"].get_setting("auto-github", False):
             try:
                 result = self._get_info(event["channel"], ref)
             except utils.EventError:
                 return
             if result:
-                hide_prefix = event["channel"].get_setting(
-                    "github-hide-prefix", False)
-                self.events.on("send.stdout").call(target=event["channel"],
-                    module_name="Github", server=event["server"],
-                    message=result, hide_prefix=hide_prefix)
+                if event["channel"].get_setting("github-hide-prefix", False):
+                    event["stdout"].hide_preix()
+                event["stdout"].write(result)
+
+    @utils.hook("command.regex")
+    def ref_regex(self, event):
+        """
+        :command: github
+        :pattern: (?:\S+(?:\/\S+)?)?#\d+
+        """
+        if event["channel"].get_setting("auto-github", False):
+            try:
+                result = self._get_info(event["channel"],
+                    event["match"].group(0))
+            except utils.EventError:
+                return
+            if result:
+                if event["channel"].get_setting("github-hide-prefix", False):
+                   event["stdout"].hide_preix()
+                event["stdout"].write(result)
 
     @utils.hook("received.command.ghwebhook", min_args=1, channel_only=True)
     def github_webhook(self, event):
