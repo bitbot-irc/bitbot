@@ -16,7 +16,7 @@ class Servers(Table):
         self.database.execute(
             """INSERT INTO servers (alias, hostname, port, password, tls,
             bindhost, nickname, username, realname) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             [alias, hostname, port, password, tls, bindhost, nickname, username,
             realname])
         return self.database.execute_fetchone(
