@@ -100,3 +100,34 @@ class Module(ModuleManager.BaseModule):
             server.disconnect()
             self.bot.disconnect(server)
         return shutdown
+
+    @utils.hook("received.command.addserver", min_args=3)
+    def add_server(self, event):
+        """
+        :help: Add a new server
+        :usage: <alias> <hostname>:[+]<port> <nickname>!<username>[@<bindhost>]
+        :permission: addserver
+        """
+        alias = event["args_split"][0]
+        hostname, sep, port = event["args_split"][1].partition(":")
+        tls = port.startswith("+")
+
+        if not hostname or not port or not port.isdigit():
+            raise utils.EventError("Please provide <hostname>:[+]<port>")
+        port = int(port)
+
+        hostmask = utils.irc.seperate_hostmask(event["args_split"][2])
+        nickname = hostmask.nickname
+        username = hostmask.usernaame or nickname
+        realname = nickname
+        bindhost = hostmask.hostname or None
+
+        try:
+            server_id = self.bot.database.servers.add(alias, hostname, port, "",
+                tls, bindhost, nickname, username, realname)
+        except Exception as e:
+            event["stderr"].write("Failed to add server")
+            self.log.error("failed to add server \"%s\"", [alias],
+                exc_info=True)
+            return
+        event["stdout"].write("Added server '%s'" % alias)
