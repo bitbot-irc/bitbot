@@ -132,9 +132,13 @@ class Module(ModuleManager.BaseModule):
         if not module_name and hasattr(hook.function, "__self__"):
             module_name = hook.function.__self__._name
 
+        tags = {}
         msgid = MSGID_TAG.get_value(tags)
-        stdout = outs.StdOut(server, module_name, target, msgid, statusmsg)
-        stderr = outs.StdErr(server, module_name, target, msgid, statusmsg)
+        if msgid:
+            tags["+draft/reply"] = msgid
+
+        stdout = outs.StdOut(server, module_name, target, tags, statusmsg)
+        stderr = outs.StdErr(server, module_name, target, tags, statusmsg)
         command_method = self._command_method(target, server)
 
         if hook.kwargs.get("remove_empty", True):
@@ -457,8 +461,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("send.stdout")
     def send_stdout(self, event):
         stdout = outs.StdOut(event["server"], event["module_name"],
-            event["target"], event.get("msgid", None),
-            event.get("statusmsg", ""))
+            event["target"], {}, event.get("statusmsg", ""))
 
         if event.get("hide_prefix", False):
             stdout.hide_prefix()
@@ -470,8 +473,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("send.stderr")
     def send_stderr(self, event):
         stderr = outs.StdErr(event["server"], event["module_name"],
-            event["target"], event.get("msgid", None),
-            event.get("statusmsg", ""))
+            event["target"], {}, event.get("statusmsg", ""))
 
         if event.get("hide_prefix", False):
             stderr.hide_prefix()
