@@ -37,6 +37,9 @@ class Module(ModuleManager.BaseModule):
         if not event["user"].last_karma or (time.time()-event["user"
                 ].last_karma) >= KARMA_DELAY_SECONDS:
             target = event["match"].group(1).strip().rstrip("".join(WORD_STOP))
+            if not target:
+                return
+
             if event["server"].irc_lower(target) == event["user"].name:
                 if verbose:
                     event["stderr"].write("You cannot change your own karma")
