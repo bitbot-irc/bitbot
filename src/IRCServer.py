@@ -83,7 +83,6 @@ class Server(IRCObject.Object):
             self.get_setting("fallback-encoding", "iso-8859-1"),
             self.connection_params.hostname,
             self.connection_params.port,
-            self.connection_params.ipv4,
             self.connection_params.bindhost,
             self.connection_params.tls,
             tls_verify=self.get_setting("ssl-verify", True),

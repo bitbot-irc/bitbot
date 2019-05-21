@@ -7,7 +7,7 @@ UNTHROTTLED_MAX_LINES = 10
 
 class Socket(IRCObject.Object):
     def __init__(self, log: Logging.Log, encoding: str, fallback_encoding: str,
-            hostname: str, port: int, ipv4: bool, bindhost: str, tls: bool,
+            hostname: str, port: int, bindhost: str, tls: bool,
             tls_verify: bool=True, cert: str=None, key: str=None):
         self.log = log
 
@@ -15,7 +15,6 @@ class Socket(IRCObject.Object):
         self._fallback_encoding = fallback_encoding
         self._hostname = hostname
         self._port = port
-        self._ipv4 = ipv4
         self._bindhost = bindhost
 
         self._tls = tls
@@ -53,17 +52,15 @@ class Socket(IRCObject.Object):
             hostname=server_hostname)
 
     def connect(self):
-        family = socket.AF_INET if self._ipv4 else socket.AF_INET6
-        self._socket = socket.socket(family, socket.SOCK_STREAM)
-
-        self._socket.settimeout(5.0)
-
+        bindhost = None
         if self._bindhost:
-            self._socket.bind((self._bindhost, 0))
+            bindhost = (self._bindhost, 0)
+        self._socket = socket.create_connection((self._hostname, self._port),
+            5.0, bindhost)
+
         if self._tls:
             self._tls_wrap()
 
-        self._socket.connect((self._hostname, self._port))
         self.connected_ip = self._socket.getpeername()[0]
         self.cached_fileno = self._socket.fileno()
         self.connected = True

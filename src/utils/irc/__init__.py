@@ -226,15 +226,14 @@ def parse_format(s: str) -> str:
 OPT_STR = typing.Optional[str]
 class IRCConnectionParameters(object):
     def __init__(self, id: int, alias: str, hostname: str, port: int,
-            password: OPT_STR, tls: bool, ipv4: bool, bindhost: OPT_STR,
-            nickname: str, username: OPT_STR, realname: OPT_STR,
+            password: OPT_STR, tls: bool, bindhost: OPT_STR, nickname: str,
+            username: OPT_STR, realname: OPT_STR,
             args: typing.Dict[str, str]={}):
         self.id = id
         self.alias = alias
         self.hostname = hostname
         self.port = port
         self.tls = tls
-        self.ipv4 = ipv4
         self.bindhost = bindhost
         self.password = password
         self.nickname = nickname

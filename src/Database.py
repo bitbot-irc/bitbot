@@ -9,16 +9,16 @@ class Table(object):
 
 class Servers(Table):
     def add(self, alias: str, hostname: str, port: int, password: str,
-            ipv4: bool, tls: bool, bindhost: str,
-            nickname: str, username: str=None, realname: str=None):
+            tls: bool, bindhost: str, nickname: str, username: str=None,
+            realname: str=None):
         username = username or nickname
         realname = realname or nickname
         self.database.execute(
             """INSERT INTO servers (alias, hostname, port, password, tls,
-            ipv4, bindhost, nickname, username, realname) VALUES (
+            bindhost, nickname, username, realname) VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [alias, hostname, port, password, tls, ipv4, bindhost, nickname,
-            username, realname])
+            [alias, hostname, port, password, tls, bindhost, nickname, username,
+            realname])
         return self.database.execute_fetchone(
             "SELECT server_id FROM servers ORDER BY server_id DESC LIMIT 1")[0]
     def get_all(self):
@@ -29,7 +29,7 @@ class Servers(Table):
             typing.Optional[str], typing.Optional[str]]:
         return self.database.execute_fetchone(
             """SELECT server_id, alias, hostname, port, password, tls,
-            ipv4, bindhost, nickname, username, realname FROM servers WHERE
+            bindhost, nickname, username, realname FROM servers WHERE
             server_id=?""",
             [id])
     def get_by_alias(self, alias: str) -> typing.Optional[int]:
@@ -352,7 +352,7 @@ class Database(object):
         if not self.has_table("servers"):
             self.execute("""CREATE TABLE servers
                 (server_id INTEGER PRIMARY KEY, alias TEXT, hostname TEXT,
-                port INTEGER, password TEXT, ipv4 BOOLEAN, tls BOOLEAN,
+                port INTEGER, password TEXT, tls BOOLEAN,
                 bindhost TEXT, nickname TEXT, username TEXT, realname TEXT,
                 UNIQUE (alias))""")
     def make_channels_table(self):
