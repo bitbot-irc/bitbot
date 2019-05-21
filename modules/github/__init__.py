@@ -233,15 +233,15 @@ class Module(ModuleManager.BaseModule):
         :command: github
         :pattern: https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)
         """
-        if event["channel"].get_setting("auto-github", False):
+        if event["target"].get_setting("auto-github", False):
             ref = "%s/%s#%s" % (
                 url_match.group(1), url_match.group(2), url_match.group(4))
             try:
-                result = self._get_info(event["channel"], ref)
+                result = self._get_info(event["target"], ref)
             except utils.EventError:
                 return
             if result:
-                if event["channel"].get_setting("github-hide-prefix", False):
+                if event["target"].get_setting("github-hide-prefix", False):
                     event["stdout"].hide_preix()
                 event["stdout"].write(result)
 
@@ -251,14 +251,14 @@ class Module(ModuleManager.BaseModule):
         :command: github
         :pattern: (?:\S+(?:\/\S+)?)?#\d+
         """
-        if event["channel"].get_setting("auto-github", False):
+        if event["target"].get_setting("auto-github", False):
             try:
-                result = self._get_info(event["channel"],
+                result = self._get_info(event["target"],
                     event["match"].group(0))
             except utils.EventError:
                 return
             if result:
-                if event["channel"].get_setting("github-hide-prefix", False):
+                if event["target"].get_setting("github-hide-prefix", False):
                    event["stdout"].hide_preix()
                 event["stdout"].write(result)
 
