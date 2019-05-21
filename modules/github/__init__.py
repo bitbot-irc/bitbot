@@ -242,7 +242,7 @@ class Module(ModuleManager.BaseModule):
                 return
             if result:
                 if event["target"].get_setting("github-hide-prefix", False):
-                    event["stdout"].hide_preix()
+                    event["stdout"].hide_prefix()
                 event["stdout"].write(result)
 
     @utils.hook("command.regex")
@@ -259,7 +259,7 @@ class Module(ModuleManager.BaseModule):
                 return
             if result:
                 if event["target"].get_setting("github-hide-prefix", False):
-                   event["stdout"].hide_preix()
+                   event["stdout"].hide_prefix()
                 event["stdout"].write(result)
 
     @utils.hook("received.command.ghwebhook", min_args=1, channel_only=True)
