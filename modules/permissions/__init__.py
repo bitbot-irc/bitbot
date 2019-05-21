@@ -25,6 +25,14 @@ class Module(ModuleManager.BaseModule):
             print("one-time master password: %s" % master_password)
         else:
             raise ValueError("Unknown command-line argument")
+    @utils.hook("received.command.masterpassword", private_only=True)
+    def master_password(self, event):
+        """
+        :permission: master-password
+        """
+        master_password = self._master_password()
+        event["stdout"].write("One-time master password: %s" %
+            master_password)
 
     @utils.hook("received.part")
     def on_part(self, event):
