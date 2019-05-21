@@ -111,6 +111,7 @@ class Module(ModuleManager.BaseModule):
         alias = event["args_split"][0]
         hostname, sep, port = event["args_split"][1].partition(":")
         tls = port.startswith("+")
+        port = port.lstrip("+")
 
         if not hostname or not port or not port.isdigit():
             raise utils.EventError("Please provide <hostname>:[+]<port>")
