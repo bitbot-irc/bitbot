@@ -124,7 +124,7 @@ class Module(ModuleManager.BaseModule):
         return hook, args_split
 
     def command(self, server, target, is_channel, user, command, args_split,
-            tags, statusmsg, hook, **kwargs):
+            tags, target_str, hook, **kwargs):
         if self._is_ignored(server, user, command):
             return False
 
@@ -137,8 +137,8 @@ class Module(ModuleManager.BaseModule):
         if msgid:
             send_tags["+draft/reply"] = msgid
 
-        stdout = outs.StdOut(server, module_name, target, send_tags, statusmsg)
-        stderr = outs.StdErr(server, module_name, target, send_tags, statusmsg)
+        stdout = outs.StdOut(server, module_name, target, target_str, send_tags)
+        stderr = outs.StdErr(server, module_name, target, target_str, send_tags)
         command_method = self._command_method(target, server)
 
         if hook.kwargs.get("remove_empty", True):
@@ -235,7 +235,7 @@ class Module(ModuleManager.BaseModule):
             if hook:
                 self.command(event["server"], event["channel"], True,
                     event["user"], command, args_split, event["tags"],
-                    "".join(event["statusmsg"]), hook)
+                    event["target_str"], hook)
                 event["channel"].buffer.skip_next()
         else:
             regex_hook = self.events.on("command.regex").get_hooks()
@@ -250,7 +250,7 @@ class Module(ModuleManager.BaseModule):
                         command = hook.get_kwarg("command", "")
                         res = self.command(event["server"], event["channel"],
                             True, event["user"], command, "", event["tags"],
-                            "".join(event["statusmsg"]), hook, match=match,
+                            event["target_str"], hook, match=match,
                             message=event["message"])
 
                         if res:
@@ -267,7 +267,8 @@ class Module(ModuleManager.BaseModule):
 
             if hook:
                 self.command(event["server"], event["user"], False,
-                    event["user"], command, args_split, event["tags"], "", hook)
+                    event["user"], command, args_split, event["tags"],
+                    event["target_str"], hook)
                 event["user"].buffer.skip_next()
 
     def _get_help(self, hook):
@@ -461,7 +462,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("send.stdout")
     def send_stdout(self, event):
         stdout = outs.StdOut(event["server"], event["module_name"],
-            event["target"], {}, event.get("statusmsg", ""))
+            event["target"], {}, event.get("target_str", ""))
 
         if event.get("hide_prefix", False):
             stdout.hide_prefix()
@@ -473,7 +474,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("send.stderr")
     def send_stderr(self, event):
         stderr = outs.StdErr(event["server"], event["module_name"],
-            event["target"], {}, event.get("statusmsg", ""))
+            event["target"], {}, event.get("target_str", ""))
 
         if event.get("hide_prefix", False):
             stderr.hide_prefix()

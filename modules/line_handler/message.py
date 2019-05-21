@@ -23,15 +23,12 @@ def privmsg(events, event):
         user = event["server"].get_user(event["prefix"].nickname)
 
     message = event["args"][1]
-    target = event["args"][0]
+    target_str = event["args"][0]
 
     # strip prefix_symbols from the start of target, for when people use
     # e.g. 'PRIVMSG +#channel :hi' which would send a message to only
     # voiced-or-above users
-    statusmsg = []
-    while target[0] in event["server"].prefix_symbols.keys():
-        statusmsg.append(target[0])
-        target = target[1:]
+    target = target_str.lstrip("".join(event["server"].prefix_symbols.keys()))
 
     channel = None
     if target[0] in event["server"].channel_types:
@@ -57,7 +54,7 @@ def privmsg(events, event):
 
     kwargs = {"message": message, "message_split": message.split(" "),
         "server": event["server"], "tags": event["tags"],
-        "action": action}
+        "action": action, "target_str": target_str}
 
     direction = "send" if from_self else "received"
     context = "channel" if channel else "private"
@@ -68,7 +65,7 @@ def privmsg(events, event):
         user_nickname = None if from_self else user.nickname
 
     if channel:
-        hook.call(user=user, channel=channel, statusmsg=statusmsg, **kwargs)
+        hook.call(user=user, channel=channel, **kwargs)
         channel.buffer.add_message(user_nickname, message, action,
             event["tags"], user==None)
     elif event["server"].is_own_nickname(target):

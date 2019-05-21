@@ -5,15 +5,15 @@ STR_MORE = " (more...)"
 STR_CONTINUED = "(...continued) "
 
 class Out(object):
-    def __init__(self, server, module_name, target, tags, statusmsg):
+    def __init__(self, server, module_name, target, target_str, tags):
         self.server = server
         self.module_name = module_name
         self._hide_prefix = False
         self.target = target
+        self._target_str = target_str
         self._text = ""
         self.written = False
         self._tags = tags
-        self._statusmsg = statusmsg
 
     def write(self, text):
         self._text += text
@@ -26,13 +26,12 @@ class Out(object):
             if not self._hide_prefix:
                 prefix = utils.consts.RESET + "[%s] " % self.prefix()
 
-            target_str = "%s%s" % (self._statusmsg, self.target.name)
             full_text = "%s%s" % (prefix, self._text)
             if method == "PRIVMSG":
-                line = self.server.send_message(target_str, full_text,
+                line = self.server.send_message(self._target_str, full_text,
                     tags=self._tags)
             elif method == "NOTICE":
-                line = self.server.send_notice(target_str, full_text,
+                line = self.server.send_notice(self._target_str, full_text,
                     tags=self._tags)
             else:
                 raise ValueError("Unknown command method '%s'" % method)
