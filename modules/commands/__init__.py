@@ -123,8 +123,8 @@ class Module(ModuleManager.BaseModule):
 
         return hook, args_split
 
-    def command(self, server, target, is_channel, user, command, args_split,
-            tags, target_str, hook, **kwargs):
+    def command(self, server, target, target_str, is_channel, user, command,
+            args_split, tags, hook, **kwargs):
         if self._is_ignored(server, user, command):
             return False
 
@@ -233,9 +233,9 @@ class Module(ModuleManager.BaseModule):
             hook, args_split = self._find_command_hook(event["server"], command,
                 True, args_split)
             if hook:
-                self.command(event["server"], event["channel"], True,
-                    event["user"], command, args_split, event["tags"],
-                    event["target_str"], hook)
+                self.command(event["server"], event["channel"],
+                    event["target_str"], True, event["user"], command,
+                    args_split, event["tags"], hook)
                 event["channel"].buffer.skip_next()
         else:
             regex_hook = self.events.on("command.regex").get_hooks()
@@ -249,8 +249,8 @@ class Module(ModuleManager.BaseModule):
                     if match:
                         command = hook.get_kwarg("command", "")
                         res = self.command(event["server"], event["channel"],
-                            True, event["user"], command, "", event["tags"],
-                            event["target_str"], hook, match=match,
+                            event["target_str"], True, event["user"], command,
+                            "", event["tags"], hook, match=match,
                             message=event["message"])
 
                         if res:
@@ -266,9 +266,9 @@ class Module(ModuleManager.BaseModule):
                 False, args_split)
 
             if hook:
-                self.command(event["server"], event["user"], False,
-                    event["user"], command, args_split, event["tags"],
-                    event["target_str"], hook)
+                self.command(event["server"], event["user"],
+                    event["target_str"], False, event["user"], command,
+                    args_split, event["tags"], hook)
                 event["user"].buffer.skip_next()
 
     def _get_help(self, hook):
