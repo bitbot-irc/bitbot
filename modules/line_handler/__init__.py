@@ -55,8 +55,8 @@ class Module(ModuleManager.BaseModule):
 
         self.log.warn("FAIL (%s %s) received: %s",
             [command, error_code, description])
-        self.events.on("received.fail").call(command=command,
-            error_code=error_code, context=context, description=description)
+        self.events.on("received.fail").on(command).call(error_code=error_code,
+            context=context, description=description, server=event["server"])
 
     # first numeric line the server sends
     @utils.hook("raw.received.001", default_event=True)
