@@ -234,8 +234,8 @@ class Module(ModuleManager.BaseModule):
         :pattern: https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)
         """
         if event["target"].get_setting("auto-github", False):
-            ref = "%s/%s#%s" % (
-                url_match.group(1), url_match.group(2), url_match.group(4))
+            ref = "%s/%s#%s" % (event["match"].group(1),
+                event["match"].group(2), event["match"].group(4))
             try:
                 result = self._get_info(event["target"], ref)
             except utils.EventError:
