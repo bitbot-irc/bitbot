@@ -461,8 +461,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("send.stdout")
     def send_stdout(self, event):
+        target = event["target"]
         stdout = outs.StdOut(event["server"], event["module_name"],
-            event["target"], event.get("target_str", ""), {})
+            target, event.get("target_str", target.name), {})
 
         if event.get("hide_prefix", False):
             stdout.hide_prefix()
@@ -473,8 +474,9 @@ class Module(ModuleManager.BaseModule):
             event["target"].last_stdout = stdout
     @utils.hook("send.stderr")
     def send_stderr(self, event):
+        target = event["target"]
         stderr = outs.StdErr(event["server"], event["module_name"],
-            event["target"], event.get("target_str", ""), {})
+            target, event.get("target_str", target.name), {})
 
         if event.get("hide_prefix", False):
             stderr.hide_prefix()
