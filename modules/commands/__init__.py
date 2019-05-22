@@ -267,7 +267,7 @@ class Module(ModuleManager.BaseModule):
 
             if hook:
                 self.command(event["server"], event["user"],
-                    event["target_str"], False, event["user"], command,
+                    event["user"].nickname, False, event["user"], command,
                     args_split, event["tags"], hook)
                 event["user"].buffer.skip_next()
 
