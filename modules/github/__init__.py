@@ -234,6 +234,7 @@ class Module(ModuleManager.BaseModule):
         :pattern: https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)
         """
         if event["target"].get_setting("auto-github", False):
+            event.eat()
             ref = "%s/%s#%s" % (event["match"].group(1),
                 event["match"].group(2), event["match"].group(4))
             try:
@@ -252,6 +253,7 @@ class Module(ModuleManager.BaseModule):
         :pattern: (?:\S+(?:\/\S+)?)?#\d+
         """
         if event["target"].get_setting("auto-github", False):
+            event.eat()
             try:
                 result = self._get_info(event["target"],
                     event["match"].group(0))
