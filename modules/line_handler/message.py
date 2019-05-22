@@ -68,16 +68,16 @@ def privmsg(events, event):
         hook.call(user=user, channel=channel, **kwargs)
         channel.buffer.add_message(user_nickname, message, action,
             event["tags"], user==None)
-    elif event["server"].is_own_nickname(target):
-        hook.call(user=user, **kwargs)
-        user.buffer.add_message(user_nickname, message, action,
-            event["tags"], False)
     elif from_self:
         # a message we've sent to a user
         user = event["server"].get_user(target)
         hook.call(user=user, **kwargs)
         user.buffer.add_message(user_nickname, message, action,
             event["tags"], True)
+    elif event["server"].is_own_nickname(target):
+        hook.call(user=user, **kwargs)
+        user.buffer.add_message(user_nickname, message, action,
+            event["tags"], False)
 
 def notice(events, event):
     from_self = _from_self(event["server"], event["direction"],
@@ -122,16 +122,16 @@ def notice(events, event):
             hook.call(user=user, channel=channel, **kwargs)
             channel.buffer.add_notice(user_nickname, message, event["tags"],
                 user==None)
-        elif event["server"].is_own_nickname(target):
-            hook.call(user=user, **kwargs)
-            user.buffer.add_notice(user_nickname, message, event["tags"],
-                False)
         elif from_self:
             # a notice we've sent to a user
             user = event["server"].get_user(target)
             hook.call(user=user, **kwargs)
             user.buffer.add_notice(user_nickname, message, event["tags"],
                 True)
+        elif event["server"].is_own_nickname(target):
+            hook.call(user=user, **kwargs)
+            user.buffer.add_notice(user_nickname, message, event["tags"],
+                False)
 
 def tagmsg(events, event):
     from_self = _from_self(event["server"], event["direction"],
