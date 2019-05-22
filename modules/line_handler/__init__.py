@@ -184,9 +184,9 @@ class Module(ModuleManager.BaseModule):
     def batch(self, event):
         identifier = event["args"][0]
         modifier, identifier = identifier[0], identifier[1:]
-        batch_type = event["args"][1]
 
         if modifier == "+":
+            batch_type = event["args"][1]
             event["server"].batches[identifier] = utils.irc.IRCRecvBatch(
                 identifier, batch_type, event["tags"])
         else:
