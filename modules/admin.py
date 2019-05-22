@@ -81,6 +81,7 @@ class Module(ModuleManager.BaseModule):
         server = self.bot.get_server_by_id(id)
         server.disconnect()
         self.bot.disconnect(server)
+        event["stdout"].write("Disconnected from %s" % alias)
 
     @utils.hook("received.command.shutdown")
     def shutdown(self, event):
