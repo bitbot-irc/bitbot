@@ -39,9 +39,6 @@ class Module(ModuleManager.BaseModule):
             self.log.info("Successfully resumed session", [])
             event["server"].cap_started = False
 
-        elif event["args"][0] == "ERR":
-            self.log.info("Failed to resume session: %s", [event["args"][1]])
-
         elif event["args"][0] == "TOKEN":
             token = self._get_token(event["server"])
             self._set_token(event["server"], event["args"][1], new=True)
@@ -79,3 +76,7 @@ class Module(ModuleManager.BaseModule):
         if event["line"].command == "QUIT" and event["server"].has_capability(
                 CAP):
             event["line"].command = "BRB"
+
+    @utils.hook("received.fail.resume")
+    def fail_resume(self, event):
+        event["server"].capability_done("resume")
