@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
 
         verified = ""
         if tweet["user"]["verified"]:
-            verified = " %s" % utils.irc.color("✓", utils.consts.GREEN)
+            verified = " %s" % utils.irc.color("✓", utils.consts.LIGHTBLUE)
 
         tweet_link = "https://twitter.com/%s/status/%s" % (username,
             linked_id)
