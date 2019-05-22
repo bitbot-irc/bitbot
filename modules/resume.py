@@ -22,7 +22,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
-        if CAP in event["capabilities"]:
+        if CAP.available(event["capabilities"]):
             cap = CAP.copy()
             cap.on_ack(lambda: self._cap_ack(event["server"]))
             return cap
