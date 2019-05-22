@@ -19,6 +19,48 @@ class Module(ModuleManager.BaseModule):
         since, unit = utils.time_unit(seconds_since)
         return "%s %s ago" % (since, unit)
 
+    def _get_api(self):
+        api_key = self.bot.config["twitter-api-key"]
+        api_secret = self.bot.config["twitter-api-secret"]
+        access_token = self.bot.config["twitter-access-token"]
+        access_secret = self.bot.config["twitter-access-secret"]
+        return twitter.Twitter(auth=twitter.OAuth(
+            access_token, access_secret, api_key, api_secret))
+
+    def _from_id(self, tweet_id):
+        api = self._get_api()
+        try:
+            return api.statuses.show(id=tweet_id)
+        except:
+            traceback.print_exc()
+
+    def _format_tweet(self, tweet):
+        linked_id = tweet["id"]
+        username = tweet["user"]["screen_name"]
+
+        tweet_link = "https://twitter.com/%s/status/%s" % (username,
+            linked_id)
+
+        short_url = self.exports.get_one("shortlink")(tweet_link)
+        short_url = " - %s" % short_url if short_url else ""
+
+        if "retweeted_status" in tweet:
+            original_username = "@%s" % tweet["retweeted_status"
+                ]["user"]["screen_name"]
+            original_text = tweet["retweeted_status"]["text"]
+            retweet_timestamp = self.make_timestamp(tweet[
+                "created_at"])
+            original_timestamp = self.make_timestamp(tweet[
+                "retweeted_status"]["created_at"])
+            return "(@%s (%s) retweeted %s (%s)) %s%s" % (
+                username, retweet_timestamp, original_username,
+                original_timestamp, html.unescape(original_text),
+                short_url)
+        else:
+            return "(@%s, %s) %s%s" % (username,
+                self.make_timestamp(tweet["created_at"]),
+                html.unescape(tweet["text"]), short_url)
+
     @utils.hook("received.command.tw", alias_of="tweet")
     @utils.hook("received.command.tweet")
     def tweet(self, event):
@@ -26,10 +68,6 @@ class Module(ModuleManager.BaseModule):
         :help: Get/find a tweet
         :usage: [@username/URL/ID]
         """
-        api_key = self.bot.config["twitter-api-key"]
-        api_secret = self.bot.config["twitter-api-secret"]
-        access_token = self.bot.config["twitter-access-token"]
-        access_secret = self.bot.config["twitter-access-secret"]
 
         if event["args"]:
             target = event["args"]
@@ -38,16 +76,11 @@ class Module(ModuleManager.BaseModule):
             if target:
                 target = target.message
         if target:
-            twitter_object = twitter.Twitter(auth=twitter.OAuth(
-                access_token, access_secret, api_key, api_secret))
+            api = self._get_api()
             url_match = re.search(REGEX_TWITTERURL, target)
             if url_match or target.isdigit():
                 tweet_id = url_match.group(1) if url_match else target
-                try:
-                    tweet = twitter_object.statuses.show(id=tweet_id)
-                except:
-                    traceback.print_exc()
-                    tweet = None
+                tweet = self._from_id(tweet_id)
             else:
                 if target.startswith("@"):
                     target = target[1:]
@@ -58,32 +91,8 @@ class Module(ModuleManager.BaseModule):
                     traceback.print_exc()
                     tweet = None
             if tweet:
-                linked_id = tweet["id"]
-                username = tweet["user"]["screen_name"]
-
-                tweet_link = "https://twitter.com/%s/status/%s" % (username,
-                    linked_id)
-
-                short_url = self.exports.get_one("shortlink")(tweet_link)
-                short_url = " - %s" % short_url if short_url else ""
-
-                if "retweeted_status" in tweet:
-                    original_username = "@%s" % tweet["retweeted_status"
-                        ]["user"]["screen_name"]
-                    original_text = tweet["retweeted_status"]["text"]
-                    retweet_timestamp = self.make_timestamp(tweet[
-                        "created_at"])
-                    original_timestamp = self.make_timestamp(tweet[
-                        "retweeted_status"]["created_at"])
-                    event["stdout"].write(
-                        "(@%s (%s) retweeted %s (%s)) %s%s" % (
-                        username, retweet_timestamp, original_username,
-                        original_timestamp, html.unescape(original_text),
-                        short_url))
-                else:
-                    event["stdout"].write("(@%s, %s) %s%s" % (username,
-                        self.make_timestamp(tweet["created_at"]),
-                        html.unescape(tweet["text"]), short_url))
+                tweet_str = self._format_tweet(tweet)
+                event["stdout"].write(tweet_str)
             else:
                 event["stderr"].write("Invalid tweet identifiers provided")
         else:
