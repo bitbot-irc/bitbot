@@ -41,6 +41,10 @@ class Module(ModuleManager.BaseModule):
         linked_id = tweet["id"]
         username = tweet["user"]["screen_name"]
 
+        verified = ""
+        if tweet["user"]["verified"]:
+            verified = " %s" % utils.irc.color("✓", utils.consts.GREEN)
+
         tweet_link = "https://twitter.com/%s/status/%s" % (username,
             linked_id)
 
@@ -55,12 +59,12 @@ class Module(ModuleManager.BaseModule):
                 "created_at"])
             original_timestamp = self.make_timestamp(tweet[
                 "retweeted_status"]["created_at"])
-            return "(@%s (%s) retweeted %s (%s)) %s%s" % (
-                username, retweet_timestamp, original_username,
+            return "(@%s%s (%s) retweeted %s (%s)) %s%s" % (
+                username, verified, retweet_timestamp, original_username,
                 original_timestamp, html.unescape(original_text),
                 short_url)
         else:
-            return "(@%s, %s) %s%s" % (username,
+            return "(@%s%s, %s) %s%s" % (username, verified,
                 self.make_timestamp(tweet["created_at"]),
                 html.unescape(tweet["text"]), short_url)
 
