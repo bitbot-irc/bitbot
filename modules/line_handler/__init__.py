@@ -201,7 +201,7 @@ class Module(ModuleManager.BaseModule):
             for line in batch.lines:
                 if add_tags:
                     line.tags.update(add_tags)
-                self._handle(line)
+                self._handle(event["server"], line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
     @utils.hook("raw.received.chghost")
