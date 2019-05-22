@@ -26,7 +26,8 @@ class Module(ModuleManager.BaseModule):
     def handle_raw(self, event):
         if ("batch" in event["line"].tags and
                 event["line"].tags["batch"] in event["server"].batches):
-            server.batches[tag["batch"]].lines.append(event["line"])
+            event["server"].batches[event["line"].tags["batch"]].lines.append(
+                event["line"])
         else:
             self._handle(event["server"], event["line"])
 
