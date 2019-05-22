@@ -10,6 +10,9 @@ from src import ModuleManager, utils
 REGEX_TWITTERURL = re.compile(
     "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)
 
+@utils.export("channelset", {"setting": "auto-tweet",
+    "help": "Enable/disable automatically getting tweet info",
+    "validate": utils.bool_or_none})
 class Module(ModuleManager.BaseModule):
     _name = "Twitter"
 
@@ -97,3 +100,16 @@ class Module(ModuleManager.BaseModule):
                 event["stderr"].write("Invalid tweet identifiers provided")
         else:
             event["stderr"].write("No tweet provided to get information about")
+
+    @utils.hook("command.regex", pattern=REGEX_TWITTERURL)
+    def regex(self, event):
+        """
+        :command: tweet
+        """
+        if event["target"].get_setting("auto-tweet", False):
+            event.eat()
+            tweet_id = event["match"].group(1)
+            tweet = self._from_id(tweet_id)
+            if tweet:
+                tweet_str = self._format_tweet(tweet)
+                event["stdout"].write(tweet_str)
