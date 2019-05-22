@@ -79,7 +79,6 @@ class Module(ModuleManager.BaseModule):
             if target:
                 target = target.message
         if target:
-            api = self._get_api()
             url_match = re.search(REGEX_TWITTERURL, target)
             if url_match or target.isdigit():
                 tweet_id = url_match.group(1) if url_match else target
@@ -87,8 +86,9 @@ class Module(ModuleManager.BaseModule):
             else:
                 if target.startswith("@"):
                     target = target[1:]
+                api = self._get_api()
                 try:
-                    tweet = twitter_object.statuses.user_timeline(
+                    tweet = api.statuses.user_timeline(
                         screen_name=target, count=1)[0]
                 except:
                     traceback.print_exc()
