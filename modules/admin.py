@@ -74,12 +74,10 @@ class Module(ModuleManager.BaseModule):
         """
         id = event["server"].id
         if event["args"]:
-            print("alias")
             alias = event["args"]
             id = self.bot.database.servers.get_by_alias(alias)
             if id == None:
                 raise utils.EventError("Unknown server alias")
-        print(id)
         server = self.bot.get_server_by_id(id)
         server.disconnect()
         self.bot.disconnect(server)
