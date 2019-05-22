@@ -50,7 +50,7 @@ class Module(ModuleManager.BaseModule):
                     tweet = None
             else:
                 if target.startswith("@"):
-                    taret = target[1:]
+                    target = target[1:]
                 try:
                     tweet = twitter_object.statuses.user_timeline(
                         screen_name=target, count=1)[0]
