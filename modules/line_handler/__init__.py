@@ -53,8 +53,8 @@ class Module(ModuleManager.BaseModule):
         context = event["args"][2:-1]
         description = event["args"][-1]
 
-        self.log.warn("FAIL (%s %s) received: %s" %
-            (command, error_code, description))
+        self.log.warn("FAIL (%s %s) received: %s",
+            [command, error_code, description])
         self.events.on("received.fail").call(command=command,
             error_code=error_code, context=context, description=description)
 
