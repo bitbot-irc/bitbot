@@ -18,10 +18,10 @@ ARROW_DOWN = "↓"
 
 @utils.export("channelset", {"setting": "auto-youtube",
     "help": "Disable/Enable automatically getting info from youtube URLs",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "youtube-safesearch",
-    "help": "Turn safe search off/on",
-    "validate": utils.bool_or_none})
+    "help": "Turn safe search off/on", "validate": utils.bool_or_none,
+    "example": "on"})
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         self.exports.add("search-youtube", self._search_youtube)

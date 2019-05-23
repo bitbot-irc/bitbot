@@ -9,7 +9,7 @@ URL_GOOGLESUGGEST = "http://google.com/complete/search"
 
 @utils.export("channelset", {"setting": "google-safesearch",
     "help": "Turn safe search off/on",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.g", alias_of="google")
     @utils.hook("received.command.google")

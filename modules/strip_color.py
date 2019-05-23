@@ -2,10 +2,10 @@ from src import ModuleManager, utils
 
 @utils.export("serverset", {"setting": "strip-color",
     "help": "Set whether I strip colors from my messages on this server",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "strip-color",
     "help": "Set whether I strip colors from my messages on in this channel",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.send.privmsg")
     @utils.hook("preprocess.send.notice")

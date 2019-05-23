@@ -5,7 +5,8 @@ from src import ModuleManager, utils
 URL_TRAKT = "https://api-v2launch.trakt.tv/users/%s/watching"
 URL_TRAKTSLUG = "https://trakt.tv/%s/%s"
 
-@utils.export("set", {"setting": "trakt", "help": "Set username on trakt.tv"})
+@utils.export("set", {"setting": "trakt", "help": "Set username on trakt.tv",
+    "example": "jesopo"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.nw", alias_of="nowwatching")
     @utils.hook("received.command.nowwatching")

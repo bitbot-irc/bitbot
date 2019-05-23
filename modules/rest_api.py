@@ -109,10 +109,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 @utils.export("botset", {"setting": "rest-api",
     "help": "Enable/disable REST API",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("botset", {"setting": "rest-api-minify",
     "help": "Enable/disable REST API minifying",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         global _bot

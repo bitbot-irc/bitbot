@@ -7,15 +7,17 @@ class InvalidTimeoutException(Exception):
 
 @utils.export("channelset", {"setting": "highlight-spam-threshold",
     "help": "Set the number of nicknames in a message that qualifies as spam",
-     "validate": utils.int_or_none})
+     "validate": utils.int_or_none, "example": "10"})
 @utils.export("channelset", {"setting": "highlight-spam-protection",
     "help": "Enable/Disable highlight spam protection",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "highlight-spam-ban",
     "help": "Enable/Disable banning highlight spammers "
-    "instead of just kicking", "validate": utils.bool_or_none})
+    "instead of just kicking", "validate": utils.bool_or_none,
+    "example": "on"})
 @utils.export("channelset", {"setting": "ban-format",
-    "help": "Set ban format ($n = nick, $u = username, $h = hostname)"})
+    "help": "Set ban format ($n = nick, $u = username, $h = hostname)",
+    "example": "*!$u@$h"})
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 

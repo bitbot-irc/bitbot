@@ -6,10 +6,10 @@ REGEX_SED = re.compile("^s/")
 
 @utils.export("channelset", {"setting": "sed",
     "help": "Disable/Enable sed in a channel",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "sed-sender-only",
     "help": "Disable/Enable sed only looking at the messages sent by the user",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def _closest_setting(self, event, setting, default):
         return event["target"].get_setting(setting,

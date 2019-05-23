@@ -31,7 +31,7 @@ def _apostrophe(nickname):
     return "%s's" % nickname
 
 @utils.export("set", {"setting": "birthday", "help": "Set your birthday",
-    "validate": _check})
+    "validate": _check, "example": "1995-09-15"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.birthday")
     def birthday(self, event):

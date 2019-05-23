@@ -4,7 +4,7 @@ from src import IRCBot, ModuleManager, utils
 
 @utils.export("serverset", {"setting": "ctcp-responses",
     "help": "Set whether I respond to CTCPs on this server",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.ctcp.version.private")
     def ctcp_version(self, event):

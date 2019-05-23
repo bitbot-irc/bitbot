@@ -6,7 +6,8 @@ REQUIRES_IDENTIFY = ("You need to be identified to use that command "
  "(/msg %s register | /msg %s identify)")
 
 @utils.export("serverset", {"setting": "identity-mechanism",
-    "help": "Set the identity mechanism for this server"})
+    "help": "Set the identity mechanism for this server",
+    "example": "ircv3-account"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.user")
     def new_user(self, event):

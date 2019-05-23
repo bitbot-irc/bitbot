@@ -5,9 +5,11 @@ LOWHIGH = {
     "high": "o"
 }
 @utils.export("channelset", {"setting": "mode-low",
-    "help": "Set which channel mode is considered to be 'low' access"})
+    "help": "Set which channel mode is considered to be 'low' access",
+    "example": "v"})
 @utils.export("channelset", {"setting": "mode-high",
-    "help": "Set which channel mode is considered to be 'high' access"})
+    "help": "Set which channel mode is considered to be 'high' access",
+    "example": "o"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):

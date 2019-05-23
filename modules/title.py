@@ -3,14 +3,14 @@ from src import EventManager, ModuleManager, utils
 
 @utils.export("channelset", {"setting": "auto-title",
     "help": "Disable/Enable automatically getting info titles from URLs",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "title-shorten",
     "help": "Enable/disable shortening URLs when getting their title",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "auto-title-first",
     "help": ("Enable/disable showing who first posted a URL that was "
         "auto-titled"),
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "exaple": "on"})
 class Module(ModuleManager.BaseModule):
     def _url_hash(self, url):
         return "sha256:%s" % hashlib.sha256(url.lower().encode("utf8")

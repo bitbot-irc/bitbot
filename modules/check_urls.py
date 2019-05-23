@@ -8,13 +8,14 @@ RE_URL = re.compile(r"https?://\S+", re.I)
 
 @utils.export("channelset", {"setting": "check-urls",
     "help": "Enable/Disable automatically checking for malicious URLs",
-     "validate": utils.bool_or_none})
+     "validate": utils.bool_or_none, "example": "on"})
 @utils.export("serverset", {"setting": "check-urls",
     "help": "Enable/Disable automatically checking for malicious URLs",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "check-urls-kick",
     "help": "Enable/Disable automatically kicking users that "
-    "send malicious URLs", "validate": utils.bool_or_none})
+    "send malicious URLs", "validate": utils.bool_or_none,
+    "example": "on"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.message.channel")
     def message(self, event):

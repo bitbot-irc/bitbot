@@ -7,10 +7,10 @@ KARMA_DELAY_SECONDS = 3
 
 @utils.export("channelset", {"setting": "karma-verbose",
     "help": "Enable/disable automatically responding to karma changes",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("serverset", {"setting": "karma-nickname-only",
     "help": "Enable/disable karma being for nicknames only",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def _karma_str(self, karma):
         karma_str = str(karma)

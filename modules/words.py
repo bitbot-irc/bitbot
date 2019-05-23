@@ -7,7 +7,7 @@ WORD_STOP = WORD_DELIM+"”)}>;:.,!?"
 
 @utils.export("set", {"setting": "word-tracking",
     "help": "Disable/enable tracking your wordcounts",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
         if not user.get_setting("word-tracking", True):

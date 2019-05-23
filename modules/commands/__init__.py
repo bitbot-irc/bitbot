@@ -14,24 +14,24 @@ def _command_method_validate(s):
         return s.upper()
 
 @utils.export("channelset", {"setting": "command-prefix",
-    "help": "Set the command prefix used in this channel"})
+    "help": "Set the command prefix used in this channel", "example": "!"})
 @utils.export("serverset", {"setting": "command-prefix",
-    "help": "Set the command prefix used on this server"})
+    "help": "Set the command prefix used on this server", "example": "!"})
 @utils.export("serverset", {"setting": "command-method",
     "help": "Set the method used to respond to commands",
-    "validate": _command_method_validate})
+    "validate": _command_method_validate, "example": "NOTICE"})
 @utils.export("channelset", {"setting": "command-method",
     "help": "Set the method used to respond to commands",
-    "validate": _command_method_validate})
+    "validate": _command_method_validate, "example": "NOTICE"})
 @utils.export("channelset", {"setting": "hide-prefix",
     "help": "Disable/enable hiding prefix in command reponses",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "commands",
     "help": "Disable/enable responding to commands in-channel",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "prefixed-commands",
     "help": "Disable/enable responding to prefixed commands in-channel",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         self.exports.add("is-ignored", self._is_ignored)

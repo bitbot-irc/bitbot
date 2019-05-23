@@ -16,7 +16,7 @@ NSFW_TEXT = "(NSFW)"
 
 @utils.export("channelset", {"setting": "auto-imgur",
     "help": "Disable/Enable automatically getting info from Imgur URLs",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def _prefix(self, data):
         text = "%s: " % data["id"]

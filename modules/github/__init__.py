@@ -93,18 +93,19 @@ CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 @utils.export("channelset", {"setting": "github-hide-prefix",
     "help": "Hide/show command-like prefix on Github hook outputs",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "github-hide-organisation",
     "help": "Hide/show organisation in repository names",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "github-default-repo",
-    "help": "Set the default github repo for the current channel"})
+    "help": "Set the default github repo for the current channel",
+    "example": "jesopo/bitbot"})
 @utils.export("channelset", {"setting": "github-prevent-highlight",
     "help": "Enable/disable preventing highlights",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 @utils.export("channelset", {"setting": "auto-github",
     "help": "Enable/disable automatically getting github issue/PR info",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
         repo, _, number = ref.rpartition("#")

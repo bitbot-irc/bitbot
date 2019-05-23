@@ -12,7 +12,7 @@ REGEX_TWITTERURL = re.compile(
 
 @utils.export("channelset", {"setting": "auto-tweet",
     "help": "Enable/disable automatically getting tweet info",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     _name = "Twitter"
 

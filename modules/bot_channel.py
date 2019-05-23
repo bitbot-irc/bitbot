@@ -1,7 +1,7 @@
 from src import ModuleManager, utils
 
 @utils.export("serverset", {"setting": "bot-channel",
-    "help": "Set main channel"})
+    "help": "Set main channel", "example": "#bitbot"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.001")
     def do_join(self, event):

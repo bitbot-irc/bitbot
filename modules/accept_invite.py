@@ -2,7 +2,7 @@ from src import ModuleManager, utils
 
 @utils.export("serverset", {"setting": "accept-invites",
     "help": "Set whether I accept invites on this server",
-    "validate": utils.bool_or_none})
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.invite")
     def on_invite(self, event):
