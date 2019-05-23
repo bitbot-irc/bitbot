@@ -263,7 +263,11 @@ class Module(ModuleManager.BaseModule):
     def private_message(self, event):
         if event["message_split"] and not event["action"]:
             command = event["message_split"][0].lower()
+
+            # this should help catch commands when people try to do prefixed
+            # commands ('!help' rather than 'help') in PM
             command = command.lstrip("".join(NON_ALPHANUMERIC))
+
             args_split = event["message_split"][1:]
 
             hook, args_split = self._find_command_hook(event["server"], command,
