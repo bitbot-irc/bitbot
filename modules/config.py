@@ -36,6 +36,51 @@ class ConfigChannelTarget(object):
         self._bot.database.channel_settings.delete(channel_id, setting)
 
 class Module(ModuleManager.BaseModule):
+    def _to_context(self, server, channel, user, context_desc):
+        context_desc_lower = context_desc.lower()
+        if context_desc_lower == "user":
+            return user, "set"
+        elif context_desc_lower == "channel":
+            return channel, "channelset"
+        elif context_desc_lower == "server":
+            return server, "serverset"
+        elif context_desc_lower == "bot":
+            return self.bot, "botset"
+        else:
+            raise ValueError()
+
+    @utils.hook("preprocess.command")
+    def preprocess_command(self, event):
+        print("preproc")
+        require_setting = event["hook"].get_kwarg("require_setting", None)
+        if not require_setting == None:
+            print(require_setting)
+            require_setting_unless = event["hook"].get_kwarg(
+                "require_setting_unless", None)
+            if not require_setting_unless == None:
+                require_setting_unless = int(require_setting_unless)
+                if len(event["args_split"]) >= require_setting_unless:
+                    return
+
+            context, _, require_setting = require_setting.rpartition(":")
+            require_setting = require_setting.lower()
+            channel = None
+            if event["is_channel"]:
+                channel = event["target"]
+
+            target, context = self._to_context(event["server"], channel,
+                event["user"], context or "user")
+
+            export_settings = self._get_export_setting(context)
+            setting_info = export_settings.get(require_setting, None)
+            if setting_info:
+                value = target.get_setting(require_setting, None)
+                if value == None:
+                    example = setting_info.get("example", "<value>")
+                    return "Please set %s, e.g.: %s%s %s %s" % (
+                        require_setting, event["command_prefix"], context,
+                        require_setting, example)
+
     def _set(self, category, event, target, arg_index=0):
         args = event["args_split"][arg_index:]
         settings = self.exports.get_all(category)
@@ -238,8 +283,7 @@ class Module(ModuleManager.BaseModule):
         """
 
         arg_count = len(event["args_split"])
-        context, _, name = event["args_split"][0].partition(":")
-        context = context.lower()
+        context_desc, _, name = event["args_split"][0].partition(":")
 
         setting = None
         value = None
@@ -248,17 +292,15 @@ class Module(ModuleManager.BaseModule):
             if arg_count > 2:
                 value = " ".join(event["args_split"][2:])
 
-        target = None
-        setting_key = None
+        target, context = self._to_context(event["server"],
+            event["target"], event["user"], context_desc)
 
-        if context == "user":
-            setting_key = "set"
+        if context == "set":
             if name:
                 target = event["server"].get_user(name)
             else:
                 target = event["user"]
-        elif context == "channel":
-            setting_key = "channelset"
+        elif context == "channelset":
             if name:
                 if name in event["server"].channels:
                     target = event["server"].channels.get(name)
@@ -272,14 +314,8 @@ class Module(ModuleManager.BaseModule):
                     raise utils.EventError(
                         "Cannot change config for current channel when in "
                         "private message")
-        elif context == "server":
-            setting_key = "serverset"
-            target = event["server"]
-        elif context == "bot":
-            setting_key = "botset"
-            target = self.bot
 
-        export_settings = self._get_export_setting(setting_key)
+        export_settings = self._get_export_setting(context)
         if not setting == None:
             if not setting.lstrip("-") in export_settings:
                 raise utils.EventError("Setting not found")
