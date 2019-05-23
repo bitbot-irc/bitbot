@@ -51,10 +51,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
-        print("preproc")
         require_setting = event["hook"].get_kwarg("require_setting", None)
         if not require_setting == None:
-            print(require_setting)
             require_setting_unless = event["hook"].get_kwarg(
                 "require_setting_unless", None)
             if not require_setting_unless == None:
