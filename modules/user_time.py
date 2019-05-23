@@ -11,6 +11,8 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Get the time for you or someone else
         :usage: [nickname]
+        :require_setting: location
+        :require_setting_unless: 1
         """
         target_user = event["user"]
         if event["args"]:
