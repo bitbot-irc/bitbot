@@ -8,6 +8,8 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Get your, or someone else's, pronouns
         :usage: [nickname]
+        :require_setting: pronouns
+        :require_setting_unless: 1
         """
         target_user = event["user"]
         if event["args"]:
