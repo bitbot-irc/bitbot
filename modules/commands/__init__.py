@@ -9,7 +9,7 @@ REGEX_ARG_NUMBER = re.compile(r"\$(\d+)(-?)")
 
 MSGID_TAG = utils.irc.MessageTag("msgid", "draft/msgid")
 
-NON_ALPHANUMERIC = [char for char in string.printable if char.isalnum()]
+NON_ALPHANUMERIC = [char for char in string.printable if not char.isalnum()]
 
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
