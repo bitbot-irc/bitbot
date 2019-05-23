@@ -1,4 +1,4 @@
-import re
+import re, string
 from src import EventManager, ModuleManager, utils
 from . import outs
 
@@ -8,6 +8,8 @@ COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 REGEX_ARG_NUMBER = re.compile(r"\$(\d+)(-?)")
 
 MSGID_TAG = utils.irc.MessageTag("msgid", "draft/msgid")
+
+NON_ALPHANUMERIC = [char for char in string.printable if char.isalnum()]
 
 def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
@@ -261,6 +263,7 @@ class Module(ModuleManager.BaseModule):
     def private_message(self, event):
         if event["message_split"] and not event["action"]:
             command = event["message_split"][0].lower()
+            command = command.lstrip("".join(NON_ALPHANUMERIC))
             args_split = event["message_split"][1:]
 
             hook, args_split = self._find_command_hook(event["server"], command,
