@@ -5,7 +5,8 @@ URL_OPENCAGE = "https://api.opencagedata.com/geocode/v1/json"
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         self.exports.add("set", {"setting": "location",
-            "help": "Set your location", "validate": self._get_location})
+            "help": "Set your location", "validate": self._get_location,
+            "example": "London, GB"})
 
     def _get_location(self,  s):
         page = utils.http.request(URL_OPENCAGE, get_params={
