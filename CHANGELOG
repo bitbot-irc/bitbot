@@ -1,14 +1,18 @@
-2019-05-23 - BitBot v1.7.0
+# 2019-05-23 - BitBot v1.7.0
 
-Changes
+Added:
+- Add !addserver
+- Add !masterpassword
+- Add auto-tweet setting
+- Support triggering commands by regex
+
+Changed:
 - Show usage examples for user/channel/server/bot settings
 - Strip common command prefixes from PM commands so "!help" works
-- Add !addserver
-- Support triggering commands by regex
-- Add auto-tweet setting
 - Change auto-github to work for github urls too
-- Add !masterpassword
-- Typos/bugs in BATCH and FAIL
-- Remove `ipv4` server attribute - figure it out automatically
-- Fix crash caused by BitBot messaging himself
 - IRCv3: draft/resume-0.3 -> draft/resume-0.4
+- Remove `ipv4` server attribute - figure it out automatically
+
+Fixed:
+- Typos/bugs in BATCH and FAIL
+- Fix crash caused by BitBot messaging himself
