@@ -11,7 +11,7 @@ USERPASS_MECHANISMS = [
     "PLAIN"
 ]
 
-def _validate(self, s):
+def _validate(s):
     mechanism, _, arguments = s.partition(" ")
     return {"mechanism": mechanism, "args": arguments}
 
