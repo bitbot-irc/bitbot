@@ -2,7 +2,8 @@ import base64, os
 import scrypt
 from src import ModuleManager, utils
 
-REQUIRES_IDENTIFY = ("You need to be identified to use that command "
+REQUIRES_IDENTIFY = "You need to be identified to use that command"
+REQUIRES_IDENTIFY_INTERNAL = ("You need to be identified to use that command "
  "(/msg %s register | /msg %s identify)")
 
 @utils.export("serverset", {"setting": "identity-mechanism",
@@ -221,8 +222,11 @@ class Module(ModuleManager.BaseModule):
                 return utils.consts.PERMISSION_FORCE_SUCCESS
         elif authenticated:
             if not identified_account:
-                return REQUIRES_IDENTIFY % (event["server"].nickname,
-                    event["server"].nickname)
+                if identity_mechanism == "internal":
+                    return REQUIRES_IDENTIFY_INTERNAL % (
+                        event["server"].nickname, event["server"].nickname)
+                else:
+                    return REQUIRES_IDENTIFY
             else:
                 return utils.consts.PERMISSION_FORCE_SUCCESS
 
