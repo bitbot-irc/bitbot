@@ -41,11 +41,10 @@ class Module(ModuleManager.BaseModule):
         settings = self.exports.get_all(category)
         settings_dict = {setting["setting"]: setting for setting in settings}
 
-        if len(args) > 1:
-            setting = args[0].lower()
-            if setting in settings_dict:
-                setting_options = settings_dict[setting]
-
+        setting = args[0].lower()
+        if setting in settings_dict:
+            setting_options = settings_dict[setting]
+            if len(args) > 1:
                 value = " ".join(args[1:])
                 value = setting_options.get("validate", lambda x: x)(value)
 
@@ -58,16 +57,22 @@ class Module(ModuleManager.BaseModule):
                     event["stdout"].write("Saved setting")
                 else:
                     event["stderr"].write("Invalid value")
+            elif len(args) == 1:
+                example = setting_options.get("example", None)
+                if example:
+                    event["stderr"].write("Please provide a value, e.g. %s"
+                        % example)
+                else:
+                    event["stderr"].write("Please provide a value")
             else:
-                event["stderr"].write("Unknown setting")
-        elif len(args) == 1:
-            event["stderr"].write("Please provide a value")
-        else:
-            shown_settings = [key for key, value in settings_dict.items()
+                shown_settings = [key for key, value in settings_dict.items()
                     if not value.get("hidden", False)]
-            shown_settings = sorted(shown_settings)
-            event["stdout"].write("Available settings: %s" % (
-                ", ".join(shown_settings)))
+                shown_settings = sorted(shown_settings)
+                event["stdout"].write("Available settings: %s" % (
+                    ", ".join(shown_settings)))
+        else:
+            event["stderr"].write("Unknown setting")
+
 
     @utils.hook("received.command.set", help="Set a specified user setting")
     def set(self, event):
