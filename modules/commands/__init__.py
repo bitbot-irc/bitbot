@@ -160,7 +160,7 @@ class Module(ModuleManager.BaseModule):
             returns = self.events.on("preprocess.command").call_unsafe(
                 hook=hook, user=user, server=server, target=target,
                 is_channel=is_channel, tags=tags, args_split=args_split,
-                command=command)
+                command=command, **kwargs)
 
             hard_fail = False
             force_success = False
@@ -235,7 +235,8 @@ class Module(ModuleManager.BaseModule):
             if hook:
                 self.command(event["server"], event["channel"],
                     event["target_str"], True, event["user"], command,
-                    args_split, event["tags"], hook)
+                    args_split, event["tags"], hook,
+                    command_prefix=command_prefix)
                 event["channel"].buffer.skip_next()
         else:
             regex_hook = self.events.on("command.regex").get_hooks()
@@ -251,7 +252,7 @@ class Module(ModuleManager.BaseModule):
                         res = self.command(event["server"], event["channel"],
                             event["target_str"], True, event["user"], command,
                             "", event["tags"], hook, match=match,
-                            message=event["message"])
+                            message=event["message"], command_prefix="")
 
                         if res:
                             break
@@ -268,7 +269,7 @@ class Module(ModuleManager.BaseModule):
             if hook:
                 self.command(event["server"], event["user"],
                     event["user"].nickname, False, event["user"], command,
-                    args_split, event["tags"], hook)
+                    args_split, event["tags"], hook, command_prefix="")
                 event["user"].buffer.skip_next()
 
     def _get_help(self, hook):
