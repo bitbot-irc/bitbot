@@ -49,7 +49,7 @@ class Module(ModuleManager.BaseModule):
         return {"networks": networks, "channels": channels, "users": users}
 
     def _server_stats(self, server):
-        connected_seconds = time.time()-server.connect_time
+        connected_seconds = time.time()-server.socket.connect_time
         return {
             "hostname": server.connection_params.hostname,
             "port": server.connection_params.port,
