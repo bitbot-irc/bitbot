@@ -61,7 +61,7 @@ def cap(events, event):
         capabilities_keys = capabilities.keys()
         event["server"].server_capabilities.update(capabilities)
 
-        matched_caps = _match_caps(list(capabilities_keys))
+        matched_caps = _match_caps(CAPABILITIES, list(capabilities_keys))
 
         module_caps = events.on("received.cap.new").call(
             server=event["server"], capabilities=capabilities)
