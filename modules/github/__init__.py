@@ -477,9 +477,9 @@ class Module(ModuleManager.BaseModule):
                 # will fire indefininitely.
                 continue
 
-            regex = re.compile(r".\b(%s)(%s)" % (
+            regex = re.compile(r"(.)\b(%s)(%s)" % (
                 user.nickname[0], user.nickname[1:]), re.I)
-            s = regex.sub("\\1\u200c\\2", s)
+            s = regex.sub("\\1\\2\u200c\\3", s)
 
         return s
 
