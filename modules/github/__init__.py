@@ -477,16 +477,10 @@ class Module(ModuleManager.BaseModule):
                 # will fire indefininitely.
                 continue
 
-            s_lower = server.irc_lower(s)
-            while user.nickname_lower in s_lower:
-                index = s_lower.index(user.nickname_lower)
-                length = len(user.nickname_lower)
+            regex = re.compile(r".\b(%s)(%s)" % (
+                user.nickname[0], user.nickname[1:]), re.I)
+            s = regex.sub("\\1\u200c\\2", s)
 
-                original = s[index:index+length]
-                original = utils.prevent_highlight(original)
-
-                s = s[:index] + original + s[index+length:]
-                s_lower = server.irc_lower(s)
         return s
 
     def _short_url(self, url):
