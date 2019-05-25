@@ -53,7 +53,7 @@ class ModuleDefinition(object):
             name: str,
             filename: str,
             type: ModuleType,
-            hashflags: typing.List[typing.Tuple[str, str]]):
+            hashflags: typing.List[typing.Tuple[str, typing.Optional[str]]]):
         self.name = name
         self.filename = filename
         self.type = type
