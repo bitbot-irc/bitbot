@@ -2,7 +2,7 @@ import io, typing
 
 COMMENT_TYPES = ["#", "//"]
 def hashflags(filename: str) -> typing.List[typing.Tuple[str, str]]:
-    hashflags = {}
+    hashflags = []
     with io.open(filename, mode="r", encoding="utf8") as f:
         for line in f:
             line = line.strip("\n")
@@ -17,8 +17,8 @@ def hashflags(filename: str) -> typing.List[typing.Tuple[str, str]]:
                 break
             elif line.startswith("--"):
                 hashflag, sep, value = line[2:].partition(" ")
-                hashflags[hashflag] = value if sep else None
-    return list(hashflags.items())
+                hashflags.append([hashflag, value if sep else None])
+    return hashflags
 
 class Docstring(object):
     def __init__(self, description: str, items: typing.Dict[str, str],
