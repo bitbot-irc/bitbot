@@ -149,12 +149,15 @@ class ModuleManager(object):
             ) -> typing.Any:
         return getattr(obj, magic) if hasattr(obj, magic) else default
 
-    def _load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition
-            ) -> LoadedModule:
-        dependencies = definition.get_dependencies()
-        for dependency in dependencies:
-            if not dependency in self.modules:
-                raise ModuleDependencyNotFulfilled(dependency)
+    def _load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition,
+            check_dependency: bool=True) -> LoadedModule:
+        if check_dependency:
+            dependencies = definition.get_dependencies()
+            for dependency in dependencies:
+                if not dependency in self.modules:
+                    raise ModuleDependencyNotFulfilled(
+                        "Dependency for %s not fulfilled: %s" %
+                        (definition.name, dependency) ,dependency)
 
         for hashflag, value in definition.hashflags:
             if hashflag == "ignore":
@@ -211,7 +214,8 @@ class ModuleManager(object):
     def load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition
             ) -> LoadedModule:
         try:
-            loaded_module = self._load_module(bot, definition)
+            loaded_module = self._load_module(bot, definition,
+                check_dependency=False)
         except ModuleWarning as warning:
             self.log.warn("Module '%s' not loaded", [definition.name])
             raise
@@ -224,15 +228,46 @@ class ModuleManager(object):
         self.log.debug("Module '%s' loaded", [loaded_module.name])
         return loaded_module
 
+    def _dependency_sort(self, definitions: typing.List[ModuleDefinition]):
+        definitions_ordered = []
+
+        definition_names = {d.name: d for d in definitions}
+        definition_dependencies = {
+            d.name: d.get_dependencies() for d in definitions}
+
+        while definition_dependencies:
+            changed = False
+
+            to_remove = []
+            for name, dependencies in definition_dependencies.items():
+                if not dependencies:
+                    to_remove.append(name)
+            for name in to_remove:
+                definitions_ordered.append(name)
+                del definition_dependencies[name]
+                for deps in definition_dependencies.values():
+                    if name in deps:
+                        changed = True
+                        deps.remove(name)
+
+            if not changed:
+                for name1, dep1 in definition_dependencies.items():
+                    for name2, dep2 in definition_dependencies.items():
+                        if name1 in dep2 and name2 in dep1:
+                            self.log.warn("Cicular dependencies: %s<->%s",
+                                [name1, name2])
+                            dep2.remove(name1)
+                            dep1.remove(name2)
+
+        return [definition_names[name] for name in definitions_ordered]
+
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
             blacklist: typing.List[str]=[], safe: bool=False
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
         fail = []
         success = []
 
-        module_definitions = self.list_modules()
-
-        #TODO figure out dependency tree
+        module_definitions = self._dependency_sort(self.list_modules())
 
         for definition in module_definitions:
             if definition.name in whitelist or (
