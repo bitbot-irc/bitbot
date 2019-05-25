@@ -241,12 +241,14 @@ class ModuleManager(object):
             to_remove = []
             for name, dependencies in definition_dependencies.items():
                 if not dependencies:
+                    # pop things with no unfufilled dependencies
                     to_remove.append(name)
             for name in to_remove:
                 definitions_ordered.append(name)
                 del definition_dependencies[name]
                 for deps in definition_dependencies.values():
                     if name in deps:
+                        # fulfill dependencies for things we just popped
                         changed = True
                         deps.remove(name)
 
@@ -256,6 +258,7 @@ class ModuleManager(object):
                         if name1 in dep2 and name2 in dep1:
                             self.log.warn("Cicular dependencies: %s<->%s",
                                 [name1, name2])
+                            # snap a cycular dependence
                             dep2.remove(name1)
                             dep1.remove(name2)
 
