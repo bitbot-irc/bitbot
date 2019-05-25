@@ -11,8 +11,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.cve", min_args=1)
     def cve(self, event):
         """
-        :help: Get the definition of a provided term from Urban Dictionary
-        :usage: <term>
+        :help: Get information for a CVE number
+        :usage: <CVE>
         """
         page = utils.http.request(URL_CVE % event["args"].upper(), json=True)
 
