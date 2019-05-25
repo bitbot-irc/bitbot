@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on config
+
 import re, traceback
 from src import ModuleManager, utils
 

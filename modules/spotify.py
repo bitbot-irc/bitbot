@@ -1,3 +1,4 @@
+#--depends-on commands
 #--require-config spotify-client-id
 #--require-config spotify-client-secret
 

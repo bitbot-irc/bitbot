@@ -1,3 +1,7 @@
+#--depends-on commands
+#--depends-on config
+#--depends-on permissions
+
 import time
 from src import EventManager, ModuleManager, utils
 

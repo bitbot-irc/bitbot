@@ -1,3 +1,8 @@
+#--depends-on channel_access
+#--depends-on commands
+#--depends-on config
+#--depends-on permissions
+
 from src import ModuleManager, utils
 
 @utils.export("channelset", {"setting": "automode",

@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import random, time
 from src import ModuleManager, utils
 

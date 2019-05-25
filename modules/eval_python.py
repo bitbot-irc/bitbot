@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import html, json, socket
 from src import ModuleManager, utils
 

@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import random
 from src import ModuleManager, utils
 

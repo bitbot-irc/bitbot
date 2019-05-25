@@ -1,3 +1,5 @@
+#--depends-on commands
+#--depends-on config
 #--require-config virustotal-api-key
 
 import re

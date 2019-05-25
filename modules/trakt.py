@@ -1,3 +1,5 @@
+#--depends-on commands
+#--depends-on config
 #--require-config trakt-api-key
 
 from src import ModuleManager, utils

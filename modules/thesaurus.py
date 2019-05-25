@@ -1,3 +1,4 @@
+#--depends-on commands
 #--require-config bighugethesaurus-api-key
 
 from src import ModuleManager, utils

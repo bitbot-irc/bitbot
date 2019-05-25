@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on permissions
+
 import datetime, decimal, functools, math, random, re, time
 from src import ModuleManager, utils
 

@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import socket
 from src import ModuleManager, utils
 

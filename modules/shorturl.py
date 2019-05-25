@@ -1,3 +1,4 @@
+#--depends-on commands
 #--require-config bitly-api-key
 
 import re

@@ -1,3 +1,6 @@
+#--depends-on config
+#--depends-on permissions
+
 import re, string
 from src import EventManager, ModuleManager, utils
 from . import outs

@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on config
+
 import hashlib, re, urllib.parse
 from src import EventManager, ModuleManager, utils
 

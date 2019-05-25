@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import re, socket
 from src import ModuleManager, utils
 

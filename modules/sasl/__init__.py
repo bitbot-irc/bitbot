@@ -1,3 +1,5 @@
+#--depends-on config
+
 import base64, hashlib, hmac, uuid
 from src import ModuleManager, utils
 from . import scram

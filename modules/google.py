@@ -1,3 +1,5 @@
+#--depends-on commands
+#--depends-on config
 #--require-config google-api-key
 #--require-config google-search-id
 

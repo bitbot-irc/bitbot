@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import json, re
 from src import ModuleManager, utils
 

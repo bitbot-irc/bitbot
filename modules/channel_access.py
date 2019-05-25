@@ -1,3 +1,6 @@
+#--depends-on check_mode
+#--depends-on commands
+
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):

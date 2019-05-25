@@ -1,3 +1,6 @@
+#--depends-on check_mode
+#--depends-on commands
+
 import time
 from src import ModuleManager, utils
 

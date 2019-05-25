@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import random, uuid
 from src import ModuleManager, utils
 

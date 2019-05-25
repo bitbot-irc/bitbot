@@ -1,3 +1,4 @@
+#--depends-on commands
 
 import glob, json, os, subprocess
 from src import IRCObject, ModuleManager, utils

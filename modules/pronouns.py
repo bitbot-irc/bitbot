@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on config
+
 from src import ModuleManager, utils
 
 @utils.export("set", {"setting": "pronouns", "help": "Set your pronouns",

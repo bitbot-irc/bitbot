@@ -1,3 +1,8 @@
+#--depends-on channel_access
+#--depends-on check_mode
+#--depends-on commands
+#--depends-on config
+
 from src import ModuleManager, utils
 
 class UserNotFoundException(Exception):

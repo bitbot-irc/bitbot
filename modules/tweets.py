@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on config
+
 #--require-config twitter-api-key
 #--require-config twitter-api-secret
 #--require-config twitter-access-token

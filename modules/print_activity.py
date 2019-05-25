@@ -1,3 +1,6 @@
+#--depends-on config
+#--depends-on format_activity
+
 import datetime
 from src import EventManager, ModuleManager, utils
 

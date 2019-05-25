@@ -1,3 +1,6 @@
+#--depends-on config
+#--depends-on format_activity
+
 import datetime, os.path
 from src import ModuleManager, utils
 

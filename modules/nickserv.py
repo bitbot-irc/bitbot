@@ -1,3 +1,5 @@
+#--depends-on config
+
 import base64
 from src import EventManager, ModuleManager, utils
 

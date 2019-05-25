@@ -1,3 +1,5 @@
+#--depends-on config
+
 from src import ModuleManager, utils
 
 @utils.export("channelset", {"setting": "greeting",

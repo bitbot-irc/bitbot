@@ -1,3 +1,7 @@
+#--depends-on channel_access
+#--depends-on commands
+#--depends-on permissions
+
 import enum
 from src import ModuleManager, utils
 

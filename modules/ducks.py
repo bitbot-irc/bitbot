@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on config
+
 import random
 from src import EventManager, ModuleManager, utils
 

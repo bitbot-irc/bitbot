@@ -1,3 +1,5 @@
+#--depends-on config
+
 from src import ModuleManager, utils
 
 URL_OPENCAGE = "https://api.opencagedata.com/geocode/v1/json"

@@ -1,3 +1,4 @@
+#--depends-on commands
 #--require-config soundcloud-api-key
 
 import json, re, time

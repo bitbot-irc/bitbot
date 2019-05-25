@@ -1,3 +1,5 @@
+#--depends-on commands
+#--depends-on config
 #--require-config imgur-api-key
 
 import re, datetime

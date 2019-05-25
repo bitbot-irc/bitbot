@@ -1,3 +1,10 @@
+#--depends-on channel_access
+#--depends-on check_mode
+#--depends-on commands
+#--depends-on config
+#--depends-on permissions
+#--depends-on rest_api
+
 import datetime, itertools, json, math, re, urllib.parse
 from src import EventManager, ModuleManager, utils
 

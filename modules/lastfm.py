@@ -1,3 +1,5 @@
+#--depends-on commands
+#--depends-on config
 #--require-config lastfm-api-key
 
 from datetime import datetime, timezone

@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on config
+
 import base64, os
 import scrypt
 from src import ModuleManager, utils

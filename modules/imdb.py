@@ -1,3 +1,4 @@
+#--depends-on commands
 #--require-config omdbapi-api-key
 
 import json

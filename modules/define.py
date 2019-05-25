@@ -1,3 +1,4 @@
+#--depends-on commands
 #--require-config wordnik-api-key
 
 import time

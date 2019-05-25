@@ -1,3 +1,5 @@
+#--depends-on commands
+#--depends-on location
 #--require-config openweathermap-api-key
 
 from src import ModuleManager, utils

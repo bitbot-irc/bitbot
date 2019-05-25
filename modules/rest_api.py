@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on config
+#--depends-on permissions
 #--require-config tls-api-key
 #--require-config tls-api-certificate
 

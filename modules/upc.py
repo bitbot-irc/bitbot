@@ -1,3 +1,5 @@
+#--depends-on commands
+
 from src import ModuleManager, utils
 
 UPCITEMDB_URL = "https://api.upcitemdb.com/prod/trial/lookup"

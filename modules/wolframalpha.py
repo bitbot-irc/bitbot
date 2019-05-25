@@ -1,4 +1,6 @@
+#--depends-on commands
 #--require-config wolframalpha-api-key
+
 import json
 from src import ModuleManager, utils
 
