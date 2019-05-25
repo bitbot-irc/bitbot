@@ -96,6 +96,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Module '%s' isn't disabled" % name)
 
         blacklist.remove(name)
+        self.bot.set_setting("module-blacklist", blacklist)
         event["stdout"].write("Module '%s' has been enabled and can now "
             "be loaded" % name)
 
