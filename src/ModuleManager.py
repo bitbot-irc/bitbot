@@ -256,9 +256,9 @@ class ModuleManager(object):
                 for name1, dep1 in definition_dependencies.items():
                     for name2, dep2 in definition_dependencies.items():
                         if name1 in dep2 and name2 in dep1:
-                            self.log.warn("Cicular dependencies: %s<->%s",
+                            self.log.warn("Circular dependencies: %s<->%s",
                                 [name1, name2])
-                            # snap a cicular dependence
+                            # snap a circular dependence
                             dep2.remove(name1)
                             dep1.remove(name2)
 
