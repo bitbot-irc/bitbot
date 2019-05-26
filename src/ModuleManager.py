@@ -253,14 +253,14 @@ class ModuleManager(object):
                         deps.remove(name)
 
             if not changed:
-                for name1, dep1 in definition_dependencies.items():
-                    for name2, dep2 in definition_dependencies.items():
-                        if name1 in dep2 and name2 in dep1:
+                for name, deps in definition_dependencies.items():
+                    for dep_name in deps:
+                        if name in definition_dependencies[dep_name]:
                             self.log.warn("Circular dependencies: %s<->%s",
-                                [name1, name2])
+                                [name, dep_name])
                             # snap a circular dependence
-                            dep2.remove(name1)
-                            dep1.remove(name2)
+                            deps.remove(dep_name)
+                            definition_dependencies[dep_name].remove(name)
 
         return [definition_names[name] for name in definitions_ordered]
 
