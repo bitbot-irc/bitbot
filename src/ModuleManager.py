@@ -19,8 +19,10 @@ class ModuleNotLoadedWarning(ModuleWarning):
     pass
 
 class ModuleDependencyNotFulfilled(ModuleException):
-    def __init__(self, message, dependency):
-        ModuleException.__init__(self, message)
+    def __init__(self, module, dependency):
+        ModuleException.__init__(self, "Dependency for %s not fulfilled: %s"
+            % (module, dependency))
+        self.module = module
         self.dependency = dependency
 
 class ModuleType(enum.Enum):
@@ -155,9 +157,8 @@ class ModuleManager(object):
             dependencies = definition.get_dependencies()
             for dependency in dependencies:
                 if not dependency in self.modules:
-                    raise ModuleDependencyNotFulfilled(
-                        "Dependency for %s not fulfilled: %s" %
-                        (definition.name, dependency) ,dependency)
+                    raise ModuleDependencyNotFulfilled(definition.name,
+                        dependency)
 
         for hashflag, value in definition.hashflags:
             if hashflag == "ignore":
@@ -235,6 +236,12 @@ class ModuleManager(object):
         definition_dependencies = {
             d.name: d.get_dependencies() for d in definitions}
 
+        for name, deps in definition_dependencies.items():
+            for dep in deps:
+                if not dep in definition_dependencies:
+                    # unknown dependency!
+                    raise ModuleDependencyNotFulfilled(name, dep)
+
         while definition_dependencies:
             changed = False
 
@@ -256,7 +263,8 @@ class ModuleManager(object):
                 for name, deps in definition_dependencies.items():
                     for dep_name in deps:
                         if name in definition_dependencies[dep_name]:
-                            self.log.warn("Circular dependencies: %s<->%s",
+                            self.log.warn(
+                                "Circular dependencies detected: %s<->%s",
                                 [name, dep_name])
                             # snap a circular dependence
                             deps.remove(dep_name)
