@@ -1,3 +1,11 @@
+# TBD - BitBot v1.8.0
+
+Added:
+- Module dependency system
+
+Fixed
+- GitHug highlight prevention - don't detect highlights mid-word
+
 # 2019-05-24 - BitBot v1.7.1
 
 Fixed:
