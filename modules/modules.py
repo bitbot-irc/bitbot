@@ -72,8 +72,6 @@ class Module(ModuleManager.BaseModule):
                 continue
             except:
                 fail.append(name)
-                continue
-            success.append(name)
         load_success, load_fail = self.bot.load_modules(safe=True)
         success.extend(load_success)
         fail.extend(load_fail)
