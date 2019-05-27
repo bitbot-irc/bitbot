@@ -48,7 +48,7 @@ class Module(ModuleManager.BaseModule):
     def _reload(self, name):
         self.bot.modules.unload_module(name)
         definition = self.bot.modules.find_module(name)
-        self.bot.modules.load_module(bot, definition)
+        self.bot.modules.load_module(self.bot, definition)
     @utils.hook("received.command.reloadmodule", min_args=1)
     def reload(self, event):
         """
