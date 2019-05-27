@@ -45,6 +45,10 @@ class Module(ModuleManager.BaseModule):
         self._catch(name, lambda: self.bot.modules.unload_module(name))
         event["stdout"].write("Unloaded '%s'" % name)
 
+    def _reload(self, name):
+        self.bot.modules.unload_module(name)
+        definition = self.bot.modules.find_module(name)
+        self.bot.modules.load_module(bot, definition)
     @utils.hook("received.command.reloadmodule", min_args=1)
     def reload(self, event):
         """
