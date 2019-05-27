@@ -250,6 +250,7 @@ class ModuleManager(object):
             to_remove = []
             for name, dependencies in definition_dependencies.items():
                 if not dependencies:
+                    changed = True
                     # pop things with no unfufilled dependencies
                     to_remove.append(name)
             for name in to_remove:
@@ -257,8 +258,8 @@ class ModuleManager(object):
                 del definition_dependencies[name]
                 for deps in definition_dependencies.values():
                     if name in deps:
-                        # fulfill dependencies for things we just popped
                         changed = True
+                        # fulfill dependencies for things we just popped
                         deps.remove(name)
 
             if not changed:
