@@ -58,6 +58,7 @@ class Socket(IRCObject.Object):
             bindhost = (self._bindhost, 0)
         self._socket = socket.create_connection((self._hostname, self._port),
             5.0, bindhost)
+        self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
         if self._tls:
             self._tls_wrap()
