@@ -24,6 +24,8 @@ class ModuleDependencyNotFulfilled(ModuleException):
             % (module, dependency))
         self.module = module
         self.dependency = dependency
+class ModuleCircularDependency(ModuleException):
+    pass
 
 class ModuleType(enum.Enum):
     FILE = 0
@@ -266,9 +268,12 @@ class ModuleManager(object):
                             self.log.warn(
                                 "Circular dependencies detected: %s<->%s",
                                 [name, dep_name])
+                            changed = True
                             # snap a circular dependence
                             deps.remove(dep_name)
                             definition_dependencies[dep_name].remove(name)
+            if not changed:
+                raise ModuleCircularDependency()
 
         return [definition_names[name] for name in definitions_ordered]
 
