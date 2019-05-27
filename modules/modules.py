@@ -26,8 +26,9 @@ class Module(ModuleManager.BaseModule):
         name = event["args_split"][0].lower()
         if name in self.bot.modules.modules:
             raise utils.EventError("Module '%s' is already loaded" % name)
+        definition = self.bot.modules.find_module(name)
 
-        self._catch(name, lambda: self.bot.modules.load_module(self.bot, name))
+        self._catch(name, lambda: self.bot.modules.load_module(self.bot, definition))
         event["stdout"].write("Loaded '%s'" % name)
 
     @utils.hook("received.command.unloadmodule", min_args=1)
@@ -45,8 +46,9 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("Unloaded '%s'" % name)
 
     def _reload(self, name):
+        definition = self.bot.modules.find_module(name)
         self.bot.modules.unload_module(name)
-        self.bot.modules.load_module(self.bot, name)
+        self.bot.modules.load_module(self.bot, definition)
 
     @utils.hook("received.command.reloadmodule", min_args=1)
     def reload(self, event):
