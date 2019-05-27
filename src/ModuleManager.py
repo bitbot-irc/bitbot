@@ -127,6 +127,8 @@ class ModuleManager(object):
         if os.path.isdir(path):
             type = ModuleType.DIRECTORY
             path = os.path.join(path, "__init__.py")
+        else:
+            path = "%s.py" % path
 
         return self.define_module(type, path)
 
