@@ -45,11 +45,6 @@ class Module(ModuleManager.BaseModule):
         self._catch(name, lambda: self.bot.modules.unload_module(name))
         event["stdout"].write("Unloaded '%s'" % name)
 
-    def _reload(self, name):
-        definition = self.bot.modules.find_module(name)
-        self.bot.modules.unload_module(name)
-        self.bot.modules.load_module(self.bot, definition)
-
     @utils.hook("received.command.reloadmodule", min_args=1)
     def reload(self, event):
         """
@@ -68,25 +63,28 @@ class Module(ModuleManager.BaseModule):
         :help: Reload all modules
         :permission: reload-all-modules
         """
-        reloaded = []
-        failed = []
+        success = []
+        fail = []
         for name in list(self.bot.modules.modules.keys()):
             try:
-                self._reload(name)
+                self.bot.modules.unload_module(name)
             except ModuleManager.ModuleWarning:
                 continue
             except:
-                failed.append(name)
+                fail.append(name)
                 continue
-            reloaded.append(name)
+            success.append(name)
+        load_success, load_fail = self.bot.load_modules(safe=True)
+        success.extend(load_success)
+        fail.extend(load_fail)
 
-        if reloaded and failed:
+        if success and fail:
             event["stdout"].write("Reloaded %d modules, %d failed" % (
-                len(reloaded), len(failed)))
-        elif failed:
+                len(success), len(fail)))
+        elif fail:
             event["stdout"].write("Failed to reload all modules")
         else:
-            event["stdout"].write("Reloaded %d modules" % len(reloaded))
+            event["stdout"].write("Reloaded %d modules" % len(success))
 
     @utils.hook("received.command.enablemodule", min_args=1)
     def enable(self, event):

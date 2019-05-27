@@ -42,9 +42,6 @@ class Module(ModuleManager.BaseModule):
         self.bot.config.load()
         self.bot.log.info("Reloaded config file", [])
 
-    def _reload(self, name):
-        self.bot.modules.unload_module(name)
-        self.bot.modules.load_module(self.bot, name)
     def _reload_modules(self):
         self.bot.log.info("Reloading modules", [])
 
