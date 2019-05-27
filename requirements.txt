@@ -3,4 +3,4 @@ netifaces
 requests
 scrypt
 suds-jurko
-twitter
+tweepy
