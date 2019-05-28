@@ -485,7 +485,8 @@ class Module(ModuleManager.BaseModule):
                 continue
 
             regex = re.compile(r"(.)\b(%s)(%s)" % (
-                user.nickname[0], user.nickname[1:]), re.I)
+                re.escape(user.nickname[0]), re.escape(user.nickname[1:])),
+                re.I)
             s = regex.sub("\\1\\2\u200c\\3", s)
 
         return s
