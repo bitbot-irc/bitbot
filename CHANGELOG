@@ -2,9 +2,12 @@
 
 Added:
 - Module dependency system
+- Enable TCP keepalives
 
 Fixed
 - GitHug highlight prevention - don't detect highlights mid-word
+- Use detected encoding per-URL (title.py)
+- !enablemodule actually removes module from blacklist setting
 
 # 2019-05-24 - BitBot v1.7.1
 
