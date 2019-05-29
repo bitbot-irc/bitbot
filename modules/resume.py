@@ -1,3 +1,5 @@
+#--depends-on server_time
+
 from src import ModuleManager, utils
 
 CAP = utils.irc.Capability(None, "draft/resume-0.4")
@@ -12,13 +14,13 @@ class Module(ModuleManager.BaseModule):
     def _del_token(self, server, new=False):
         server.del_setting(self._setting(new))
 
-    def _get_timestamp(self, server):
-        return server.get_setting("last-read", None)
 
     @utils.hook("new.server")
     def new_server(self, event):
-        resume_timestamp = self._get_timestamp(event["server"])
-        event["server"]._resume_timestamp = resume_timestamp
+        # we need to pull this before any data has been exchanged - to make sure
+        # it's not overwritten from the last connection
+        event["server"]._resume_timestamp = event["server"].get_setting(
+            "last-server-time", None)
 
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
