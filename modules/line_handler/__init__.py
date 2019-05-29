@@ -3,7 +3,6 @@ from src import EventManager, ModuleManager, utils
 from . import channel, core, ircv3, message, user
 
 LABELED_BATCH = {
-    "labeled-response": "label",
     "draft/labeled-response": "draft/label"
 }
 
