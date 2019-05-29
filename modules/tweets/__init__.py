@@ -1,3 +1,5 @@
+#--depends-on commands
+#--depends-on permissions
 #--require-config twitter-api-key
 #--require-config twitter-api-secret
 #--require-config twitter-access-token
@@ -34,6 +36,7 @@ class BitBotStreamListener(tweepy.StreamListener):
         for server, channel in follows:
             self.events.on("send.stdout").call(target=channel,
                 module_name="Tweets", server=server, message=tweet)
+
 @utils.export("channelset", {"setting": "auto-tweet",
     "help": "Enable/disable automatically getting tweet info",
     "validate": utils.bool_or_none, "example": "on"})
@@ -71,14 +74,49 @@ class Module(ModuleManager.BaseModule):
     def _start_stream(self):
         self._dispose_stream()
 
-        auth = self._get_auth()
-        self._stream = tweepy.Stream(auth=auth, listener=BitBotStreamListener)
-
         usernames = set([])
         for server_id, channel_name, value in _get_follows():
             usernames.add(value)
+        if not usernames:
+            return False
+
+        auth = self._get_auth()
+        self._stream = tweepy.Stream(auth=auth, listener=BitBotStreamListener)
 
         self._stream.filter(follow=list(usernames), is_async=True)
+        return True
+
+    @utils.hook("received.command.tfollow", min_args=2, channel_only=True)
+    def tfollow(self, event):
+        """
+        :help: Stream tweets from a given account to the current channel
+        :usage: add|remove @<username>
+        :permission: twitter-follow
+        """
+        username = event["args_split"][0]
+        if username.startswith("@"):
+            username = username[1:]
+
+        subcommand = event["args_split"][0].lower()
+        follows = event["target"].get_setting("twitter-follow", [])
+        action = None
+
+        if subcommand == "add":
+            action = "followed"
+            if username in follows:
+                raise utils.EventError("Already following %s" % username)
+            follows.append(username)
+        elif subcommand == "remove":
+            action = "unfollowed"
+            if not username in follows:
+                raise utils.EventError("Not following %s" % username)
+            follows.remove(username)
+        else:
+            raise utils.EventError("Unknown subcommand")
+
+        event["target"].set_setting("twitter-follow", follows)
+        self._start_stream()
+        event["stdout"].write("%s @%s" % (action.title(), username))
 
     @utils.hook("received.command.tw", alias_of="tweet")
     @utils.hook("received.command.tweet")
