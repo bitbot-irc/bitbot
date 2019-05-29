@@ -11,6 +11,7 @@ def handle_001(event):
     event["server"].name = event["prefix"].hostmask
     event["server"].set_own_nickname(event["args"][0])
     event["server"].send_whois(event["server"].nickname)
+    event["server"].connected = True
 
 def handle_005(events, event):
     isupport_list = event["args"][1:-1]

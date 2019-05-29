@@ -1,4 +1,4 @@
-import signal
+import signal, sys
 from src import Config, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
@@ -19,11 +19,17 @@ class Module(ModuleManager.BaseModule):
 
         self.events.on("signal.interrupt").call(signum=signum)
 
+        written = False
         for server in self.bot.servers.values():
-            server.socket.clear_send_buffer()
-            line = server.send_quit("Shutting down")
-            server.send_enabled = False
-            line.on_send(self._make_hook(server))
+            if server.connected:
+                server.socket.clear_send_buffer()
+                line = server.send_quit("Shutting down")
+                server.send_enabled = False
+                line.on_send(self._make_hook(server))
+                written = True
+
+        if not written:
+            sys.exit()
 
     def _make_hook(self, server):
         return lambda: self.bot.disconnect(server)
