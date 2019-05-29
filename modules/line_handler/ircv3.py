@@ -10,7 +10,6 @@ CAPABILITIES = [
     utils.irc.Capability("away-notify"),
     utils.irc.Capability("userhost-in-names"),
     utils.irc.Capability("message-tags", "draft/message-tags-0.2"),
-    utils.irc.Capability("server-time"),
     utils.irc.Capability("cap-notify"),
     utils.irc.Capability("batch"),
     utils.irc.Capability("echo-message"),
