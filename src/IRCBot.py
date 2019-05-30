@@ -237,7 +237,13 @@ class Bot(object):
                         for piece in data:
                             sock.parse_data(piece)
                     elif event & select.EPOLLOUT:
-                        sock._send()
+                        try:
+                            sock._send()
+                        except:
+                            self.log.error("Failed to write to %s",
+                                [str(sock)])
+                            raise
+
                         if sock.fileno() in self.servers:
                             self.register_read(sock)
                     elif event & select.EPULLHUP:
