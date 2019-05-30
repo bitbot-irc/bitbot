@@ -1,7 +1,7 @@
 #--depends-on commands
 #--depends-on config
 
-import base64, os
+import base64, binascii, os
 import scrypt
 from src import ModuleManager, utils
 
@@ -52,12 +52,12 @@ class Module(ModuleManager.BaseModule):
         return hash, salt
 
     def _random_string(self, n):
-        return base64.b64encode(os.urandom(n)).decode("utf8")
 
     def _make_salt(self):
-        return self._random_string(64)
+        return base64.b64encode(os.urandom(64)).decode("utf8")
+
     def _random_password(self):
-        return self._random_string(32)
+        return binascii.hexlify(os.urandom(32)).decode("utf8")
 
     def _make_hash(self, password, salt=None):
         salt = salt or self._make_salt()
