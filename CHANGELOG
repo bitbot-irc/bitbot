@@ -3,6 +3,7 @@
 Added:
 - Module dependency system
 - Enable TCP keepalives
+- `draft/label` tracking on every sent line when CAPs permit
 
 Changed:
 - Use last `server-time` for `RESUME` - not last .recv() time
