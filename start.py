@@ -77,7 +77,8 @@ bot = IRCBot.Bot(directory, args, cache, config, database, events,
     exports, log, modules, timers)
 
 if args.module:
-    module = modules.load_module(bot, args.module)
+    definition = modules.find_module(args.module)
+    module = modules.load_module(bot, definition)
     module.module.command_line(args.module_args)
     sys.exit(0)
 
