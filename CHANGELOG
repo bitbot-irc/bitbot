@@ -4,6 +4,10 @@ Added:
 - Module dependency system
 - Enable TCP keepalives
 
+Changed:
+- Use last `server-time` for `RESUME` - not last .recv() time
+- IRCv3: `draft/labeled-response` -> `draft/labeled-response-0.2`
+
 Fixed
 - GitHug highlight prevention - don't detect highlights mid-word
 - Pass already-decoded data in to BeautifulSoup
