@@ -40,7 +40,7 @@ class Hostmask(object):
 class ParsedLine(object):
     def __init__(self, command: str, args: typing.List[str],
             prefix: Hostmask=None,
-            tags: typing.Dict[str, str]={}):
+            tags: typing.Dict[str, str]=None):
         self.command = command
         self._args = args
         self.args = IRCArgs(args)
