@@ -13,7 +13,6 @@ CAPABILITIES = [
     utils.irc.Capability("cap-notify"),
     utils.irc.Capability("batch"),
     utils.irc.Capability("echo-message"),
-    utils.irc.Capability(None, "draft/labeled-response-0.2"),
     utils.irc.Capability(None, "draft/rename"),
     utils.irc.Capability(None, "draft/setname")
 ]

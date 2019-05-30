@@ -2,10 +2,6 @@ import enum
 from src import EventManager, ModuleManager, utils
 from . import channel, core, ircv3, message, user
 
-LABELED_BATCH = {
-    "draft/labeled-response": "draft/label"
-}
-
 class Module(ModuleManager.BaseModule):
     def _handle(self, server, line):
         hooks = self.events.on("raw.received").on(line.command).get_hooks()
@@ -186,20 +182,20 @@ class Module(ModuleManager.BaseModule):
 
         if modifier == "+":
             batch_type = event["args"][1]
-            event["server"].batches[identifier] = utils.irc.IRCRecvBatch(
-                identifier, batch_type, event["tags"])
+            batch = utils.irc.IRCRecvBatch(identifier, batch_type,
+                event["tags"])
+            event["server"].batches[identifier] = batch
+
+            self.events.on("received.batch.start").call(batch=batch,
+                server=event["server"])
         else:
             batch = event["server"].batches[identifier]
             del event["server"].batches[identifier]
 
-            add_tags = {}
-            if batch.type in LABELED_BATCH.keys():
-                tag_name = LABELED_BATCH[batch.type]
-                add_tags[tag_name] = batch.tags[tag_name]
+            self.events.on("received.batch.end").call(batch=batch,
+                server=event["server"])
 
             for line in batch.lines:
-                if add_tags:
-                    line.tags.update(add_tags)
                 self._handle(event["server"], line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed

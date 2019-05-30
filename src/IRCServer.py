@@ -248,6 +248,8 @@ class Server(IRCObject.Object):
 
         self.events.on("preprocess.send").on(line_parsed.command
             ).call_unsafe(server=self, line=line_parsed)
+        self.events.on("preprocess.send").call_unsafe(server=self,
+            line=line_parsed)
 
         line = line_parsed.format()
         line_obj = IRCLine.SentLine(datetime.datetime.utcnow(), self.hostmask(),
@@ -283,9 +285,11 @@ class Server(IRCObject.Object):
     def send_authenticate(self, text: str) -> IRCLine.SentLine:
         return self.send(utils.irc.protocol.authenticate(text))
     def has_capability(self, capability: utils.irc.Capability) -> bool:
-        return bool(capability.available(self.agreed_capabilities))
+        return bool(self.available_capability(capability))
     def has_capability_str(self, capability: str) -> bool:
         return capability in self.agreed_capabilities
+    def available_capability(self, capability: utils.irc.Capability) -> bool:
+        return capability.available(self.agreed_capabilities)
 
     def waiting_for_capabilities(self) -> bool:
         return bool(len(self._capabilities_waiting))
