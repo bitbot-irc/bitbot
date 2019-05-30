@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse, faulthandler, os, sys, time
+import argparse, faulthandler, os, platform, sys, time
 from src import Cache, Config, Database, EventManager, Exports, IRCBot
 from src import Logging, ModuleManager, Timers, utils
 
@@ -48,6 +48,10 @@ if not log_level:
     log_level = "debug" if args.verbose else "info"
 
 log = Logging.Log(not args.no_logging, log_level, args.log_dir)
+
+log.info("Starting BitBot %s (Python v%s)",
+    [IRCBot.VERSION, platform.python_version()])
+
 database = Database.Database(log, args.database)
 
 if args.add_server:
