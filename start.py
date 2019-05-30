@@ -49,6 +49,10 @@ if not log_level:
 
 log = Logging.Log(not args.no_logging, log_level, args.log_dir)
 
+if sys.version_info < (3, 6):
+    sys.stderr.write("BitBot requires python 3.6.0 or later\n")
+    sys.exit(1)
+
 log.info("Starting BitBot %s (Python v%s)",
     [IRCBot.VERSION, platform.python_version()])
 
