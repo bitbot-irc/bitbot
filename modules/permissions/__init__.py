@@ -51,8 +51,6 @@ class Module(ModuleManager.BaseModule):
             (None, None))
         return hash, salt
 
-    def _random_string(self, n):
-
     def _make_salt(self):
         return base64.b64encode(os.urandom(64)).decode("utf8")
 
