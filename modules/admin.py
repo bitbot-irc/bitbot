@@ -81,10 +81,11 @@ class Module(ModuleManager.BaseModule):
             id = self.bot.database.servers.get_by_alias(alias)
             if id == None:
                 raise utils.EventError("Unknown server alias")
+
         server = self.bot.get_server_by_id(id)
         server.disconnect()
         self.bot.disconnect(server)
-        event["stdout"].write("Disconnected from %s" % alias)
+        event["stdout"].write("Disconnected from %s" % str(server))
 
     @utils.hook("received.command.shutdown")
     def shutdown(self, event):
