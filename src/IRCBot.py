@@ -268,7 +268,8 @@ class Bot(object):
                         self.log.warn(
                             "Disconnected from %s, reconnecting in %d seconds",
                             [str(server), reconnect_delay])
-                elif (server.socket.waiting_send() and
+                elif server.socket.waiting_immediate_send() or (
+                        server.socket.waiting_send() and
                         server.socket.throttle_done()):
                     self.register_both(server)
 

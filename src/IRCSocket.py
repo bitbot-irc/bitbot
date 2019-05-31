@@ -153,6 +153,8 @@ class Socket(IRCObject.Object):
 
     def waiting_send(self) -> bool:
         return bool(len(self._write_buffer)) or bool(len(self._queued_lines))
+    def waiting_immediate_send(self) -> bool:
+        return bool(len(self._write_buffer))
 
     def throttle_done(self) -> bool:
         return self.send_throttle_timeout() == 0
