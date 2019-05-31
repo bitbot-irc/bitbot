@@ -2,7 +2,7 @@
 
 from src import ModuleManager, utils
 
-CAP = utils.irc.Capability(None, "draft/resume-0.4")
+CAP = utils.irc.Capability(None, "draft/resume-0.5")
 
 class Module(ModuleManager.BaseModule):
     def _setting(self, new):
