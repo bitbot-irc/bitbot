@@ -14,6 +14,7 @@ Fixed
 - GitHug highlight prevention - don't detect highlights mid-word
 - Pass already-decoded data in to BeautifulSoup
 - !enablemodule actually removes module from blacklist setting
+- Only enact write throttling when immediate-write-buffer is empty
 
 # 2019-05-24 - BitBot v1.7.1
 
