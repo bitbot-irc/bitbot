@@ -7,7 +7,7 @@ def ping(event):
     event["server"].send_pong(event["args"][0])
 
 def handle_001(event):
-    event["server"].socket.set_write_throttling(True)
+    event["server"].socket.enable_write_throttle()
     event["server"].name = event["prefix"].hostmask
     event["server"].set_own_nickname(event["args"][0])
     event["server"].send_whois(event["server"].nickname)

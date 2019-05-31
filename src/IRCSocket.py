@@ -27,12 +27,14 @@ class Socket(IRCObject.Object):
         self._write_buffer = b""
         self._queued_lines = [] # type: typing.List[IRCLine.SentLine]
         self._buffered_lines = [] # type: typing.List[IRCLine.SentLine]
-        self._write_throttling = False
         self._read_buffer = b""
         self._recent_sends = [] # type: typing.List[float]
         self.cached_fileno = None # type: typing.Optional[int]
         self.bytes_written = 0
         self.bytes_read = 0
+
+        self._write_throttling = False
+        self._throttle_when_empty = False
 
         self.last_read = time.monotonic()
         self.last_send = None # type: typing.Optional[float]
@@ -140,6 +142,9 @@ class Socket(IRCObject.Object):
 
         self._write_buffer = self._write_buffer[bytes_written_i:]
 
+        if not self._write_buffer and self._throttle_when_empty:
+            self._write_throttling = True
+
         self.bytes_written += bytes_written_i
 
         now = time.monotonic()
@@ -185,5 +190,5 @@ class Socket(IRCObject.Object):
         time_left = time_left-time.monotonic()
         return time_left
 
-    def set_write_throttling(self, is_on: bool):
-        self._write_throttling = is_on
+    def enable_write_throttle(self):
+        self._throttle_when_empty = True
