@@ -14,6 +14,12 @@ api-port                 =
 # the default channel BitBot automatically joins
 bot-channel              =
 
+# module blacklist and whitelist. comma-separated. leave both empty to load all
+# modules, leave whitelist empty to load all but blacklisted modules, populate 
+# whitelist to not load all modules by default.
+module-blacklist         =
+module-whitelist         =
+
 # https://openweathermap.org/api
 openweathermap-api-key   =
 
