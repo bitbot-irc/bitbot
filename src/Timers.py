@@ -83,7 +83,8 @@ class Timers(object):
             self.timers.append(timer)
 
     def next(self) -> typing.Optional[float]:
-        times = filter(None, [timer.time_left() for timer in self.get_timers()])
+        times = list(filter(None,
+            [timer.time_left() for timer in self.get_timers()]))
         if not times:
             return None
         return max(min(times), 0)
