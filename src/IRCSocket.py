@@ -124,6 +124,12 @@ class Socket(IRCObject.Object):
 
     def _send(self) -> typing.List[IRCLine.ParsedLine]:
         sent_lines = []
+
+        if not self._write_buffer and self._throttle_when_empty:
+            self._throttle_when_empty = False
+            self._write_throttling = True
+            self._recent_sends.clear()
+
         throttle_space = self.throttle_space()
         if throttle_space:
             to_buffer = self._queued_lines[:throttle_space]
@@ -141,9 +147,6 @@ class Socket(IRCObject.Object):
             self._buffered_lines.pop(0).sent()
 
         self._write_buffer = self._write_buffer[bytes_written_i:]
-
-        if not self._write_buffer and self._throttle_when_empty:
-            self._write_throttling = True
 
         self.bytes_written += bytes_written_i
 
