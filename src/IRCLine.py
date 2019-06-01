@@ -47,6 +47,11 @@ class ParsedLine(object):
         self.prefix = prefix
         self.tags = {} if tags == None else tags
 
+    def __repr__(self):
+        return "ParsedLine(%s)" % self.__str__()
+    def __str__(self):
+        return self.format()
+
     def _tag_str(self, tags: typing.Dict[str, str]) -> str:
         tag_pieces = []
         for tag, value in tags.items():
