@@ -288,7 +288,8 @@ class Server(IRCObject.Object):
         return bool(self.available_capability(capability))
     def has_capability_str(self, capability: str) -> bool:
         return capability in self.agreed_capabilities
-    def available_capability(self, capability: utils.irc.Capability) -> str:
+    def available_capability(self, capability: utils.irc.Capability
+            ) -> typing.Optional[str]:
         return capability.available(self.agreed_capabilities)
 
     def waiting_for_capabilities(self) -> bool:

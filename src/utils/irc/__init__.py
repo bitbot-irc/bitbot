@@ -270,10 +270,12 @@ class IRCBatch(object):
         return self._lines
 
 class Capability(object):
-    def __init__(self, name, draft_name=None):
+    def __init__(self, name: typing.Optional[str], draft_name: str=None):
         self._caps = set([name, draft_name])
-        self._on_ack_callbacks = []
-    def available(self, capabilities: typing.Iterable[str]) -> str:
+        self._on_ack_callbacks = [
+            ] # type: typing.List[typing.Callable[[], None]]
+    def available(self, capabilities: typing.Iterable[str]
+            ) -> typing.Optional[str]:
         match = list(set(capabilities)&self._caps)
         return match[0] if match else None
 
@@ -289,7 +291,7 @@ class Capability(object):
         pass
 
 class MessageTag(object):
-    def __init__(self, name: str, draft_name: str=None):
+    def __init__(self, name: typing.Optional[str], draft_name: str=None):
         self._names = set([name, draft_name])
     def get_value(self, tags: typing.Dict[str, str]) -> typing.Optional[str]:
         key = list(set(tags.keys())&self._names)
