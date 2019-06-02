@@ -4,7 +4,7 @@ Added:
 - Module dependency system
 - Enable TCP keepalives
 - IRCv3: `draft/label` tracking on every sent line when CAPs permit
-- Enforce version 3.6.0 or later
+- Enforce Python version 3.6.0 or later
 - 'module-whitelist'/'module-blacklist' in `bot.conf`
 
 Changed:
