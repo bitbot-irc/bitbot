@@ -263,17 +263,11 @@ class IRCBatch(object):
         self.id = identifier
         self.type = batch_type
         self.tags = tags
-        self.lines = [] # type: typing.List[IRCLine.ParsedLine]
-class IRCRecvBatch(IRCBatch):
-    pass
-class IRCSendBatch(IRCBatch):
-    def _add_line(self, line: IRCLine.ParsedLine):
-        line.tags["batch"] = self.id
-        self.lines.append(line)
-    def message(self, target: str, message: str, tags: dict={}):
-        self._add_line(utils.irc.protocol.message(target, message, tags))
-    def notice(self, target: str, message: str, tags: dict={}):
-        self._add_line(utils.irc.protocol.notice(target, message, tags))
+        self._lines = [] # type: typing.List[IRCLine.ParsedLine]
+    def add_line(self, line: IRCLine.ParsedLine):
+        self._lines.append(line)
+    def get_lines(self) -> typing.List[IRCLine.ParsedLine]:
+        return self._lines
 
 class Capability(object):
     def __init__(self, name, draft_name=None):

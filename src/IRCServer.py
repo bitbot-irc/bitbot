@@ -31,7 +31,7 @@ class Server(IRCObject.Object):
         self._capabilities_waiting = set([]) # type: typing.Set[str]
         self.agreed_capabilities = set([]) # type: typing.Set[str]
         self.server_capabilities = {} # type: typing.Dict[str, str]
-        self.batches = {} # type: typing.Dict[str, IRCLine.ParsedLine]
+        self.batches = {} # type: typing.Dict[str, utils.irc.IRCBatch]
         self.cap_started = False
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
@@ -362,15 +362,3 @@ class Server(IRCObject.Object):
     def send_whox(self, mask: str, filter: str, fields: str, label: str=None
             ) -> IRCLine.SentLine:
         return self.send(utils.irc.protocol.whox(mask, filter, fields, label))
-
-    def make_batch(self, identifier: str, batch_type: str,
-            tags: typing.Dict[str, str]={}) -> utils.irc.IRCSendBatch:
-        return utils.irc.IRCSendBatch(identifier, batch_type, tags)
-    def send_batch(self, batch: utils.irc.IRCSendBatch) -> IRCLine.SentLine:
-        self.send(utils.irc.protocol.batch_start(batch.id, batch.type,
-            batch.tags))
-
-        for line in batch.lines:
-            self.send(line)
-
-        return self.send(utils.irc.protocol.batch_end(batch.id))

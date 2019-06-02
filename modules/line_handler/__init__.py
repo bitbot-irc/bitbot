@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
     def handle_raw(self, event):
         if ("batch" in event["line"].tags and
                 event["line"].tags["batch"] in event["server"].batches):
-            event["server"].batches[event["line"].tags["batch"]].lines.append(
+            event["server"].batches[event["line"].tags["batch"]].add_line(
                 event["line"])
         else:
             self._handle(event["server"], event["line"])
@@ -182,8 +182,7 @@ class Module(ModuleManager.BaseModule):
 
         if modifier == "+":
             batch_type = event["args"][1]
-            batch = utils.irc.IRCRecvBatch(identifier, batch_type,
-                event["tags"])
+            batch = utils.irc.IRCBatch(identifier, batch_type, event["tags"])
             event["server"].batches[identifier] = batch
 
             self.events.on("received.batch.start").call(batch=batch,
