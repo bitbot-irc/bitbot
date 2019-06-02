@@ -16,6 +16,7 @@ Fixed
 - Pass already-decoded data in to BeautifulSoup
 - !enablemodule actually removes module from blacklist setting
 - Only enact write throttling when immediate-write-buffer is empty
+- Non-throttled lines no longer delay throttled lines
 
 # 2019-05-24 - BitBot v1.7.1
 
