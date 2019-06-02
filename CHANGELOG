@@ -3,12 +3,12 @@
 Added:
 - Module dependency system
 - Enable TCP keepalives
-- `draft/label` tracking on every sent line when CAPs permit
+- IRCv3: `draft/label` tracking on every sent line when CAPs permit
 - Enforce version 3.6.0 or later
 - 'module-whitelist'/'module-blacklist' in `bot.conf`
 
 Changed:
-- Use last `server-time` for `RESUME` - not last .recv() time
+- IRCv3: Use last `server-time` for `RESUME` - not last .recv() time
 - IRCv3: `draft/labeled-response` -> `draft/labeled-response-0.2`
 - IRCv3: Prune already-seen messages in `chathistory` batches
 
