@@ -182,7 +182,10 @@ class Module(ModuleManager.BaseModule):
 
         if modifier == "+":
             batch_type = event["args"][1]
-            batch = utils.irc.IRCBatch(identifier, batch_type, event["tags"])
+            args = event["args"][2:]
+
+            batch = utils.irc.IRCBatch(identifier, batch_type, args,
+                event["tags"])
             event["server"].batches[identifier] = batch
 
             self.events.on("received.batch.start").call(batch=batch,
@@ -191,10 +194,17 @@ class Module(ModuleManager.BaseModule):
             batch = event["server"].batches[identifier]
             del event["server"].batches[identifier]
 
-            self.events.on("received.batch.end").call(batch=batch,
+            lines = batch.get_lines()
+
+            results = self.events.on("received.batch.end").call(batch=batch,
                 server=event["server"])
 
-            for line in batch.lines:
+            for result in results:
+                if not result == None:
+                    lines = result
+                    break
+
+            for line in lines:
                 self._handle(event["server"], line)
 
     # IRCv3 CHGHOST, a user's username and/or hostname has changed

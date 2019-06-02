@@ -258,10 +258,11 @@ def parse_ctcp(s: str) -> typing.Optional[CTCPMessage]:
     return None
 
 class IRCBatch(object):
-    def __init__(self, identifier: str, batch_type: str, tags:
-            typing.Dict[str, str]={}):
+    def __init__(self, identifier: str, batch_type: str, args: typing.List[str],
+            tags: typing.Dict[str, str]={}):
         self.id = identifier
         self.type = batch_type
+        self.args = args
         self.tags = tags
         self._lines = [] # type: typing.List[IRCLine.ParsedLine]
     def add_line(self, line: IRCLine.ParsedLine):
