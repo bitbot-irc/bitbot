@@ -10,8 +10,9 @@ class Module(ModuleManager.BaseModule):
             default_events.append(hook.kwargs.get("default_event", False))
         default_event = any(default_events)
 
-        kwargs = {"args": line.args, "tags": line.tags, "server": server,
-            "prefix": line.prefix, "direction": utils.Direction.Recv}
+        kwargs = {"command": line.command, "args": line.args, "tags": line.tags,
+            "server": server, "prefix": line.prefix,
+            "direction": utils.Direction.Recv}
 
         self.events.on("raw.received").on(line.command).call_unsafe(**kwargs)
         if default_event or not hooks:
@@ -29,8 +30,9 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.send")
     def handle_send(self, event):
         self.events.on("raw.send").on(event["line"].command).call_unsafe(
-            args=event["line"].args, tags=event["line"].tags,
-            server=event["server"], direction=utils.Direction.Send)
+            command=event["line"].command, args=event["line"].args,
+            tags=event["line"].tags, server=event["server"],
+            direction=utils.Direction.Send)
 
     # ping from the server
     @utils.hook("raw.received.ping")
@@ -153,22 +155,14 @@ class Module(ModuleManager.BaseModule):
     def invite(self, event):
         core.invite(self.events, event)
 
-    # we've received/sent a message
+    # we've received/sent a PRIVMSG, NOTICE or TAGMSG
     @utils.hook("raw.received.privmsg")
     @utils.hook("raw.send.privmsg")
-    def privmsg(self, event):
-        message.privmsg(self.events, event)
-
-    # we've received/sent a notice
     @utils.hook("raw.received.notice")
     @utils.hook("raw.send.notice")
-    def notice(self, event):
-        message.notice(self.events, event)
-
-    # IRCv3 TAGMSG, used to send tags without any other information
     @utils.hook("raw.received.tagmsg")
-    def tagmsg(self, event):
-        message.tagmsg(self.events, event)
+    def message(self, event):
+        message.message(self.events, event)
 
     # IRCv3 AWAY, used to notify us that a client we can see has changed /away
     @utils.hook("raw.received.away")
