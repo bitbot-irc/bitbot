@@ -99,8 +99,8 @@ def message(events, event):
         hook.call(**kwargs)
 
         buffer_obj = target_obj
-        if event["server"].is_own_nickname(user.nickname):
+        if not from_self:
             buffer_obj = user
 
         buffer_obj.buffer.add_message(user.nickname, message, action,
-            event["tags"], True)
+            event["tags"], from_self)
