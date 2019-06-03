@@ -1,4 +1,4 @@
-#--depends-on server_time
+#--depends-on ircv3_server_time
 
 from src import ModuleManager, utils
 

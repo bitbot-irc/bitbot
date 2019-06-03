@@ -1,4 +1,4 @@
-#--depends-on msgid
+#--depends-on ircv3_msgid
 
 from src import ModuleManager, utils
 
