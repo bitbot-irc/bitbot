@@ -11,6 +11,7 @@ Changed:
 - IRCv3: Use last `server-time` for `RESUME` - not last .recv() time
 - IRCv3: `draft/labeled-response` -> `draft/labeled-response-0.2`
 - IRCv3: Prune already-seen messages in `chathistory` batches
+- Consolidate `PRIVMSG`, `NOTICE` and `TAGMSG` handlers in to one
 
 Fixed
 - GitHug highlight prevention - don't detect highlights mid-word
