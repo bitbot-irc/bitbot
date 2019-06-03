@@ -6,7 +6,7 @@ from src import ModuleManager, utils
 URL_GEOIP = "http://ip-api.com/json/%s"
 REGEX_IPv6 = r"(?:(?:[a-f0-9]{1,4}:){2,}|[a-f0-9:]*::)[a-f0-9:]*"
 REGEX_IPv4 = r"(?:\d{1,3}\.){3}\d{1,3}"
-REGEX_IP = re.compile("%s|%s" % (REGEX_IPv4, REGEX_IPv6), re.I)
+REGEX_IP = re.compile("(%s)|(%s)" % (REGEX_IPv4, REGEX_IPv6), re.I)
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.dns", min_args=1)
