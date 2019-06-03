@@ -57,7 +57,8 @@ def message(events, event):
         target_obj = event["server"].get_user(target)
 
     kwargs = {"server": event["server"], "target": target_obj,
-        "target_str": target_str, "user": user, "tags": event["tags"]}
+        "target_str": target_str, "user": user, "tags": event["tags"],
+        "is_channel": is_channel}
 
     action = False
 
@@ -71,6 +72,8 @@ def message(events, event):
                     direction = "request"
                 else:
                     direction = "response"
+                events.on("received.ctcp").on(direction).call(
+                    message=ctcp_message.message, **kwargs)
                 events.on("received.ctcp").on(direction).on(ctcp_message.command
                     ).call(message=ctcp_message.message, **kwargs)
                 return
