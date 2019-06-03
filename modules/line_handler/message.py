@@ -1,20 +1,20 @@
 from src import utils
 
-def _from_self(server, direction, prefix):
+def _from_self(server, direction, source):
     if direction == utils.Direction.Send:
         if server.has_capability_str("echo-message"):
             return None
         else:
             return True
     else:
-        if prefix:
-            return server.is_own_nickname(prefix.nickname)
+        if source:
+            return server.is_own_nickname(source.nickname)
         else:
             return False
 
 def message(events, event):
     from_self = _from_self(event["server"], event["direction"],
-        event.get("prefix", None))
+        event.get("source", None))
     if from_self == None:
         return
 
@@ -25,12 +25,12 @@ def message(events, event):
         message = event["args"][1]
 
     if not from_self and (
-            not event["prefix"] or
+            not event["source"] or
             not event["server"].name or
-            event["prefix"].hostmask == event["server"].name or
+            event["source"].hostmask == event["server"].name or
             target_str == "*"):
-        if event["prefix"]:
-            event["server"].name = event["prefix"].hostmask
+        if event["source"]:
+            event["server"].name = event["source"].hostmask
 
         events.on("received.server-notice").call(message=message,
             message_split=message.split(" "), server=event["server"])
@@ -39,7 +39,7 @@ def message(events, event):
     if from_self:
         user = event["server"].get_user(event["server"].nickname)
     else:
-        user = event["server"].get_user(event["prefix"].nickname)
+        user = event["server"].get_user(event["source"].nickname)
 
     # strip prefix_symbols from the start of target, for when people use
     # e.g. 'PRIVMSG +#channel :hi' which would send a message to only

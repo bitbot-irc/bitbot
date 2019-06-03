@@ -8,7 +8,7 @@ def handle_332(events, event):
         topic=topic)
 
 def topic(events, event):
-    user = event["server"].get_user(event["prefix"].nickname)
+    user = event["server"].get_user(event["source"].nickname)
     channel = event["server"].channels.get(event["args"][0])
     topic = event["args"].get(1)
     channel.set_topic(topic)
@@ -69,17 +69,17 @@ def join(events, event):
             account = event["args"][1]
         realname = event["args"][2]
 
-    user = event["server"].get_user(event["prefix"].nickname)
+    user = event["server"].get_user(event["source"].nickname)
 
-    user.username = event["prefix"].username
-    user.hostname = event["prefix"].hostname
+    user.username = event["source"].username
+    user.hostname = event["source"].hostname
     if account:
         user.identified_account = account
         user.identified_account_id = event["server"].get_user(account).get_id()
     if realname:
         user.realname = realname
 
-    is_self = event["server"].is_own_nickname(event["prefix"].nickname)
+    is_self = event["server"].is_own_nickname(event["source"].nickname)
     if is_self:
         channel = event["server"].channels.add(channel_name)
     else:
@@ -101,7 +101,7 @@ def join(events, event):
 
 def part(events, event):
     channel = event["server"].channels.get(event["args"][0])
-    user = event["server"].get_user(event["prefix"].nickname)
+    user = event["server"].get_user(event["source"].nickname)
     reason = event["args"].get(1)
 
     channel.remove_user(user)
@@ -109,7 +109,7 @@ def part(events, event):
     if not len(user.channels):
         event["server"].remove_user(user)
 
-    if not event["server"].is_own_nickname(event["prefix"].nickname):
+    if not event["server"].is_own_nickname(event["source"].nickname):
         events.on("received.part").call(channel=channel, reason=reason,
             user=user, server=event["server"])
     else:
@@ -137,7 +137,7 @@ def handle_477(timers, event):
             server_id=event["server"].id)
 
 def kick(events, event):
-    user = event["server"].get_user(event["prefix"].nickname)
+    user = event["server"].get_user(event["source"].nickname)
     target = event["args"][1]
     channel = event["server"].channels.get(event["args"][0])
     reason = event["args"].get(2)

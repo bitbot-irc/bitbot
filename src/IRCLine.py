@@ -39,12 +39,12 @@ class Hostmask(object):
 
 class ParsedLine(object):
     def __init__(self, command: str, args: typing.List[str],
-            prefix: Hostmask=None,
+            source: Hostmask=None,
             tags: typing.Dict[str, str]=None):
         self.command = command
         self._args = args
         self.args = IRCArgs(args)
-        self.prefix = prefix
+        self.source = source
         self.tags = {} if tags == None else tags
 
     def __repr__(self):
@@ -69,8 +69,8 @@ class ParsedLine(object):
         if self.tags:
             pieces.append(self._tag_str(self.tags))
 
-        if self.prefix:
-            pieces.append(str(self.prefix))
+        if self.source:
+            pieces.append(str(self.source))
 
         pieces.append(self.command.upper())
 

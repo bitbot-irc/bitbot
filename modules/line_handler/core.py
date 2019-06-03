@@ -8,7 +8,7 @@ def ping(event):
 
 def handle_001(event):
     event["server"].socket.enable_write_throttle()
-    event["server"].name = event["prefix"].hostmask
+    event["server"].name = event["source"].hostmask
     event["server"].set_own_nickname(event["args"][0])
     event["server"].send_whois(event["server"].nickname)
     event["server"].connected = True
@@ -65,7 +65,7 @@ def motd_line(event):
     event["server"].motd_lines.append(event["args"][1])
 
 def mode(events, event):
-    user = event["server"].get_user(event["prefix"].nickname)
+    user = event["server"].get_user(event["source"].nickname)
     target = event["args"][0]
     is_channel = target[0] in event["server"].channel_types
     if is_channel:
@@ -98,7 +98,7 @@ def mode(events, event):
 
 def invite(events, event):
     target_channel = event["args"][1]
-    user = event["server"].get_user(event["prefix"].nickname)
+    user = event["server"].get_user(event["source"].nickname)
     target_user = event["server"].get_user(event["args"][0])
     events.on("received.invite").call(user=user, target_channel=target_channel,
         server=event["server"], target_user=target_user)

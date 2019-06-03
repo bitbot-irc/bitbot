@@ -2,7 +2,7 @@ import enum, queue, os, select, socket, threading, time, traceback, typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
 
-VERSION = "v1.7.1"
+VERSION = "v1.8.0"
 SOURCE = "https://git.io/bitbot"
 
 class TriggerResult(enum.Enum):

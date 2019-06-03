@@ -45,7 +45,7 @@ def message_tag_unescape(s):
 
 def parse_line(line: str) -> IRCLine.ParsedLine:
     tags = {} # type: typing.Dict[str, typing.Any]
-    prefix = None # type: typing.Optional[IRCLine.Hostmask]
+    source = None # type: typing.Optional[IRCLine.Hostmask]
     command = None
 
     if line[0] == "@":
@@ -65,8 +65,8 @@ def parse_line(line: str) -> IRCLine.ParsedLine:
         trailing = trailing_split
 
     if line[0] == ":":
-        prefix_str, line = line[1:].split(" ", 1)
-        prefix = seperate_hostmask(prefix_str)
+        source_str, line = line[1:].split(" ", 1)
+        source = seperate_hostmask(source_str)
 
     command, sep, line = line.partition(" ")
     args = [] # type: typing.List[str]
@@ -77,7 +77,7 @@ def parse_line(line: str) -> IRCLine.ParsedLine:
     if not trailing == None:
         args.append(typing.cast(str, trailing))
 
-    return IRCLine.ParsedLine(command, args, prefix, tags)
+    return IRCLine.ParsedLine(command, args, source, tags)
 
 
 REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % utils.consts.COLOR)
