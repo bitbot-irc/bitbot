@@ -3,11 +3,19 @@ from src import ModuleManager, utils
 TAG = utils.irc.MessageTag("msgid", "draft/msgid")
 
 class Module(ModuleManager.BaseModule):
+    def _on_channel(self, channel, tags):
+        msgid = TAG.get_value(tags)
+        if not msgid == None:
+            channel.set_setting("last-msgid", msgid)
+
     @utils.hook("received.message.channel")
-    #TODO: catch CTCPs
     @utils.hook("received.notice.channel")
     @utils.hook("received.tagmsg.channel")
     def on_channel(self, event):
-        msgid = TAG.get_value(event["tags"])
-        if not msgid == None:
-            event["channel"].set_setting("last-msgid", msgid)
+        self._on_channel(event["channel"], event["tags"])
+
+    @utils.hook("received.ctcp.request")
+    @utils.hook("received.ctcp.response")
+    def ctcp(self, event):
+        if event["is_channel"]:
+            self._on_channel(event["target"], event["tags"])
