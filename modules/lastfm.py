@@ -20,13 +20,23 @@ class Module(ModuleManager.BaseModule):
         :help: Get the last listened to track from a user
         :usage: [username]
         """
-        if event["args_split"]:
-            lastfm_username = event["args_split"][0]
-            shown_username = lastfm_username
+        user = None
+        lastfm_username = None
+        shown_username = None
+
+        if event["args"]:
+            arg_username = event["args_split"][0]
+            if event["server"].has_user_id(arg_username):
+                user = event["server"].get_user(event["args_split"][0])
+            else:
+                lastfm_username = shown_username = arg_username
         else:
-            lastfm_username = event["user"].get_setting("lastfm",
-                event["user"].nickname)
-            shown_username = event["user"].nickname
+            user = event["user"]
+
+        if user:
+            lastfm_username = user.get_setting("lastfm", user.nickname)
+            shown_username = user.nickname
+
         page = utils.http.request(URL_SCROBBLER, get_params={
             "method": "user.getrecenttracks", "user": lastfm_username,
             "api_key": self.bot.config["lastfm-api-key"],
