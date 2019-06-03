@@ -18,6 +18,8 @@ def message(events, event):
     if from_self == None:
         return
 
+    direction = "send" if from_self else "received"
+
     target_str = event["args"][0]
 
     message = None
@@ -69,13 +71,14 @@ def message(events, event):
             if not ctcp_message.command == "ACTION" or not event["command"
                     ] == "PRIVMSG":
                 if event["command"] == "PRIVMSG":
-                    direction = "request"
+                    ctcp_action = "request"
                 else:
-                    direction = "response"
-                events.on("received.ctcp").on(direction).call(
+                    ctcp_action = "response"
+                events.on(direction).on("ctcp").on(ctcp_action).call(
                     message=ctcp_message.message, **kwargs)
-                events.on("received.ctcp").on(direction).on(ctcp_message.command
-                    ).call(message=ctcp_message.message, **kwargs)
+                events.on(direction).on("ctcp").on(ctcp_action).on(
+                    ctcp_message.command).call(message=ctcp_message.message,
+                    **kwargs)
                 return
             else:
                 message = ctcp_message.message
@@ -90,7 +93,6 @@ def message(events, event):
     if event["command"] == "PRIVMSG":
         event_type = "message"
 
-    direction = "send" if from_self else "received"
     context = "channel" if is_channel else "private"
     hook = events.on(direction).on(event_type).on(context)
 
