@@ -60,21 +60,23 @@ def message(events, event):
         "target_str": target_str, "user": user, "tags": event["tags"]}
 
     action = False
-    ctcp_message = utils.irc.parse_ctcp(message)
 
-    if ctcp_message:
-        if not ctcp_message.command == "ACTION" or not event["command"
-                ] == "PRIVMSG":
-            if event["command"] == "PRIVMSG":
-                direction = "request"
+    if message:
+        ctcp_message = utils.irc.parse_ctcp(message)
+
+        if ctcp_message:
+            if not ctcp_message.command == "ACTION" or not event["command"
+                    ] == "PRIVMSG":
+                if event["command"] == "PRIVMSG":
+                    direction = "request"
+                else:
+                    direction = "response"
+                events.on("received.ctcp").on(direction).on(ctcp_message.command
+                    ).call(message=ctcp_message.message, **kwargs)
+                return
             else:
-                direction = "response"
-            events.on("received.ctcp").on(direction).on(ctcp_message.command
-                ).call(message=ctcp_message.message, **kwargs)
-            return
-        else:
-            message = ctcp_message.message
-            action = True
+                message = ctcp_message.message
+                action = True
 
     if not message == None:
         kwargs["message"] = message
