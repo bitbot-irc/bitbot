@@ -5,6 +5,7 @@ Added:
 
 Changed:
 - `!np` against a known nickname will attempt to resolve to lastfm username
+- `PING` and `PONG` now avoid write throttling
 
 Fixed:
 - Differentiate between send and received CTCP events
