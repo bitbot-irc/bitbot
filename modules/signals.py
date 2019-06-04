@@ -25,8 +25,8 @@ class Module(ModuleManager.BaseModule):
                 server.socket.clear_send_buffer()
 
                 line = utils.irc.protocol.quit("Shutting down")
-                line.on_send(self._make_hook(server))
-                server.send(line, immediate=True)
+                sent_line = server.send(line, immediate=True)
+                sent_line.on_send(self._make_hook(server))
 
                 server.send_enabled = False
                 written = True
