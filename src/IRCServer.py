@@ -307,9 +307,9 @@ class Server(IRCObject.Object):
         return self.send(utils.irc.protocol.password(password))
 
     def send_ping(self, nonce: str="hello") -> IRCLine.SentLine:
-        return self.send(utils.irc.protocol.ping(nonce))
+        return self.send(utils.irc.protocol.ping(nonce), immediate=True)
     def send_pong(self, nonce: str="hello") -> IRCLine.SentLine:
-        return self.send(utils.irc.protocol.pong(nonce))
+        return self.send(utils.irc.protocol.pong(nonce), immediate=True)
 
     def try_rejoin(self, event: EventManager.Event):
         if event["server_id"] == self.id and event["channel_name"
