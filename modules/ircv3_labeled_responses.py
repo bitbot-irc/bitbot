@@ -3,6 +3,7 @@ from src import ModuleManager, utils
 
 CAP = utils.irc.Capability(None, "draft/labeled-response-0.2")
 TAG = utils.irc.MessageTag(None, "draft/label")
+BATCH = utils.irc.BatchType(None, "draft/labeled-response")
 
 CAP_TO_TAG = {
     "draft/labeled-response-0.2": "draft/label"

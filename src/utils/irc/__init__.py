@@ -260,7 +260,7 @@ def parse_ctcp(s: str) -> typing.Optional[CTCPMessage]:
 class IRCBatch(object):
     def __init__(self, identifier: str, batch_type: str, args: typing.List[str],
             tags: typing.Dict[str, str]={}):
-        self.id = identifier
+        self.identifier = identifier
         self.type = batch_type
         self.args = args
         self.tags = tags
@@ -300,6 +300,13 @@ class MessageTag(object):
     def match(self, s: str) -> typing.Optional[str]:
         key = list(set([s])&self._names)
         return key[0] if key else None
+
+class BatchType(object):
+    def __init__(self, name: typing.Optional[str], draft_name: str=None):
+        self._names = set([name, draft_name])
+    def match(self, type: str) -> typing.Optional[str]:
+        t = list(set([type])&self._names)
+        return t[0] if t else None
 
 def hostmask_match(hostmask: str, pattern: str) -> bool:
     return fnmatch.fnmatchcase(hostmask, pattern)
