@@ -57,6 +57,9 @@ class EventHook(object):
         self._stored_events = [] # type: typing.List[typing.Dict]
         self._context_hooks = {} # type: typing.Dict[str, typing.List[EventCallback]]
 
+    def new_root(self) -> "EventHook":
+        return EventHook(self.log)
+
     def _make_event(self, kwargs: dict) -> Event:
         return Event(self._get_path(), **kwargs)
     def make_event(self, **kwargs):

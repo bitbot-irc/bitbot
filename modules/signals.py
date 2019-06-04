@@ -26,7 +26,7 @@ class Module(ModuleManager.BaseModule):
 
                 line = utils.irc.protocol.quit("Shutting down")
                 sent_line = server.send(line, immediate=True)
-                sent_line.on_send(self._make_hook(server))
+                sent_line.events.on("send").hook(self._make_hook(server))
 
                 server.send_enabled = False
                 written = True
@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
             sys.exit()
 
     def _make_hook(self, server):
-        return lambda: self.bot.disconnect(server)
+        return lambda e: self.bot.disconnect(server)
 
     def SIGUSR1(self, signum, frame):
         self.bot.trigger(self._reload_config)

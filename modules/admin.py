@@ -45,7 +45,7 @@ class Module(ModuleManager.BaseModule):
         :permission: reconnect
         """
         line = event["server"].send_quit("Reconnecting")
-        line.on_send(lambda: self.bot.reconnect(
+        line.events.on("send").hook(lambda e: self.bot.reconnect(
             event["server"].id, event["server"].connection_params))
 
     @utils.hook("received.command.connect", min_args=1)
@@ -97,9 +97,9 @@ class Module(ModuleManager.BaseModule):
         reason = event["args"] or ""
         for server in self.bot.servers.values():
             line = server.send_quit(reason)
-            line.on_send(self._shutdown_hook(server))
+            line.events.on("send").hook(self._shutdown_hook(server))
     def _shutdown_hook(self, server):
-        def shutdown():
+        def shutdown(e):
             server.disconnect()
             self.bot.disconnect(server)
         return shutdown

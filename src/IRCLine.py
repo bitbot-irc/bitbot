@@ -85,13 +85,13 @@ class ParsedLine(object):
         return " ".join(pieces).split("\n")[0].strip("\r")
 
 class SentLine(IRCObject.Object):
-    def __init__(self, send_time: datetime.datetime, hostmask: str,
-            line: ParsedLine):
+    def __init__(self, events: "EventManager.EventHook",
+            send_time: datetime.datetime, hostmask: str, line: ParsedLine):
+        self.events = events
         self.send_time = send_time
         self._hostmask = hostmask
         self.parsed_line = line
 
-        self._on_send: typing.List[typing.Callable[[], None]] = []
         self.truncate_marker: typing.Optional[str] = None
 
     def __repr__(self) -> str:
@@ -135,9 +135,3 @@ class SentLine(IRCObject.Object):
         return self._for_wire().decode("utf8")
     def truncated(self) -> str:
         return self._encode_truncate()[1]
-
-    def on_send(self, func: typing.Callable[[], None]):
-        self._on_send.append(func)
-    def sent(self):
-        for func in self._on_send[:]:
-            func()

@@ -149,7 +149,7 @@ class Socket(IRCObject.Object):
         sent_lines = [] # type: typing.List[IRCLine.SentLine]
         for i in range(sent_lines_count):
             sent_line = self._buffered_lines.pop(0)
-            sent_line.sent()
+            sent_line.events.on("send").call()
             sent_lines.append(sent_line)
 
         self._write_buffer = self._write_buffer[bytes_written_i:]
