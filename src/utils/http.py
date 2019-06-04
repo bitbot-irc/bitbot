@@ -64,17 +64,20 @@ def request(url: str, method: str="GET", get_params: dict={},
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
     response_headers = utils.CaseInsensitiveDict(dict(response.headers))
-    data = response_content.decode(response.encoding or fallback_encoding)
     content_type = response.headers["Content-Type"].split(";", 1)[0]
+
+    def _decode_data():
+        return response_content.decode(response.encoding or fallback_encoding)
 
     if soup:
         if content_type in SOUP_CONTENT_TYPES:
-            soup = bs4.BeautifulSoup(data, parser)
+            soup = bs4.BeautifulSoup(_decode_data(), parser)
             return Response(response.status_code, soup, response_headers)
         else:
             raise HTTPWrongContentTypeException(
                 "Tried to soup non-html/non-xml data")
 
+    data = _decode_data()
     if json and data:
         try:
             return Response(response.status_code, _json.loads(data),
