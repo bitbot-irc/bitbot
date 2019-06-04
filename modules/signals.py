@@ -23,9 +23,12 @@ class Module(ModuleManager.BaseModule):
         for server in self.bot.servers.values():
             if server.connected:
                 server.socket.clear_send_buffer()
-                line = server.send_quit("Shutting down")
-                server.send_enabled = False
+
+                line = utils.irc.protocol.quit("Shutting down")
                 line.on_send(self._make_hook(server))
+                server.send(line, immediate=True)
+
+                server.send_enabled = False
                 written = True
 
         if not written:
