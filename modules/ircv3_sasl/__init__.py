@@ -19,7 +19,7 @@ def _validate(s):
 
 @utils.export("serverset", {"setting": "sasl",
     "help": "Set the sasl username/password for this server",
-    "validate": _validate, "example": "PLAIN BitBot:hunder2"})
+    "validate": _validate, "example": "PLAIN BitBot:hunter2"})
 class Module(ModuleManager.BaseModule):
     def _best_userpass_mechanism(self, mechanisms):
         for potential_mechanism in USERPASS_MECHANISMS:
