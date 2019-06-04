@@ -2,6 +2,7 @@
 
 Added:
 - IRCv3: Also look at CTCP events for msgids
+- Sub-event system within all SentLines
 
 Changed:
 - `!np` against a known nickname will attempt to resolve to lastfm username
