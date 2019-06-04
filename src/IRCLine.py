@@ -126,12 +126,13 @@ class SentLine(IRCObject.Object):
                 encoded += encoded_character
         return (encoded, truncated)
 
-    def _data(self) -> bytes:
+    def _for_wire(self) -> bytes:
         return self._encode_truncate()[0]
-    def data(self) -> bytes:
-        return b"%s\r\n" % self._data()
+    def for_wire(self) -> bytes:
+        return b"%s\r\n" % self._for_wire()
+
     def decoded_data(self) -> str:
-        return self._data().decode("utf8")
+        return self._for_wire().decode("utf8")
     def truncated(self) -> str:
         return self._encode_truncate()[1]
 

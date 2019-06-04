@@ -119,12 +119,17 @@ class Socket(IRCObject.Object):
         self.last_read = time.monotonic()
         return decoded_lines
 
-    def send(self, line: IRCLine.SentLine):
-        self._queued_lines.append(line)
+    def _immediate_buffer(self, line: IRCLine.SentLine):
+        self._write_buffer += line.for_wire()
+        self._buffered_lines.append(line)
 
-    def _send(self) -> typing.List[IRCLine.ParsedLine]:
-        sent_lines = []
+    def send(self, line: IRCLine.SentLine, immediate: bool=False):
+        if immediate:
+            self._immediate_buffer(line)
+        else:
+            self._queued_lines.append(line)
 
+    def _send(self) -> typing.List[IRCLine.SentLine]:
         if not self._write_buffer and self._throttle_when_empty:
             self._throttle_when_empty = False
             self._write_throttling = True
@@ -135,23 +140,24 @@ class Socket(IRCObject.Object):
             to_buffer = self._queued_lines[:throttle_space]
             self._queued_lines = self._queued_lines[throttle_space:]
             for line in to_buffer:
-                sent_lines.append(line.parsed_line)
-
-                self._write_buffer += line.data()
-                self._buffered_lines.append(line)
+                self._immediate_buffer(line)
 
         bytes_written_i = self._socket.send(self._write_buffer)
         bytes_written = self._write_buffer[:bytes_written_i]
-        lines_sent = bytes_written.count(b"\r\n")
-        for i in range(lines_sent):
-            self._buffered_lines.pop(0).sent()
+
+        sent_lines_count = bytes_written.count(b"\r\n")
+        sent_lines = [] # type: typing.List[IRCLine.SentLine]
+        for i in range(sent_lines_count):
+            sent_line = self._buffered_lines.pop(0)
+            sent_line.sent()
+            sent_lines.append(sent_line)
 
         self._write_buffer = self._write_buffer[bytes_written_i:]
 
         self.bytes_written += bytes_written_i
 
         now = time.monotonic()
-        self._recent_sends.extend([now]*lines_sent)
+        self._recent_sends.extend([now]*sent_lines_count)
         self.last_send = now
 
         return sent_lines

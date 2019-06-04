@@ -242,7 +242,7 @@ class Server(IRCObject.Object):
 
         return lines
 
-    def send(self, line_parsed: IRCLine.ParsedLine):
+    def send(self, line_parsed: IRCLine.ParsedLine, immediate: bool=False):
         if not self.send_enabled:
             return None
 
@@ -254,7 +254,7 @@ class Server(IRCObject.Object):
         line = line_parsed.format()
         line_obj = IRCLine.SentLine(datetime.datetime.utcnow(), self.hostmask(),
             line_parsed)
-        self.socket.send(line_obj)
+        self.socket.send(line_obj, immediate=immediate)
         return line_obj
     def send_raw(self, line: str):
         return self.send(utils.irc.parse_line(line))
@@ -262,8 +262,10 @@ class Server(IRCObject.Object):
     def _send(self):
         lines = self.socket._send()
         for line in lines:
-            self.bot.log.debug("%s (raw send) | %s", [str(self), line.format()])
-            self.events.on("raw.send").call_unsafe(server=self, line=line)
+            self.bot.log.debug("%s (raw send) | %s", [
+                str(self), line.parsed_line.format()])
+            self.events.on("raw.send").call_unsafe(server=self,
+                line=line.parsed_line)
 
     def send_user(self, username: str, realname: str) -> IRCLine.SentLine:
         return self.send(utils.irc.protocol.user(username, realname))
