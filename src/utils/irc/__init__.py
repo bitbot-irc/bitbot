@@ -275,10 +275,15 @@ class Capability(object):
         self._caps = set([name, draft_name])
         self._on_ack_callbacks = [
             ] # type: typing.List[typing.Callable[[], None]]
+
     def available(self, capabilities: typing.Iterable[str]
             ) -> typing.Optional[str]:
         match = list(set(capabilities)&self._caps)
         return match[0] if match else None
+
+    def match(self, capability: str) -> typing.Optional[str]:
+        cap = list(set([capability])&self._caps)
+        return cap[0] if cap else None
 
     def copy(self):
         return Capability(*self._caps)
@@ -297,8 +302,8 @@ class MessageTag(object):
     def get_value(self, tags: typing.Dict[str, str]) -> typing.Optional[str]:
         key = list(set(tags.keys())&self._names)
         return tags[key[0]] if key else None
-    def match(self, s: str) -> typing.Optional[str]:
-        key = list(set([s])&self._names)
+    def match(self, tag: str) -> typing.Optional[str]:
+        key = list(set([tag])&self._names)
         return key[0] if key else None
 
 class BatchType(object):

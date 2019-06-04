@@ -31,20 +31,22 @@ class Module(ModuleManager.BaseModule):
                 label = str(uuid.uuid4())
                 event["line"].tags[tag_key] = label
 
-            event["server"]._label_cache[label] = event["line"]
+            event["server"]._label_cache[label] = [event["line"],
+                event["events"]]
 
     @utils.hook("raw.received")
     def raw_recv(self, event):
         if not event["line"].command == "BATCH":
             label = TAG.get_value(event["line"].tags)
             if not label == None:
-                self._recv(event["server"], label, event["line"])
+                self._recv(event["server"], label, [event["line"]])
 
     @utils.hook("received.batch.end")
     def batch_end(self, event):
-        if TAG.match(event["batch"].type):
-            self._recv(event["server"], event["batch"].identifier, None)
+        if BATCH.match(event["batch"].type):
+            label = TAG.get_value(event["batch"].tags)
+            self._recv(event["server"], label, event["batch"].get_lines())
 
-    def _recv(self, server, label, line):
-        cached_line = server._label_cache.pop(label)
-        # do something with the line!
+    def _recv(self, server, label, lines):
+        cached_line, cached_events = server._label_cache.pop(label)
+        cached_events.on("labeled-response").call(lines=lines)
