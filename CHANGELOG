@@ -3,8 +3,12 @@
 Added:
 - IRCv3: Also look at CTCP events for msgids
 
+Changed:
+- `!np` against a known nickname will attempt to resolve to lastfm username
+
 Fixed:
 - Differentiate between send and received CTCP events
+- `IRCSocket._send` will now only return lines that definitely hit the wire
 
 # 2019-06-03 - BitBot v1.8.0
 
