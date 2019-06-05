@@ -35,8 +35,8 @@ class Module(ModuleManager.BaseModule):
         page = self._get_definition(word)
         if page:
             if len(page.data):
-                event["stdout"].write("%s: %s" % (page.data[0]["word"],
-                    page.data[0]["text"]))
+                text = utils.http.strip_html(page.data[0]["text"])
+                event["stdout"].write("%s: %s" % (page.data[0]["word"], text))
             else:
                 event["stderr"].write("No definitions found")
         else:
@@ -61,8 +61,9 @@ class Module(ModuleManager.BaseModule):
                 else:
                     raise utils.EventError("Try again in a couple of seconds")
 
+                text = utils.http.strip_html(definition["text"])
                 event["stdout"].write("Random Word: %s - Definition: %s" % (
-                    page.data["word"], definition["text"]))
+                    page.data["word"], text))
             else:
                 raise utils.EventsResultsError()
         else:
