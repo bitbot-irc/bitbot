@@ -3,6 +3,8 @@
 Added:
 - IRCv3: Also look at CTCP events for msgids
 - Sub-event system within all SentLines
+- Show last action in !seen (e.g. 'seen 1m ago (<jesopo> hi)')
+- WARN when labels are not responded to in a timely fashion
 
 Changed:
 - `!np` against a known nickname will attempt to resolve to lastfm username
@@ -12,6 +14,7 @@ Fixed:
 - Differentiate between send and received CTCP events
 - `IRCSocket._send` will now only return lines that definitely hit the wire
 - GitHub `commit_comment` event formatting exception
+- Strip xref tags from !define output
 
 # 2019-06-03 - BitBot v1.8.0
 
