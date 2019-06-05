@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
         if seen_seconds:
             seen_info = user.get_setting("seen-info", None)
             seen_info = "" if seen_info == None else (
-                " (%s)" % seen_info["action"])
+                " (%s%s)" % (seen_info["action"], utils.consts.RESET))
 
             since = utils.to_pretty_time(time.time()-seen_seconds,
                 max_units=2)
