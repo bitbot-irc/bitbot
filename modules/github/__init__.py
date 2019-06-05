@@ -562,7 +562,8 @@ class Module(ModuleManager.BaseModule):
         commit = self._short_hash(data["comment"]["commit_id"])
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[commit/%s] %s commented" % (commit, commenter, action)]
+        return ["[commit/%s] %s %s a comment - %s" % (commit, commenter,
+            action, url)]
 
     def pull_request(self, full_name, data):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
