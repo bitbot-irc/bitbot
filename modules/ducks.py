@@ -44,9 +44,6 @@ class Module(ModuleManager.BaseModule):
                 if show_duck:
                     self._trigger_duck(channel)
 
-    @utils.hook("received.join")
-    def join(self, event):
-        self._activity(event["channel"])
     @utils.hook("received.message.channel",
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
