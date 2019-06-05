@@ -44,16 +44,15 @@ class Module(ModuleManager.BaseModule):
                 if show_duck:
                     self._trigger_duck(channel)
 
-    @utils.hook("received.message.channel",
-        priority=EventManager.PRIORITY_MONITOR)
+    @utils.hook("command.regex")
     def channel_message(self, event):
-        self._activity(event["channel"])
+        """
+        :pattern: .+
+        :command: duck-trigger
+        """
+        self._activity(event["target"])
 
     def _trigger_duck(self, channel):
-        is_silenced_f = self.exports.get_one("is-silenced", lambda _: False)
-        if is_silenced_f(channel):
-            return
-
         channel.duck_lines = 0
         channel.duck_active = True
         channel.send_message(DUCK)
