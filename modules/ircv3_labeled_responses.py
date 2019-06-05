@@ -9,6 +9,12 @@ CAP_TO_TAG = {
     "draft/labeled-response-0.2": "draft/label"
 }
 
+class WaitingForLabel(object):
+    def __init__(self, line, events):
+        self.line = line
+        self.events = events
+        self.labels_since = 0
+
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.server")
     def new_server(self, event):
@@ -31,8 +37,8 @@ class Module(ModuleManager.BaseModule):
                 label = str(uuid.uuid4())
                 event["line"].tags[tag_key] = label
 
-            event["server"]._label_cache[label] = [event["line"],
-                event["events"]]
+            event["server"]._label_cache[label] = WaitingForLabel(event["line"],
+                event["events"])
 
     @utils.hook("raw.received")
     def raw_recv(self, event):
@@ -48,5 +54,11 @@ class Module(ModuleManager.BaseModule):
             self._recv(event["server"], label, event["batch"].get_lines())
 
     def _recv(self, server, label, lines):
-        cached_line, cached_events = server._label_cache.pop(label)
-        cached_events.on("labeled-response").call(lines=lines)
+        cached = server._label_cache.pop(label)
+        cached.events.on("labeled-response").call(lines=lines)
+
+        for label, other_cached in server._label_cache.items():
+            other_cached.labels_since += 1
+            if other_cached.labels_since == 10:
+                self.log.warn("%d labels seen while waiting for response to %s",
+                    [other_cached.labels_since, label])
