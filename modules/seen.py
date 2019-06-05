@@ -4,10 +4,24 @@ import time
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.message.channel")
-    def channel_message(self, event):
-        seen_seconds = time.time()
-        event["user"].set_setting("seen", seen_seconds)
+    def _change_seen(self, channel, user, action):
+        user.set_setting("seen", time.time())
+        user.set_setting("seen-info", {"action": action})
+
+    @utils.hook("formatted.message.channel")
+    @utils.hook("formatted.notice.channel")
+    @utils.hook("formatted.join")
+    @utils.hook("formatted.part")
+    @utils.hook("formatted.nick")
+    @utils.hook("formatted.quit")
+    def on_formatted(self, event):
+        line = event["minimal"] or event["line"]
+
+        if event["channel"]:
+            self._change_seen(event["channel"], event["user"], line)
+        elif event["user"]:
+            for channel in event["user"].channels:
+                self._change_seen(channel, event["user"], line)
 
     @utils.hook("received.command.seen", min_args=1)
     def seen(self, event):
@@ -15,13 +29,18 @@ class Module(ModuleManager.BaseModule):
         :help: Find out when a user was last seen
         :usage: <nickname>
         """
-        seen_seconds = event["server"].get_user(event["args_split"][0]
-            ).get_setting("seen")
+        user = event["server"].get_user(event["args_split"][0])
+        seen_seconds = user.get_setting("seen")
+
         if seen_seconds:
+            seen_info = user.get_setting("seen-info", None)
+            seen_info = "" if seen_info == None else (
+                " (%s)" % seen_info["action"])
+
             since = utils.to_pretty_time(time.time()-seen_seconds,
                 max_units=2)
-            event["stdout"].write("%s was last seen %s ago" % (
-                event["args_split"][0], since))
+            event["stdout"].write("%s was last seen %s ago%s" % (
+                event["args_split"][0], since, seen_info))
         else:
             event["stderr"].write("I have never seen %s before." % (
                 event["args_split"][0]))
