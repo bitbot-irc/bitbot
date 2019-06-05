@@ -16,6 +16,7 @@ Fixed:
 - `IRCSocket._send` will now only return lines that definitely hit the wire
 - GitHub `commit_comment` event formatting exception
 - Strip xref tags from !define output
+- `check_purge()` after removing contextual hooks from an EventHook
 
 # 2019-06-03 - BitBot v1.8.0
 
