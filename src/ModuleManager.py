@@ -269,7 +269,7 @@ class ModuleManager(object):
                     for dep_name in deps:
                         if name in definition_dependencies[dep_name]:
                             self.log.warn(
-                                "Circular dependencies detected: %s<->%s",
+                                "Direct circular dependency detected: %s<->%s",
                                 [name, dep_name])
                             changed = True
                             # snap a circular dependence
