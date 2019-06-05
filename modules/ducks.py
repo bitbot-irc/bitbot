@@ -68,7 +68,7 @@ class Module(ModuleManager.BaseModule):
         return "%s %s a duck! You've %s %d ducks in %s!" % (
             user.nickname, action, action, action_count, channel.name)
 
-    def _no_duck(self, channel, user, stderr, action):
+    def _no_duck(self, channel, user, stderr):
         if channel.get_setting("ducks-kick"):
             channel.send_kick(user.nickname, NO_DUCK)
         else:
@@ -82,18 +82,16 @@ class Module(ModuleManager.BaseModule):
                 "ducks-befriended")
             event["stdout"].write(action)
         else:
-            self._no_duck(event["target"], event["user"], event["stderr"],
-                "befriend")
+            self._no_duck(event["target"], event["user"], event["stderr"])
 
-    @utils.hook("received.command.bang", channel_only=True)
-    def bang(self, event):
+    @utils.hook("received.command.trap", channel_only=True)
+    def trap(self, event):
         if event["target"].duck_active:
-            action = self._duck_action(event["target"], event["user"], "shot",
+            action = self._duck_action(event["target"], event["user"], "trapped",
                 "ducks-shot")
             event["stdout"].write(action)
         else:
-            self._no_duck(event["target"], event["user"], event["stderr"],
-                "shoot")
+            self._no_duck(event["target"], event["user"], event["stderr"])
 
     @utils.hook("received.command.friends")
     def friends(self, event):
