@@ -2,9 +2,11 @@ import datetime
 from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    def _event(self, type, server, line, context, channel=None, user=None):
+    def _event(self, type, server, line, context, minimal=None,
+            channel=None, user=None):
         self.events.on("formatted").on(type).call(server=server,
-            context=context, line=line, channel=channel, user=user)
+            context=context, line=line, channel=channel, user=user,
+            minimal=minimal)
 
     def _mode_symbols(self, user, channel, server):
         modes = channel.get_user_status(user)
@@ -67,8 +69,10 @@ class Module(ModuleManager.BaseModule):
 
     def _on_join(self, event, user):
         line = "- %s joined %s" % (user.hostmask(), event["channel"].name)
+        minimal_line = "%s joined %s" % (user.nickname, event["channel"].name)
+
         self._event("join", event["server"], line, event["channel"].name,
-            channel=event["channel"], user=user)
+            channel=event["channel"], user=user, minimal=minimal_line)
     @utils.hook("received.join")
     def join(self, event):
         self._on_join(event, event["user"])
@@ -79,9 +83,12 @@ class Module(ModuleManager.BaseModule):
     def _on_part(self, event, user):
         reason = event["reason"]
         reason = "" if not reason else " (%s)" % reason
-        line = "- %s left %s%s" % (user.nickname, event["channel"].name, reason)
+        line_minimal = "%s left %s%s" % (user.nickname, event["channel"].name,
+            reason)
+        line = "- %s" % line_minimal
+
         self._event("part", event["server"], line, event["channel"].name,
-            channel=event["channel"], user=user)
+            channel=event["channel"], user=user, minimal=line_minimal)
     @utils.hook("received.part")
     def part(self, event):
         self._on_part(event, event["user"])
@@ -90,9 +97,12 @@ class Module(ModuleManager.BaseModule):
         self._on_part(event, event["server"].get_user(event["server"].nickname))
 
     def _on_nick(self, event, user):
-        line = "- %s changed nickname to %s" % (
+        line_minimal = "%s changed nickname to %s" % (
             event["old_nickname"], event["new_nickname"])
-        self._event("nick", event["server"], line, None, user=user)
+        line = "- %s" % line_minimal
+
+        self._event("nick", event["server"], line, None, user=user,
+            minimal=line_minimal)
     @utils.hook("received.nick")
     def nick(self, event):
         self._on_nick(event, event["user"])
@@ -118,10 +128,13 @@ class Module(ModuleManager.BaseModule):
         if args:
             args = " %s" % args
 
-        line = "- %s set mode %s%s" % (
+        line_minimal = "%s set mode %s%s" % (
             event["user"].nickname, "".join(event["modes"]), args)
+        line = "- %s" % line_minimal
+
         self._event("mode.channel", event["server"], line,
-            event["channel"].name, channel=event["channel"], user=event["user"])
+            event["channel"].name, channel=event["channel"], user=event["user"],
+            minimal=line_minimal)
 
     def _on_topic(self, event, setter, action, topic):
         line = "topic %s by %s: %s" % (action, setter, topic)
@@ -159,8 +172,11 @@ class Module(ModuleManager.BaseModule):
 
     def _quit(self, event, user, reason):
         reason = "" if not reason else " (%s)" % reason
-        line = "- %s quit%s" % (user.nickname, reason)
-        self._event("quit", event["server"], line, None, user=user)
+        line_minimal = "%s quit%s" % (user.nickname, reason)
+        line = "- %s" % line_minimal
+
+        self._event("quit", event["server"], line, None, user=user,
+            minimal=line_minimal)
     @utils.hook("received.quit")
     def on_quit(self, event):
         self._quit(event, event["user"], event["reason"])
