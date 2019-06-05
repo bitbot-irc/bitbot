@@ -11,6 +11,7 @@ Changed:
 Fixed:
 - Differentiate between send and received CTCP events
 - `IRCSocket._send` will now only return lines that definitely hit the wire
+- GitHub `commit_comment` event formatting exception
 
 # 2019-06-03 - BitBot v1.8.0
 
