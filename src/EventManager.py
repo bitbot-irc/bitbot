@@ -244,6 +244,7 @@ class EventHook(object):
 
     def remove_context(self, context: str):
         del self._context_hooks[context]
+        self.check_purge()
     def has_context(self, context: str) -> bool:
         return context in self._context_hooks
     def purge_context(self, context: str):
