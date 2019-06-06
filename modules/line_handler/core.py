@@ -11,6 +11,7 @@ def handle_001(event):
     event["server"].name = event["source"].hostmask
     event["server"].set_own_nickname(event["args"][0])
     event["server"].send_whois(event["server"].nickname)
+    event["server"].send_mode(event["server"].nickname)
     event["server"].connected = True
 
 def handle_005(events, event):
@@ -64,6 +65,13 @@ def motd_start(event):
 def motd_line(event):
     event["server"].motd_lines.append(event["args"][1])
 
+def _own_modes(server, modes):
+    mode_chunks = RE_MODES.findall(modes)
+    for chunk in mode_chunks:
+        remove = chunk[0] == "-"
+        for mode in chunk[1:]:
+            server.change_own_mode(remove, mode)
+
 def mode(events, event):
     user = event["server"].get_user(event["source"].nickname)
     target = event["args"][0]
@@ -88,13 +96,12 @@ def mode(events, event):
         events.on("received.mode.channel").call(modes=modes, mode_args=_args,
             channel=channel, server=event["server"], user=user)
     elif event["server"].is_own_nickname(target):
-        modes = RE_MODES.findall(event["args"][1])
-        for chunk in modes:
-            remove = chunk[0] == "-"
-            for mode in chunk[1:]:
-                event["server"].change_own_mode(remove, mode)
+        _own_modes(event["server"], event["args"][1])
         events.on("self.mode").call(modes=modes, server=event["server"])
         event["server"].send_who(event["server"].nickname)
+
+def handle_221(event):
+    _own_modes(event["server"], event["args"][1])
 
 def invite(events, event):
     target_channel = event["args"][1]

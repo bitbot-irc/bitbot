@@ -149,6 +149,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.received.mode")
     def mode(self, event):
         core.mode(self.events, event)
+    # server telling us our own modes
+    @utils.hook("raw.received.221")
+    def umodeis(self, event):
+        core.handle_221(event)
 
     # someone (maybe me!) has been invited somewhere
     @utils.hook("raw.received.invite")
