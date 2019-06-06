@@ -48,7 +48,6 @@ class Bot(object):
         self._read_thread = None
         self._write_thread = None
 
-        self._trigger_functions = []
         self._events.on("timer.reconnect").hook(self._timed_reconnect)
 
     def _trigger_both(self):
@@ -288,19 +287,10 @@ class Bot(object):
                 self._event_queue.put(lambda: None)
                 break
 
-            self.trigger(self._check)
+            #self.trigger(self._check)
+            self._event_queue.put(self._check)
 
             events = self._read_poll.poll(self.get_poll_timeout())
-
-            for func, func_queue in self._trigger_functions:
-                try:
-                    returned = func()
-                    type = TriggerResult.Return
-                except Exception as e:
-                    returned = e
-                    type = TriggerResult.Exception
-                func_queue.put([type, returned])
-            self._trigger_functions.clear()
 
             for fd, event in events:
                 if fd == self._rtrigger_server.fileno():
