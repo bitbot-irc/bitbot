@@ -133,9 +133,6 @@ class Module(ModuleManager.BaseModule):
         if self._is_ignored(server, user, command):
             return False
 
-        server.send(utils.irc.protocol.tagmsg(target.name,
-            {"+draft/typing": "active"}), immediate=True)
-
         module_name = self._get_prefix(hook) or ""
         if not module_name and hasattr(hook.function, "__self__"):
             module_name = hook.function.__self__._name
