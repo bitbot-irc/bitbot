@@ -190,15 +190,8 @@ class Bot(object):
         return min([timeout for timeout in timeouts if not timeout == None])
 
     def disconnect(self, server: IRCServer.Server):
-        try:
-            self._read_poll.unregister(server.fileno())
-        except FileNotFoundError:
-            pass
-        try:
-            self._write_poll.unregister(server.fileno())
-        except FileNotFoundError:
-            pass
         del self.servers[server.fileno()]
+        self._trigger_both()
 
     def _timed_reconnect(self, event: EventManager.Event):
         if not self.reconnect(event["server_id"],
@@ -270,15 +263,17 @@ class Bot(object):
                         self._wtriggered = False
                 elif event & select.EPOLLOUT:
                     self._write_poll.unregister(fd)
-                    server = self.servers[fd]
+                    if fd in self.servers:
+                        server = self.servers[fd]
 
-                    try:
-                        lines = server._send()
-                    except:
-                        self.log.error("Failed to write to %s", [str(server)])
-                        raise
-                    self._event_queue.put(self._post_send_factory(server,
-                        lines))
+                        try:
+                            lines = server._send()
+                        except:
+                            self.log.error("Failed to write to %s",
+                                [str(server)])
+                            raise
+                        self._event_queue.put(self._post_send_factory(server,
+                            lines))
 
     def _read_loop(self):
         while self.running:
@@ -287,7 +282,6 @@ class Bot(object):
                 self._event_queue.put(lambda: None)
                 break
 
-            #self.trigger(self._check)
             self._event_queue.put(self._check)
 
             events = self._read_poll.poll(self.get_poll_timeout())
@@ -299,6 +293,10 @@ class Bot(object):
                     with self._rtrigger_lock:
                         self._rtriggered = False
                 else:
+                    if not fd in self.servers:
+                        self._read_poll.unregister(fd)
+                        continue
+
                     server = self.servers[fd]
                     if event & select.EPOLLIN:
                         lines = server.read()
