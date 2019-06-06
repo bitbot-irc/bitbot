@@ -26,7 +26,7 @@ class Bot(object):
         self.start_time = time.time()
         self.lock = threading.Lock()
         self.running = True
-        self.poll = select.epoll()
+        self.poll = select.poll()
 
         self.servers = {}
         self.other_sockets = {}
@@ -97,7 +97,7 @@ class Bot(object):
 
     def add_socket(self, sock: socket.socket):
         self.other_sockets[sock.fileno()] = sock
-        self.poll.register(sock.fileno(), select.EPOLLIN)
+        self.poll.register(sock.fileno(), select.POLLIN)
 
     def remove_socket(self, sock: socket.socket):
         del self.other_sockets[sock.fileno()]
@@ -123,7 +123,7 @@ class Bot(object):
                 [str(server), str(e)])
             return False
         self.servers[server.fileno()] = server
-        self.poll.register(server.fileno(), select.EPOLLOUT)
+        self.poll.register(server.fileno(), select.POLLOUT)
         return True
 
     def next_send(self) -> typing.Optional[float]:
@@ -163,12 +163,12 @@ class Bot(object):
         return min([timeout for timeout in timeouts if not timeout == None])
 
     def register_read(self, server: IRCServer.Server):
-        self.poll.modify(server.fileno(), select.EPOLLIN)
+        self.poll.modify(server.fileno(), select.POLLIN)
     def register_write(self, server: IRCServer.Server):
-        self.poll.modify(server.fileno(), select.EPOLLOUT)
+        self.poll.modify(server.fileno(), select.POLLOUT)
     def register_both(self, server: IRCServer.Server):
         self.poll.modify(server.fileno(),
-            select.EPOLLIN|select.EPOLLOUT)
+            select.POLLIN|select.POLLOUT)
 
     def disconnect(self, server: IRCServer.Server):
         try:
@@ -238,7 +238,7 @@ class Bot(object):
                     sock = self.other_sockets[fd]
 
                 if sock:
-                    if event & select.EPOLLIN:
+                    if event & select.POLLIN:
                         data = sock.read()
                         if data == None:
                             sock.disconnect()
@@ -246,7 +246,7 @@ class Bot(object):
 
                         for piece in data:
                             sock.parse_data(piece)
-                    elif event & select.EPOLLOUT:
+                    elif event & select.POLLOUT:
                         try:
                             sock._send()
                         except:
@@ -256,8 +256,8 @@ class Bot(object):
 
                         if sock.fileno() in self.servers:
                             self.register_read(sock)
-                    elif event & select.EPULLHUP:
-                        self.log.warn("Recieved EPOLLHUP for %s", [str(sock)])
+                    elif event & select.POLLHUP:
+                        self.log.warn("Recieved POLLHUP for %s", [str(sock)])
                         sock.disconnect()
 
             for server in list(self.servers.values()):
