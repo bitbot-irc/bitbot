@@ -62,7 +62,7 @@ class ParsedLine(object):
                 tag_pieces.append(tag)
 
         if tag_pieces:
-            return "@%s" % ",".join(tag_pieces)
+            return "@%s" % ";".join(tag_pieces)
         return ""
 
     def format(self) -> str:
