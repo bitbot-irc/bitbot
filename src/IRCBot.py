@@ -279,7 +279,6 @@ class Bot(object):
 
     def _read_loop(self):
         while self.running:
-            print("read loop")
             if not self.servers:
                 self.running = False
                 self._event_queue.put(lambda: None)
