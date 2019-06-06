@@ -96,7 +96,9 @@ def mode(events, event):
         events.on("received.mode.channel").call(modes=modes, mode_args=_args,
             channel=channel, server=event["server"], user=user)
     elif event["server"].is_own_nickname(target):
-        _own_modes(event["server"], event["args"][1])
+        modes = event["args"][1]
+        _own_modes(event["server"], modes)
+
         events.on("self.mode").call(modes=modes, server=event["server"])
         event["server"].send_who(event["server"].nickname)
 
