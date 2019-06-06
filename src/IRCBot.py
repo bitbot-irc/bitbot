@@ -256,7 +256,7 @@ class Bot(object):
                     server = self.servers[fd]
 
                     try:
-                        lines = server.socket._send()
+                        lines = server._send()
                     except:
                         self.log.error("Failed to write to %s", [str(server)])
                         raise
