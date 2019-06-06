@@ -47,12 +47,12 @@ class Module(ModuleManager.BaseModule):
         self._reload_modules()
 
     def _reload_config(self):
-        self.bot.log.info("Reloading config file", [])
+        self.bot.log.info("Reloading config file")
         self.bot.config.load()
-        self.bot.log.info("Reloaded config file", [])
+        self.bot.log.info("Reloaded config file")
 
     def _reload_modules(self):
-        self.bot.log.info("Reloading modules", [])
+        self.bot.log.info("Reloading modules")
 
         success = []
         fail = []

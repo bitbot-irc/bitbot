@@ -38,7 +38,7 @@ class Module(ModuleManager.BaseModule):
 
         if event["args"][0] == "SUCCESS":
             resume_channels = event["server"].get_setting("resume-channels", [])
-            self.log.info("Successfully resumed session", [])
+            self.log.info("Successfully resumed session")
             event["server"].cap_started = False
 
         elif event["args"][0] == "TOKEN":

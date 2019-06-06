@@ -49,17 +49,17 @@ class Log(object):
             warn_handler.setFormatter(formatter)
             self.logger.addHandler(warn_handler)
 
-    def trace(self, message: str, params: typing.List, **kwargs):
+    def trace(self, message: str, params: typing.List=None, **kwargs):
         self._log(message, params, LEVELS["trace"], kwargs)
-    def debug(self, message: str, params: typing.List, **kwargs):
+    def debug(self, message: str, params: typing.List=None, **kwargs):
         self._log(message, params, logging.DEBUG, kwargs)
-    def info(self, message: str, params: typing.List, **kwargs):
+    def info(self, message: str, params: typing.List=None, **kwargs):
         self._log(message, params, logging.INFO, kwargs)
-    def warn(self, message: str, params: typing.List, **kwargs):
+    def warn(self, message: str, params: typing.List=None, **kwargs):
         self._log(message, params, logging.WARN, kwargs)
-    def error(self, message: str, params: typing.List, **kwargs):
+    def error(self, message: str, params: typing.List=None, **kwargs):
         self._log(message, params, logging.ERROR, kwargs)
-    def critical(self, message: str, params: typing.List, **kwargs):
+    def critical(self, message: str, params: typing.List=None, **kwargs):
         self._log(message, params, logging.CRITICAL, kwargs)
     def _log(self, message: str, params: typing.List, level: int, kwargs: dict):
-        self.logger.log(level, message, *params, **kwargs)
+        self.logger.log(level, message, *(params or []), **kwargs)
