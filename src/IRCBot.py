@@ -248,6 +248,11 @@ class Bot(object):
             item = self._event_queue.get(block=True, timeout=None)
             item()
 
+    def _post_send_factory(self, server, lines):
+        return lambda: server._post_send(lines)
+    def _post_read_factory(self, server, lines):
+        return lambda: server._post_read(lines)
+
     def _write_loop(self):
         while self.running:
             if not self.servers:
@@ -273,7 +278,8 @@ class Bot(object):
                     except:
                         self.log.error("Failed to write to %s", [str(server)])
                         raise
-                    self._event_queue.put(lambda: server._post_send(lines))
+                    self._event_queue.put(self._post_send_factory(server,
+                        lines))
 
     def _read_loop(self):
         while self.running:
@@ -310,7 +316,8 @@ class Bot(object):
                             server.disconnect()
                             continue
 
-                        self._event_queue.put(lambda: server._post_read(lines))
+                        self._event_queue.put(self._post_read_factory(server,
+                            lines))
                     elif event & select.EPOLLHUP:
                         self.log.warn("Recieved EPOLLHUP for %s", [str(server)])
                         server.disconnect()
