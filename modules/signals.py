@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
         self.events.on("signal.interrupt").call(signum=signum)
 
         written = False
-        for server in self.bot.servers.values():
+        for server in list(self.bot.servers.values()):
             if server.connected:
                 server.socket.clear_send_buffer()
 
