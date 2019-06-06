@@ -129,18 +129,20 @@ class Socket(IRCObject.Object):
         else:
             self._queued_lines.append(line)
 
-    def _send(self) -> typing.List[IRCLine.SentLine]:
-        if not self._write_buffer and self._throttle_when_empty:
-            self._throttle_when_empty = False
-            self._write_throttling = True
-            self._recent_sends.clear()
 
+    def _fill_throttle(self):
         throttle_space = self.throttle_space()
         if throttle_space:
             to_buffer = self._queued_lines[:throttle_space]
             self._queued_lines = self._queued_lines[throttle_space:]
             for line in to_buffer:
                 self._immediate_buffer(line)
+
+    def _send(self) -> typing.List[IRCLine.SentLine]:
+        if not self._write_buffer and self._throttle_when_empty:
+            self._throttle_when_empty = False
+            self._write_throttling = True
+            self._recent_sends.clear()
 
         bytes_written_i = self._socket.send(self._write_buffer)
         bytes_written = self._write_buffer[:bytes_written_i]
@@ -165,8 +167,8 @@ class Socket(IRCObject.Object):
     def clear_send_buffer(self):
         self._queued_lines.clear()
 
-    def waiting_send(self) -> bool:
-        return bool(len(self._write_buffer)) or bool(len(self._queued_lines))
+    def waiting_throttled_send(self) -> bool:
+        return bool(len(self._queued_lines))
     def waiting_immediate_send(self) -> bool:
         return bool(len(self._write_buffer))
 

@@ -207,14 +207,12 @@ class Server(IRCObject.Object):
         return utils.irc.hostmask_match(self.irc_lower(hostmask),
             self.irc_lower(pattern))
 
-    def parse_data(self, line: str):
-        if not line:
-            return
-
-        self.bot.log.debug("%s (raw recv) | %s", [str(self), line])
-        self.events.on("raw.received").call_unsafe(server=self,
-            line=utils.irc.parse_line(line))
-        self.check_users()
+    def _post_read(self, lines: typing.List[str]):
+        for line in lines:
+            self.bot.log.debug("%s (raw recv) | %s", [str(self), line])
+            self.events.on("raw.received").call_unsafe(server=self,
+                line=utils.irc.parse_line(line))
+            self.check_users()
     def check_users(self):
         for user in self.new_users:
             if not len(user.channels):
@@ -261,8 +259,8 @@ class Server(IRCObject.Object):
     def send_raw(self, line: str):
         return self.send(utils.irc.parse_line(line))
 
-    def _send(self):
-        lines = self.socket._send()
+
+    def _post_send(self, lines: typing.List[IRCLine.SentLine]):
         for line in lines:
             self.bot.log.debug("%s (raw send) | %s", [
                 str(self), line.parsed_line.format()])
