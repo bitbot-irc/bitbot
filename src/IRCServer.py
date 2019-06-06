@@ -255,6 +255,10 @@ class Server(IRCObject.Object):
         line_obj = IRCLine.SentLine(line_events, datetime.datetime.utcnow(),
             self.hostmask(), line_parsed)
         self.socket.send(line_obj, immediate=immediate)
+
+        if immediate:
+            self.bot.trigger_write()
+
         return line_obj
     def send_raw(self, line: str):
         return self.send(utils.irc.parse_line(line))

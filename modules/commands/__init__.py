@@ -135,7 +135,6 @@ class Module(ModuleManager.BaseModule):
 
         server.send(utils.irc.protocol.tagmsg(target.name,
             {"+draft/typing": "active"}), immediate=True)
-        self.bot.trigger()
 
         module_name = self._get_prefix(hook) or ""
         if not module_name and hasattr(hook.function, "__self__"):

@@ -46,8 +46,12 @@ class Bot(object):
         self._trigger_functions = []
         self._events.on("timer.reconnect").hook(self._timed_reconnect)
 
-    def _thread_trigger(self):
+    def _trigger_both(self):
+        self.trigger_read()
+        self.trigger_write()
+    def trigger_read(self):
         self._rtrigger_client.send(b"TRIGGER")
+    def trigger_write(self):
         self._wtrigger_client.send(b"TRIGGER")
 
     def trigger(self,
@@ -57,7 +61,7 @@ class Bot(object):
 
         if utils.is_main_thread():
             returned = func()
-            self._thread_trigger()
+            self._trigger_both()
             return returned
 
         func_queue = queue.Queue(1) # type: queue.Queue[str]
@@ -74,7 +78,7 @@ class Bot(object):
 
         type, returned = func_queue.get(block=True)
 
-        self._thread_trigger()
+        self._trigger_both()
 
         if type == TriggerResult.Exception:
             raise returned
@@ -262,6 +266,7 @@ class Bot(object):
         while self.running:
             if not self.servers:
                 self.running = False
+                self._event_queue.put(lambda: None)
                 break
 
             events = self._read_poll.poll(self.get_poll_timeout())
