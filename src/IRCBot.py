@@ -65,13 +65,14 @@ class Bot(object):
                 self._wtrigger_client.send(b"TRIGGER")
 
     def trigger(self,
-            func: typing.Optional[typing.Callable[[], typing.Any]]=None
-            ) -> typing.Any:
+            func: typing.Optional[typing.Callable[[], typing.Any]]=None,
+            trigger_threads=True) -> typing.Any:
         func = func or (lambda: None)
 
         if utils.is_main_thread():
             returned = func()
-            self._trigger_both()
+            if trigger_threads:
+                self._trigger_both()
             return returned
 
         func_queue = queue.Queue(1) # type: queue.Queue[str]
@@ -88,7 +89,8 @@ class Bot(object):
 
         type, returned = func_queue.get(block=True)
 
-        self._trigger_both()
+        if trigger_threads:
+            self._trigger_both()
 
         if type == TriggerResult.Exception:
             raise returned
@@ -277,12 +279,13 @@ class Bot(object):
 
     def _read_loop(self):
         while self.running:
+            print("read loop")
             if not self.servers:
                 self.running = False
                 self._event_queue.put(lambda: None)
                 break
 
-            self._event_queue.put(self._check)
+            self.trigger(self._check, False)
 
             events = self._read_poll.poll(self.get_poll_timeout())
 
