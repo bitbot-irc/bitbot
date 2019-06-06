@@ -160,7 +160,8 @@ class Bot(object):
         timeouts.append(self.next_ping())
         timeouts.append(self.next_read_timeout())
         timeouts.append(self.cache.next_expiration())
-        return min([timeout for timeout in timeouts if not timeout == None])
+        min_secs = min([timeout for timeout in timeouts if not timeout == None])
+        return min_secs*1000 # return milliseconds
 
     def register_read(self, server: IRCServer.Server):
         self.poll.modify(server.fileno(), select.POLLIN)
