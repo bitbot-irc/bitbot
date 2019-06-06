@@ -1,5 +1,5 @@
 import datetime, typing
-from src import IRCObject
+from src import IRCObject, utils
 
 # this should be 510 (RFC1459, 512 with \r\n) but a server BitBot uses is broken
 LINE_CUTOFF = 470
@@ -56,7 +56,8 @@ class ParsedLine(object):
         tag_pieces = []
         for tag, value in tags.items():
             if value:
-                tag_pieces.append("%s=%s" % (tag, value))
+                value_escaped = utils.irc.message_tag_escape(value)
+                tag_pieces.append("%s=%s" % (tag, value_escaped))
             else:
                 tag_pieces.append(tag)
 
