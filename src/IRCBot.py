@@ -40,6 +40,11 @@ class Bot(object):
         self._write_poll.register(self._wtrigger_server.fileno(),
             select.EPOLLIN)
 
+        self._rtrigger_lock = threading.Lock()
+        self._rtriggered = False
+        self._wtrigger_lock = threading.Lock()
+        self._wtriggered = False
+
         self._read_thread = None
         self._write_thread = None
 
@@ -50,9 +55,15 @@ class Bot(object):
         self.trigger_read()
         self.trigger_write()
     def trigger_read(self):
-        self._rtrigger_client.send(b"TRIGGER")
+        with self._rtrigger_lock:
+            if not self._rtriggered:
+                self._rtriggered = True
+                self._rtrigger_client.send(b"TRIGGER")
     def trigger_write(self):
-        self._wtrigger_client.send(b"TRIGGER")
+        with self._wtrigger_lock:
+            if not self._wtriggered:
+                self._wtriggered = True
+                self._wtrigger_client.send(b"TRIGGER")
 
     def trigger(self,
             func: typing.Optional[typing.Callable[[], typing.Any]]=None
@@ -251,6 +262,8 @@ class Bot(object):
                 if fd == self._wtrigger_server.fileno():
                     # throw away data from trigger socket
                     self._wtrigger_server.recv(1024)
+                    with self._wtrigger_lock:
+                        self._wtriggered = False
                 elif event & select.EPOLLOUT:
                     self._write_poll.unregister(fd)
                     server = self.servers[fd]
@@ -287,6 +300,8 @@ class Bot(object):
                 if fd == self._rtrigger_server.fileno():
                     # throw away data from trigger socket
                     self._rtrigger_server.recv(1024)
+                    with self._rtrigger_lock:
+                        self._rtriggered = False
                 else:
                     server = self.servers[fd]
                     if event & select.EPOLLIN:
