@@ -282,9 +282,9 @@ class Bot(object):
                 self._event_queue.put(lambda: None)
                 break
 
+            self.trigger(self._check)
+
             events = self._read_poll.poll(self.get_poll_timeout())
-            self._timers.call()
-            self.cache.expire()
 
             for func, func_queue in self._trigger_functions:
                 try:
@@ -315,9 +315,10 @@ class Bot(object):
                         self.log.warn("Recieved EPOLLHUP for %s", [str(server)])
                         server.disconnect()
 
-            self.trigger(self._check_servers)
+    def _check(self):
+        self._timers.call()
+        self.cache.expire()
 
-    def _check_servers(self):
         throttle_filled = False
         for server in list(self.servers.values()):
             if server.read_timed_out():
