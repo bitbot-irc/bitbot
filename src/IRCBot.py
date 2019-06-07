@@ -302,8 +302,8 @@ class Bot(object):
                             server.disconnect()
                             continue
 
-                        self._event_queue.put(self._post_read_factory(server,
-                            lines))
+                        self.trigger(self._post_read_factory(server, lines),
+                            False)
                     elif event & select.EPOLLHUP:
                         self.log.warn("Recieved EPOLLHUP for %s", [str(server)])
                         server.disconnect()
