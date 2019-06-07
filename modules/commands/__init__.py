@@ -10,6 +10,8 @@ COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
 REGEX_ARG_NUMBER = re.compile(r"\$(\d+)(-?)")
 
+MESSAGE_TAGS_CAP = utils.irc.Capability("message-tags",
+    "draft/message-tags-0.2")
 MSGID_TAG = utils.irc.MessageTag("msgid", "draft/msgid")
 
 NON_ALPHANUMERIC = [char for char in string.printable if not char.isalnum()]
@@ -133,18 +135,26 @@ class Module(ModuleManager.BaseModule):
         if self._is_ignored(server, user, command):
             return False
 
+        message_tags = server.has_capability(MESSAGE_TAGS_CAP)
+
         module_name = self._get_prefix(hook) or ""
         if not module_name and hasattr(hook.function, "__self__"):
             module_name = hook.function.__self__._name
 
         send_tags = {}
-        msgid = MSGID_TAG.get_value(tags)
-        if msgid:
-            send_tags["+draft/reply"] = msgid
+        if message_tags:
+            msgid = MSGID_TAG.get_value(tags)
+            if msgid:
+                send_tags["+draft/reply"] = msgid
+
+            server.send(utils.irc.protocol.tagmsg(target_str,
+                {"+draft/typing": "active"}), immediate=True)
 
         stdout = outs.StdOut(server, module_name, target, target_str, send_tags)
         stderr = outs.StdErr(server, module_name, target, target_str, send_tags)
         command_method = self._command_method(target, server)
+
+        ret = False
 
         if hook.kwargs.get("remove_empty", True):
             args_split = list(filter(None, args_split))
@@ -204,7 +214,11 @@ class Module(ModuleManager.BaseModule):
                 stderr.send(command_method)
                 target.last_stdout = stdout
                 target.last_stderr = stderr
-            return new_event.eaten
+            ret = new_event.eaten
+
+        if message_tags and not stdout.has_text() and not stderr.has_text():
+            server.send(utils.irc.protocol.tagmsg(target_str,
+                {"+draft/typing": "done"}), immediate=True)
 
     def _command_prefix(self, server, channel):
         return channel.get_setting("command-prefix",
