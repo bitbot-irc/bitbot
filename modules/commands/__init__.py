@@ -157,6 +157,7 @@ class Module(ModuleManager.BaseModule):
         command_method = self._command_method(target, server)
 
         ret = False
+        had_out = False
 
         if hook.kwargs.get("remove_empty", True):
             args_split = list(filter(None, args_split))
@@ -211,6 +212,7 @@ class Module(ModuleManager.BaseModule):
                 stderr.write(str(e))
 
             if not hook.kwargs.get("skip_out", False):
+                had_out = stdout.has_text() or stderr.has_text()
                 command_method = self._command_method(target, server)
                 stdout.send(command_method)
                 stderr.send(command_method)
@@ -218,8 +220,7 @@ class Module(ModuleManager.BaseModule):
                 target.last_stderr = stderr
             ret = new_event.eaten
 
-        if (expect_output and message_tags and not stdout.has_text() and
-                not stderr.has_text()):
+        if expect_output and message_tags and not had_out:
             server.send(utils.irc.protocol.tagmsg(target_str,
                 {"+draft/typing": "done"}), immediate=True)
 
