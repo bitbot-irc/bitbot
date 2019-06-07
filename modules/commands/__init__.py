@@ -223,6 +223,8 @@ class Module(ModuleManager.BaseModule):
             server.send(utils.irc.protocol.tagmsg(target_str,
                 {"+draft/typing": "done"}), immediate=True)
 
+        return ret
+
     def _command_prefix(self, server, channel):
         return channel.get_setting("command-prefix",
             server.get_setting("command-prefix", "!"))
