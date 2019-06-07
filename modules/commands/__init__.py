@@ -136,6 +136,7 @@ class Module(ModuleManager.BaseModule):
             return False
 
         message_tags = server.has_capability(MESSAGE_TAGS_CAP)
+        expect_output = hook.kwargs.get("expect_output", True)
 
         module_name = self._get_prefix(hook) or ""
         if not module_name and hasattr(hook.function, "__self__"):
@@ -147,8 +148,9 @@ class Module(ModuleManager.BaseModule):
             if msgid:
                 send_tags["+draft/reply"] = msgid
 
-            server.send(utils.irc.protocol.tagmsg(target_str,
-                {"+draft/typing": "active"}), immediate=True)
+            if expect_output:
+                server.send(utils.irc.protocol.tagmsg(target_str,
+                    {"+draft/typing": "active"}), immediate=True)
 
         stdout = outs.StdOut(server, module_name, target, target_str, send_tags)
         stderr = outs.StdErr(server, module_name, target, target_str, send_tags)
@@ -216,7 +218,8 @@ class Module(ModuleManager.BaseModule):
                 target.last_stderr = stderr
             ret = new_event.eaten
 
-        if message_tags and not stdout.has_text() and not stderr.has_text():
+        if (expect_output and message_tags and not stdout.has_text() and
+                not stderr.has_text()):
             server.send(utils.irc.protocol.tagmsg(target_str,
                 {"+draft/typing": "done"}), immediate=True)
 

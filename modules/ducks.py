@@ -44,7 +44,7 @@ class Module(ModuleManager.BaseModule):
                 if show_duck:
                     self._trigger_duck(channel)
 
-    @utils.hook("command.regex")
+    @utils.hook("command.regex", expect_output=False)
     def channel_message(self, event):
         """
         :pattern: .+
