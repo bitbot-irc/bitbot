@@ -280,9 +280,9 @@ class Bot(object):
                 self._event_queue.put(lambda: None)
                 break
 
-            self.trigger(self._check, False)
-
             events = self._read_poll.poll(self.get_poll_timeout())
+
+            self.trigger(self._check, False)
 
             for fd, event in events:
                 if fd == self._rtrigger_server.fileno():
