@@ -30,11 +30,11 @@ class Bot(object):
 
         self._event_queue = queue.Queue()
 
-        self._read_poll = select.epoll()
-        self._write_poll = select.epoll()
+        self._read_poll = select.poll()
+        self._write_poll = select.poll()
 
         self._rtrigger_server, self._rtrigger_client = socket.socketpair()
-        self._read_poll.register(self._rtrigger_server.fileno(), select.EPOLLIN)
+        self._read_poll.register(self._rtrigger_server.fileno(), select.POLLIN)
 
         self._rtrigger_lock = threading.Lock()
         self._rtriggered = False
@@ -145,7 +145,7 @@ class Bot(object):
                 [str(server), str(e)])
             return False
         self.servers[server.fileno()] = server
-        self._read_poll.register(server.fileno(), select.EPOLLIN)
+        self._read_poll.register(server.fileno(), select.POLLIN)
         return True
 
     def next_send(self) -> typing.Optional[float]:
@@ -182,7 +182,8 @@ class Bot(object):
         timeouts.append(self.next_ping())
         timeouts.append(self.next_read_timeout())
         timeouts.append(self.cache.next_expiration())
-        return min([timeout for timeout in timeouts if not timeout == None])
+        min_secs = min([timeout for timeout in timeouts if not timeout == None])
+        return min_secs*1000 # return milliseconds
 
     def disconnect(self, server: IRCServer.Server):
         del self.servers[server.fileno()]
@@ -249,7 +250,7 @@ class Bot(object):
                 writeable = False
                 for fd, server in self.servers.items():
                     if server.socket.waiting_immediate_send():
-                        self._write_poll.register(fd, select.EPOLLOUT)
+                        self._write_poll.register(fd, select.POLLOUT)
                         writeable = True
 
                 if not writeable:
@@ -259,7 +260,7 @@ class Bot(object):
             events = self._write_poll.poll()
 
             for fd, event in events:
-                if event & select.EPOLLOUT:
+                if event & select.POLLOUT:
                     self._write_poll.unregister(fd)
                     if fd in self.servers:
                         server = self.servers[fd]
@@ -296,7 +297,7 @@ class Bot(object):
                         continue
 
                     server = self.servers[fd]
-                    if event & select.EPOLLIN:
+                    if event & select.POLLIN:
                         lines = server.read()
                         if lines == None:
                             server.disconnect()
@@ -304,8 +305,8 @@ class Bot(object):
 
                         self.trigger(self._post_read_factory(server, lines),
                             False)
-                    elif event & select.EPOLLHUP:
-                        self.log.warn("Recieved EPOLLHUP for %s", [str(server)])
+                    elif event & select.POLLHUP:
+                        self.log.warn("Recieved POLLHUP for %s", [str(server)])
                         server.disconnect()
 
     def _check(self):

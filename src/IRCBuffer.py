@@ -1,5 +1,7 @@
-import re, typing
+import collections, re, typing
 from src import IRCBot, IRCServer, utils
+
+MAX_LINES = 64
 
 class BufferLine(object):
     def __init__(self, sender: str, message: str, action: bool, tags: dict,
@@ -15,17 +17,15 @@ class Buffer(object):
     def __init__(self, bot: "IRCBot.Bot", server: "IRCServer.Server"):
         self.bot = bot
         self.server = server
-        self.lines = [] # type: typing.List[BufferLine]
-        self.max_lines = 64
+        self._lines = collections.deque(maxlen=MAX_LINES
+            ) # type: typing.Deque[BufferLine]
         self._skip_next = False
 
     def _add_message(self, sender: str, message: str, action: bool, tags: dict,
             from_self: bool, method: str):
         if not self._skip_next:
             line = BufferLine(sender, message, action, tags, from_self, method)
-            self.lines.insert(0, line)
-            if len(self.lines) > self.max_lines:
-                self.lines.pop()
+            self._lines.appendleft(line)
         self._skip_next = False
     def add_message(self, sender: str, message: str, action: bool, tags: dict,
             from_self: bool=False):
@@ -36,7 +36,7 @@ class Buffer(object):
 
     def get(self, index: int=0, **kwargs) -> typing.Optional[BufferLine]:
         from_self = kwargs.get("from_self", True)
-        for line in self.lines:
+        for line in self._lines:
             if line.from_self and not from_self:
                 continue
             return line
@@ -47,7 +47,7 @@ class Buffer(object):
         for_user = kwargs.get("for_user", "")
         for_user = self.server.irc_lower(for_user) if for_user else None
         not_pattern = kwargs.get("not_pattern", None)
-        for line in self.lines:
+        for line in self._lines:
             if line.from_self and not from_self:
                 continue
             elif re.search(pattern, line.message):
@@ -61,7 +61,7 @@ class Buffer(object):
 
     def find_from(self, nickname: str) -> typing.Optional[BufferLine]:
         nickname_lower = self.server.irc_lower(nickname)
-        for line in self.lines:
+        for line in self._lines:
             if (not line.from_self
                     and self.server.irc_lower(line.sender) == nickname_lower):
                 return line
