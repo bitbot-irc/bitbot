@@ -5,7 +5,7 @@
 #--require-config twitter-access-token
 #--require-config twitter-access-secret
 
-import re
+import json, re
 from src import ModuleManager, utils
 from . import format
 import tweepy
@@ -22,19 +22,21 @@ def _get_follows():
 
 class BitBotStreamListener(tweepy.StreamListener):
     def on_status(self, status):
-        data = json.loads(status)
-        username = data["user"]["screen_name"].lower()
+        _bot.trigger(lambda: self._on_status(status))
+    def _on_status(self, status):
+        given_username = status.user.screen_name.lower()
 
         follows = []
         for server_id, channel_name, value in _get_follows():
-            if value.lower() == username:
-                server = _bot.get_server_by_id(server_id)
-                if server and channel_name in server.channels:
-                    hooks.append([server, server.channels.get(channel_name)])
+            for username in value:
+                if username.lower() == given_username:
+                    server = _bot.get_server_by_id(server_id)
+                    if server and channel_name in server.channels:
+                        follows.append([server, server.channels.get(channel_name)])
 
-        tweet = format._tweet(_exports, data)
+        tweet = format._tweet(_exports, status)
         for server, channel in follows:
-            self.events.on("send.stdout").call(target=channel,
+            _events.on("send.stdout").call(target=channel,
                 module_name="Tweets", server=server, message=tweet)
 
 @utils.export("channelset", {"setting": "auto-tweet",
@@ -49,6 +51,8 @@ class Module(ModuleManager.BaseModule):
         _bot = self.bot
         _events = self.events
         _exports = self.exports
+        self._start_stream()
+
     def unload(self):
         self._dispose_stream()
 
@@ -76,14 +80,22 @@ class Module(ModuleManager.BaseModule):
 
         usernames = set([])
         for server_id, channel_name, value in _get_follows():
-            usernames.add(value)
+            for username in value:
+                usernames.add(username)
         if not usernames:
             return False
 
         auth = self._get_auth()
-        self._stream = tweepy.Stream(auth=auth, listener=BitBotStreamListener)
+        api = self._get_api(auth)
 
-        self._stream.filter(follow=list(usernames), is_async=True)
+        user_ids = []
+        for username in usernames:
+            user_ids.append(str(api.get_user(screen_name=username).id))
+
+        self._stream = tweepy.Stream(auth=auth, listener=BitBotStreamListener())
+
+        print(usernames)
+        self._stream.filter(follow=user_ids, is_async=True)
         return True
 
     @utils.hook("received.command.tfollow", min_args=2, channel_only=True)
@@ -93,7 +105,7 @@ class Module(ModuleManager.BaseModule):
         :usage: add|remove @<username>
         :permission: twitter-follow
         """
-        username = event["args_split"][0]
+        username = event["args_split"][1]
         if username.startswith("@"):
             username = username[1:]
 
