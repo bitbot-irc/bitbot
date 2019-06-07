@@ -1,4 +1,4 @@
-# TBD - BitBot v1.9.0
+# 2019-06-07 - BitBot v1.9.0
 
 Added:
 - IRCv3: Also look at CTCP events for msgids
