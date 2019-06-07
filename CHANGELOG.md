@@ -3,7 +3,7 @@
 Added:
 - IRCv3: Also look at CTCP events for msgids
 - Sub-event system within all SentLines
-- Show last action in !seen (e.g. 'seen 1m ago (<jesopo> hi)')
+- Show last action in `!seen` (e.g. 'seen 1m ago (<jesopo> hi)')
 - WARN when labels are not responded to in a timely fashion
 - IRCv3: send `+draft/typing` while processing commands
 - Display github `ready_for_review` better
@@ -12,7 +12,7 @@ Added:
 Changed:
 - `!np` against a known nickname will attempt to resolve to lastfm username
 - `PING` and `PONG` now avoid write throttling
-- '!bang' -> '!trap', 'shot' -> 'trapped' for ducks
+- `!bang` -> `!trap`, 'shot' -> 'trapped' for ducks
 - Socket reads and socket writes have been moved on to seperate threads
 - Use Deques for chat history (more performant!)
 
@@ -20,7 +20,7 @@ Fixed:
 - Differentiate between send and received CTCP events
 - `IRCSocket._send` will now only return lines that definitely hit the wire
 - GitHub `commit_comment` event formatting exception
-- Strip xref tags from !define output
+- Strip xref tags from `!define` output
 - `check_purge()` after removing contextual hooks from an EventHook
 - IRCv3: Escape message tag values
 
