@@ -584,6 +584,8 @@ class Module(ModuleManager.BaseModule):
             else:
                 action_desc = "%s %s" % (
                     utils.irc.color("closed", COLOR_NEGATIVE), number)
+        elif action == "ready_for_review":
+            action_desc = "marked %s ready for review" % number
         elif action == "synchronize":
             action_desc = "committed to %s" % number
 
