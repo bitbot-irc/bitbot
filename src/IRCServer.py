@@ -248,6 +248,7 @@ class Server(IRCObject.Object):
         return lines
     def _post_send(self, lines: typing.List[IRCLine.SentLine]):
         for line in lines:
+            line.events.on("send").call()
             self.events.on("raw.send").call_unsafe(server=self,
                 line=line.parsed_line)
 
