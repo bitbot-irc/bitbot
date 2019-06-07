@@ -17,7 +17,8 @@ class Buffer(object):
     def __init__(self, bot: "IRCBot.Bot", server: "IRCServer.Server"):
         self.bot = bot
         self.server = server
-        self._lines = collections.deque(maxlen=MAX_LINES)
+        self._lines = collections.deque(maxlen=MAX_LINES
+            ) # type: typing.Deque[BufferLine]
         self._skip_next = False
 
     def _add_message(self, sender: str, message: str, action: bool, tags: dict,
