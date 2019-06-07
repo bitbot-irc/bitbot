@@ -36,14 +36,9 @@ class Bot(object):
         self._rtrigger_server, self._rtrigger_client = socket.socketpair()
         self._read_poll.register(self._rtrigger_server.fileno(), select.EPOLLIN)
 
-        self._wtrigger_server, self._wtrigger_client = socket.socketpair()
-        self._write_poll.register(self._wtrigger_server.fileno(),
-            select.EPOLLIN)
-
         self._rtrigger_lock = threading.Lock()
         self._rtriggered = False
-        self._wtrigger_lock = threading.Lock()
-        self._wtriggered = False
+        self._write_condition = threading.Condition()
 
         self._read_thread = None
         self._write_thread = None
@@ -59,10 +54,8 @@ class Bot(object):
                 self._rtriggered = True
                 self._rtrigger_client.send(b"TRIGGER")
     def trigger_write(self):
-        with self._wtrigger_lock:
-            if not self._wtriggered:
-                self._wtriggered = True
-                self._wtrigger_client.send(b"TRIGGER")
+        with self._write_condition:
+            self._write_condition.notify()
 
     def trigger(self,
             func: typing.Optional[typing.Callable[[], typing.Any]]=None,
@@ -252,18 +245,21 @@ class Bot(object):
             if not self.servers:
                 break
 
-            for fd, server in self.servers.items():
-                if server.socket.waiting_immediate_send():
-                    self._write_poll.register(fd, select.EPOLLOUT)
+            with self._write_condition:
+                writeable = False
+                for fd, server in self.servers.items():
+                    if server.socket.waiting_immediate_send():
+                        self._write_poll.register(fd, select.EPOLLOUT)
+                        writeable = True
+
+                if not writeable:
+                    self._write_condition.wait()
+                    continue
 
             events = self._write_poll.poll()
+
             for fd, event in events:
-                if fd == self._wtrigger_server.fileno():
-                    # throw away data from trigger socket
-                    self._wtrigger_server.recv(1024)
-                    with self._wtrigger_lock:
-                        self._wtriggered = False
-                elif event & select.EPOLLOUT:
+                if event & select.EPOLLOUT:
                     self._write_poll.unregister(fd)
                     if fd in self.servers:
                         server = self.servers[fd]
