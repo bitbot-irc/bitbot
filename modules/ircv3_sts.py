@@ -44,8 +44,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.cap.new")
     def on_cap_new(self, event):
-        sts = self._get_sts(event["capabilities"])
-        if sts and event["server"].connection_params.tls:
+        if CAP.available(event["capabilities"]
+                ) and event["server"].connection_params.tls:
             info = utils.parse.keyvalue(sts, delimiter=",")
             self.change_duration(event["server"], info)
 
