@@ -98,8 +98,9 @@ def message(events, event):
 
     if is_channel:
         hook.call(channel=target_obj, **kwargs)
-        target_obj.buffer.add_message(user.nickname, message, action,
-            event["tags"], from_self)
+        if message:
+            target_obj.buffer.add_message(user.nickname, message, action,
+                event["tags"], from_self)
     else:
         hook.call(**kwargs)
 
@@ -107,5 +108,6 @@ def message(events, event):
         if not from_self:
             buffer_obj = user
 
-        buffer_obj.buffer.add_message(user.nickname, message, action,
-            event["tags"], from_self)
+        if message:
+            buffer_obj.buffer.add_message(user.nickname, message, action,
+                event["tags"], from_self)
