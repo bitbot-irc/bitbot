@@ -1,7 +1,7 @@
 #--depends-on commands
 #--depends-on config
 
-import random
+import random, time
 from src import EventManager, ModuleManager, utils
 
 DUCK = "・゜゜・。。・゜゜\_o< QUACK!"
