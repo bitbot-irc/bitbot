@@ -28,6 +28,9 @@ class Server(IRCObject.Object):
 
         self.capability_queue = {
             } # type: typing.Dict[str, utils.irc.Capability]
+        self.capabilities_requested = {
+            } # type: typing.Dict[str, utils.irc.Capability]
+
         self._capabilities_waiting = set([]) # type: typing.Set[str]
         self.agreed_capabilities = set([]) # type: typing.Set[str]
         self.server_capabilities = {} # type: typing.Dict[str, str]
@@ -283,11 +286,18 @@ class Server(IRCObject.Object):
     def send_capibility_ls(self) -> IRCLine.SentLine:
         return self.send(utils.irc.protocol.capability_ls())
     def send_capability_queue(self):
-        capability_queue = [cap for cap in self.capability_queue.keys()]
+        capability_queue = list(self.capability_queue.keys())
 
         for i in range(0, len(capability_queue), 10):
             capability_batch = capability_queue[i:i+10]
+
+            for cap_name in capability_batch:
+                cap = self.capability_queue[cap_name]
+                del self.capability_queue[cap_name]
+                self.capabilities_requested[cap_name] = cap
+
             self.send_capability_request(" ".join(capability_batch))
+
     def send_capability_request(self, capability: str) -> IRCLine.SentLine:
         return self.send(utils.irc.protocol.capability_request(capability))
     def send_capability_end(self) -> IRCLine.SentLine:

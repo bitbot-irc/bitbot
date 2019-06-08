@@ -85,15 +85,15 @@ def cap(events, event):
     if subcommand == "ACK" or subcommand == "NAK":
         ack = subcommand == "ACK"
         for capability in capabilities:
-            cap_obj = event["server"].capability_queue[capability]
-            del event["server"].capability_queue[capability]
+            cap_obj = event["server"].capabilities_requested[capability]
+            del event["server"].capabilities_requested[capability]
             if ack:
                 cap_obj.ack()
             else:
                 cap_obj.nak()
 
         if (event["server"].cap_started and
-                not event["server"].capability_queue and
+                not event["server"].capabilities_requested and
                 not event["server"].waiting_for_capabilities()):
             event["server"].cap_started = False
             event["server"].send_capability_end()
