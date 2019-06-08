@@ -1,3 +1,10 @@
+# TBD - BitBot v1.9.1
+
+Fixed
+- Fix ERROR on `CAP NEW` caused by STS typo
+- Fix hanging on `CAP NEW` due to duplicate `REQ`
+- STATUSMSG stripping should only be STATUSMSG symbols, not all PREFIX symbols
+
 # 2019-06-07 - BitBot v1.9.0
 
 Added:
