@@ -25,7 +25,7 @@ class Module(ModuleManager.BaseModule):
 
     def bootstrap_channel(self, channel):
         if not hasattr(channel, "duck_active"):
-            channel.duck_active = False
+            channel.duck_active = None
             channel.duck_lines = 0
 
     def _activity(self, channel):
@@ -54,19 +54,22 @@ class Module(ModuleManager.BaseModule):
 
     def _trigger_duck(self, channel):
         channel.duck_lines = 0
-        channel.duck_active = True
+        channel.duck_active = time.time()
         channel.send_message(DUCK)
 
     def _duck_action(self, channel, user, action, setting):
-        channel.duck_active = False
+        duck_timestamp = channel.duck_active
+        channel.duck_active = None
 
         user_id = user.get_id()
         action_count = channel.get_user_setting(user_id, setting, 0)
         action_count += 1
         channel.set_user_setting(user_id, setting, action_count)
 
-        return "%s %s a duck! You've %s %d ducks in %s!" % (
-            user.nickname, action, action, action_count, channel.name)
+        seconds = round(time.time()-duck_timestamp, 2)
+
+        return "%s %s a duck in %s seconds! You've %s %d ducks in %s!" % (
+            user.nickname, action, seconds, action, action_count, channel.name)
 
     def _no_duck(self, channel, user, stderr):
         if channel.get_setting("ducks-kick"):
