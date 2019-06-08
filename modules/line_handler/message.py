@@ -46,7 +46,7 @@ def message(events, event):
     # strip prefix_symbols from the start of target, for when people use
     # e.g. 'PRIVMSG +#channel :hi' which would send a message to only
     # voiced-or-above users
-    target = target_str.lstrip("".join(event["server"].prefix_symbols.keys()))
+    target = target_str.lstrip("".join(event["server"].statusmsg))
 
     is_channel = False
 

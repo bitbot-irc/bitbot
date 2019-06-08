@@ -53,6 +53,8 @@ def handle_005(events, event):
         event["server"].channel_types = list(isupport["CHANTYPES"])
     if "CASEMAPPING" in isupport:
         event["server"].case_mapping = isupport["CASEMAPPING"]
+    if "STATUSMSG" in isupport:
+        event["server"].statusmsg = list(isupport["STATUSMSG"])
 
     events.on("received.005").call(isupport=isupport,
         server=event["server"])
