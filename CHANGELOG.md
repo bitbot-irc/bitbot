@@ -1,4 +1,4 @@
-# TBD - BitBot v1.9.1
+# 2019-06-08 - BitBot v1.9.1
 
 Fixed
 - Fix ERROR on `CAP NEW` caused by STS typo
