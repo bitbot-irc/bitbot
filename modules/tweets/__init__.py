@@ -94,7 +94,6 @@ class Module(ModuleManager.BaseModule):
 
         self._stream = tweepy.Stream(auth=auth, listener=BitBotStreamListener())
 
-        print(usernames)
         self._stream.filter(follow=user_ids, is_async=True)
         return True
 
