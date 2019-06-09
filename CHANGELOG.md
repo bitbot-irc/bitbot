@@ -1,3 +1,16 @@
+# 2019-06-09 - BitBot v1.9.2
+
+Added:
+- Show seconds it took to !bef/!trap
+
+Changed:
+- IRCv3: `draft/resume-0.4` -> `draft/resume-0.5`
+
+Fixed:
+- Fix scenario in which some-but-not-all threads die
+- Daemonify tweet thread
+- Don't add TAGMSGs to IRCBuffer objects
+
 # 2019-06-08 - BitBot v1.9.1
 
 Fixed:
