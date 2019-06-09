@@ -5,7 +5,7 @@
 #--require-config twitter-access-token
 #--require-config twitter-access-secret
 
-import json, re
+import json, re, threading
 from src import ModuleManager, utils
 from . import format
 import tweepy
@@ -45,6 +45,8 @@ class BitBotStreamListener(tweepy.StreamListener):
 class Module(ModuleManager.BaseModule):
     _stream = None
     def on_load(self):
+        self._thread = None
+
         global _bot
         global _events
         global _exports
@@ -94,7 +96,10 @@ class Module(ModuleManager.BaseModule):
 
         self._stream = tweepy.Stream(auth=auth, listener=BitBotStreamListener())
 
-        self._stream.filter(follow=user_ids, is_async=True)
+        self._thread = threading.Thread(
+            target=lambda: self._stream.filter(follow=user_ids))
+        self._thread.daemon = True
+        self._thread.start()
         return True
 
     @utils.hook("received.command.tfollow", min_args=2, channel_only=True)
