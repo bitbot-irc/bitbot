@@ -10,6 +10,15 @@ class TriggerResult(enum.Enum):
     Return = 1
     Exception = 2
 
+class TriggerEventType(enum.Enum):
+    Action = 1
+    Kill = 2
+class TriggerEvent(object):
+    def __init__(self, type: TriggerEventType,
+            callback: typing.Callable[[], None]=None):
+        self.type = type
+        self.callback = callback
+
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
             exports, log, modules, timers):
@@ -28,7 +37,7 @@ class Bot(object):
         self.running = True
         self.servers = {}
 
-        self._event_queue = queue.Queue()
+        self._event_queue = queue.Queue() # type: typing.Queue[TriggerEvent]
 
         self._read_poll = select.poll()
         self._write_poll = select.poll()
@@ -78,7 +87,8 @@ class Bot(object):
                 returned = e
                 type = TriggerResult.Exception
             func_queue.put([type, returned])
-        self._event_queue.put(_action)
+        event_item = TriggerEvent(TriggerEventType.Action, _action)
+        self._event_queue.put(event_item)
 
         type, returned = func_queue.get(block=True)
 
@@ -231,10 +241,26 @@ class Bot(object):
         self._write_thread = self._daemon_thread(self._write_loop)
         self._event_loop()
 
+    def _kill(self):
+        self.running = False
+        self._trigger_both()
+
     def _event_loop(self):
-        while self.running:
+        while self.running or not self._event_queue.empty():
+            if not self.servers:
+                self._kill()
+
+            kill = False
             item = self._event_queue.get(block=True, timeout=None)
-            item()
+
+            if item.type == TriggerEventType.Action:
+                try:
+                    item.callback()
+                except:
+                    self._kill()
+                    raise
+            elif item.type == TriggerEventType.Kill:
+                self._kill()
 
     def _post_send_factory(self, server, lines):
         return lambda: server._post_send(lines)
@@ -243,9 +269,6 @@ class Bot(object):
 
     def _write_loop(self):
         while self.running:
-            if not self.servers:
-                break
-
             with self._write_condition:
                 writeable = False
                 for fd, server in self.servers.items():
@@ -271,16 +294,12 @@ class Bot(object):
                             self.log.error("Failed to write to %s",
                                 [str(server)])
                             raise
-                        self._event_queue.put(self._post_send_factory(server,
-                            lines))
+                        event_item = TriggerEvent(TriggerEventType.Action,
+                            self._post_send_factory(server, lines))
+                        self._event_queue.put(event_item)
 
     def _read_loop(self):
         while self.running:
-            if not self.servers:
-                self.running = False
-                self._event_queue.put(lambda: None)
-                break
-
             events = self._read_poll.poll(self.get_poll_timeout())
 
             self.trigger(self._check, False)
@@ -288,8 +307,8 @@ class Bot(object):
             for fd, event in events:
                 if fd == self._rtrigger_server.fileno():
                     # throw away data from trigger socket
-                    self._rtrigger_server.recv(1024)
                     with self._rtrigger_lock:
+                        self._rtrigger_server.recv(1024)
                         self._rtriggered = False
                 else:
                     if not fd in self.servers:
