@@ -12,7 +12,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.send.privmsg")
     @utils.hook("preprocess.send.notice")
     def channel_message(self, event):
-        message = event["line"].args[1]
+        message = utils.irc.strip_font(event["line"].args[1])
         target_name = event["line"].args[0]
 
         # strip off any STATUSMSG chars
