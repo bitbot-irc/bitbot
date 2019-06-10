@@ -1,3 +1,8 @@
+# TBD - BitBot v1.10.0
+
+Added:
+- Outbound message filtering (`message_filter.py`)
+
 # 2019-06-09 - BitBot v1.9.2
 
 Added:
