@@ -45,9 +45,9 @@ class Out(object):
             sent_line = self.server.send(line)
 
             if sent_line:
-                line.truncate_marker = STR_MORE
-                if line.truncated():
-                    self._text = "%s%s" % (STR_CONTINUED, line.truncated())
+                sent_line.truncate_marker = STR_MORE
+                if sent_line.truncated():
+                    self._text = "%s%s" % (STR_CONTINUED, sent_line.truncated())
                 else:
                     self._text = ""
 
