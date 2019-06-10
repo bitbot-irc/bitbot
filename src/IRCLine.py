@@ -46,11 +46,17 @@ class ParsedLine(object):
         self.args = IRCArgs(args)
         self.source = source
         self.tags = {} if tags == None else tags
+        self._valid = True
 
     def __repr__(self):
         return "ParsedLine(%s)" % self.__str__()
     def __str__(self):
         return self.format()
+
+    def valid(self) -> bool:
+        return self._valid
+    def invalidate(self):
+        self._valid = False
 
     def _tag_str(self, tags: typing.Dict[str, str]) -> str:
         tag_pieces = []

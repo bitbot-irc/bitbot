@@ -256,7 +256,8 @@ class Server(IRCObject.Object):
             self.events.on("raw.send").call_unsafe(server=self,
                 line=line.parsed_line)
 
-    def send(self, line_parsed: IRCLine.ParsedLine, immediate: bool=False):
+    def send(self, line_parsed: IRCLine.ParsedLine, immediate: bool=False
+            ) -> typing.Optional[IRCLine.SentLine]:
         if not self.send_enabled:
             return None
 
@@ -267,15 +268,17 @@ class Server(IRCObject.Object):
         self.events.on("preprocess.send").call_unsafe(server=self,
             line=line_parsed, events=line_events)
 
-        line = line_parsed.format()
-        line_obj = IRCLine.SentLine(line_events, datetime.datetime.utcnow(),
-            self.hostmask(), line_parsed)
-        self.socket.send(line_obj, immediate=immediate)
+        if line_parsed.valid():
+            line = line_parsed.format()
+            line_obj = IRCLine.SentLine(line_events, datetime.datetime.utcnow(),
+                self.hostmask(), line_parsed)
+            self.socket.send(line_obj, immediate=immediate)
 
-        if immediate:
-            self.bot.trigger_write()
+            if immediate:
+                self.bot.trigger_write()
 
-        return line_obj
+            return line_obj
+        return None
     def send_raw(self, line: str):
         return self.send(utils.irc.parse_line(line))
 
