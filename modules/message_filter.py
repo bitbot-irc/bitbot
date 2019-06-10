@@ -26,6 +26,8 @@ class Module(ModuleManager.BaseModule):
         filters = self._get_filters(event["server"], target)
         for filter in filters:
             if re.search(filter, message):
+                self.log.info("Message matched filter, dropping: %s"
+                    % event["line"].format())
                 event["line"].invalidate()
                 break
 
