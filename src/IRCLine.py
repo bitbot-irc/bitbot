@@ -47,6 +47,7 @@ class ParsedLine(object):
         self.source = source
         self.tags = {} if tags == None else tags
         self._valid = True
+        self._assured = False
 
     def __repr__(self):
         return "ParsedLine(%s)" % self.__str__()
@@ -57,6 +58,11 @@ class ParsedLine(object):
         return self._valid
     def invalidate(self):
         self._valid = False
+
+    def assured(self) -> bool:
+        return self._assured
+    def assure(self):
+        self._assured = True
 
     def _tag_str(self, tags: typing.Dict[str, str]) -> str:
         tag_pieces = []

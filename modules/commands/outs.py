@@ -14,6 +14,10 @@ class Out(object):
         self._text = ""
         self.written = False
         self._tags = tags
+        self._assured = False
+
+    def assure(self):
+        self._assured = True
 
     def write(self, text):
         self._text += text
@@ -27,20 +31,25 @@ class Out(object):
                 prefix = utils.consts.RESET + "[%s] " % self.prefix()
 
             full_text = "%s%s" % (prefix, self._text)
+            line_factory = None
             if method == "PRIVMSG":
-                line = self.server.send_message(self._target_str, full_text,
-                    tags=self._tags)
+                line_factory = utils.irc.protocol.privmsg
             elif method == "NOTICE":
-                line = self.server.send_notice(self._target_str, full_text,
-                    tags=self._tags)
+                line_factory = utils.irc.protocol.notice
             else:
                 raise ValueError("Unknown command method '%s'" % method)
 
-            line.truncate_marker = STR_MORE
-            if line.truncated():
-                self._text = "%s%s" % (STR_CONTINUED, line.truncated())
-            else:
-                self._text = ""
+            line = line_factory(self._target_str, full_text, tags=self._tags)
+            if self._assured:
+                line.assure()
+            sent_line = self.server.send(line)
+
+            if sent_line:
+                line.truncate_marker = STR_MORE
+                if line.truncated():
+                    self._text = "%s%s" % (STR_CONTINUED, line.truncated())
+                else:
+                    self._text = ""
 
     def set_prefix(self, prefix):
         self.module_name = prefix

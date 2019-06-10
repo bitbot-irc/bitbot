@@ -33,7 +33,7 @@ def part(channel_name: str, reason: str=None) -> IRCLine.ParsedLine:
 def quit(reason: str=None) -> IRCLine.ParsedLine:
     return IRCLine.ParsedLine("QUIT", [reason] if reason else [])
 
-def message(target: str, message: str, tags: typing.Dict[str, str]={}
+def privmsg(target: str, message: str, tags: typing.Dict[str, str]={}
         ) -> IRCLine.ParsedLine:
     return IRCLine.ParsedLine("PRIVMSG", [target, message], tags=tags)
 def notice(target: str, message: str, tags: typing.Dict[str, str]={}

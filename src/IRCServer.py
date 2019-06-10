@@ -268,7 +268,7 @@ class Server(IRCObject.Object):
         self.events.on("preprocess.send").call_unsafe(server=self,
             line=line_parsed, events=line_events)
 
-        if line_parsed.valid():
+        if line_parsed.valid() or line_parsed.assured():
             line = line_parsed.format()
             line_obj = IRCLine.SentLine(line_events, datetime.datetime.utcnow(),
                 self.hostmask(), line_parsed)
@@ -352,7 +352,7 @@ class Server(IRCObject.Object):
 
     def send_message(self, target: str, message: str, tags: dict={}
             ) -> IRCLine.SentLine:
-        return self.send(utils.irc.protocol.message(target, message, tags))
+        return self.send(utils.irc.protocol.privmsg(target, message, tags))
 
     def send_notice(self, target: str, message: str, tags: dict={}
             ) -> IRCLine.SentLine:
