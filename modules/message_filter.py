@@ -2,6 +2,8 @@ import re
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
+    _name = "Filter"
+
     def _get_filters(self, server, target):
         filters = server.get_setting("message-filters", [])
         filters.extend(target.get_setting("message-filters", []))
