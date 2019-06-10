@@ -6,7 +6,8 @@ URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.wi", alias_of="wiki")
-    @utils.hook("received.command.wiki", min_args=1)
+    @utils.hook("received.command.wiki", alias_of="wikipedia")
+    @utils.hook("received.command.wikipedia", min_args=1)
     def wikipedia(self, event):
         """
         :help: Get information from wikipedia
