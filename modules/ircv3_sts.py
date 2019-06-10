@@ -35,10 +35,11 @@ class Module(ModuleManager.BaseModule):
             info = utils.parse.keyvalue(event["capabilities"][sts],
                 delimiter=",")
             if not event["server"].connection_params.tls:
-                self.set_policy(event["server"], int(info["port"]), None)
-                event["server"].disconnect()
-                self.bot.reconnect(event["server"].id,
-                    event["server"].connection_params)
+                if "port" in info:
+                    self.set_policy(event["server"], int(info["port"]), None)
+                    event["server"].disconnect()
+                    self.bot.reconnect(event["server"].id,
+                        event["server"].connection_params)
             else:
                 self.change_duration(event["server"], info)
 
