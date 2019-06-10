@@ -80,6 +80,9 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.bef", alias_of="befriend")
     @utils.hook("received.command.befriend", channel_only=True)
     def befriend(self, event):
+        """
+        :help: Befriend a duck
+        """
         if event["target"].duck_active:
             action = self._duck_action(event["target"], event["user"], "saved",
                 "ducks-befriended")
@@ -89,6 +92,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.trap", channel_only=True)
     def trap(self, event):
+        """
+        :help: Trap a duck
+        """
         if event["target"].duck_active:
             action = self._duck_action(event["target"], event["user"], "trapped",
                 "ducks-shot")
@@ -98,11 +104,19 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.friends")
     def friends(self, event):
+        """
+        :help: Show top 10 duck friends
+        :usage: [channel]
+        """
         stats = self._duck_stats(event["server"], "ducks-befriended", "friends",
             event["args_split"][0] if event["args"] else None)
         event["stdout"].write(stats)
     @utils.hook("received.command.enemies")
     def enemies(self, event):
+        """
+        :help: Show top 10 duck enemies
+        :usage: [channel]
+        """
         stats = self._duck_stats(event["server"], "ducks-shot", "enemies",
             event["args_split"][0] if event["args"] else None)
         event["stdout"].write(stats)
