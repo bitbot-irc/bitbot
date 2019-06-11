@@ -5,7 +5,6 @@
 import re, time
 from src import EventManager, ModuleManager, utils
 
-REGEX_KARMA = re.compile("^(.*[^-+])[-+]*(\+{2,}|\-{2,})$")
 WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
@@ -32,7 +31,7 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         """
         :command: karma
-        :pattern: ^(.*[^-+])[-+]*(\+{2,}|\-{2,})$
+        :pattern: ^(.*)(\+{2}|\-{2})$
         """
         verbose = event["target"].get_setting("karma-verbose", False)
         nickname_only = event["server"].get_setting("karma-nickname-only",
