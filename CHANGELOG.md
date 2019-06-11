@@ -3,6 +3,12 @@
 Added:
 - Outbound message filtering (`message_filter.py`)
 
+Changed:
+- only strip 2 characters (`++` or `--`) from the end of karma
+
+Fixed:
+- `KeyError` when sts `port` key not present
+
 # 2019-06-09 - BitBot v1.9.2
 
 Added:
