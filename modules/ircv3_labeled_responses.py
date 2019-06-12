@@ -54,6 +54,10 @@ class Module(ModuleManager.BaseModule):
             self._recv(event["server"], label, event["batch"].get_lines())
 
     def _recv(self, server, label, lines):
+        if not label in server._label_cache:
+            self.log.warn("unknown label received: %s", [label])
+            return
+
         cached = server._label_cache.pop(label)
         cached.events.on("labeled-response").call(lines=lines)
 
