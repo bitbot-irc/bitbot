@@ -68,7 +68,7 @@ class Module(ModuleManager.BaseModule):
 
         seconds = round(time.time()-duck_timestamp, 2)
 
-        ducks_plural = "duck" if action_acount == 1 else "ducks"
+        ducks_plural = "duck" if action_count == 1 else "ducks"
 
         return "%s %s a duck in %s seconds! You've %s %d %s in %s!" % (
             user.nickname, action, seconds, action, action_count, ducks_plural,
