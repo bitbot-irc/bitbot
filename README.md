@@ -2,7 +2,7 @@
 Python3 event-driven modular IRC bot!
 
 ## Requirements
-Python3.6+ and [BeautifulSoup4](https://pypi.python.org/pypi/beautifulsoup4), [netifaces](https://pypi.org/project/netifaces/), [requests](https://pypi.org/project/requests/), [scrypt](https://pypi.python.org/pypi/scrypt), [suds](https://pypi.python.org/pypi/suds-jurko) and [tweepy](https://pypi.org/project/tweepy/). Use `pip3 install -r requirements.txt` to install them all at once.
+Python3.6+ and [BeautifulSoup4](https://pypi.python.org/pypi/beautifulsoup4), [lxml](https://pypi.org/project/lxml/), [netifaces](https://pypi.org/project/netifaces/), [requests](https://pypi.org/project/requests/), [scrypt](https://pypi.python.org/pypi/scrypt), [suds](https://pypi.python.org/pypi/suds-jurko) and [tweepy](https://pypi.org/project/tweepy/). Use `pip3 install -r requirements.txt` to install them all at once.
 
 ## Setup
 See [docs/help/setup.md](docs/help/setup.md).
