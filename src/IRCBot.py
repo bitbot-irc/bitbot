@@ -237,8 +237,10 @@ class Bot(object):
         return thread
 
     def run(self):
-        self._read_thread = self._daemon_thread(self._read_loop)
-        self._write_thread = self._daemon_thread(self._write_loop)
+        self._read_thread = self._daemon_thread(
+            lambda: self._loop_catch(self._read_loop))
+        self._write_thread = self._daemon_thread(
+            lambda: self._loop_catch(self._write_loop))
         self._event_loop()
 
     def _kill(self):
@@ -266,6 +268,13 @@ class Bot(object):
         return lambda: server._post_send(lines)
     def _post_read_factory(self, server, lines):
         return lambda: server._post_read(lines)
+
+    def _loop_catch(self, loop: typing.Callable[[], None]):
+        try:
+            loop()
+        except:
+            self._event_queue.put(TriggerEvent(TriggerEventType.Kill))
+            raise
 
     def _write_loop(self):
         while self.running:
