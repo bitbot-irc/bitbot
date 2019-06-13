@@ -4,10 +4,12 @@ Added:
 - Outbound message filtering (`message_filter.py`)
 
 Changed:
-- only strip 2 characters (`++` or `--`) from the end of karma
+- Only strip 2 characters (`++` or `--`) from the end of karma
+- Track CHANMODE type B, C and D (not just type D)
 
 Fixed:
 - `KeyError` when sts `port` key not present
+- lxml wasn't in requirements.txt but it should have been
 
 # 2019-06-09 - BitBot v1.9.2
 
