@@ -10,6 +10,7 @@ Changed:
 Fixed:
 - `KeyError` when sts `port` key not present
 - lxml wasn't in requirements.txt but it should have been
+- Any CRITICAL in read/write thread now kills the main thread too
 
 # 2019-06-09 - BitBot v1.9.2
 
