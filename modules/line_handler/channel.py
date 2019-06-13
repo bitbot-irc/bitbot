@@ -121,9 +121,8 @@ def handle_324(event):
     if event["args"][1] in event["server"].channels:
         channel = event["server"].channels.get(event["args"][1])
         modes = event["args"][2]
-        for mode in modes[1:]:
-            if mode in event["server"].channel_modes:
-                channel.add_mode(mode)
+        args = event["args"][3:]
+        channel.parse_modes(modes, args[:])
 
 def handle_329(event):
     channel = event["server"].channels.get(event["args"][1])

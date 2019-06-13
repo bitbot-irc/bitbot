@@ -80,22 +80,12 @@ def mode(events, event):
     is_channel = target[0] in event["server"].channel_types
     if is_channel:
         channel = event["server"].channels.get(target)
+        modes = event["args"][1]
         args  = event["args"][2:]
-        _args = args[:]
-        modes = RE_MODES.findall(event["args"][1])
-        for chunk in modes:
-            remove = chunk[0] == "-"
-            for mode in chunk[1:]:
-                if mode in event["server"].channel_modes:
-                    channel.change_mode(remove, mode)
-                elif mode in event["server"].prefix_modes and len(args):
-                    channel.change_mode(remove, mode, args.pop(0))
-                elif (mode in event["server"].channel_list_modes or
-                        mode in event["server"].channel_paramatered_modes):
-                    args.pop(0)
-                elif not remove:
-                    args.pop(0)
-        events.on("received.mode.channel").call(modes=modes, mode_args=_args,
+
+        channel.parse_modes(modes, args[:])
+
+        events.on("received.mode.channel").call(modes=modes, mode_args=args,
             channel=channel, server=event["server"], user=user)
     elif event["server"].is_own_nickname(target):
         modes = event["args"][1]

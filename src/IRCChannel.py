@@ -1,6 +1,8 @@
-import typing, uuid
+import re, typing, uuid
 from src import EventManager, IRCBot, IRCBuffer, IRCObject, IRCServer, IRCUser
 from src import utils
+
+RE_MODES = re.compile(r"[-+]\w+")
 
 class Channel(IRCObject.Object):
     name = ""
@@ -50,6 +52,26 @@ class Channel(IRCObject.Object):
     def has_user(self, user: IRCUser.User) -> bool:
         return user in self.users
 
+    def mode_str(self) -> str:
+        modes = [] # type: typing.List[typing.Tuple[str, typing.List[str]]]
+        # sorta alphanumerically by mode char
+        modes_iter = sorted(self.modes.items(), key=lambda mode: mode[0])
+
+        for mode, args in modes_iter:
+            # not list mode (e.g. +b) and not prefix mode (e.g. +o)
+            if (not mode in self.server.channel_list_modes and
+                    not mode in self.server.prefix_modes):
+                args_list = typing.cast(typing.List[str], list(args))
+                modes.append((mode, args_list))
+
+        # move modes with args to the front
+        modes.sort(key=lambda mode: not bool(mode[1]))
+
+        out_modes = "".join(mode for mode, args in modes)
+        out_args = " ".join(args[0] for mode, args in modes if args)
+
+        return "+%s%s" % (out_modes, " %s" % out_args if out_args else "")
+
     def add_mode(self, mode: str, arg: str=None):
         if not mode in self.modes:
             self.modes[mode] = set([])
@@ -86,6 +108,23 @@ class Channel(IRCObject.Object):
             self.remove_mode(mode, arg)
         else:
             self.add_mode(mode, arg)
+
+    def parse_modes(self, modes: str, args: typing.List[str]):
+        for chunk in RE_MODES.findall(modes):
+            remove = chunk[0] == "-"
+            for mode in chunk[1:]:
+                if mode in self.server.channel_list_modes:
+                    args.pop(0)
+                elif (mode in self.server.channel_paramatered_modes or
+                        mode in self.server.prefix_modes):
+                    self.change_mode(remove, mode, args.pop(0))
+                elif mode in self.server.channel_setting_modes:
+                    if remove:
+                        self.change_mode(remove, mode)
+                    else:
+                        self.change_mode(remove, mode, args.pop(0))
+                elif mode in self.server.channel_modes:
+                    self.change_mode(remove, mode)
 
     def set_setting(self, setting: str, value: typing.Any):
         self.bot.database.channel_settings.set(self.id, setting, value)
