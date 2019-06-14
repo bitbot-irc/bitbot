@@ -174,8 +174,8 @@ class Module(ModuleManager.BaseModule):
                 try:
                     next_success, next_return = self._hook_call_catch(
                         lambda: next(hook_return))
-                except StopIteration:
-                    break
+                except StopIteration as e:
+                    return True, e.value
 
                 if next_success:
                     multi_check = None
@@ -191,7 +191,7 @@ class Module(ModuleManager.BaseModule):
                         if not check_success:
                             return False, check_message
                 else:
-                    break
+                    return False, next_return
         return hook_success, hook_return
 
     def command(self, server, target, target_str, is_channel, user, command,
