@@ -70,16 +70,17 @@ class Module(ModuleManager.BaseModule):
             if event["is_channel"]:
                 channel = event["target"]
 
-            target, context = self._to_context(event["server"], channel,
-                event["user"], context or "user")
+            context = context or "user"
+            target, setting_context = self._to_context(event["server"], channel,
+                event["user"], context)
 
-            export_settings = self._get_export_setting(context)
+            export_settings = self._get_export_setting(setting_context)
             setting_info = export_settings.get(require_setting, None)
             if setting_info:
                 value = target.get_setting(require_setting, None)
                 if value == None:
                     example = setting_info.get("example", "<value>")
-                    return "Please set %s, e.g.: %s%s %s %s" % (
+                    return "Please set %s, e.g.: %sconfig %s %s %s" % (
                         require_setting, event["command_prefix"], context,
                         require_setting, example)
 
