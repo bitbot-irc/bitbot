@@ -53,7 +53,6 @@ class Module(ModuleManager.BaseModule):
         return {"networks": networks, "channels": channels, "users": users}
 
     def _server_stats(self, server):
-        connected_seconds = time.time()-server.socket.connect_time
         return {
             "hostname": server.connection_params.hostname,
             "port": server.connection_params.port,
@@ -63,10 +62,8 @@ class Module(ModuleManager.BaseModule):
                 server.nickname, server.username, server.hostname),
             "users": len(server.users),
             "bytes-written": server.socket.bytes_written,
-            "bytes-written-per-second":
-                server.socket.bytes_written/connected_seconds,
             "bytes-read": server.socket.bytes_read,
-            "bytes-read-per-second": server.socket.bytes_read/connected_seconds,
+            "connected-since": server.socket.connect_time,
             "channels": {
                 c.name: self._channel_stats(c) for c in server.channels
             },
