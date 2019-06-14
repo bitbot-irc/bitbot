@@ -169,7 +169,12 @@ class Module(ModuleManager.BaseModule):
             try:
                 result = self._config(export_settings, target, setting, value)
             except ConfigInvalidValue:
-                raise utils.EventError("Invalid value")
+                example = setting_info.get("example", None)
+                if not example == None:
+                    raise utils.EventError("Invalid value. Example: %s" %
+                        example)
+                else:
+                    raise utils.EventError("Invalid value")
             except ConfigSettingInexistent:
                 raise utils.EventError("Setting not set")
 
