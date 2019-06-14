@@ -321,7 +321,7 @@ class Module(ModuleManager.BaseModule):
                         "Cannot change config for current channel when in "
                         "private message")
         elif context == "serverset" or context == "botset":
-            yield utils.Check("permission", "config")
+            yield permission_check
 
         export_settings = self._get_export_setting(context)
         if not setting == None:
