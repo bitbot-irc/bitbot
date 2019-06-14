@@ -190,9 +190,9 @@ class MultiCheck(object):
             requests: typing.List[typing.Tuple[str, typing.List[str]]]):
         self.requests = requests
 class Check(object):
-    def __init__(self, request: str, *args: typing.List[str]):
+    def __init__(self, request: str, *args: str):
         self.request = request
-        self.args = args
+        self.args = list(args)
     def to_multi(self):
         return MultiCheck([(self.request, self.args)])
     def __or__(self, other: "Check"):
