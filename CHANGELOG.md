@@ -2,15 +2,22 @@
 
 Added:
 - Outbound message filtering (`message_filter.py`)
+- Mid-callback command permission checks ('yield utils.Check(...)')
+- `connected-since` on stats endpoint
 
 Changed:
 - Only strip 2 characters (`++` or `--`) from the end of karma
 - Track CHANMODE type B, C and D (not just type D)
+- 'x saved a duck' -> 'x befriended a duck'
 
 Fixed:
 - `KeyError` when sts `port` key not present
 - lxml wasn't in requirements.txt but it should have been
 - Any CRITICAL in read/write thread now kills the main thread too
+
+Removed:
+- `!set`/`!channelset`/`!serverset`/`!botset` (replaced with `!config`)
+- `bytes-read-per-second` and `bytes-written-per-second` from stats endpoint
 
 # 2019-06-09 - BitBot v1.9.2
 
