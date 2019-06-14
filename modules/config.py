@@ -142,9 +142,9 @@ class Module(ModuleManager.BaseModule):
             else:
                 target = event["user"]
         elif context == "channelset":
-            yield utils.Check("channel-mode", "o")|permission_check
 
             if name:
+                yield permission_check
                 if name in event["server"].channels:
                     target = event["server"].channels.get(name)
                 else:
@@ -152,6 +152,7 @@ class Module(ModuleManager.BaseModule):
                         name)
             else:
                 if event["is_channel"]:
+                    yield utils.Check("channel-mode", "o")|permission_check
                     target = event["target"]
                 else:
                     raise utils.EventError(
