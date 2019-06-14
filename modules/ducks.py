@@ -87,8 +87,8 @@ class Module(ModuleManager.BaseModule):
         :help: Befriend a duck
         """
         if event["target"].duck_active:
-            action = self._duck_action(event["target"], event["user"], "saved",
-                "ducks-befriended")
+            action = self._duck_action(event["target"], event["user"],
+                "befriended", "ducks-befriended")
             event["stdout"].write(action)
         else:
             self._no_duck(event["target"], event["user"], event["stderr"])
