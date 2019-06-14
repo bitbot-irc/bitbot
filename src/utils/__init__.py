@@ -185,6 +185,11 @@ def export(setting: str, value: typing.Any):
         return module
     return _export_func
 
+class Check(object):
+    def __init__(self, request: str, *args: typing.List[str]):
+        self.request = request
+        self.args = args
+
 TOP_10_CALLABLE = typing.Callable[[typing.Any], typing.Any]
 def top_10(items: typing.Dict[typing.Any, typing.Any],
         convert_key: TOP_10_CALLABLE=lambda x: x,
