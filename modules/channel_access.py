@@ -13,34 +13,25 @@ class Module(ModuleManager.BaseModule):
         return ((require_access in access or "*" in access
             ) and identified_account)
 
-    @utils.hook("preprocess.command")
-    def preprocess_command(self, event):
-        require_access = event["hook"].get_kwarg("require_access")
+    def _command_check(self, event, target, require_access):
         if event["is_channel"]:
             if require_access:
-                if self._has_channel_access(event["target"], event["user"],
+                if self._has_channel_access(target, event["user"],
                         require_access):
                     return utils.consts.PERMISSION_FORCE_SUCCESS
                 else:
                     return "You do not have permission to do this"
-        else:
-            channel_arg_index = event["hook"].get_kwarg("channel_arg", None)
-            if not channel_arg_index == None:
-                channel_name = event["args_split"][int(channel_arg_index)]
-                if channel_name in event["server"].channels:
-                    channel = event["server"].channels.get(channel_name)
-                    if self._has_channel_access(channel, event["user"],
-                            require_access):
-                        return utils.consts.PERMISSION_FORCE_SUCCESS
-                    else:
-                        return "You do not have permission to do this"
-                else:
-                    return "I'm not in that channel"
 
-    @utils.hook("get.haschannelaccess")
-    def has_channel_access(self, event):
-        return self._has_channel_access(event["target"], event["user"],
-            event["access"])
+    @utils.hook("preprocess.command")
+    def preprocess_command(self, event):
+        require_access = event["hook"].get_kwarg("require_access")
+        if require_access:
+            return self._command_check(event, event["target"],  require_access)
+
+    @utils.hook("check.command.channel-access")
+    def check_command(self, event):
+        return self._command_check(event, event["check_args"][0],
+            event["check_args"][1])
 
     @utils.hook("received.command.access", min_args=1, channel_only=True)
     def access(self, event):

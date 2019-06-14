@@ -53,11 +53,11 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Kick a user from the current channel
         :usage: <nickname> [reason]
-        :require_access: kick
-        :channel_arg: 0
         :prefix: Kick
         """
         channel = event["server"].channels.get(event["args_split"][0])
+        yield utils.Check("channel-access", channel, "kick")
+
         self._kick_command(event, channel, event["args_split"][1:])
 
     @utils.hook("received.command.k", alias_of="kick")
@@ -105,10 +105,10 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Ban a user/hostmask from the current channel
         :usage: <channel> <nickname/hostmask>
-        :require_access: ban
-        :channel_arg: 0
         """
         channel = event["server"].channels.get(event["args_split"][0])
+        yield utils.Check("channel-access", channel, "ban")
+
         self._ban(event["server"], channel, True, event["args_split"][1])
     @utils.hook("received.command.ban", channel_only=True, min_args=1)
     def ban(self, event):
@@ -179,10 +179,10 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Unban a user/hostmask from the current channel
         :usage: <channel> <nickname/hostmask>
-        :require_access: ban
-        :channel_arg: 0
         """
         channel = event["server"].channels.get(event["args_split"][0])
+        yield utils.Check("channel-access", channel, "ban")
+
         self._ban(event["server"], channel, False, event["args_split"][1])
 
     @utils.hook("received.command.unban", channel_only=True, min_args=1)
