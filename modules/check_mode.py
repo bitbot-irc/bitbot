@@ -34,4 +34,4 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("check.command.channel-mode")
     def check_command(self, event):
-        return self._check_command(event, event["check_args"][0])
+        return self._check_command(event, event["request_args"][0])

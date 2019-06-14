@@ -130,12 +130,16 @@ class Module(ModuleManager.BaseModule):
 
         return hook, args_split
 
-    def _check(self, context, kwargs, request=None, **extra_kwargs):
+    def _check(self, context, kwargs, requests=[]):
         event_hook = self.events.on(context).on("command")
-        if not request == None:
-            event_hook = event_hook.on(request)
 
-        returns = event_hook.call_unsafe(**kwargs, **extra_kwargs)
+        returns = []
+        if requests:
+            for request, request_args in requests:
+                returns.append(event_hook.on(request).call_unsafe_for_result(
+                    **kwargs, request_args=request_args))
+        else:
+            returns = event_hook.call_unsafe(**kwargs)
 
         hard_fail = False
         force_success = False
@@ -174,10 +178,16 @@ class Module(ModuleManager.BaseModule):
                     break
 
                 if next_success:
+                    multi_check = None
                     if isinstance(next_return, utils.Check):
+                        multi_check = next_return.to_multi()
+                    elif isinstance(next_return, utils.MultiCheck):
+                        multi_check = next_return
+
+                    if multi_check:
                         check_success, check_message = self._check("check",
-                            check_kwargs, next_return.request,
-                            check_args=next_return.args)
+                            check_kwargs, multi_check.requests)
+
                         if not check_success:
                             return False, check_message
                 else:

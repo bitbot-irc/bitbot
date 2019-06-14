@@ -191,13 +191,9 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Reset password for '%s'" %
                 target.nickname)
 
-    @utils.hook("preprocess.command")
-    def preprocess_command(self, event):
+    def _check_command(self, event, permission, authenticated):
         if event["user"].admin_master:
             return utils.consts.PERMISSION_FORCE_SUCCESS
-
-        permission = event["hook"].get_kwarg("permission", None)
-        authenticated = event["hook"].kwargs.get("authenticated", False)
 
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
@@ -230,6 +226,16 @@ class Module(ModuleManager.BaseModule):
                     return REQUIRES_IDENTIFY
             else:
                 return utils.consts.PERMISSION_FORCE_SUCCESS
+
+    @utils.hook("preprocess.command")
+    def preprocess_command(self, event):
+        permission = event["hook"].get_kwarg("permission", None)
+        authenticated = event["hook"].kwargs.get("authenticated", False)
+        return self._check_command(event, permission, authenticated)
+
+    @utils.hook("check.command.permission")
+    def check_command(self, event):
+        return self._check_command(event, event["request_args"][0], False)
 
     @utils.hook("received.command.mypermissions", authenticated=True)
     def my_permissions(self, event):

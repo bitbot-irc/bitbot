@@ -185,10 +185,19 @@ def export(setting: str, value: typing.Any):
         return module
     return _export_func
 
+class MultiCheck(object):
+    def __init__(self,
+            requests: typing.List[typing.Tuple[str, typing.List[str]]]):
+        self.requests = requests
 class Check(object):
     def __init__(self, request: str, *args: typing.List[str]):
         self.request = request
         self.args = args
+    def to_multi(self):
+        return MultiCheck([(self.request, self.args)])
+    def __or__(self, other: "Check"):
+        return MultiCheck([(self.request, self.args),
+            (other.request, other.args)])
 
 TOP_10_CALLABLE = typing.Callable[[typing.Any], typing.Any]
 def top_10(items: typing.Dict[typing.Any, typing.Any],
