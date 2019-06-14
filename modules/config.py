@@ -281,7 +281,6 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Change config options
         :usage: <context>[:name] [-][setting [value]]
-        :permission: config
         """
 
         arg_count = len(event["args_split"])
@@ -297,12 +296,17 @@ class Module(ModuleManager.BaseModule):
         target, context = self._to_context(event["server"],
             event["target"], event["user"], context_desc)
 
+        permission_check = utils.Check("permission", "config")
+
         if context == "set":
             if name:
+                yield utils.Check("self", name)|permission_check
                 target = event["server"].get_user(name)
             else:
                 target = event["user"]
         elif context == "channelset":
+            yield utils.Check("channel-mode", "o")|permission_check
+
             if name:
                 if name in event["server"].channels:
                     target = event["server"].channels.get(name)
@@ -316,6 +320,8 @@ class Module(ModuleManager.BaseModule):
                     raise utils.EventError(
                         "Cannot change config for current channel when in "
                         "private message")
+        elif context == "serverset" or context == "botset":
+            yield utils.Check("permission", "config")
 
         export_settings = self._get_export_setting(context)
         if not setting == None:

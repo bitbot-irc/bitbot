@@ -604,3 +604,11 @@ class Module(ModuleManager.BaseModule):
         del aliases[alias]
         self._set_aliases(event["server"], aliases)
         event["stdout"].write("Removed '%s' alias" % alias)
+
+    @utils.hook("check.command.self")
+    def check_command_self(self, event):
+        if event["server"].irc_lower(event["request_args"][0]
+                ) == event["user"].name:
+            return utils.consts.PERMISSION_FORCE_SUCCESS
+        else:
+            return "You do not have permission to do this"
