@@ -4,6 +4,7 @@ Added:
 - Outbound message filtering (`message_filter.py`)
 - Mid-callback command permission checks ('yield utils.Check(...)')
 - `connected-since` on stats endpoint
+- IRCv3: draft/event-playback
 
 Changed:
 - Only strip 2 characters (`++` or `--`) from the end of karma
