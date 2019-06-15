@@ -2,7 +2,7 @@
 
 Added:
 - Outbound message filtering (`message_filter.py`)
-- Mid-callback command permission checks ('yield utils.Check(...)')
+- Mid-callback command permission checks ('event["check_assert"](utils.Check(...))')
 - `connected-since` on stats endpoint
 - IRCv3: draft/event-playback
 
