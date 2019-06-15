@@ -137,14 +137,15 @@ class Module(ModuleManager.BaseModule):
 
         if context == "set":
             if name:
-                yield utils.Check("self", name)|permission_check
+                event["check_assert"](
+                    utils.Check("self", name)|permission_check)
                 target = event["server"].get_user(name)
             else:
                 target = event["user"]
         elif context == "channelset":
-
             if name:
-                yield permission_check
+                event["check_assert"](permission_check)
+
                 if name in event["server"].channels:
                     target = event["server"].channels.get(name)
                 else:
@@ -152,14 +153,15 @@ class Module(ModuleManager.BaseModule):
                         name)
             else:
                 if event["is_channel"]:
-                    yield utils.Check("channel-mode", "o")|permission_check
+                    event["check_assert"](
+                        utils.Check("channel-mode", "o")|permission_check)
                     target = event["target"]
                 else:
                     raise utils.EventError(
                         "Cannot change config for current channel when in "
                         "private message")
         elif context == "serverset" or context == "botset":
-            yield permission_check
+            event["check_assert"](permission_check)
 
         export_settings = self._get_export_setting(context)
         if not setting == None:

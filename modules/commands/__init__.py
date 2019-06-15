@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on permissions
 
-import re, string, types
+import re, string, typing
 from src import EventManager, ModuleManager, utils
 from . import outs
 
@@ -159,40 +159,14 @@ class Module(ModuleManager.BaseModule):
             return False, None
         return True, None
 
-    def _hook_call_catch(self, func):
-        try:
-            return True, func()
-        except utils.EventError as e:
-            return False, str(e)
-    def _hook_call(self, hook, event, check_kwargs):
-        hook_success, hook_return = self._hook_call_catch(
-            lambda: hook.call(event))
 
-        if hook_success and hook_return and isinstance(
-                hook_return, types.GeneratorType):
-            while True:
-                try:
-                    next_success, next_return = self._hook_call_catch(
-                        lambda: next(hook_return))
-                except StopIteration as e:
-                    return True, e.value
-
-                if next_success:
-                    multi_check = None
-                    if isinstance(next_return, utils.Check):
-                        multi_check = next_return.to_multi()
-                    elif isinstance(next_return, utils.MultiCheck):
-                        multi_check = next_return
-
-                    if multi_check:
-                        check_success, check_message = self._check("check",
-                            check_kwargs, multi_check.requests)
-
-                        if not check_success:
-                            return False, check_message
-                else:
-                    return False, next_return
-        return hook_success, hook_return
+    def _check_assert(self, check_kwargs,
+            check: typing.Union[utils.Check, utils.MultiCheck]):
+        checks = check.to_multi() # bot Check and MultiCheck has this func
+        is_success, message = self._check("check", check_kwargs,
+            checks.requests())
+        if not is_success:
+            raise utils.EventError(message)
 
     def command(self, server, target, target_str, is_channel, user, command,
             args_split, tags, hook, **kwargs):
@@ -239,33 +213,32 @@ class Module(ModuleManager.BaseModule):
                 stderr.write("Not enough arguments (minimum: %d)" %
                     min_args).send(command_method)
         else:
-            check_kwargs = {"hook": hook, "user": user, "server": server,
+            event_kwargs = {"hook": hook, "user": user, "server": server,
                 "target": target, "is_channel": is_channel, "tags": tags,
-                "args_split": args_split, "command": command}
-            check_kwargs.update(kwargs)
+                "args_split": args_split, "command": command,
+                "args": " ".join(args_split)}
+            event_kwargs.update(kwargs)
+
+            check_assert = lambda check: self._check_assert(event_kwargs, check)
+            event_kwargs["check_assert"] = check_assert
 
             check_success, check_message = self._check("preprocess",
-                check_kwargs)
+                event_kwargs)
             if not check_success:
                 if check_message:
                     stderr.write(check_message).send(command_method)
                 return True
 
-            args = " ".join(args_split)
-
-            new_event = self.events.on(hook.event_name).make_event(user=user,
-                server=server, target=target, args=args, tags=tags,
-                args_split=args_split, stdout=stdout, stderr=stderr,
-                is_channel=is_channel, command=command, **kwargs)
+            new_event = self.events.on(hook.event_name).make_event(
+                **event_kwargs)
 
             self.log.trace("calling command '%s': %s",
                 [command, new_event.kwargs])
-            hook_success, hook_message = self._hook_call(hook, new_event,
-                check_kwargs)
 
-            if not hook_success:
-                if not hook_message == None:
-                    stderr.write(hook_message).send(command_method)
+            try:
+                hook.call(new_event)
+            except utils.EventError as e:
+                stderr.write(str(e)).send(command_method)
                 return True
 
             if not hook.kwargs.get("skip_out", False):

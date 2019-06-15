@@ -188,7 +188,11 @@ def export(setting: str, value: typing.Any):
 class MultiCheck(object):
     def __init__(self,
             requests: typing.List[typing.Tuple[str, typing.List[str]]]):
-        self.requests = requests
+        self._requests = requests
+    def to_multi(self):
+        return self
+    def requests(self):
+        return self._requests[:]
 class Check(object):
     def __init__(self, request: str, *args: str):
         self.request = request

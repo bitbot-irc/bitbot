@@ -56,7 +56,8 @@ class Module(ModuleManager.BaseModule):
         :prefix: Kick
         """
         channel = event["server"].channels.get(event["args_split"][0])
-        yield utils.Check("channel-access", channel, "kick")
+
+        event["check_assert"](utils.Check("channel-access", channel, "kick"))
 
         self._kick_command(event, channel, event["args_split"][1:])
 
@@ -107,7 +108,8 @@ class Module(ModuleManager.BaseModule):
         :usage: <channel> <nickname/hostmask>
         """
         channel = event["server"].channels.get(event["args_split"][0])
-        yield utils.Check("channel-access", channel, "ban")
+
+        event["check_assert"](utils.Check("channel-access", channel, "ban"))
 
         self._ban(event["server"], channel, True, event["args_split"][1])
     @utils.hook("received.command.ban", channel_only=True, min_args=1)
@@ -181,7 +183,8 @@ class Module(ModuleManager.BaseModule):
         :usage: <channel> <nickname/hostmask>
         """
         channel = event["server"].channels.get(event["args_split"][0])
-        yield utils.Check("channel-access", channel, "ban")
+
+        event["check_assert"](utils.Check("channel-access", channel, "ban"))
 
         self._ban(event["server"], channel, False, event["args_split"][1])
 
