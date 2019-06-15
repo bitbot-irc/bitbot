@@ -31,8 +31,6 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Show my network/channel/user stats
         """
-        yield utils.Check("channel-mode", "o")|utils.Check("permission", "asd")
-
         networks, channels, users = self._stats()
 
         response = "I currently have %d network" % networks
