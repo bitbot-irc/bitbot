@@ -30,8 +30,13 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("check.command.channel-access")
     def check_command(self, event):
-        return self._command_check(event, event["check_args"][0],
-            event["check_args"][1])
+        target = event["target"]
+        access = event["request_args"][0]
+        if len(event["request_args"]) > 1:
+            target = event["request_args"][0]
+            access = event["request_args"][1]
+
+        return self._command_check(event, target, access)
 
     @utils.hook("received.command.access", min_args=1, channel_only=True)
     def access(self, event):
