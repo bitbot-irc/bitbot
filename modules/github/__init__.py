@@ -113,6 +113,9 @@ CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 @utils.export("channelset", {"setting": "auto-github",
     "help": "Enable/disable automatically getting github issue/PR info",
     "validate": utils.bool_or_none, "example": "on"})
+@utils.export("channelset", {"setting": "auto-github-timeout",
+    "help": "Set amount of seconds between auto-github duplicates",
+    "validate": utils.int_or_none, "example": "300"})
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
         repo, _, number = ref.rpartition("#")
@@ -235,6 +238,20 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Issue/PR not found")
 
+    def _cache_ref(self, ref):
+        return "auto-github-%s" % ref.lower()
+    def _auto_github_timeout(self, channel, ref):
+        timeout = channel.get_setting("auto-github-timeout", None)
+        if not timeout == None:
+            cache = self._cache_ref(ref)
+            if not self.bot.cache.has_item(cache):
+                self.bot.cache.temporary_cache(cache, timeout)
+                return True
+            else:
+                return False
+        else:
+            return True
+
     @utils.hook("command.regex")
     def url_regex(self, event):
         """
@@ -245,14 +262,15 @@ class Module(ModuleManager.BaseModule):
             event.eat()
             ref = "%s/%s#%s" % (event["match"].group(1),
                 event["match"].group(2), event["match"].group(4))
-            try:
-                result = self._get_info(event["target"], ref)
-            except utils.EventError:
-                return
-            if result:
-                if event["target"].get_setting("github-hide-prefix", False):
-                    event["stdout"].hide_prefix()
-                event["stdout"].write(result)
+            if self._auto_github_timeout(event["target"], ref):
+                try:
+                    result = self._get_info(event["target"], ref)
+                except utils.EventError:
+                    return
+                if result:
+                    if event["target"].get_setting("github-hide-prefix", False):
+                        event["stdout"].hide_prefix()
+                    event["stdout"].write(result)
 
     @utils.hook("command.regex")
     def ref_regex(self, event):
@@ -262,15 +280,17 @@ class Module(ModuleManager.BaseModule):
         """
         if event["target"].get_setting("auto-github", False):
             event.eat()
-            try:
-                result = self._get_info(event["target"],
-                    event["match"].group(0))
-            except utils.EventError:
-                return
-            if result:
-                if event["target"].get_setting("github-hide-prefix", False):
-                   event["stdout"].hide_prefix()
-                event["stdout"].write(result)
+            ref = event["match"].group(0)
+            if self._auto_github_timeout(event["target"], ref):
+                try:
+                    result = self._get_info(event["target"],
+                        event["match"].group(0))
+                except utils.EventError:
+                    return
+                if result:
+                    if event["target"].get_setting("github-hide-prefix", False):
+                       event["stdout"].hide_prefix()
+                    event["stdout"].write(result)
 
     @utils.hook("received.command.ghwebhook", min_args=1, channel_only=True)
     def github_webhook(self, event):
