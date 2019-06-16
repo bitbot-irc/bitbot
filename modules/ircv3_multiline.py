@@ -1,7 +1,7 @@
 from src import ModuleManager, utils
 
-CAP = utils.irc.Capability(None, "bitbot.dev/multi-line")
-BATCH = utils.irc.BatchType(None, "bitbot.dev/multi-line")
+CAP = utils.irc.Capability(None, "bitbot.dev/multiline")
+BATCH = utils.irc.BatchType(None, "bitbot.dev/multiline")
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
 
                 target = event["line"].args[0]
                 lines = event["line"].args[1].split("\n")
-                batch = utils.irc.IRCSendBatch("bitbot.dev/multi-line",
+                batch = utils.irc.IRCSendBatch("bitbot.dev/multiline",
                     [target])
                 for line in lines:
                     batch.add_line(utils.irc.protocol.privmsg(target, line))
