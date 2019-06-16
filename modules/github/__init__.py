@@ -113,7 +113,7 @@ CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 @utils.export("channelset", {"setting": "auto-github",
     "help": "Enable/disable automatically getting github issue/PR info",
     "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "auto-github-timeout",
+@utils.export("channelset", {"setting": "auto-github-cooldown",
     "help": "Set amount of seconds between auto-github duplicates",
     "validate": utils.int_or_none, "example": "300"})
 class Module(ModuleManager.BaseModule):
@@ -240,12 +240,12 @@ class Module(ModuleManager.BaseModule):
 
     def _cache_ref(self, ref):
         return "auto-github-%s" % ref.lower()
-    def _auto_github_timeout(self, channel, ref):
-        timeout = channel.get_setting("auto-github-timeout", None)
-        if not timeout == None:
+    def _auto_github_cooldown(self, channel, ref):
+        cooldown = channel.get_setting("auto-github-cooldown", None)
+        if not cooldown == None:
             cache = self._cache_ref(ref)
             if not self.bot.cache.has_item(cache):
-                self.bot.cache.temporary_cache(cache, timeout)
+                self.bot.cache.temporary_cache(cache, cooldown)
                 return True
             else:
                 return False
@@ -262,7 +262,7 @@ class Module(ModuleManager.BaseModule):
             event.eat()
             ref = "%s/%s#%s" % (event["match"].group(1),
                 event["match"].group(2), event["match"].group(4))
-            if self._auto_github_timeout(event["target"], ref):
+            if self._auto_github_cooldown(event["target"], ref):
                 try:
                     result = self._get_info(event["target"], ref)
                 except utils.EventError:
@@ -281,7 +281,7 @@ class Module(ModuleManager.BaseModule):
         if event["target"].get_setting("auto-github", False):
             event.eat()
             ref = event["match"].group(0)
-            if self._auto_github_timeout(event["target"], ref):
+            if self._auto_github_cooldown(event["target"], ref):
                 try:
                     result = self._get_info(event["target"],
                         event["match"].group(0))
