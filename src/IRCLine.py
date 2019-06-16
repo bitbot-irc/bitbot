@@ -45,7 +45,7 @@ class ParsedLine(object):
         self._args = args
         self.args = IRCArgs(args)
         self.source = source
-        self.tags = {} if tags == None else tags
+        self.tags = tags or {} # type: typing.Dict[str, str]
         self._valid = True
         self._assured = False
 
@@ -63,6 +63,9 @@ class ParsedLine(object):
         return self._assured
     def assure(self):
         self._assured = True
+
+    def add_tag(self, tag: str, value: str=None):
+        self.tags[tag] = value or ""
 
     def _tag_str(self, tags: typing.Dict[str, str]) -> str:
         tag_pieces = []
