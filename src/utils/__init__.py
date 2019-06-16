@@ -193,6 +193,8 @@ class MultiCheck(object):
         return self
     def requests(self):
         return self._requests[:]
+    def __or__(self, other: "Check"):
+        return MultiCheck(self._requests+[(other.request, other.args)])
 class Check(object):
     def __init__(self, request: str, *args: str):
         self.request = request

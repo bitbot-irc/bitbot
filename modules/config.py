@@ -39,6 +39,10 @@ class ConfigChannelTarget(object):
         channel_id = self._get_id()
         self._bot.database.channel_settings.delete(channel_id, setting)
 
+    def get_user_setting(self, user_id, setting, default=None):
+        return self.bot.database.user_channel_settings.get(user_id,
+            self._get_id(), setting, default)
+
 class Module(ModuleManager.BaseModule):
     def _to_context(self, server, channel, user, context_desc):
         context_desc_lower = context_desc.lower()
@@ -144,22 +148,22 @@ class Module(ModuleManager.BaseModule):
                 target = event["user"]
         elif context == "channelset":
             if name:
-                event["check_assert"](permission_check)
-
                 if name in event["server"].channels:
                     target = event["server"].channels.get(name)
                 else:
+                    event["check_assert"]
                     target = ConfigChannelTarget(self.bot, event["server"],
                         name)
             else:
                 if event["is_channel"]:
-                    event["check_assert"](
-                        utils.Check("channel-mode", "o")|permission_check)
                     target = event["target"]
                 else:
                     raise utils.EventError(
                         "Cannot change config for current channel when in "
                         "private message")
+            event["check_assert"](permission_check|
+                utils.Check("channel-access", "set")|
+                utils.Check("channel-mode", "o"))
         elif context == "serverset" or context == "botset":
             event["check_assert"](permission_check)
 
