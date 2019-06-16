@@ -1,4 +1,4 @@
-import fnmatch, json, string, re, typing
+import fnmatch, json, string, re, typing, uuid
 from src import IRCLine, utils
 from . import protocol
 
@@ -259,16 +259,31 @@ def parse_ctcp(s: str) -> typing.Optional[CTCPMessage]:
 
 class IRCBatch(object):
     def __init__(self, identifier: str, batch_type: str, args: typing.List[str],
-            tags: typing.Dict[str, str]={}):
+            tags: typing.Dict[str, str]=None):
         self.identifier = identifier
         self.type = batch_type
         self.args = args
-        self.tags = tags
+        self.tags = tags or {}
         self._lines = [] # type: typing.List[IRCLine.ParsedLine]
     def add_line(self, line: IRCLine.ParsedLine):
         self._lines.append(line)
     def get_lines(self) -> typing.List[IRCLine.ParsedLine]:
         return self._lines
+
+class IRCSendBatch(IRCBatch):
+    def __init__(self, batch_type: str, args: typing.List[str],
+            tags: typing.Dict[str, str]=None):
+        IRCBatch.__init__(self, str(uuid.uuid4()), batch_type, args, tags)
+    def get_lines(self) -> typing.List[IRCLine.ParsedLine]:
+        lines = []
+        for line in self._lines:
+            line.add_tag("batch", self.identifier)
+            lines.append(line)
+
+        lines.insert(0, IRCLine.ParsedLine("BATCH",
+            ["+%s" % self.identifier, self.type]))
+        lines.append(IRCLine.ParsedLine("BATCH", ["-%s" % self.identifier]))
+        return lines
 
 class Capability(object):
     def __init__(self, name: typing.Optional[str], draft_name: str=None):
