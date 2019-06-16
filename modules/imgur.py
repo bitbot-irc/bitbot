@@ -28,7 +28,7 @@ class Module(ModuleManager.BaseModule):
             text += "%s " % data["account_url"]
         return text
 
-    @utils.hook("command.regex", pattern=REGEX_IMAGE)
+    @utils.hook("command.regex", pattern=REGEX_IMAGE, ignore_action=False)
     def _regex_image(self, event):
         """
         :command: imgur
@@ -36,7 +36,7 @@ class Module(ModuleManager.BaseModule):
         if event["target"].get_setting("auto-imgur", False):
             event["stdout"].write(self._parse_image(event["match"].group(1)))
             event.eat()
-    @utils.hook("command.regex", pattern=REGEX_GALLERY)
+    @utils.hook("command.regex", pattern=REGEX_GALLERY, ignore_action=False)
     def _regex_gallery(self, event):
         """
         :command: imgur

@@ -130,7 +130,7 @@ class Module(ModuleManager.BaseModule):
         else:
            event["stderr"].write("No search phrase provided")
 
-    @utils.hook("command.regex",
+    @utils.hook("command.regex", ignore_action=False,
         priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
         """

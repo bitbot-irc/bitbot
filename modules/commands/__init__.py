@@ -263,19 +263,15 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.channel", priority=EventManager.PRIORITY_LOW)
     def channel_message(self, event):
-        if event["action"]:
-            return
-
         commands_enabled = event["channel"].get_setting("commands", True)
         if not commands_enabled:
             return
-        prefixed_commands = event["channel"].get_setting("prefixed-commands", True)
 
         command_prefix = self._command_prefix(event["server"], event["channel"])
         command = None
         args_split = None
         if event["message_split"][0].startswith(command_prefix):
-            if not prefixed_commands:
+            if not event["channel"].get_setting("prefixed-commands",True):
                 return
             command = event["message_split"][0].replace(
                 command_prefix, "", 1).lower()
@@ -286,6 +282,9 @@ class Module(ModuleManager.BaseModule):
             args_split = event["message_split"][2:]
 
         if command:
+            if event["action"]:
+                return
+
             hook, args_split = self._find_command_hook(event["server"], command,
                 True, args_split)
             if hook:
@@ -295,8 +294,11 @@ class Module(ModuleManager.BaseModule):
                     command_prefix=command_prefix)
                 event["channel"].buffer.skip_next()
         else:
-            regex_hook = self.events.on("command.regex").get_hooks()
-            for hook in regex_hook:
+            regex_hooks = self.events.on("command.regex").get_hooks()
+            for hook in regex_hooks:
+                if event["action"] and hook.get_kwarg("ignore_action", True):
+                    continue
+
                 pattern = hook.get_kwarg("pattern", None)
                 if not pattern and hook.get_kwarg("pattern-url", None) == "1":
                     pattern = utils.http.REGEX_URL

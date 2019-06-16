@@ -252,7 +252,7 @@ class Module(ModuleManager.BaseModule):
         else:
             return True
 
-    @utils.hook("command.regex")
+    @utils.hook("command.regex", ignore_action=False)
     def url_regex(self, event):
         """
         :command: github
@@ -272,7 +272,7 @@ class Module(ModuleManager.BaseModule):
                         event["stdout"].hide_prefix()
                     event["stdout"].write(result)
 
-    @utils.hook("command.regex")
+    @utils.hook("command.regex", ignore_action=False)
     def ref_regex(self, event):
         """
         :command: github

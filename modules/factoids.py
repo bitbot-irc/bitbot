@@ -26,7 +26,7 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Unknown factoid '%s'" % name)
             event["stdout"].write("%s: %s" % (name, value))
 
-    @utils.hook("command.regex")
+    @utils.hook("command.regex", ignore_action=False)
     def channel_message(self, event):
         """
         :command: factoid

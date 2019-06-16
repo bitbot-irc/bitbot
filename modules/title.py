@@ -47,7 +47,7 @@ class Module(ModuleManager.BaseModule):
         else:
             return None
 
-    @utils.hook("command.regex",
+    @utils.hook("command.regex", ignore_action=False,
         priority=EventManager.PRIORITY_MONITOR)
     def channel_message(self, event):
         """

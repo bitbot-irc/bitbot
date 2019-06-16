@@ -166,7 +166,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("No tweet provided to get information about")
 
-    @utils.hook("command.regex", pattern=REGEX_TWITTERURL)
+    @utils.hook("command.regex", pattern=REGEX_TWITTERURL, ignore_action=False)
     def regex(self, event):
         """
         :command: tweet
