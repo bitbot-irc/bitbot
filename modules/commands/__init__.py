@@ -216,7 +216,8 @@ class Module(ModuleManager.BaseModule):
             event_kwargs = {"hook": hook, "user": user, "server": server,
                 "target": target, "is_channel": is_channel, "tags": tags,
                 "args_split": args_split, "command": command,
-                "args": " ".join(args_split)}
+                "args": " ".join(args_split), "stdout": stdout,
+                "stderr": stderr}
             event_kwargs.update(kwargs)
 
             check_assert = lambda check: self._check_assert(event_kwargs, check)
