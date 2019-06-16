@@ -24,10 +24,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.cap.ls")
     def on_cap_ls(self, event):
-        if CAP.available(event["capabilities"]):
-            cap = CAP.copy()
-            cap.on_ack(lambda: self._cap_ack(event["server"]))
-            return cap
+        cap = CAP.copy()
+        cap.on_ack(lambda: self._cap_ack(event["server"]))
+        return cap
 
     def _cap_ack(self, server):
         server.wait_for_capability("resume")
@@ -39,7 +38,7 @@ class Module(ModuleManager.BaseModule):
         if event["args"][0] == "SUCCESS":
             resume_channels = event["server"].get_setting("resume-channels", [])
             self.log.info("Successfully resumed session")
-            event["server"].cap_started = False
+            event["server"].clear_waiting_capabilities()
 
         elif event["args"][0] == "TOKEN":
             token = self._get_token(event["server"])

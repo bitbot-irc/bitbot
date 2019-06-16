@@ -7,8 +7,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
     @utils.hook("received.cap.new")
     def on_cap(self, event):
-        if CAP.available(event["capabilities"]):
-            return CAP.copy()
+        return CAP.copy()
 
     @utils.hook("raw.received")
     def raw_recv(self, event):

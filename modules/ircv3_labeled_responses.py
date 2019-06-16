@@ -23,8 +23,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
     @utils.hook("received.cap.new")
     def on_cap(self, event):
-        if CAP.available(event["capabilities"]):
-            return CAP.copy()
+        return CAP.copy()
 
     @utils.hook("preprocess.send")
     def raw_send(self, event):

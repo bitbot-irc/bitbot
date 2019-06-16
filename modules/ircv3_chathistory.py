@@ -12,8 +12,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
     @utils.hook("received.cap.new")
     def on_cap(self, event):
-        if EVENTPLAYBACK_CAP.available(event["capabilities"]):
-            return EVENTPLAYBACK_CAP.copy()
+        return EVENTPLAYBACK_CAP.copy()
 
     @utils.hook("received.batch.end")
     def batch_end(self, event):

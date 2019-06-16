@@ -35,7 +35,6 @@ class Server(IRCObject.Object):
         self.agreed_capabilities = set([]) # type: typing.Set[str]
         self.server_capabilities = {} # type: typing.Dict[str, str]
         self.batches = {} # type: typing.Dict[str, utils.irc.IRCBatch]
-        self.cap_started = False
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
         self.new_users = set([]) #type: typing.Set[IRCUser.User]
@@ -323,9 +322,12 @@ class Server(IRCObject.Object):
     def wait_for_capability(self, capability: str):
         self._capabilities_waiting.add(capability)
     def capability_done(self, capability: str):
-        self._capabilities_waiting.discard(capability)
-        if self.cap_started and not self._capabilities_waiting:
-            self.send_capability_end()
+        if capability in self._capabilities_waiting:
+            self._capabilities_waiting.discard(capability)
+            if not self._capabilities_waiting:
+                self.send_capability_end()
+    def clear_waiting_capabilities(self):
+        self._capabilities_waiting.clear()
 
     def send_pass(self, password: str) -> typing.Optional[IRCLine.SentLine]:
         return self.send(utils.irc.protocol.password(password))

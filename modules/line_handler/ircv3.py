@@ -17,60 +17,22 @@ CAPABILITIES = [
     utils.irc.Capability(None, "draft/setname")
 ]
 
-def _match_caps(our_capabilities, offered_capabilities):
-    matched = {}
-    for capability in our_capabilities:
-        available = capability.available(offered_capabilities)
-        if available:
-            matched[available] = capability
-    return matched
-
-def _caps_offered(server, caps):
+def _cap_match(server, caps):
+    matched_caps = {}
     blacklist = server.get_setting("blacklisted-caps", [])
-    for cap_name, cap in caps.items():
-        if not cap_name in blacklist:
-            server.capability_queue[cap_name] = cap
+    for cap in caps:
+        available = cap.available(server.server_capabilities)
+        if (available and not server.has_capability(cap) and
+                not available in blacklist):
+            matched_caps[available] = cap
+    return matched_caps
 
 def cap(events, event):
     capabilities = utils.parse.keyvalue(event["args"][-1])
     subcommand = event["args"][1].upper()
     is_multiline = len(event["args"]) > 3 and event["args"][2] == "*"
 
-    if subcommand == "LS":
-        event["server"].cap_started = True
-        event["server"].server_capabilities.update(capabilities)
-        if not is_multiline:
-            server_caps = list(event["server"].server_capabilities.keys())
-            matched_caps = _match_caps(CAPABILITIES, server_caps)
-
-            module_caps = events.on("received.cap.ls").call(
-                capabilities=event["server"].server_capabilities,
-                server=event["server"])
-            module_caps = list(filter(None, module_caps))
-            matched_caps.update(_match_caps(module_caps, server_caps))
-
-            _caps_offered(event["server"], matched_caps)
-
-            if event["server"].capability_queue:
-                event["server"].send_capability_queue()
-            else:
-                event["server"].send_capability_end()
-    elif subcommand == "NEW":
-        capabilities_keys = capabilities.keys()
-        event["server"].server_capabilities.update(capabilities)
-
-        matched_caps = _match_caps(CAPABILITIES, list(capabilities_keys))
-
-        module_caps = events.on("received.cap.new").call(
-            server=event["server"], capabilities=capabilities)
-        module_caps = list(filter(None, module_caps))
-        matched_caps.update(_match_caps(module_caps, capabilities_keys))
-
-        _caps_offered(event["server"], matched_caps)
-
-        if event["server"].capability_queue:
-            event["server"].send_capability_queue()
-    elif subcommand == "DEL":
+    if subcommand == "DEL":
         for capability in capabilities.keys():
             event["server"].agreed_capabilities.discard(capability)
             del event["server"].server_capabilities[capability]
@@ -82,6 +44,27 @@ def cap(events, event):
         events.on("received.cap.ack").call(capabilities=capabilities,
            server=event["server"])
 
+    if subcommand == "LS" or subcommand == "NEW":
+        event["server"].server_capabilities.update(capabilities)
+        if not is_multiline:
+            server_caps = list(event["server"].server_capabilities.keys())
+            all_caps = CAPABILITIES[:]
+
+            module_caps = events.on("received.cap.ls").call(
+                capabilities=event["server"].server_capabilities,
+                server=event["server"])
+            module_caps = list(filter(None, module_caps))
+            all_caps.extend(module_caps)
+
+            matched_caps = _cap_match(event["server"], all_caps)
+            event["server"].capability_queue.update(matched_caps)
+
+            if event["server"].capability_queue:
+                event["server"].send_capability_queue()
+            else:
+                event["server"].send_capability_end()
+
+
     if subcommand == "ACK" or subcommand == "NAK":
         ack = subcommand == "ACK"
         for capability in capabilities:
@@ -92,10 +75,8 @@ def cap(events, event):
             else:
                 cap_obj.nak()
 
-        if (event["server"].cap_started and
-                not event["server"].capabilities_requested and
+        if (not event["server"].capabilities_requested and
                 not event["server"].waiting_for_capabilities()):
-            event["server"].cap_started = False
             event["server"].send_capability_end()
 
 def authenticate(events, event):
