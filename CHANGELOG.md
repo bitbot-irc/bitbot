@@ -5,6 +5,7 @@ Added:
 - Mid-callback command permission checks ('event["check_assert"](utils.Check(...))')
 - `connected-since` on stats endpoint
 - IRCv3: draft/event-playback
+- `auto-github-cooldown` to prevent duplicate `auto-github`s in quick succession
 
 Changed:
 - Only strip 2 characters (`++` or `--`) from the end of karma
