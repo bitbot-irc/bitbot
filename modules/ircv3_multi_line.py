@@ -18,7 +18,8 @@ class Module(ModuleManager.BaseModule):
 
                 target = event["line"].args[0]
                 lines = event["line"].args[1].split("\n")
-                batch = utils.irc.IRCSendBatch("bitbot.dev/multi-line", [])
+                batch = utils.irc.IRCSendBatch("bitbot.dev/multi-line",
+                    [target])
                 for line in lines:
                     batch.add_line(utils.irc.protocol.privmsg(target, line))
                 for line in batch.get_lines():
