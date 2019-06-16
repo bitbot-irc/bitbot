@@ -10,6 +10,7 @@ Changed:
 - Only strip 2 characters (`++` or `--`) from the end of karma
 - Track CHANMODE type B, C and D (not just type D)
 - 'x saved a duck' -> 'x befriended a duck'
+- IRCv3: CAP REQ streamline for modules
 
 Fixed:
 - `KeyError` when sts `port` key not present
