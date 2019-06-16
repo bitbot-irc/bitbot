@@ -42,8 +42,11 @@ class EventCallback(object):
         return self.function(event)
 
     def get_kwarg(self, name: str, default=None) -> typing.Any:
-        item = self.kwargs.get(name, default)
-        return item or self.docstring.items.get(name, default)
+        if name in self.kwargs:
+            return self.kwargs[name]
+        elif name in self.docstring.items:
+            return self.docstring.items[name]
+        return default
 
 class EventHook(object):
     def __init__(self, log: Logging.Log, name: str = None,
