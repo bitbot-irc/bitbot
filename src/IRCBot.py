@@ -272,7 +272,7 @@ class Bot(object):
             if not self.servers:
                 self._kill()
                 self.log.warn("No servers, exiting")
-                continue
+                break
 
             kill = False
             item = self._event_queue.get(block=True, timeout=None)
