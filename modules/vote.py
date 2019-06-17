@@ -59,7 +59,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.startvote", channel_only=True, min_args=1)
     def start_vote(self, event):
         """
-        :help: Start a yes/no vote
+        :help: Start a vote
         :usage: <description>
         :require_mode: o
         :permission: vote
@@ -72,7 +72,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.endvote", channel_only=True, min_args=1)
     def end_vote(self, event):
         """
-        :help: End the current yes/no vote
+        :help: End a vote
         :usage: <id>
         :require_mode: o
         :permission: vote
@@ -90,7 +90,7 @@ class Module(ModuleManager.BaseModule):
     def vote(self, event):
         """
         :help: Vote in the channel's current vote
-        :usage: <id> yes|no
+        :usage: <id> [choice]
         """
         vote_id = event["args_split"][0]
         vote = self._get_vote(event["target"], vote_id)
