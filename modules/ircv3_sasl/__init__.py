@@ -20,6 +20,9 @@ def _validate(s):
 @utils.export("serverset", {"setting": "sasl",
     "help": "Set the sasl username/password for this server",
     "validate": _validate, "example": "PLAIN BitBot:hunter2"})
+@utils.export("serverset", {"setting": "sasl-hard-fail",
+    "help": "Set whether a SASL failure should cause a disconnect",
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def _best_userpass_mechanism(self, mechanisms):
         for potential_mechanism in USERPASS_MECHANISMS:
@@ -144,9 +147,12 @@ class Module(ModuleManager.BaseModule):
         self._end_sasl(event["server"])
 
     def _panic(self, server, message):
-        message = "SASL panic for %s: %s" % (str(server), message)
-        if not server.from_init:
-            self.log.error(message)
-            self.bot.disconnect(server)
+        if server.get_setting("sasl-hard-fail", True):
+            message = "SASL panic for %s: %s" % (str(server), message)
+            if not server.from_init:
+                self.log.error(message)
+                self.bot.disconnect(server)
+            else:
+                self.bot.panic(reason=message)
         else:
-            self.bot.panic(reason=message)
+            self._end_sasl()
