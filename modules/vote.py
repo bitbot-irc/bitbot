@@ -11,14 +11,23 @@ class Module(ModuleManager.BaseModule):
     def _del_vote(self, channel):
         channel.del_setting("vote")
 
+    def _add_archive_vote(self, channel, vote, id):
+        channel.set_setting("vote-%s" % id, vote)
+    def _get_archive_vote(self, channel, id):
+        return channel.get_setting("vote-%s" % id, None)
+
     def _random_id(self):
         return binascii.hexlify(os.urandom(4)).decode("ascii")
     def _archive_vote(self, channel):
         vote = self._get_vote(channel)
         vote_id = self._random_id()
-        channel.set_setting("vote-%s" % vote_id, vote)
+        self._add_archive_vote(channel, vote, vote_id)
         self._del_vote(channel)
         return vote_id
+
+    def _format_vote(self, vote):
+        return "%s (%s yes, %s no)" % (vote["description"], len(vote["yes"]),
+            len(vote["no"]))
 
     def _cast_vote(self, channel, user, yes):
         vote = self._get_vote(channel)
@@ -62,9 +71,8 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write(STR_NOVOTE)
         else:
             vote_id = self._archive_vote(event["target"])
-            event["stdout"].write("Vote %s ended: %s (%s yes, %s no)" %
-                (vote_id, vote["description"], len(vote["yes"]),
-                len(vote["no"])))
+            event["stdout"].write("Vote %s ended: %s" %
+                (vote_id, self._format_vote(vote)))
 
     @utils.hook("received.command.vote", channel_only=True)
     def vote(self, event):
@@ -77,8 +85,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError(STR_NOVOTE)
 
         if not event["args"]:
-            event["stdout"].write("Current vote: %s (%s yes, %s no)" %
-                (vote["description"], len(vote["yes"]), len(vote["no"])))
+            event["stdout"].write("Current vote: %s)" % self._format_vote(vote))
         else:
             choice = event["args_split"][0].lower()
             if not choice in ["yes", "no"]:
@@ -90,3 +97,18 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("%s: you have already voted." %
                     event["user"].nickname)
+
+    @utils.hook("received.command.getvote", min_args=1)
+    def get_vote(self, event):
+        """
+        :help: Show stats for a previous vote
+        :usage: <id>
+        """
+        vote_id = event["args_split"][0].lower()
+        vote = self._get_archive_vote(event["target"], vote_id)
+
+        if vote == None:
+            event["stderr"].write("Unknown vote '%s'" % vote_id)
+        else:
+            event["stdout"].write("Vote %s: %s" % (vote_id,
+                self._format_vote(vote)))
