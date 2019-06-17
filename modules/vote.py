@@ -1,7 +1,11 @@
-import binascii, functools, operator, os, uuid
+import binascii, enum, os, uuid
 from src import ModuleManager, utils
 
 STR_NOVOTE = "Unknown vote '%s'"
+
+class VoteCastResult(enum.Enum):
+    Cast = 1
+    Changed = 2
 
 class Module(ModuleManager.BaseModule):
     def _get_vote(self, channel, vote_id):
@@ -39,15 +43,18 @@ class Module(ModuleManager.BaseModule):
     def _cast_vote(self, channel, vote_id, user, option):
         vote = self._get_vote(channel, vote_id)
         option = vote["options"][option]
-        voters = functools.reduce(operator.concat,
-            list(vote["options"].values()))
 
-        if user.name in voters:
-            return False
+        cast_type = VoteCastResult.Cast
+
+        for nicks in vote["options"].values():
+            if user.name in nicks:
+                nicks.remove(user.name)
+                cast_type = VoteCastResult.Changed
+                break
 
         option.append(user.name)
         self._set_vote(channel, vote_id, vote)
-        return True
+        return cast_type
 
     def _open_votes(self, channel):
         open = []
@@ -107,12 +114,15 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Vote options: %s" %
                     self._format_options(vote))
 
-            if self._cast_vote(event["target"], vote_id, event["user"], choice):
-                event["stdout"].write("%s: your vote has been cast." %
-                    event["user"].nickname)
-            else:
-                event["stderr"].write("%s: you have already voted." %
-                    event["user"].nickname)
+            cast_result = self._cast_vote(event["target"], vote_id,
+                event["user"], choice)
+
+            cast_desc = "cast"
+            if cast_result == VoteCastResult.Changed:
+                cast_desc = "changed"
+
+            event["stdout"].write("%s: your vote has been %s." %
+                (event["user"].nickname, cast_desc))
 
     @utils.hook("received.command.votes", channel_only=True)
     def votes(self, event):
