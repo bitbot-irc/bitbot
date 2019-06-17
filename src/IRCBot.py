@@ -271,6 +271,8 @@ class Bot(object):
         while self.running or not self._event_queue.empty():
             if not self.servers:
                 self._kill()
+                self.log.warn("No servers, exiting")
+                continue
 
             kill = False
             item = self._event_queue.get(block=True, timeout=None)
