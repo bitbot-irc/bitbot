@@ -111,8 +111,7 @@ class Module(ModuleManager.BaseModule):
                     else:
                         if current_scram.state == scram.SCRAMState.VerifyFailed:
                             # server gave a bad verification so we should panic
-                            event["server"].disconnect()
-                            raise ValueError("Server SCRAM verification failed")
+                            self._panic(event["server"], "SCRAM VerifyFailed")
 
         else:
             raise ValueError("unknown sasl mechanism '%s'" % mechanism)
@@ -138,10 +137,16 @@ class Module(ModuleManager.BaseModule):
         self._end_sasl(event["server"])
     @utils.hook("received.904")
     def sasl_failure(self, event):
-        self.log.warn("SASL failure for %s: %s",
-            [str(event["server"]), event["args"][1]])
-        self._end_sasl(event["server"])
+        self._panic(event["server"], "ERR_SASLFAIL (%s)" % event["args"][1])
 
     @utils.hook("received.907")
     def sasl_already(self, event):
         self._end_sasl(event["server"])
+
+    def _panic(self, server, message):
+        message = "SASL panic for %s: %s" % (str(server), message)
+        if server.reconnected:
+            self.log.error(message)
+            self.bot.disconnect(server)
+        else:
+            self.bot.panic(reason=message)
