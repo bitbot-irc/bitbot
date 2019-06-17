@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
 
     def _random_id(self, channel):
         while True:
-            vote_id = binascii.hexlify(os.urandom(4)).decode("ascii")
+            vote_id = binascii.hexlify(os.urandom(3)).decode("ascii")
             if self._get_vote(channel, vote_id) == None:
                 return vote_id
 
