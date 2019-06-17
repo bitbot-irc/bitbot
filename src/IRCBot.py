@@ -1,4 +1,4 @@
-import enum, queue, os, queue, select, socket, threading, time, traceback
+import enum, queue, os, queue, select, socket, sys, threading, time, traceback
 import typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
@@ -99,6 +99,20 @@ class Bot(object):
             raise returned
         elif type == TriggerResult.Return:
             return returned
+
+    def panic(self, reason=None):
+        callback = None
+
+        if not reason == None:
+            self.log.error("panic() called: %s", [reason])
+
+        exception = sys.exc_info()[1]
+        if exception:
+            def _raise():
+                raise exception
+            callback = _raise
+
+        self._event_queue.put(TriggerEvent(TriggerEventType.Kill, callback))
 
     def load_modules(self, safe: bool=False
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
@@ -263,6 +277,8 @@ class Bot(object):
                     raise
             elif item.type == TriggerEventType.Kill:
                 self._kill()
+                if not item.callback == None:
+                    item.callback()
 
     def _post_send_factory(self, server, lines):
         return lambda: server._post_send(lines)
@@ -272,9 +288,8 @@ class Bot(object):
     def _loop_catch(self, name: str, loop: typing.Callable[[], None]):
         try:
             loop()
-        except:
-            self.log.critical("Exception on '%s' thread", exc_info=True)
-            self._event_queue.put(TriggerEvent(TriggerEventType.Kill))
+        except Exception as e:
+            self.panic("Exception on '%s' thread" % name)
 
     def _write_loop(self):
         while self.running:
