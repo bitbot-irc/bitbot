@@ -146,7 +146,7 @@ class Socket(IRCObject.Object):
         bytes_written_i = self._socket.send(self._write_buffer)
         bytes_written = self._write_buffer[:bytes_written_i]
 
-        sent_lines_count = bytes_written.count(b"\r\n")
+        sent_lines_count = bytes_written.count(b"\n")
         sent_lines = [] # type: typing.List[IRCLine.SentLine]
         for i in range(sent_lines_count):
             sent_lines.append(self._buffered_lines.pop(0))
