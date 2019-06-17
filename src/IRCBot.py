@@ -107,7 +107,7 @@ class Bot(object):
         callback = None
 
         if not reason == None:
-            self.log.error("panic() called: %s", [reason])
+            self.log.critical("panic() called: %s", [reason])
 
         exception = sys.exc_info()[1]
         if exception:
