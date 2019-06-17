@@ -38,6 +38,7 @@ class Module(ModuleManager.BaseModule):
         :help: Start a yes/no vote
         :usage: <description>
         :require_mode: o
+        :permission: vote
         """
         current_vote = self._get_vote(event["target"])
         if not current_vote == None:
@@ -54,6 +55,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: End the current yes/no vote
         :require_mode: o
+        :permission: vote
         """
         vote = self._get_vote(event["target"])
         if vote == None:
