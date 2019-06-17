@@ -19,6 +19,9 @@ class TriggerEvent(object):
         self.type = type
         self.callback = callback
 
+class BitBotPanic(Exception):
+    pass
+
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
             exports, log, modules, timers):
@@ -113,6 +116,7 @@ class Bot(object):
             callback = _raise
 
         self._event_queue.put(TriggerEvent(TriggerEventType.Kill, callback))
+        raise BitBotPanic()
 
     def load_modules(self, safe: bool=False
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
@@ -288,6 +292,8 @@ class Bot(object):
     def _loop_catch(self, name: str, loop: typing.Callable[[], None]):
         try:
             loop()
+        except BitBotPanic:
+            return
         except Exception as e:
             self.panic("Exception on '%s' thread" % name)
 
