@@ -155,4 +155,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 self.bot.panic(reason=message)
         else:
-            self._end_sasl()
+            self._end_sasl(server)
