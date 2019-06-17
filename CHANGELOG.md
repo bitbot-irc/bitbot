@@ -6,17 +6,21 @@ Added:
 - `connected-since` on stats endpoint
 - IRCv3: draft/event-playback
 - `auto-github-cooldown` to prevent duplicate `auto-github`s in quick succession
+- `vote.py`
 
 Changed:
 - Only strip 2 characters (`++` or `--`) from the end of karma
 - Track CHANMODE type B, C and D (not just type D)
 - 'x saved a duck' -> 'x befriended a duck'
 - IRCv3: CAP REQ streamline for modules
+- IRCv3: SASL failure defaults to being "hard" (disconnect/crash)
+- `auto-title`, `auto-youtube`, `auto-imgur` etc now work in `/me`
 
 Fixed:
 - `KeyError` when sts `port` key not present
 - lxml wasn't in requirements.txt but it should have been
 - Any CRITICAL in read/write thread now kills the main thread too
+- `Database.ChannelSettings.find` invalid SQL
 
 Removed:
 - `!set`/`!channelset`/`!serverset`/`!botset` (replaced with `!config`)
