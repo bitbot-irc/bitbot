@@ -134,8 +134,13 @@ class Module(ModuleManager.BaseModule):
             if arg_count > 2:
                 value = " ".join(event["args_split"][2:])
 
-        target, context = self._to_context(event["server"],
-            event["target"], event["user"], context_desc)
+        try:
+            target, context = self._to_context(event["server"],
+                event["target"], event["user"], context_desc)
+        except ValueError:
+            raise utils.EventError(
+                "Unknown context. Please provide "
+                "'user', 'channel', 'server' or 'bot'")
 
         permission_check = utils.Check("permission", "config")
 
