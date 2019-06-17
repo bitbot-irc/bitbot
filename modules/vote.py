@@ -9,8 +9,11 @@ class Module(ModuleManager.BaseModule):
     def _set_vote(self, channel, vote_id, vote):
         channel.set_setting("vote-%s" % vote_id, vote)
 
-    def _random_id(self):
-        return binascii.hexlify(os.urandom(4)).decode("ascii")
+    def _random_id(self, channel):
+        while True:
+            vote_id = binascii.hexlify(os.urandom(4)).decode("ascii")
+            if self._get_vote(channel, vote_id) == None:
+                return vote_id
 
     def _close_vote(self, channel, vote_id):
         vote = self._get_vote(channel, vote_id)
@@ -21,7 +24,7 @@ class Module(ModuleManager.BaseModule):
         return False
 
     def _start_vote(self, channel, description):
-        vote_id = self._random_id()
+        vote_id = self._random_id(channel)
         vote = {"description": description, "options": {"yes": [], "no": []},
             "electorate": [], "open": True, "id": vote_id}
         self._set_vote(channel, vote_id, vote)
