@@ -145,7 +145,7 @@ class Module(ModuleManager.BaseModule):
 
     def _panic(self, server, message):
         message = "SASL panic for %s: %s" % (str(server), message)
-        if server.reconnected:
+        if not server.from_init:
             self.log.error(message)
             self.bot.disconnect(server)
         else:
