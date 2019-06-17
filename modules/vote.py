@@ -1,45 +1,57 @@
-import binascii, os, uuid
+import binascii, functools, operator, os, uuid
 from src import ModuleManager, utils
 
-STR_NOVOTE = "There is currently no vote running."
+STR_NOVOTE = "Unknown vote '%s'"
 
 class Module(ModuleManager.BaseModule):
-    def _get_vote(self, channel):
-        return channel.get_setting("vote", None)
-    def _set_vote(self, channel, vote):
-        channel.set_setting("vote", vote)
-    def _del_vote(self, channel):
-        channel.del_setting("vote")
-
-    def _add_archive_vote(self, channel, vote, id):
-        channel.set_setting("vote-%s" % id, vote)
-    def _get_archive_vote(self, channel, id):
-        return channel.get_setting("vote-%s" % id, None)
+    def _get_vote(self, channel, vote_id):
+        return channel.get_setting("vote-%s" % vote_id, None)
+    def _set_vote(self, channel, vote_id, vote):
+        channel.set_setting("vote-%s" % vote_id, vote)
 
     def _random_id(self):
         return binascii.hexlify(os.urandom(4)).decode("ascii")
-    def _archive_vote(self, channel):
-        vote = self._get_vote(channel)
+
+    def _close_vote(self, channel, vote_id):
+        vote = self._get_vote(channel, vote_id)
+        if vote:
+            vote["open"] = False
+            self._set_vote(channel, vote_id, vote)
+            return True
+        return False
+
+    def _start_vote(self, channel, description):
         vote_id = self._random_id()
-        self._add_archive_vote(channel, vote, vote_id)
-        self._del_vote(channel)
-        return vote_id
+        vote = {"description": description, "options": {"yes": [], "no": []},
+            "electorate": [], "open": True, "id": vote_id}
+        self._set_vote(channel, vote_id, vote)
+        return vote
 
     def _format_vote(self, vote):
-        return "%s (%s yes, %s no)" % (vote["description"], len(vote["yes"]),
-            len(vote["no"]))
+        options = ["%d %s" % (len(v), k) for k, v in vote["options"].items()]
+        return "%s (%s)" % (vote["description"], ", ".join(options))
+    def _format_options(self, vote):
+        return ", ".join("'%s'" % o for o in vote["options"])
 
-    def _cast_vote(self, channel, user, yes):
-        vote = self._get_vote(channel)
-        key = "yes" if yes else "no"
-        voters = vote["yes"]+vote["no"]
+    def _cast_vote(self, channel, vote_id, user, option):
+        vote = self._get_vote(channel, vote_id)
+        option = vote["options"][option]
+        voters = functools.reduce(operator.concat,
+            list(vote["options"].values()))
 
         if user.name in voters:
             return False
 
-        vote[key].append(user.name)
-        self._set_vote(channel, vote)
+        option.append(user.name)
+        self._set_vote(channel, vote_id, vote)
         return True
+
+    def _open_votes(self, channel):
+        open = []
+        for setting, vote in channel.find_settings_prefix("vote-"):
+            if vote["open"]:
+                open.append(vote)
+        return open
 
     @utils.hook("received.command.startvote", channel_only=True, min_args=1)
     def start_vote(self, event):
@@ -49,66 +61,65 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         :permission: vote
         """
-        current_vote = self._get_vote(event["target"])
-        if not current_vote == None:
-            raise utils.EventError("There's already a vote running")
-
-        self._set_vote(event["target"], {"description": event["args"],
-            "yes": [], "no": [], "electorate": []})
+        vote = self._start_vote(event["target"], event["args"])
         event["stdout"].write(
-            "Vote started. use '%svote yes' or '%svote no' to vote." % (
-            event["command_prefix"], event["command_prefix"]))
+            "Vote %s started. use '%svote <option>' to vote (options: %s)" %
+            (vote["id"], event["command_prefix"], self._format_options(vote)))
 
-    @utils.hook("received.command.endvote", channel_only=True)
+    @utils.hook("received.command.endvote", channel_only=True, min_args=1)
     def end_vote(self, event):
         """
         :help: End the current yes/no vote
+        :usage: <id>
         :require_mode: o
         :permission: vote
         """
-        vote = self._get_vote(event["target"])
-        if vote == None:
-            event["stderr"].write(STR_NOVOTE)
-        else:
-            vote_id = self._archive_vote(event["target"])
+        vote_id = event["args_split"][0]
+
+        if self._close_vote(event["target"], vote_id):
+            vote = self._get_vote(event["target"], vote_id)
             event["stdout"].write("Vote %s ended: %s" %
                 (vote_id, self._format_vote(vote)))
+        else:
+            event["stderr"].write(STR_NOVOTE % vote_id)
 
-    @utils.hook("received.command.vote", channel_only=True)
+    @utils.hook("received.command.vote", channel_only=True, min_args=1)
     def vote(self, event):
         """
         :help: Vote in the channel's current vote
-        :usage: yes|no
+        :usage: <id> yes|no
         """
-        vote = self._get_vote(event["target"])
+        vote_id = event["args_split"][0]
+        vote = self._get_vote(event["target"], vote_id)
         if vote == None:
-            raise utils.EventError(STR_NOVOTE)
+            raise utils.EventError(STR_NOVOTE % vote_id)
 
-        if not event["args"]:
-            event["stdout"].write("Current vote: %s)" % self._format_vote(vote))
+        if not len(event["args_split"]) > 1:
+            closed = "" if vote["open"] else " (closed)"
+            event["stdout"].write("Vote %s%s: %s" % (
+                vote_id, closed, self._format_vote(vote)))
         else:
-            choice = event["args_split"][0].lower()
-            if not choice in ["yes", "no"]:
-                raise utils.EventError("Please vote 'yes' or 'no'")
+            choice = event["args_split"][1].lower()
+            if not choice in vote["options"]:
+                raise utils.EventError("Vote options: %s" %
+                    self._format_options(vote))
 
-            if self._cast_vote(event["target"], event["user"], choice=="yes"):
+            if self._cast_vote(event["target"], vote_id, event["user"], choice):
                 event["stdout"].write("%s: your vote has been cast." %
                     event["user"].nickname)
             else:
                 event["stderr"].write("%s: you have already voted." %
                     event["user"].nickname)
 
-    @utils.hook("received.command.getvote", min_args=1)
-    def get_vote(self, event):
+    @utils.hook("received.command.votes", channel_only=True)
+    def votes(self, event):
         """
-        :help: Show stats for a previous vote
-        :usage: <id>
+        :help: List open votes in the current channel
         """
-        vote_id = event["args_split"][0].lower()
-        vote = self._get_archive_vote(event["target"], vote_id)
-
-        if vote == None:
-            event["stderr"].write("Unknown vote '%s'" % vote_id)
+        open_votes = self._open_votes(event["target"])
+        if open_votes:
+            open_votes_str = [
+                "%s (%s)" % (v["description"], v["id"]) for v in open_votes]
+            event["stdout"].write("Open votes: %s" % ", ".join(open_votes_str))
         else:
-            event["stdout"].write("Vote %s: %s" % (vote_id,
-                self._format_vote(vote)))
+            event["stderr"].write("There are no open votes")
