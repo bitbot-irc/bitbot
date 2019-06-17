@@ -37,7 +37,7 @@ class Bot(object):
         self._timers = timers
 
         self.start_time = time.time()
-        self.running = True
+        self.running = False
         self.servers = {}
 
         self._event_queue = queue.Queue() # type: typing.Queue[TriggerEvent]
@@ -255,6 +255,7 @@ class Bot(object):
         return thread
 
     def run(self):
+        self.running = True
         self._read_thread = self._daemon_thread(
             lambda: self._loop_catch("read", self._read_loop))
         self._write_thread = self._daemon_thread(
