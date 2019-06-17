@@ -139,8 +139,8 @@ class Module(ModuleManager.BaseModule):
                 event["target"], event["user"], context_desc)
         except ValueError:
             raise utils.EventError(
-                "Unknown context. Please provide "
-                "'user', 'channel', 'server' or 'bot'")
+                "Unknown context '%s'. Please provide "
+                "'user', 'channel', 'server' or 'bot'" % context_desc)
 
         permission_check = utils.Check("permission", "config")
 
