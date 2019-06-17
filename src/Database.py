@@ -146,7 +146,7 @@ class ChannelSettings(Table):
     def find(self, channel_id: int, pattern: str, default: typing.Any=[]):
         values = self.database.execute_fetchall(
             """SELECT setting, value FROM channel_settings WHERE
-            channel_id=? setting LIKE '?'""", [channel_id, pattern.lower()])
+            channel_id=? AND setting LIKE ?""", [channel_id, pattern.lower()])
         if values:
             for i, value in enumerate(values):
                 values[i] = value[0], json.loads(value[1])
