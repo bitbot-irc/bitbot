@@ -229,6 +229,7 @@ class Bot(object):
                 connection_params).args
 
         server = self.add_server(server_id, False, args)
+        server.reconnected = True
         if self.connect(server):
             self.servers[server.fileno()] = server
             return True
