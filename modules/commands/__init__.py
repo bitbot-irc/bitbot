@@ -335,8 +335,6 @@ class Module(ModuleManager.BaseModule):
                     args_split, event["tags"], hook, command_prefix="")
                 event["user"].buffer.skip_next()
 
-    def _get_help(self, hook):
-        return hook.get_kwarg("help", None) or hook.docstring.description
     def _get_usage(self, hook, command, command_prefix=""):
         command = "%s%s" % (command_prefix, command)
         usage = hook.get_kwarg("usage", None)
@@ -350,91 +348,10 @@ class Module(ModuleManager.BaseModule):
                 "%s %s" % (command, usage) for usage in usages)
         return usage
 
-    def _all_command_hooks(self):
-        all_hooks = {}
-        for child_name in self.events.on("received.command").get_children():
-            hooks = self.events.on("received.command").on(child_name
-                ).get_hooks()
-            if hooks:
-                all_hooks[child_name.lower()] = hooks[0]
-        return all_hooks
-
     def _get_prefix(self, hook):
         return hook.get_kwarg("prefix", None)
     def _get_alias_of(self, hook):
         return hook.get_kwarg("alias_of", None)
-
-    @utils.hook("received.command.help")
-    def help(self, event):
-        """
-        :help: Show help for a given command
-        :usage: [module [command]]
-        """
-        if event["args"]:
-            module_name = event["args_split"][0]
-            module = self.bot.modules.from_name(module_name)
-            if module == None:
-                raise utils.EventError("No such module '%s'" % module_name)
-
-            if len(event["args_split"]) == 1:
-                commands = []
-                for command, command_hook in self._all_command_hooks().items():
-                    if (command_hook.context == module.context and
-                            not self._get_alias_of(command_hook)):
-                        commands.append(command)
-
-                event["stdout"].write("Commands for %s module: %s" % (
-                    module.name, ", ".join(commands)))
-            else:
-                requested_command = event["args_split"][1].lower()
-                available_commands = self._all_command_hooks()
-                if requested_command in available_commands:
-                    command_hook = available_commands[requested_command]
-                    help = self._get_help(command_hook)
-
-                    if help:
-                        event["stdout"].write("%s: %s" % (
-                            requested_command, help))
-                    else:
-                        event["stderr"].write("No help available for %s" %
-                            requested_command)
-
-                else:
-                    event["stderr"].write("Unknown command '%s'" %
-                        requested_command)
-        else:
-            contexts = {}
-            for command, command_hook in self._all_command_hooks().items():
-                if not command_hook.context in contexts:
-                    module = self.bot.modules.from_context(command_hook.context)
-                    contexts[module.context] = module.name
-
-            modules_available = sorted(contexts.values())
-            event["stdout"].write("Modules: %s" % ", ".join(modules_available))
-
-    @utils.hook("received.command.usage", min_args=1)
-    def usage(self, event):
-        """
-        :help: Show the usage for a given command
-        :usage: <command>
-        """
-        command_prefix = ""
-        if event["is_channel"]:
-            command_prefix = self._command_prefix(event["server"],
-                event["target"])
-
-        command = event["args_split"][0].lower()
-        if command in self.events.on("received").on(
-                "command").get_children():
-            hooks = self.events.on("received.command").on(command).get_hooks()
-            usage = self._get_usage(hooks[0], command, command_prefix)
-
-            if usage:
-                event["stdout"].write("Usage: %s" % usage)
-            else:
-                event["stderr"].write("No usage help available for %s" % command)
-        else:
-            event["stderr"].write("Unknown command '%s'" % command)
 
     @utils.hook("received.command.more", skip_out=True)
     def more(self, event):
