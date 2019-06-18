@@ -19,5 +19,6 @@ class Module(ModuleManager.BaseModule):
             timezone = result["annotations"]["timezone"]["name"]
             lat = result["geometry"]["lat"]
             lon = result["geometry"]["lng"]
+            name = result["formatted"]
 
-            return {"timezone": timezone, "lat": lat, "lon": lon}
+            return {"timezone": timezone, "lat": lat, "lon": lon, "name": name}

@@ -49,10 +49,13 @@ class Module(ModuleManager.BaseModule):
         page = utils.http.request(URL_WEATHER, get_params=args, json=True)
         if page:
             if "weather" in page.data:
-                location_parts = [page.data["name"]]
-                if "country" in page.data["sys"]:
-                    location_parts.append(page.data["sys"]["country"])
-                location_str = ", ".join(location_parts)
+                if "name" in location:
+                    location_str = location["name"]
+                else:
+                    location_parts = [page.data["name"]]
+                    if "country" in page.data["sys"]:
+                        location_parts.append(page.data["sys"]["country"])
+                    location_str = ", ".join(location_parts)
 
                 celsius = "%dC" % page.data["main"]["temp"]
                 fahrenheit = "%dF" % ((page.data["main"]["temp"]*(9/5))+32)
