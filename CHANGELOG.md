@@ -16,6 +16,8 @@ Changed:
 - IRCv3: SASL failure defaults to being "hard" (disconnect/crash)
 - `auto-title`, `auto-youtube`, `auto-imgur` etc now work in `/me`
 - Move truncation logic from `SentLine` to `ParsedLine`
+- Move `!help` logic to it's own file and rework it to be more user friendly
+- Get `"city, state, country"` from geocoding in location.py, use in weather.py
 
 Fixed:
 - `KeyError` when sts `port` key not present
