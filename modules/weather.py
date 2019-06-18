@@ -10,7 +10,8 @@ class Module(ModuleManager.BaseModule):
     def _user_location(self, user):
         user_location = user.get_setting("location", None)
         if not user_location == None:
-            return [user_location["lat"], user_location["lon"]]
+            name = user_location.get("name", None)
+            return [user_location["lat"], user_location["lon"], name]
 
     @utils.hook("received.command.w", alias_of="weather")
     @utils.hook("received.command.weather")
@@ -40,7 +41,7 @@ class Module(ModuleManager.BaseModule):
         args = {"units": "metric", "APPID": api_key}
 
         if location:
-            lat, lon = location
+            lat, lon, location_name = location
             args["lat"] = lat
             args["lon"] = lon
         else:
@@ -49,8 +50,8 @@ class Module(ModuleManager.BaseModule):
         page = utils.http.request(URL_WEATHER, get_params=args, json=True)
         if page:
             if "weather" in page.data:
-                if "name" in location:
-                    location_str = location["name"]
+                if location_name:
+                    location_str = location_name
                 else:
                     location_parts = [page.data["name"]]
                     if "country" in page.data["sys"]:
