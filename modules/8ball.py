@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.8ball", min_args=1)
     def decide(selfs, event):
         """
-        :help: Ask the mystic 8ball a question!
+        :help: Ask the mystic 8ball a question
         :usage: <question>
         """
         event["stdout"].write("You shake the magic ball... it says %s" %

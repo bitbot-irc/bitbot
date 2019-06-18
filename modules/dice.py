@@ -9,7 +9,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.roll", min_args=1)
     def roll_dice(self, event):
         """
-        :help: Roll some dice, DND style!
+        :help: Roll some dice, DND style
         :usage: [1-5]d[1-20]
         """
         roll = event["args_split"][0].lower()
