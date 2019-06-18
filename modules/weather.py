@@ -40,6 +40,7 @@ class Module(ModuleManager.BaseModule):
 
         args = {"units": "metric", "APPID": api_key}
 
+        location_name = None
         if location:
             lat, lon, location_name = location
             args["lat"] = lat
