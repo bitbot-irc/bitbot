@@ -19,6 +19,19 @@ class Module(ModuleManager.BaseModule):
             timezone = result["annotations"]["timezone"]["name"]
             lat = result["geometry"]["lat"]
             lon = result["geometry"]["lng"]
-            name = result["formatted"]
+
+            name_parts = []
+            components = result["components"]
+            if "city" in components:
+                name_parts.append(components["city"])
+            if "state" in components:
+                name_parts.append(components["state"])
+            if "country" in components:
+                name_parts.append(components["country"])
+
+            if not name_parts:
+                name_parts.append(result["formatted"])
+
+            name = ", ".join(name_parts)
 
             return {"timezone": timezone, "lat": lat, "lon": lon, "name": name}
