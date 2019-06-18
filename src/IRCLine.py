@@ -131,7 +131,7 @@ class ParsedLine(object):
 
         valid = line_formatted[:valid_index]
         if tags_formatted:
-            valid = "%s %s" % (tags_formatted, line_formatted)
+            valid = "%s %s" % (tags_formatted, valid)
         overflow = line_formatted[valid_index:]
 
         return valid, overflow
