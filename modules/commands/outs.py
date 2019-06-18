@@ -48,9 +48,7 @@ class Out(object):
 
             if truncated:
                 truncated = valid[-STR_MORE_LEN:]+truncated
-                print(valid)
                 new_line = valid[:-STR_MORE_LEN]+STR_MORE
-                print(len(new_line))
                 line = utils.irc.parse_line(new_line)
 
                 self._text = "%s%s" % (STR_CONTINUED, truncated)
