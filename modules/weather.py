@@ -49,8 +49,11 @@ class Module(ModuleManager.BaseModule):
         page = utils.http.request(URL_WEATHER, get_params=args, json=True)
         if page:
             if "weather" in page.data:
-                location = "%s, %s" % (page.data["name"], page.data["sys"][
-                    "country"])
+                location_parts = [page.data["name"]]
+                if "country" in page.data["sys"]:
+                    location_parts.append(page.data["sys"]["country"])
+                location_str = ", ".join(location_parts)
+
                 celsius = "%dC" % page.data["main"]["temp"]
                 fahrenheit = "%dF" % ((page.data["main"]["temp"]*(9/5))+32)
                 description = page.data["weather"][0]["description"].title()
@@ -59,7 +62,7 @@ class Module(ModuleManager.BaseModule):
 
                 event["stdout"].write(
                     "(%s) %s/%s | %s | Humidity: %s | Wind: %s" % (
-                    location, celsius, fahrenheit, description, humidity,
+                    location_str, celsius, fahrenheit, description, humidity,
                     wind_speed))
             else:
                 event["stderr"].write("No weather information for this location")
