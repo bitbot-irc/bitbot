@@ -89,7 +89,6 @@ class ParsedLine(object):
         tags = ""
         if self.tags:
             tags = self._tag_str(self.tags)
-            pieces.append(self._tag_str(self.tags))
 
         if self.source:
             pieces.append(str(self.source))
