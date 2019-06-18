@@ -66,6 +66,10 @@ class ParsedLine(object):
 
     def add_tag(self, tag: str, value: str=None):
         self.tags[tag] = value or ""
+    def has_tag(self, tag: str) -> bool:
+        return "tag" in self.tags
+    def get_tag(self, tag: str) -> typing.Optional[str]:
+        return self.tags[tag]
 
     def _tag_str(self, tags: typing.Dict[str, str]) -> str:
         tag_pieces = []
