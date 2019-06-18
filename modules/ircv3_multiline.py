@@ -31,7 +31,13 @@ class Module(ModuleManager.BaseModule):
             messages = []
             lines = event["batch"].get_lines()
             for line in lines:
-                messages.append(line.args[1])
+                message = line.args[1]
+                if line.has_tag("+bitbot.dev/multiline-concat"):
+                    last_message = ""
+                    if messages:
+                        last_message = messages.pop(-1)
+                    message = last_message+message
+                messages.append(message)
 
             target = event["batch"].args[0]
             message = "\n".join(messages)
