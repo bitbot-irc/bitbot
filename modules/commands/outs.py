@@ -2,6 +2,7 @@ import re
 from src import utils
 
 STR_MORE = " (more...)"
+STR_MORE_LEN = len(STR_MORE.encode("utf8"))
 STR_CONTINUED = "(...continued) "
 
 class Out(object):
@@ -42,14 +43,21 @@ class Out(object):
             line = line_factory(self._target_str, full_text, tags=self._tags)
             if self._assured:
                 line.assure()
-            sent_line = self.server.send(line)
 
-            if sent_line:
-                sent_line.truncate_marker = STR_MORE
-                if sent_line.truncated():
-                    self._text = "%s%s" % (STR_CONTINUED, sent_line.truncated())
-                else:
-                    self._text = ""
+            valid, truncated = line.truncate(self.server.hostmask())
+
+            if truncated:
+                truncated = valid[-STR_MORE_LEN:]+truncated
+                print(valid)
+                new_line = valid[:-STR_MORE_LEN]+STR_MORE
+                print(len(new_line))
+                line = utils.irc.parse_line(new_line)
+
+                self._text = "%s%s" % (STR_CONTINUED, truncated)
+            else:
+                self._text = ""
+
+            sent_line = self.server.send(line)
 
     def set_prefix(self, prefix):
         self.module_name = prefix

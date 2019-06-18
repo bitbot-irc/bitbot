@@ -2,7 +2,7 @@ import datetime, typing
 from src import IRCObject, utils
 
 # this should be 510 (RFC1459, 512 with \r\n) but a server BitBot uses is broken
-LINE_CUTOFF = 470
+LINE_MAX = 470
 
 class IRCArgs(object):
     def __init__(self, args: typing.List[str]):
@@ -100,6 +100,26 @@ class ParsedLine(object):
 
         return " ".join(pieces).split("\n")[0].strip("\r")
 
+    def _line_max(self, hostmask: str) -> int:
+        return LINE_MAX-len((":%s " % hostmask).encode("utf8"))
+    def truncate(self, hostmask: str) -> typing.Tuple[str, str]:
+        valid_bytes = b""
+        valid_index = -1
+
+        line_max = self._line_max(hostmask)
+
+        formatted = self.format()
+        for i, char in enumerate(formatted):
+            encoded_char = char.encode("utf8")
+            if len(valid_bytes)+len(encoded_char) > line_max:
+                break
+            else:
+                valid_bytes += encoded_char
+                valid_index = i
+        valid_index += 1
+
+        return formatted[:valid_index], formatted[valid_index:]
+
 class SentLine(IRCObject.Object):
     def __init__(self, events: "EventManager.EventHook",
             send_time: datetime.datetime, hostmask: str, line: ParsedLine):
@@ -108,46 +128,12 @@ class SentLine(IRCObject.Object):
         self._hostmask = hostmask
         self.parsed_line = line
 
-        self.truncate_marker: typing.Optional[str] = None
-
     def __repr__(self) -> str:
         return "IRCLine.SentLine(%s)" % self.__str__()
     def __str__(self) -> str:
-        return self.decoded_data()
+        return self._for_wire()
 
-    def _char_limit(self) -> int:
-        return LINE_CUTOFF-len(":%s " % self._hostmask)
-
-    def _encode_truncate(self) -> typing.Tuple[bytes, str]:
-        line = self.parsed_line.format()
-        byte_max = self._char_limit()
-        encoded = b""
-        truncated = ""
-        truncate_marker = b""
-        if not self.truncate_marker == None:
-            truncate_marker = typing.cast(str, self.truncate_marker
-                ).encode("utf8")
-
-        for i, character in enumerate(line):
-            encoded_character = character.encode("utf8")
-            new_len = len(encoded + encoded_character)
-            if truncate_marker and (byte_max-new_len) < len(truncate_marker):
-                encoded += truncate_marker
-                truncated = line[i:]
-                break
-            elif new_len > byte_max:
-                truncated = line[i:]
-                break
-            else:
-                encoded += encoded_character
-        return (encoded, truncated)
-
-    def _for_wire(self) -> bytes:
-        return self._encode_truncate()[0]
+    def _for_wire(self) -> str:
+        return self.parsed_line.truncate(self._hostmask)[0]
     def for_wire(self) -> bytes:
-        return b"%s\r\n" % self._for_wire()
-
-    def decoded_data(self) -> str:
-        return self._for_wire().decode("utf8")
-    def truncated(self) -> str:
-        return self._encode_truncate()[1]
+        return b"%s\r\n" % self._for_wire().encode("utf8")
