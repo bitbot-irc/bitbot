@@ -167,8 +167,8 @@ class Module(ModuleManager.BaseModule):
                         "Cannot change config for current channel when in "
                         "private message")
             event["check_assert"](permission_check|
-                utils.Check("channel-access", "set")|
-                utils.Check("channel-mode", "o"))
+                utils.Check("channel-access", target, "set")|
+                utils.Check("channel-mode", target, "o"))
         elif context == "serverset" or context == "botset":
             event["check_assert"](permission_check)
 

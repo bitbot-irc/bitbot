@@ -13,7 +13,7 @@ LOWHIGH = {
     "help": "Set which channel mode is considered to be 'high' access",
     "example": "o"})
 class Module(ModuleManager.BaseModule):
-    def _check_command(self, event, require_mode):
+    def _check_command(self, event, channel, require_mode):
         if event["is_channel"] and require_mode:
             if require_mode.lower() in LOWHIGH:
                 require_mode = event["target"].get_setting(
@@ -30,8 +30,14 @@ class Module(ModuleManager.BaseModule):
     def preprocess_command(self, event):
         require_mode = event["hook"].get_kwarg("require_mode")
         if not require_mode == None:
-            return self._check_command(event, require_mode)
+            return self._check_command(event, event["target"], require_mode)
 
     @utils.hook("check.command.channel-mode")
     def check_command(self, event):
-        return self._check_command(event, event["request_args"][0])
+        target = event["target"]
+        mode = event["request_args"][0]
+        if len(event["request_args"]) > 1:
+            target = event["request_args"][0]
+            mode = event["request_args"][1]
+
+        return self._check_command(event, target, mode)
