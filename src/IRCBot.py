@@ -5,6 +5,7 @@ from src import Socket, utils
 
 VERSION = "v1.9.2"
 SOURCE = "https://git.io/bitbot"
+URL = "https://bitbot.dev"
 
 class TriggerResult(enum.Enum):
     Return = 1
