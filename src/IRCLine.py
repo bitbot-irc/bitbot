@@ -80,9 +80,11 @@ class ParsedLine(object):
             return "@%s" % ";".join(tag_pieces)
         return ""
 
-    def format(self) -> str:
+    def _format(self) -> typing.Tuple[str, str]:
         pieces = []
+        tags = ""
         if self.tags:
+            tags = self._tag_str(self.tags)
             pieces.append(self._tag_str(self.tags))
 
         if self.source:
@@ -98,7 +100,13 @@ class ParsedLine(object):
                 else:
                     pieces.append(arg)
 
-        return " ".join(pieces).split("\n")[0].strip("\r")
+        return tags, " ".join(pieces).split("\n")[0].strip("\r")
+    def format(self) -> str:
+        tags, line = self._format()
+        if tags:
+            return "%s %s" % (tags, line)
+        else:
+            return line
 
     def _line_max(self, hostmask: str) -> int:
         return LINE_MAX-len((":%s " % hostmask).encode("utf8"))
@@ -108,8 +116,8 @@ class ParsedLine(object):
 
         line_max = self._line_max(hostmask)
 
-        formatted = self.format()
-        for i, char in enumerate(formatted):
+        tags_formatted, line_formatted = self._format()
+        for i, char in enumerate(line_formatted):
             encoded_char = char.encode("utf8")
             if len(valid_bytes)+len(encoded_char) > line_max:
                 break
@@ -118,7 +126,12 @@ class ParsedLine(object):
                 valid_index = i
         valid_index += 1
 
-        return formatted[:valid_index], formatted[valid_index:]
+        valid = line_formatted[:valid_index]
+        if tags_formatted:
+            valid = "%s %s" % (tags_formatted, line_formatted)
+        overflow = line_formatted[valid_index:]
+
+        return valid, overflow
 
 class SentLine(IRCObject.Object):
     def __init__(self, events: "EventManager.EventHook",

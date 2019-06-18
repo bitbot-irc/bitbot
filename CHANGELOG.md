@@ -15,6 +15,7 @@ Changed:
 - IRCv3: CAP REQ streamline for modules
 - IRCv3: SASL failure defaults to being "hard" (disconnect/crash)
 - `auto-title`, `auto-youtube`, `auto-imgur` etc now work in `/me`
+- Move truncation logic from `SentLine` to `ParsedLine`
 
 Fixed:
 - `KeyError` when sts `port` key not present
