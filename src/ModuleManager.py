@@ -307,7 +307,7 @@ class ModuleManager(object):
 
     def unload_module(self, name: str):
         if not name in self.modules:
-            raise ModuleNotFoundException()
+            raise ModuleNotFoundException(name)
         loaded_module = self.modules[name]
         if hasattr(loaded_module.module, "unload"):
             try:
