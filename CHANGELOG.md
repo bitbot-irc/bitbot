@@ -7,7 +7,8 @@ Added:
 - IRCv3: draft/event-playback
 - `auto-github-cooldown` to prevent duplicate `auto-github`s in quick succession
 - `vote.py`
-- `ircv3_botignore.py` to ignore users with `inspircd.org/bot`
+- IRCv3: `ircv3_botignore.py` to ignore users with `inspircd.org/bot`
+- Catch and humanify `!loadmodule` "not found" exception
 
 Changed:
 - Only strip 2 characters (`++` or `--`) from the end of karma
