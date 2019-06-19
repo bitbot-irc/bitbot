@@ -130,6 +130,9 @@ class ModuleManager(object):
         else:
             path = "%s.py" % path
 
+        if not os.path.exists(path):
+            raise ModuleNotFoundException(name)
+
         return self.define_module(type, path)
 
     def _module_name(self, path: str) -> str:
