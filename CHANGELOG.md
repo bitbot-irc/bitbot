@@ -17,17 +17,19 @@ Changed:
 - `auto-title`, `auto-youtube`, `auto-imgur` etc now work in `/me`
 - Move truncation logic from `SentLine` to `ParsedLine`
 - Move `!help` logic to it's own file and rework it to be more user friendly
-- Get `"city, state, country"` from geocoding in location.py, use in weather.py
+- Get `"city, state, country"` from geocoding in `location.py`, use in `weather.py`
 
 Fixed:
 - `KeyError` when sts `port` key not present
 - lxml wasn't in requirements.txt but it should have been
 - Any CRITICAL in read/write thread now kills the main thread too
 - `Database.ChannelSettings.find` invalid SQL
+- `birthday.py`'s year no longer .lstrip("0")ed
 
 Removed:
 - `!set`/`!channelset`/`!serverset`/`!botset` (replaced with `!config`)
 - `bytes-read-per-second` and `bytes-written-per-second` from stats endpoint
+- `upc.py`
 
 # 2019-06-09 - BitBot v1.9.2
 
