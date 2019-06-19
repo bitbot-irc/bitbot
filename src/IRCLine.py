@@ -111,13 +111,13 @@ class ParsedLine(object):
         else:
             return line
 
-    def _line_max(self, hostmask: str) -> int:
-        return LINE_MAX-len((":%s " % hostmask).encode("utf8"))
-    def truncate(self, hostmask: str) -> typing.Tuple[str, str]:
+    def _line_max(self, hostmask: str, margin: int) -> int:
+        return LINE_MAX-len((":%s " % hostmask).encode("utf8"))-margin
+    def truncate(self, hostmask: str, margin: int=0) -> typing.Tuple[str, str]:
         valid_bytes = b""
         valid_index = -1
 
-        line_max = self._line_max(hostmask)
+        line_max = self._line_max(hostmask, margin)
 
         tags_formatted, line_formatted = self._format()
         for i, char in enumerate(line_formatted):

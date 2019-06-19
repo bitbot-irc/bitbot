@@ -44,13 +44,11 @@ class Out(object):
             if self._assured:
                 line.assure()
 
-            valid, truncated = line.truncate(self.server.hostmask())
+            valid, truncated = line.truncate(self.server.hostmask(),
+                margin=STR_MORE_LEN)
 
             if truncated:
-                truncated = valid[-STR_MORE_LEN:]+truncated
-                new_line = valid[:-STR_MORE_LEN]+STR_MORE
-                line = utils.irc.parse_line(new_line)
-
+                line = utils.irc.parse_line(valid+STR_MORE)
                 self._text = "%s%s" % (STR_CONTINUED, truncated)
             else:
                 self._text = ""
