@@ -109,6 +109,10 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Vote %s%s: %s" % (
                 vote_id, closed, self._format_vote(vote)))
         else:
+            if not vote["open"]:
+                raise utils.EventError("%s: vote %s is closed" % (
+                    event["user"].nickname, vote_id))
+
             choice = event["args_split"][1].lower()
             if not choice in vote["options"]:
                 raise utils.EventError("Vote options: %s" %
