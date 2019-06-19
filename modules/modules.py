@@ -6,8 +6,10 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     def _catch(self, name, func):
         try:
-            func()
+            return func()
         except ModuleManager.ModuleNotFoundException:
+            raise utils.EventError("Module '%s' not found" % name)
+        except ModuleManager.ModuleNotLoadedException:
             raise utils.EventError("Module '%s' isn't loaded" % name)
         except ModuleManager.ModuleWarning as warning:
             raise utils.EventError("Module '%s' not loaded: %s" % (
@@ -26,7 +28,8 @@ class Module(ModuleManager.BaseModule):
         name = event["args_split"][0].lower()
         if name in self.bot.modules.modules:
             raise utils.EventError("Module '%s' is already loaded" % name)
-        definition = self.bot.modules.find_module(name)
+        definition = self._catch(name,
+            lambda: self.bot.modules.find_module(name))
 
         self._catch(name, lambda: self.bot.modules.load_module(self.bot, definition))
         event["stdout"].write("Loaded '%s'" % name)
@@ -47,7 +50,8 @@ class Module(ModuleManager.BaseModule):
 
     def _reload(self, name):
         self.bot.modules.unload_module(name)
-        definition = self.bot.modules.find_module(name)
+        definition = self._catch(name,
+            lambda: self.bot.modules.find_module(name))
         self.bot.modules.load_module(self.bot, definition)
     @utils.hook("received.command.reloadmodule", min_args=1)
     def reload(self, event):
