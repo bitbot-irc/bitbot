@@ -1,4 +1,5 @@
 #--depends-on commands
+#--depends-on format_activity
 
 import time
 from src import ModuleManager, utils

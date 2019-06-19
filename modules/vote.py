@@ -1,3 +1,7 @@
+#--depends-on check_mode
+#--depends-on commands
+#--depends-on permissions
+
 import binascii, enum, os, uuid
 from src import ModuleManager, utils
 

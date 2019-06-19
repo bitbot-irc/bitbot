@@ -1,4 +1,5 @@
 #--depends-on channel_access
+#--depends-on channel_mode
 #--depends-on commands
 #--depends-on permissions
 

@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import re
 from src import ModuleManager, utils
 
