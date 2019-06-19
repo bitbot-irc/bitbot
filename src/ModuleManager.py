@@ -6,8 +6,11 @@ class ModuleException(Exception):
 class ModuleWarning(Exception):
     pass
 
+class ModuleNotLoadedException(ModuleException):
+    pass
 class ModuleNotFoundException(ModuleException):
     pass
+
 class ModuleNameCollisionException(ModuleException):
     pass
 class ModuleLoadException(ModuleException):
@@ -310,7 +313,7 @@ class ModuleManager(object):
 
     def unload_module(self, name: str):
         if not name in self.modules:
-            raise ModuleNotFoundException(name)
+            raise ModuleNotLoadedException(name)
         loaded_module = self.modules[name]
         if hasattr(loaded_module.module, "unload"):
             try:
