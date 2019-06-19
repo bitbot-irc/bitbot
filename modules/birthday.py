@@ -18,9 +18,18 @@ def _parse(s):
             return True, datetime.datetime.strptime(s, DATE_YEAR_FORMAT)
         except ValueError:
             return None
+
+def _format_year(dt):
+    return "%s-%s-%s" % (str(dt.year).zfill(4), str(dt.month).zfill(2),
+        str(dt.day).zfill(2))
+def _format_noyear(dt):
+    return datetime.datetime.strftime(dt, DATE_FORMAT)
+
 def _format(years, dt):
-    return datetime.datetime.strftime(dt,
-        DATE_YEAR_FORMAT if years else DATE_FORMAT)
+    if years:
+        return _format_year(dt)
+    else:
+        return _format_noyear(dt)
 def _check(s):
     parsed = _parse(s)
     if parsed:
