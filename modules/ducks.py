@@ -78,7 +78,7 @@ class Module(ModuleManager.BaseModule):
         if channel.get_setting("ducks-kick"):
             channel.send_kick(user.nickname, NO_DUCK)
         else:
-            stderr.write(NO_DUCK)
+            stderr.write("%s: %s" % (user.nickname, NO_DUCK))
 
     @utils.hook("received.command.bef", alias_of="befriend")
     @utils.hook("received.command.befriend", channel_only=True)
