@@ -317,6 +317,8 @@ class MessageTag(object):
     def get_value(self, tags: typing.Dict[str, str]) -> typing.Optional[str]:
         key = list(set(tags.keys())&self._names)
         return tags[key[0]] if key else None
+    def present(self, tags: typing.Dict[str, str]) -> bool:
+        return bool(set(tags.keys())&self._names)
     def match(self, tag: str) -> typing.Optional[str]:
         key = list(set([tag])&self._names)
         return key[0] if key else None
