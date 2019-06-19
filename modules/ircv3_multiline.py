@@ -2,6 +2,7 @@ from src import ModuleManager, utils
 
 CAP = utils.irc.Capability(None, "bitbot.dev/multiline")
 BATCH = utils.irc.BatchType(None, "bitbot.dev/multiline")
+TAG = utils.irc.MessageTag(None, "+bitbot.dev/multiline-concat")
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.ls")
@@ -32,7 +33,7 @@ class Module(ModuleManager.BaseModule):
             lines = event["batch"].get_lines()
             for line in lines:
                 message = line.args[1]
-                if line.has_tag("+bitbot.dev/multiline-concat"):
+                if TAG.present(line.tags):
                     last_message = ""
                     if messages:
                         last_message = messages.pop(-1)
