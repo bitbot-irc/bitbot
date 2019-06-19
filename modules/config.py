@@ -46,13 +46,13 @@ class ConfigChannelTarget(object):
 class Module(ModuleManager.BaseModule):
     def _to_context(self, server, channel, user, context_desc):
         context_desc_lower = context_desc.lower()
-        if context_desc_lower == "user":
+        if "user".startswith(context_desc_lower):
             return user, "set"
-        elif context_desc_lower == "channel":
+        elif "channel".startswith(context_desc_lower):
             return channel, "channelset"
-        elif context_desc_lower == "server":
+        elif "server".startswith(context_desc_lower):
             return server, "serverset"
-        elif context_desc_lower == "bot":
+        elif "bot".startswith(context_desc_lower):
             return self.bot, "botset"
         else:
             raise ValueError()
@@ -85,7 +85,7 @@ class Module(ModuleManager.BaseModule):
                 if value == None:
                     example = setting_info.get("example", "<value>")
                     return "Please set %s, e.g.: %sconfig %s %s %s" % (
-                        require_setting, event["command_prefix"], context,
+                        require_setting, event["command_prefix"], context[0],
                         require_setting, example)
 
     def _get_export_setting(self, context):
