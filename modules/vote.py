@@ -10,7 +10,9 @@ STR_NOVOTE = "Unknown vote '%s'"
 class VoteCastResult(enum.Enum):
     Cast = 1
     Changed = 2
-
+@utils.export("channelset", {"setting": "vote-start-restricted",
+    "help": "Whether starting a vote should be restricted to ops",
+    "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
     def _get_vote(self, channel, vote_id):
         return channel.get_setting("vote-%s" % vote_id, None)
@@ -72,9 +74,12 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Start a vote
         :usage: <description>
-        :require_mode: o
-        :permission: vote
         """
+
+        if event["target"].get_setting("vote-start-restricted", True):
+            event["check_assert"](utils.Check("channel-mode", "o")|
+                utils.Check("permission", "vote"))
+
         vote = self._start_vote(event["target"], event["args"])
         event["stdout"].write(
             "Vote %s started. use '%svote <option>' to vote (options: %s)" %
