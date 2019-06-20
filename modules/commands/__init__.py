@@ -40,9 +40,6 @@ def _command_method_validate(s):
     "help": "Disable/enable responding to prefixed commands in-channel",
     "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
-    def on_load(self):
-        self.exports.add("is-ignored", self._is_ignored)
-
     @utils.hook("new.user|channel")
     def new(self, event):
         if "user" in event:
@@ -87,15 +84,6 @@ class Module(ModuleManager.BaseModule):
     def _command_method(self, target, server):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
-
-    def _is_ignored(self, server, user, command):
-        if user.get_setting("ignore", False):
-            return True
-        elif user.get_setting("ignore-%s" % command, False):
-            return True
-        elif server.get_setting("ignore-%s" % command, False):
-            return True
-        return False
 
     def _find_command_hook(self, server, command, is_channel, args_split):
         if not self.has_command(command):
@@ -153,16 +141,17 @@ class Module(ModuleManager.BaseModule):
             elif returned:
                 error = returned
 
-        if hard_fail or (not force_success and error):
-            if error:
-                return False, error
+        if hard_fail:
             return False, None
-        return True, None
+        elif not force_success and error:
+            return False, error
+        else:
+            return True, None
 
 
     def _check_assert(self, check_kwargs,
             check: typing.Union[utils.Check, utils.MultiCheck]):
-        checks = check.to_multi() # bot Check and MultiCheck has this func
+        checks = check.to_multi() # both Check and MultiCheck has this func
         is_success, message = self._check("check", check_kwargs,
             checks.requests())
         if not is_success:
@@ -170,9 +159,6 @@ class Module(ModuleManager.BaseModule):
 
     def command(self, server, target, target_str, is_channel, user, command,
             args_split, tags, hook, **kwargs):
-        if self._is_ignored(server, user, command):
-            return False
-
         message_tags = server.has_capability(MESSAGE_TAGS_CAP)
         expect_output = hook.kwargs.get("expect_output", True)
 
@@ -361,84 +347,6 @@ class Module(ModuleManager.BaseModule):
         if event["target"].last_stdout and event["target"].last_stdout.has_text():
             event["target"].last_stdout.send(
                 self._command_method(event["target"], event["server"]))
-
-    @utils.hook("received.command.ignore", min_args=1)
-    def ignore(self, event):
-        """
-        :help: Ignore commands from a given user
-        :usage: <nickname> [command]
-        :permission: ignore
-        """
-        setting = "ignore"
-        for_str = ""
-        if len(event["args_split"]) > 1:
-            command = event["args_split"][1].lower()
-            setting = "ignore-%s" % command
-            for_str = " for '%s'" % command
-
-        user = event["server"].get_user(event["args_split"][0])
-        if user.get_setting(setting, False):
-            event["stderr"].write("I'm already ignoring '%s'%s" %
-                (user.nickname, for_str))
-        else:
-            user.set_setting(setting, True)
-            event["stdout"].write("Now ignoring '%s'%s" %
-                (user.nickname, for_str))
-
-    @utils.hook("received.command.unignore", min_args=1)
-    def unignore(self, event):
-        """
-        :help: Unignore commands from a given user
-        :usage: <nickname> [command]
-        :permission: unignore
-        """
-        setting = "ignore"
-        for_str = ""
-        if len(event["args_split"]) > 1:
-            command = event["args_split"][1].lower()
-            setting = "ignore-%s" % command
-            for_str = " for '%s'" % command
-
-        user = event["server"].get_user(event["args_split"][0])
-        if not user.get_setting(setting, False):
-            event["stderr"].write("I'm not ignoring '%s'%s" %
-                (user.nickname, for_str))
-        else:
-            user.del_setting(setting)
-            event["stdout"].write("Removed ignore for '%s'%s" %
-                (user.nickname, for_str))
-
-    @utils.hook("received.command.serverignore", in_args=1)
-    def server_ignore(self, event):
-        """
-        :permission: server-ignore
-        """
-        command = event["args_split"][0].lower()
-        setting = "ignore-%s" % command
-
-        if event["server"].get_setting(setting, False):
-            event["stderr"].write("I'm already ignoring '%s' for %s" %
-                (command, str(event["server"])))
-        else:
-            event["server"].set_setting(setting, True)
-            event["stdout"].write("Now ignoring '%s' for %s" %
-                (command, str(event["server"])))
-
-    @utils.hook("received.command.serverunignore", in_args=1)
-    def server_unignore(self, event):
-        """
-        :permission: server-unignore
-        """
-        command = event["args_split"][0].lower()
-        setting = "ignore-%s" % command
-
-        if not event["server"].get_setting(setting, False):
-            event["stderr"].write("I'm not ignoring '%s' for %s" %
-                (command, str(event["server"])))
-        else:
-            event["server"].del_setting(setting)
-            event["stdout"].write("No longer ignoring '%s' for %s" %
-                (command, str(event["server"])))
 
     @utils.hook("send.stdout")
     def send_stdout(self, event):
