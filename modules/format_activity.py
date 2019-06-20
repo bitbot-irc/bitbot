@@ -43,14 +43,14 @@ class Module(ModuleManager.BaseModule):
         self._event("message.channel", event["server"], line,
             event["channel"].name, channel=event["channel"], user=user)
 
-    def _on_notice(self, event, sender, target):
-        return "(notice) <%s> %s" % (target, sender, event["message"])
+    def _on_notice(self, event, sender):
+        return "(notice) <%s> %s" % (sender, event["message"])
     def _channel_notice(self, event, sender, channel):
-        line = self._on_notice(event, sender, channel.name)
+        line = self._on_notice(event, sender)
         self._event("notice.channel", event["server"], line,
             event["channel"].name)
     def _private_notice(self, event, sender, target):
-        line = self._on_notice(event, sender, target)
+        line = self._on_notice(event, sender)
         self._event("notice.private", event["server"], line, None)
 
     @utils.hook("received.notice.channel", priority=EventManager.PRIORITY_HIGH)
