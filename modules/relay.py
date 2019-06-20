@@ -35,7 +35,6 @@ class Module(ModuleManager.BaseModule):
         for other_server_id, other_channel_name in relays:
             if (other_server_id == server_id and
                     other_channel_name == channel_name):
-                print("yes!")
                 return True
         return False
 
