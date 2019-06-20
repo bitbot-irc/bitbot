@@ -78,7 +78,8 @@ class Module(ModuleManager.BaseModule):
 
         if event["target"].get_setting("vote-start-restricted", True):
             event["check_assert"](utils.Check("channel-mode", "o")|
-                utils.Check("permission", "vote"))
+                utils.Check("permission", "vote")|
+                utils.Check("channel-access", "vote"))
 
         vote = self._start_vote(event["target"], event["args"])
         event["stdout"].write(
@@ -91,6 +92,7 @@ class Module(ModuleManager.BaseModule):
         :help: End a vote
         :usage: <id>
         :require_mode: o
+        :require_access: vote
         :permission: vote
         """
         vote_id = event["args_split"][0]
