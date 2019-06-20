@@ -3,12 +3,8 @@ from src import ModuleManager, utils
 CAP = utils.irc.Capability("server-time")
 TAG = utils.irc.MessageTag("time")
 
+@utils.export("cap", CAP)
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.cap.ls")
-    @utils.hook("received.cap.new")
-    def on_cap(self, event):
-        return CAP.copy()
-
     @utils.hook("raw.received")
     def raw_recv(self, event):
         server_time = TAG.get_value(event["line"].tags)

@@ -4,12 +4,8 @@ CAP = utils.irc.Capability(None, "bitbot.dev/multiline")
 BATCH = utils.irc.BatchType(None, "bitbot.dev/multiline")
 TAG = utils.irc.MessageTag(None, "+bitbot.dev/multiline-concat")
 
+@utils.export("cap", CAP)
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.cap.ls")
-    @utils.hook("received.cap.new")
-    def on_cap(self, event):
-        return CAP.copy()
-
     @utils.hook("preprocess.send.privmsg")
     def preprocess_send_privmsg(self, event):
         if len(event["line"].args) > 1:

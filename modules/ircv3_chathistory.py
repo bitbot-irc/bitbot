@@ -8,12 +8,8 @@ CHATHISTORY_BATCH = utils.irc.BatchType("chathistory")
 EVENTPLAYBACK_CAP = utils.irc.Capability(None, "draft/event-playback")
 HISTORY_BATCH = utils.irc.BatchType("history")
 
+@utils.export("cap", EVENTPLAYBACK_CAP)
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.cap.ls")
-    @utils.hook("received.cap.new")
-    def on_cap(self, event):
-        return EVENTPLAYBACK_CAP.copy()
-
     @utils.hook("received.batch.end")
     def batch_end(self, event):
         if (CHATHISTORY_BATCH.match(event["batch"].type) or

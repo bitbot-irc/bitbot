@@ -27,7 +27,7 @@ def _cap_match(server, caps):
             matched_caps[available] = cap
     return matched_caps
 
-def cap(events, event):
+def cap(exports, events, event):
     capabilities = utils.parse.keyvalue(event["args"][-1])
     subcommand = event["args"][1].upper()
     is_multiline = len(event["args"]) > 3 and event["args"][2] == "*"
@@ -49,6 +49,9 @@ def cap(events, event):
         if not is_multiline:
             server_caps = list(event["server"].server_capabilities.keys())
             all_caps = CAPABILITIES[:]
+
+            export_caps = [cap.copy() for cap in exports.get_all("cap")]
+            all_caps.extend(export_caps)
 
             module_caps = events.on("received.cap.ls").call(
                 capabilities=event["server"].server_capabilities,

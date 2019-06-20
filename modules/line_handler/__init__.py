@@ -133,7 +133,7 @@ class Module(ModuleManager.BaseModule):
     # the server is telling us about its capabilities!
     @utils.hook("raw.received.cap")
     def cap(self, event):
-        ircv3.cap(self.events, event)
+        ircv3.cap(self.exports, self.events, event)
 
     # the server is asking for authentication
     @utils.hook("raw.received.authenticate")

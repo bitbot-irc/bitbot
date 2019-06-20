@@ -15,15 +15,11 @@ class WaitingForLabel(object):
         self.events = events
         self.labels_since = 0
 
+@utils.export("cap", CAP)
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.server")
     def new_server(self, event):
         event["server"]._label_cache = {}
-
-    @utils.hook("received.cap.ls")
-    @utils.hook("received.cap.new")
-    def on_cap(self, event):
-        return CAP.copy()
 
     @utils.hook("preprocess.send")
     def raw_send(self, event):
