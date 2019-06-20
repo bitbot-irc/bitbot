@@ -22,6 +22,7 @@ class Module(ModuleManager.BaseModule):
 
         if page and page.data["data"]:
             return page.data["data"]["url"]
+        return url
 
     @utils.hook("received.command.shorten")
     def shorten(self, event):
