@@ -1,4 +1,4 @@
-import fnmatch, json, string, re, typing, uuid
+import json, string, re, typing, uuid
 from src import IRCLine, utils
 from . import protocol
 
@@ -331,4 +331,11 @@ class BatchType(object):
         return t[0] if t else None
 
 def hostmask_match(hostmask: str, pattern: str) -> bool:
-    return fnmatch.fnmatchcase(hostmask, pattern)
+    part1_out = []
+    for part1 in pattern.split("?"):
+        part2_out = []
+        for part2 in part1.split("*"):
+            part2_out.append(re.escape(part2))
+        part1_out.append(".*".join(part2_out))
+    pattern_parsed = ".".join(part1_out)
+    return not re.match(pattern_parsed, hostmask) == None
