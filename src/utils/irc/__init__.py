@@ -330,7 +330,8 @@ class BatchType(object):
         t = list(set([type])&self._names)
         return t[0] if t else None
 
-def hostmask_match_many(hostmasks: typing.List[str], pattern: str) -> str:
+def hostmask_match_many(hostmasks: typing.List[str], pattern: str
+        ) -> typing.Optional[str]:
     part1_out = []
     for part1 in pattern.split("?"):
         part2_out = []
