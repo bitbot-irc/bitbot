@@ -1,3 +1,6 @@
+#--depends-on commands
+#--depends-on permissions
+
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
