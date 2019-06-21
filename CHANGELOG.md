@@ -31,6 +31,7 @@ Fixed:
 - `Database.ChannelSettings.find` invalid SQL
 - `birthday.py`'s year no longer .lstrip("0")ed
 - IRCv3: pay attention to our own msgids (`ircv3_msgid.py`)
+- catch and WARN when trying to remove a self-mode we didn't know we had
 
 Removed:
 - `!set`/`!channelset`/`!serverset`/`!botset` (replaced with `!config`)
