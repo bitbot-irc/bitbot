@@ -1,11 +1,17 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
+    @utils.hook("new.server")
+    def new_server(self, event):
+        event["server"]._relay_ignore = []
+
     def _get_relays(self, channel):
         return channel.get_setting("channel-relays", [])
 
     def _relay(self, event, channel):
-        if "from_self" in event and event["from_self"]:
+        if ("parsed_line" in event and
+                event["parsed_line"].id in event["server"]._relay_ignore):
+            event["server"]._relay_ignore.remove(event["parsed_line"].id)
             return
 
         relays = self._get_relays(channel)
@@ -28,7 +34,11 @@ class Module(ModuleManager.BaseModule):
 
                 relay_message = "[relay/%s%s] %s" % (str(event["server"]),
                     relay_prefix_channel, event["line"])
-                other_channel.send_message(relay_message)
+
+                message = utils.irc.protocol.privmsg(other_channel.name,
+                    relay_message)
+                server._relay_ignore.append(message.id)
+                server.send(message)
 
     def _has_relay_for(self, channel, server_id, channel_name):
         relays = self._get_relays(channel)
