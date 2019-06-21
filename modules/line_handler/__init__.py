@@ -32,7 +32,7 @@ class Module(ModuleManager.BaseModule):
         self.events.on("raw.send").on(event["line"].command).call_unsafe(
             command=event["line"].command, args=event["line"].args,
             tags=event["line"].tags, server=event["server"],
-            direction=utils.Direction.Send)
+            direction=utils.Direction.Send, line=event["line"])
 
     # ping from the server
     @utils.hook("raw.received.ping")
