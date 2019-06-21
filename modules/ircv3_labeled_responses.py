@@ -50,7 +50,8 @@ class Module(ModuleManager.BaseModule):
 
     def _recv(self, server, label, lines):
         if not label in server._label_cache:
-            self.log.warn("unknown label received: %s", [label])
+            self.log.warn("unknown label received on %s: %s",
+                [str(server), label])
             return
 
         cached = server._label_cache.pop(label)
@@ -59,5 +60,6 @@ class Module(ModuleManager.BaseModule):
         for label, other_cached in server._label_cache.items():
             other_cached.labels_since += 1
             if other_cached.labels_since == 10:
-                self.log.warn("%d labels seen while waiting for response to %s",
-                    [other_cached.labels_since, label])
+                self.log.warn(
+                    "%d labels seen while waiting for response to %s on %s",
+                    [other_cached.labels_since, label, str(server)])
