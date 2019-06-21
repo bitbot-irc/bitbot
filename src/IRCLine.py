@@ -1,4 +1,4 @@
-import datetime, typing
+import datetime, typing, uuid
 from src import IRCObject, utils
 
 # this should be 510 (RFC1459, 512 with \r\n) but a server BitBot uses is broken
@@ -41,6 +41,7 @@ class ParsedLine(object):
     def __init__(self, command: str, args: typing.List[str],
             source: Hostmask=None,
             tags: typing.Dict[str, str]=None):
+        self.id = str(uuid.uuid4())
         self.command = command
         self._args = args
         self.args = IRCArgs(args)
