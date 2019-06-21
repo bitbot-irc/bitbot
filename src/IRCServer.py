@@ -158,7 +158,8 @@ class Server(IRCObject.Object):
     def add_own_mode(self, mode: str, arg: str=None):
         self.own_modes[mode] = arg
     def remove_own_mode(self, mode: str):
-        del self.own_modes[mode]
+        if mode in self.own_modes:
+            del self.own_modes[mode]
     def change_own_mode(self, remove: bool, mode: str, arg: str=None):
         if remove:
             self.remove_own_mode(mode)
