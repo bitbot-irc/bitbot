@@ -1,6 +1,6 @@
 from src import EventManager, ModuleManager, utils
 
-CAP = utils.irc.Capability("echo-message")
+CAP = utils.irc.Capability("echo-message", depends_on=["labeled-response"])
 
 @utils.export("cap", CAP)
 class Module(ModuleManager.BaseModule):
