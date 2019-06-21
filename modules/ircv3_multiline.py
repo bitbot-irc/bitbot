@@ -1,6 +1,6 @@
 from src import ModuleManager, utils
 
-CAP = utils.irc.Capability(None, "bitbot.dev/multiline")
+CAP = utils.irc.Capability(None, "bitbot.dev/multiline", alias="multiline")
 BATCH = utils.irc.BatchType(None, "bitbot.dev/multiline")
 TAG = utils.irc.MessageTag(None, "+bitbot.dev/multiline-concat")
 

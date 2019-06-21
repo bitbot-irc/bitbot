@@ -5,7 +5,8 @@ from src import ModuleManager, utils
 TAG = utils.irc.MessageTag("msgid", "draft/msgid")
 CHATHISTORY_BATCH = utils.irc.BatchType("chathistory")
 
-EVENTPLAYBACK_CAP = utils.irc.Capability(None, "draft/event-playback")
+EVENTPLAYBACK_CAP = utils.irc.Capability(None, "draft/event-playback",
+    alias="event-playback")
 HISTORY_BATCH = utils.irc.BatchType("history")
 
 @utils.export("cap", EVENTPLAYBACK_CAP)

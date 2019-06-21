@@ -1,6 +1,6 @@
 from src import IRCBot, ModuleManager, utils
 
-CAP = utils.irc.Capability(None, "draft/metadata")
+CAP = utils.irc.Capability(None, "draft/metadata", alias="metadata")
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.cap.new")

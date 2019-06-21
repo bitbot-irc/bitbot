@@ -12,8 +12,8 @@ CAPABILITIES = [
     utils.irc.Capability("message-tags", "draft/message-tags-0.2"),
     utils.irc.Capability("cap-notify"),
     utils.irc.Capability("batch"),
-    utils.irc.Capability(None, "draft/rename"),
-    utils.irc.Capability(None, "draft/setname")
+    utils.irc.Capability(None, "draft/rename", alias="rename"),
+    utils.irc.Capability(None, "draft/setname", alias="setname")
 ]
 
 def _cap_match(server, caps):

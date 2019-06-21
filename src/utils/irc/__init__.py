@@ -286,8 +286,11 @@ class IRCSendBatch(IRCBatch):
         return lines
 
 class Capability(object):
-    def __init__(self, name: typing.Optional[str], draft_name: str=None):
-        self._caps = set([name, draft_name])
+    def __init__(self, ratified_name: typing.Optional[str],
+            draft_name: str=None, alias: str=None,
+            depends_on: typing.List[str]=None):
+        self.alias = alias or ratified_name
+        self._caps = set([ratified_name, draft_name])
         self._on_ack_callbacks = [
             ] # type: typing.List[typing.Callable[[], None]]
 
