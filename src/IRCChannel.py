@@ -167,24 +167,24 @@ class Channel(IRCObject.Object):
             self.id, setting, default)
 
     def send_message(self, text: str, tags: dict={}):
-        self.server.send_message(self.name, text, tags=tags)
+        return self.server.send_message(self.name, text, tags=tags)
     def send_notice(self, text: str, tags: dict={}):
-        self.server.send_notice(self.name, text, tags=tags)
+        return self.server.send_notice(self.name, text, tags=tags)
     def send_tagmsg(self, tags: dict):
-        self.server.send_tagmsg(self.name, tags)
+        return self.server.send_tagmsg(self.name, tags)
 
     def send_mode(self, mode: str=None, target: typing.List[str]=None):
-        self.server.send_mode(self.name, mode, target)
+        return self.server.send_mode(self.name, mode, target)
     def send_kick(self, target: str, reason: str=None):
-        self.server.send_kick(self.name, target, reason)
+        return self.server.send_kick(self.name, target, reason)
     def send_ban(self, hostmask: str):
-        self.server.send_mode(self.name, "+b", [hostmask])
+        return self.server.send_mode(self.name, "+b", [hostmask])
     def send_unban(self, hostmask: str):
-        self.server.send_mode(self.name, "-b", [hostmask])
+        return self.server.send_mode(self.name, "-b", [hostmask])
     def send_topic(self, topic: str):
-        self.server.send_topic(self.name, topic)
+        return self.server.send_topic(self.name, topic)
     def send_part(self, reason: str=None):
-        self.server.send_part(self.name, reason)
+        return self.server.send_part(self.name, reason)
 
     def mode_or_above(self, user: IRCUser.User, mode: str) -> bool:
         mode_orders = list(self.server.prefix_modes)
