@@ -5,7 +5,7 @@ class Module(ModuleManager.BaseModule):
         return channel.get_setting("channel-relays", [])
 
     def _relay(self, event, channel):
-        if event["from_self"]:
+        if "from_self" in event and event["from_self"]:
             return
 
         relays = self._get_relays(channel)

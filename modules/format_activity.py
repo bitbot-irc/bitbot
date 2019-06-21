@@ -3,10 +3,10 @@ from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def _event(self, type, server, line, context, minimal=None,
-            channel=None, user=None):
+            channel=None, user=None, **kwargs):
         self.events.on("formatted").on(type).call(server=server,
             context=context, line=line, channel=channel, user=user,
-            minimal=minimal)
+            minimal=minimal, **kwargs)
 
     def _mode_symbols(self, user, channel, server):
         modes = channel.get_user_status(user)
@@ -41,17 +41,20 @@ class Module(ModuleManager.BaseModule):
 
         line = self._privmsg(event, event["channel"], user, nickname)
         self._event("message.channel", event["server"], line,
-            event["channel"].name, channel=event["channel"], user=user)
+            event["channel"].name, channel=event["channel"], user=user,
+            from_self=event["from_self"])
 
     def _on_notice(self, event, sender):
         return "(notice) <%s> %s" % (sender, event["message"])
     def _channel_notice(self, event, sender, channel):
         line = self._on_notice(event, sender)
         self._event("notice.channel", event["server"], line,
-            event["channel"].name)
+            event["channel"].name, from_self=event["from_self"])
+
     def _private_notice(self, event, sender, target):
         line = self._on_notice(event, sender)
-        self._event("notice.private", event["server"], line, None)
+        self._event("notice.private", event["server"], line, None,
+            from_self=event["from_self"])
 
     @utils.hook("received.notice.channel", priority=EventManager.PRIORITY_HIGH)
     def channel_notice(self, event):
