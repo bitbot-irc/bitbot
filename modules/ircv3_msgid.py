@@ -9,8 +9,11 @@ class Module(ModuleManager.BaseModule):
             channel.set_setting("last-msgid", msgid)
 
     @utils.hook("received.message.channel")
+    @utils.hook("send.message.channel")
     @utils.hook("received.notice.channel")
+    @utils.hook("send.notice.channel")
     @utils.hook("received.tagmsg.channel")
+    @utils.hook("send.tagmsg.channel")
     def on_channel(self, event):
         self._on_channel(event["channel"], event["tags"])
 
