@@ -160,6 +160,9 @@ class Server(IRCObject.Object):
     def remove_own_mode(self, mode: str):
         if mode in self.own_modes:
             del self.own_modes[mode]
+        else:
+            self.bot.log.warn("Tried to remove unknown own mode %s on %s",
+                [mode, str(self)])
     def change_own_mode(self, remove: bool, mode: str, arg: str=None):
         if remove:
             self.remove_own_mode(mode)
