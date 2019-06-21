@@ -9,3 +9,13 @@ class Module(ModuleManager.BaseModule):
     def send_message(self, event):
         if event["server"].has_capability(CAP):
             event.eat()
+
+    @utils.hook("preprocess.send.privmsg")
+    @utils.hook("preprocess.send.notice")
+    @utils.hook("preprocess.send.tagmsg")
+    def preprocess_send(self, event):
+        if event["server"].has_capability(CAP):
+            event["events"].on("labeled-response").hook(self.on_echo)
+
+    def on_echo(self, event):
+        event["responses"][0].id = event["line"].id
