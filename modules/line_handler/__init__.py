@@ -161,9 +161,7 @@ class Module(ModuleManager.BaseModule):
 
     # we've received/sent a PRIVMSG, NOTICE or TAGMSG
     @utils.hook("raw.received.privmsg")
-    @utils.hook("raw.send.privmsg")
     @utils.hook("raw.received.notice")
-    @utils.hook("raw.send.notice")
     @utils.hook("raw.received.tagmsg")
     def message(self, event):
         message.message(self.events, event)
