@@ -9,6 +9,8 @@ Added:
 - `vote.py`
 - IRCv3: `ircv3_botignore.py` to ignore users with `inspircd.org/bot`
 - Catch and humanify `!loadmodule` "not found" exception
+- cross-channel/network relay (`relay.py`)
+- Option to allow anyone to `!startvote`
 
 Changed:
 - Only strip 2 characters (`++` or `--`) from the end of karma
@@ -20,6 +22,7 @@ Changed:
 - Move truncation logic from `SentLine` to `ParsedLine`
 - Move `!help` logic to it's own file and rework it to be more user friendly
 - Get `"city, state, country"` from geocoding in `location.py`, use in `weather.py`
+- Convert IRC glob to regex, instead of using fnmatch
 
 Fixed:
 - `KeyError` when sts `port` key not present
@@ -27,6 +30,7 @@ Fixed:
 - Any CRITICAL in read/write thread now kills the main thread too
 - `Database.ChannelSettings.find` invalid SQL
 - `birthday.py`'s year no longer .lstrip("0")ed
+- IRCv3: pay attention to our own msgids (`ircv3_msgid.py`)
 
 Removed:
 - `!set`/`!channelset`/`!serverset`/`!botset` (replaced with `!config`)
