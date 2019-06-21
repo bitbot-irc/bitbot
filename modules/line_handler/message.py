@@ -53,7 +53,7 @@ def message(events, event):
 
     kwargs = {"server": event["server"], "target": target_obj,
         "target_str": target_str, "user": user, "tags": event["tags"],
-        "is_channel": is_channel, "from_self": from_self}
+        "is_channel": is_channel, "from_self": from_self, "line": event["line"]}
 
     action = False
 

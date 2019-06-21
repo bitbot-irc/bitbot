@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
         default_event = any(default_events)
 
         kwargs = {"command": line.command, "args": line.args, "tags": line.tags,
-            "server": server, "source": line.source,
+            "server": server, "source": line.source, "line": line,
             "direction": utils.Direction.Recv}
 
         self.events.on("raw.received").on(line.command).call_unsafe(**kwargs)
