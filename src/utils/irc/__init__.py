@@ -291,6 +291,7 @@ class Capability(object):
             depends_on: typing.List[str]=None):
         self.alias = alias or ratified_name
         self._caps = set([ratified_name, draft_name])
+        self.depends_on = depends_on or []
         self._on_ack_callbacks = [
             ] # type: typing.List[typing.Callable[[], None]]
 
@@ -304,7 +305,8 @@ class Capability(object):
         return cap[0] if cap else None
 
     def copy(self):
-        return Capability(*self._caps)
+        return Capability(*self._caps, alias=self.alias,
+            depends_on=self.depends_on)
 
     def on_ack(self, callback: typing.Callable[[], None]):
         self._on_ack_callbacks.append(callback)
