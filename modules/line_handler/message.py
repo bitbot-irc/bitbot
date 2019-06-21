@@ -1,20 +1,13 @@
 from src import utils
 
-def _from_self(server, direction, source):
-    if direction == utils.Direction.Send:
-        if server.has_capability_str("echo-message"):
-            return None
-        else:
-            return True
+def _from_self(server, source):
+    if source:
+        return server.is_own_nickname(source.nickname)
     else:
-        if source:
-            return server.is_own_nickname(source.nickname)
-        else:
-            return False
+        return False
 
 def message(events, event):
-    from_self = _from_self(event["server"], event["direction"],
-        event.get("source", None))
+    from_self = _from_self(event["server"], event.get("source", None))
     if from_self == None:
         return
 
