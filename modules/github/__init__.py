@@ -688,9 +688,10 @@ class Module(ModuleManager.BaseModule):
 
     def delete(self, full_name, data):
         ref = data["ref"]
+        ref_color = utils.irc.color(ref, COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        return ["%s deleted a %s: %s" % (sender, type, ref)]
+        return ["%s deleted a %s: %s" % (sender, type, ref_color)]
 
     def release(self, full_name, data):
         action = data["action"]
