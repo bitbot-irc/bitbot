@@ -192,6 +192,9 @@ class EventHook(object):
 
     def _call(self, kwargs: dict, safe: bool, maximum: typing.Optional[int]
             ) -> typing.List[typing.Any]:
+        if not utils.is_main_thread():
+            raise RuntimeError("Can't call events outside of main thread")
+
         event_path = self._get_path()
         hooks = self.get_hooks()
         returns = [] # type: typing.List[typing.Any]
