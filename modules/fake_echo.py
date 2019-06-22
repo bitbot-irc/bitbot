@@ -6,8 +6,8 @@ class Module(ModuleManager.BaseModule):
     def send_message(self, event):
         our_hostmask = utils.irc.seperate_hostmask(event["server"].hostmask())
 
-        echo = IRCLine.ParsedLine(event["command"], event["args"],
-            source=our_hostmask, tags=event["tags"])
+        echo = IRCLine.ParsedLine(event["line"].command, event["line"].args,
+            source=our_hostmask, tags=event["line"].tags)
         echo.id = event["line"].id
 
         self.events.on("raw.received").call(line=echo, server=event["server"])

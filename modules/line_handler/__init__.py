@@ -8,14 +8,12 @@ class Module(ModuleManager.BaseModule):
         default_events = []
         for hook in hooks:
             default_events.append(hook.kwargs.get("default_event", False))
-        default_event = any(default_events)
 
-        kwargs = {"command": line.command, "args": line.args, "tags": line.tags,
-            "server": server, "source": line.source, "line": line,
+        kwargs = {"server": server, "line": line,
             "direction": utils.Direction.Recv}
 
         self.events.on("raw.received").on(line.command).call_unsafe(**kwargs)
-        if default_event or not hooks:
+        if any(default_events) or not hooks:
             self.events.on("received").on(line.command).call(**kwargs)
 
     @utils.hook("raw.received")
@@ -30,9 +28,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.send")
     def handle_send(self, event):
         self.events.on("raw.send").on(event["line"].command).call_unsafe(
-            command=event["line"].command, args=event["line"].args,
-            tags=event["line"].tags, server=event["server"],
-            direction=utils.Direction.Send, line=event["line"])
+            server=event["server"], direction=utils.Direction.Send,
+            line=event["line"])
 
     # ping from the server
     @utils.hook("raw.received.ping")
@@ -42,16 +39,16 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.received.error")
     def error(self, event):
         self.log.error("ERROR received from %s: %s",
-            [str(event["server"]), event["args"][0]])
+            [str(event["server"]), event["line"].args[0]])
     @utils.hook("raw.received.fail")
     def fail(self, event):
-        command = event["args"][0]
-        error_code = event["args"][1]
-        context = event["args"][2:-1]
-        description = event["args"][-1]
+        command = event["line"].args[0]
+        error_code = event["line"].args[1]
+        context = event["line"].args[2:-1]
+        description = event["line"].args[-1]
 
-        self.log.warn("FAIL (%s %s) received: %s",
-            [command, error_code, description])
+        self.log.warn("FAIL (%s %s) received on %s: %s",
+            [command, error_code, str(event["server"]), description])
         self.events.on("received.fail").on(command).call(error_code=error_code,
             context=context, description=description, server=event["server"])
 
@@ -122,7 +119,8 @@ class Module(ModuleManager.BaseModule):
     # unknown command sent by us, oops!
     @utils.hook("raw.received.421", default_event=True)
     def handle_421(self, event):
-        self.bot.log.warn("We sent an unknown command: %s", [event["args"][1]])
+        self.bot.log.warn("We sent an unknown command to %s: %s",
+            [str(event["server"]), event["line"].args[1]])
 
     # a user has disconnected!
     @utils.hook("raw.received.quit")
@@ -173,15 +171,15 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("raw.received.batch")
     def batch(self, event):
-        identifier = event["args"][0]
+        identifier = event["line"].args[0]
         modifier, identifier = identifier[0], identifier[1:]
 
         if modifier == "+":
-            batch_type = event["args"][1]
-            args = event["args"][2:]
+            batch_type = event["line"].args[1]
+            args = event["line"].args[2:]
 
             batch = utils.irc.IRCBatch(identifier, batch_type, args,
-                event["tags"])
+                event["line"].tags)
             event["server"].batches[identifier] = batch
 
             self.events.on("received.batch.start").call(batch=batch,
@@ -227,7 +225,6 @@ class Module(ModuleManager.BaseModule):
     def handle_354(self, event):
         core.handle_354(event)
 
-
     # response to an empty mode command
     @utils.hook("raw.received.324", default_event=True)
     def handle_324(self, event):
@@ -246,7 +243,7 @@ class Module(ModuleManager.BaseModule):
     # we need a registered nickname for this channel
     @utils.hook("raw.received.477", default_event=True)
     def handle_477(self, event):
-        channel_name = event["server"].irc_lower(event["args"][1])
+        channel_name = event["server"].irc_lower(event["line"].args[1])
         if channel_name in event["server"].channels:
             key = event["server"].attempted_join[channel_name]
             self.timers.add("rejoin", 5, channel_name=channe_name, key=key,

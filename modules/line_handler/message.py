@@ -7,25 +7,25 @@ def _from_self(server, source):
         return False
 
 def message(events, event):
-    from_self = _from_self(event["server"], event.get("source", None))
+    from_self = _from_self(event["server"], event["line"].source)
     if from_self == None:
         return
 
     direction = "send" if from_self else "received"
 
-    target_str = event["args"][0]
+    target_str = event["line"].args[0]
 
     message = None
-    if len(event["args"]) > 1:
-        message = event["args"][1]
+    if len(event["line"].args) > 1:
+        message = event["line"].args[1]
 
     if not from_self and (
-            not event["source"] or
+            not event["line"].source or
             not event["server"].name or
-            event["source"].hostmask == event["server"].name or
+            event["line"].source.hostmask == event["server"].name or
             target_str == "*"):
-        if event["source"]:
-            event["server"].name = event["source"].hostmask
+        if event["line"].source:
+            event["server"].name = event["line"].source.hostmask
 
         events.on("received.server-notice").call(message=message,
             message_split=message.split(" "), server=event["server"])
@@ -34,7 +34,7 @@ def message(events, event):
     if from_self:
         user = event["server"].get_user(event["server"].nickname)
     else:
-        user = event["server"].get_user(event["source"].nickname)
+        user = event["server"].get_user(event["line"].source.nickname)
 
     # strip prefix_symbols from the start of target, for when people use
     # e.g. 'PRIVMSG +#channel :hi' which would send a message to only
@@ -52,7 +52,7 @@ def message(events, event):
         target_obj = event["server"].get_user(target)
 
     kwargs = {"server": event["server"], "target": target_obj,
-        "target_str": target_str, "user": user, "tags": event["tags"],
+        "target_str": target_str, "user": user, "tags": event["line"].tags,
         "is_channel": is_channel, "from_self": from_self, "line": event["line"]}
 
     action = False
@@ -61,9 +61,9 @@ def message(events, event):
         ctcp_message = utils.irc.parse_ctcp(message)
 
         if ctcp_message:
-            if not ctcp_message.command == "ACTION" or not event["command"
-                    ] == "PRIVMSG":
-                if event["command"] == "PRIVMSG":
+            if (not ctcp_message.command == "ACTION" or not
+                    event["line"].command == "PRIVMSG"):
+                if event["line"].command == "PRIVMSG":
                     ctcp_action = "request"
                 else:
                     ctcp_action = "response"
@@ -82,8 +82,8 @@ def message(events, event):
         kwargs["message_split"] = message.split(" ")
         kwargs["action"] = action
 
-    event_type = event["command"].lower()
-    if event["command"] == "PRIVMSG":
+    event_type = event["line"].command.lower()
+    if event_type == "privmsg":
         event_type = "message"
 
     context = "channel" if is_channel else "private"
@@ -93,7 +93,7 @@ def message(events, event):
         hook.call(channel=target_obj, **kwargs)
         if message:
             target_obj.buffer.add_message(user.nickname, message, action,
-                event["tags"], from_self)
+                event["line"].tags, from_self)
     else:
         hook.call(**kwargs)
 
@@ -103,4 +103,4 @@ def message(events, event):
 
         if message:
             buffer_obj.buffer.add_message(user.nickname, message, action,
-                event["tags"], from_self)
+                event["line"].tags, from_self)

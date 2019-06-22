@@ -1,10 +1,10 @@
 from src import utils
 
 def handle_311(event):
-    nickname = event["args"][1]
-    username = event["args"][2]
-    hostname = event["args"][3]
-    realname = event["args"][4]
+    nickname = event["line"].args[1]
+    username = event["line"].args[2]
+    hostname = event["line"].args[3]
+    realname = event["line"].args[4]
 
     if event["server"].is_own_nickname(nickname):
         event["server"].username = username
@@ -19,13 +19,13 @@ def handle_311(event):
 def quit(events, event):
     nickname = None
     if event["direction"] == utils.Direction.Recv:
-        nickname = event["source"].nickname
-    reason = event["args"].get(0)
+        nickname = event["line"].source.nickname
+    reason = event["line"].args.get(0)
 
     if event["direction"] == utils.Direction.Recv:
-        nickname = event["source"].nickname
+        nickname = event["line"].source.nickname
         if (not event["server"].is_own_nickname(nickname) and
-                not event["source"].hostmask == "*"):
+                not event["line"].source.hostmask == "*"):
             user = event["server"].get_user(nickname)
             events.on("received.quit").call(reason=reason, user=user,
                 server=event["server"])
@@ -36,11 +36,11 @@ def quit(events, event):
         events.on("send.quit").call(reason=reason, server=event["server"])
 
 def nick(events, event):
-    new_nickname = event["args"].get(0)
-    user = event["server"].get_user(event["source"].nickname)
+    new_nickname = event["line"].args.get(0)
+    user = event["server"].get_user(event["line"].source.nickname)
     old_nickname = user.nickname
 
-    if not event["server"].is_own_nickname(event["source"].nickname):
+    if not event["server"].is_own_nickname(event["line"].source.nickname):
         events.on("received.nick").call(new_nickname=new_nickname,
             old_nickname=old_nickname, user=user, server=event["server"])
     else:
@@ -52,8 +52,8 @@ def nick(events, event):
     event["server"].change_user_nickname(old_nickname, new_nickname)
 
 def away(events, event):
-    user = event["server"].get_user(event["source"].nickname)
-    message = event["args"].get(0)
+    user = event["server"].get_user(event["line"].source.nickname)
+    message = event["line"].args.get(0)
     if message:
         user.away = True
         user.away_message = message
@@ -65,9 +65,9 @@ def away(events, event):
         events.on("received.away.off").call(user=user, server=event["server"])
 
 def chghost(event):
-    nickname = event["source"].nickname
-    username = event["args"][0]
-    hostname = event["args"][1]
+    nickname = event["line"].source.nickname
+    username = event["line"].args[0]
+    hostname = event["line"].args[1]
 
     if event["server"].is_own_nickname(nickname):
         event["server"].username = username
@@ -78,8 +78,8 @@ def chghost(event):
     target.hostname = hostname
 
 def setname(event):
-    nickname = event["source"].nickname
-    realname = event["args"][0]
+    nickname = event["line"].source.nickname
+    realname = event["line"].args[0]
 
     user = event["server"].get_user(nickname)
     user.realname = realname
@@ -88,14 +88,14 @@ def setname(event):
         event["server"].realname = realname
 
 def account(events, event):
-    user = event["server"].get_user(event["source"].nickname)
+    user = event["server"].get_user(event["line"].source.nickname)
 
-    if not event["args"][0] == "*":
-        user.identified_account = event["args"][0]
+    if not event["line"].args[0] == "*":
+        user.identified_account = event["line"].args[0]
         user.identified_account_id = event["server"].get_user(
-            event["args"][0]).get_id()
+            event["line"].args[0]).get_id()
         events.on("received.account.login").call(user=user,
-            server=event["server"], account=event["args"][0])
+            server=event["server"], account=event["line"].args[0])
     else:
         user.identified_account = None
         user.identified_account_id = None

@@ -4,18 +4,18 @@ RE_ISUPPORT_ESCAPE = re.compile(r"\\x(\d\d)", re.I)
 RE_MODES = re.compile(r"[-+]\w+")
 
 def ping(event):
-    event["server"].send_pong(event["args"][0])
+    event["server"].send_pong(event["line"].args[0])
 
 def handle_001(event):
     event["server"].socket.enable_write_throttle()
-    event["server"].name = event["source"].hostmask
-    event["server"].set_own_nickname(event["args"][0])
+    event["server"].name = event["line"].source.hostmask
+    event["server"].set_own_nickname(event["line"].args[0])
     event["server"].send_whois(event["server"].nickname)
     event["server"].send_mode(event["server"].nickname)
     event["server"].connected = True
 
 def handle_005(events, event):
-    isupport_list = event["args"][1:-1]
+    isupport_list = event["line"].args[1:-1]
     isupport = {}
 
     for i, item in enumerate(isupport_list):
@@ -60,12 +60,12 @@ def handle_005(events, event):
         server=event["server"])
 
 def handle_004(event):
-    event["server"].version = event["args"][2]
+    event["server"].version = event["line"].args[2]
 
 def motd_start(event):
     event["server"].motd_lines.clear()
 def motd_line(event):
-    event["server"].motd_lines.append(event["args"][1])
+    event["server"].motd_lines.append(event["line"].args[1])
 
 def _own_modes(server, modes):
     mode_chunks = RE_MODES.findall(modes)
@@ -75,39 +75,39 @@ def _own_modes(server, modes):
             server.change_own_mode(remove, mode)
 
 def mode(events, event):
-    user = event["server"].get_user(event["source"].nickname)
-    target = event["args"][0]
+    user = event["server"].get_user(event["line"].source.nickname)
+    target = event["line"].args[0]
     is_channel = target[0] in event["server"].channel_types
     if is_channel:
         channel = event["server"].channels.get(target)
-        modes = event["args"][1]
-        args  = event["args"][2:]
+        modes = event["line"].args[1]
+        args  = event["line"].args[2:]
 
         channel.parse_modes(modes, args[:])
 
         events.on("received.mode.channel").call(modes=modes, mode_args=args,
             channel=channel, server=event["server"], user=user)
     elif event["server"].is_own_nickname(target):
-        modes = event["args"][1]
+        modes = event["line"].args[1]
         _own_modes(event["server"], modes)
 
         events.on("self.mode").call(modes=modes, server=event["server"])
         event["server"].send_who(event["server"].nickname)
 
 def handle_221(event):
-    _own_modes(event["server"], event["args"][1])
+    _own_modes(event["server"], event["line"].args[1])
 
 def invite(events, event):
-    target_channel = event["args"][1]
-    user = event["server"].get_user(event["source"].nickname)
-    target_user = event["server"].get_user(event["args"][0])
+    target_channel = event["line"].args[1]
+    user = event["server"].get_user(event["line"].source.nickname)
+    target_user = event["server"].get_user(event["line"].args[0])
     events.on("received.invite").call(user=user, target_channel=target_channel,
         server=event["server"], target_user=target_user)
 
 def handle_352(event):
-    nickname = event["args"][5]
-    username = event["args"][2]
-    hostname = event["args"][3]
+    nickname = event["line"].args[5]
+    username = event["line"].args[2]
+    hostname = event["line"].args[3]
 
     if event["server"].is_own_nickname(nickname):
         event["server"].username = username
@@ -118,12 +118,12 @@ def handle_352(event):
     target.hostname = hostname
 
 def handle_354(event):
-    if event["args"][1] == "111":
-        nickname = event["args"][4]
-        username = event["args"][2]
-        hostname = event["args"][3]
-        realname = event["args"][6]
-        account = event["args"][5]
+    if event["line"].args[1] == "111":
+        nickname = event["line"].args[4]
+        username = event["line"].args[2]
+        hostname = event["line"].args[3]
+        realname = event["line"].args[6]
+        account = event["line"].args[5]
 
         if event["server"].is_own_nickname(nickname):
             event["server"].username = username

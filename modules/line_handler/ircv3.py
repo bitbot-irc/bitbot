@@ -72,9 +72,9 @@ def _cap_match(server, caps):
     return matched_caps
 
 def cap(exports, events, event):
-    capabilities = utils.parse.keyvalue(event["args"][-1])
-    subcommand = event["args"][1].upper()
-    is_multiline = len(event["args"]) > 3 and event["args"][2] == "*"
+    capabilities = utils.parse.keyvalue(event["line"].args[-1])
+    subcommand = event["line"].args[1].upper()
+    is_multiline = len(event["line"].args) > 3 and event["line"].args[2] == "*"
 
     if subcommand == "DEL":
         for capability in capabilities.keys():
@@ -127,5 +127,5 @@ def cap(exports, events, event):
             event["server"].send_capability_end()
 
 def authenticate(events, event):
-    events.on("received.authenticate").call(message=event["args"][0],
+    events.on("received.authenticate").call(message=event["line"].args[0],
         server=event["server"])
