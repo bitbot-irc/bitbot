@@ -11,6 +11,9 @@ Added:
 - Catch and humanify `!loadmodule` "not found" exception
 - cross-channel/network relay (`relay.py`)
 - Option to allow anyone to `!startvote`
+- IRCv3: CAP dependency system
+- IRCv3: labeled-response + echo-message to correlate echos to sends
+- `deferred_read.py`
 
 Changed:
 - Only strip 2 characters (`++` or `--`) from the end of karma
@@ -23,6 +26,7 @@ Changed:
 - Move `!help` logic to it's own file and rework it to be more user friendly
 - Get `"city, state, country"` from geocoding in `location.py`, use in `weather.py`
 - Convert IRC glob to regex, instead of using fnmatch
+- `EventManager` calls can only come from the main thread
 
 Fixed:
 - `KeyError` when sts `port` key not present
