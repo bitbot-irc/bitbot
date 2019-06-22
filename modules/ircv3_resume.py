@@ -35,14 +35,14 @@ class Module(ModuleManager.BaseModule):
     def on_resume(self, event):
         cap_done = True
 
-        if event["args"][0] == "SUCCESS":
+        if event["line"].args[0] == "SUCCESS":
             resume_channels = event["server"].get_setting("resume-channels", [])
             self.log.info("Successfully resumed session")
             event["server"].clear_waiting_capabilities()
 
-        elif event["args"][0] == "TOKEN":
+        elif event["line"].args[0] == "TOKEN":
             token = self._get_token(event["server"])
-            self._set_token(event["server"], event["args"][1], new=True)
+            self._set_token(event["server"], event["line"].args[1], new=True)
 
             if token:
                 timestamp = event["server"]._resume_timestamp

@@ -130,7 +130,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.908")
     def sasl_mechanisms(self, event):
-        server_mechanisms = event["args"][1].split(",")
+        server_mechanisms = event["line"].args[1].split(",")
         mechanism = self._best_userpass_mechanism(server_mechanimsms)
         event["server"].sasl_mechanism = mechanism
         event["server"].send_authenticate(mechanism)
@@ -140,7 +140,8 @@ class Module(ModuleManager.BaseModule):
         self._end_sasl(event["server"])
     @utils.hook("received.904")
     def sasl_failure(self, event):
-        self._panic(event["server"], "ERR_SASLFAIL (%s)" % event["args"][1])
+        self._panic(event["server"], "ERR_SASLFAIL (%s)" %
+            event["line"].args[1])
 
     @utils.hook("received.907")
     def sasl_already(self, event):

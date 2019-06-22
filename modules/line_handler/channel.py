@@ -157,7 +157,7 @@ def kick(events, event):
 
 def rename(events, event):
     old_name = event["line"].args[0]
-    new_name = event["args"].args[1]
+    new_name = event["line"].args[1]
     channel = event["server"].channels.get(old_name)
 
     event["server"].channels.rename(old_name, new_name)

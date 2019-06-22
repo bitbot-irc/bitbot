@@ -26,7 +26,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.731")
     def mon_offline(self, event):
         target_nick = event["server"].connection_params.nickname
-        nicks = event["args"][1].split(",")
+        nicks = event["line"].args[1].split(",")
         nicks = [event["server"].irc_lower(n) for n in nicks]
         if event["server"].irc_lower(target_nick) in nicks:
             event["server"].send_nick(target_nick)
@@ -42,7 +42,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.303")
     def ison_response(self, event):
         target_nick = event["server"].connection_params.nickname
-        if not event["args"][1] and not event["server"].irc_equals(
+        if not event["line"].args[1] and not event["server"].irc_equals(
                 event["server"].nickname, target_nick):
             event["server"].send_nick(target_nick)
 
