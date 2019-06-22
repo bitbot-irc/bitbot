@@ -42,7 +42,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stdout"].write("I'm %s. use '%smodules' to list modules, "
                 "'%scommands <module>' to list commands and "
-                "'%shelp <command' to see help text for a command" %
+                "'%shelp <command>' to see help text for a command" %
                 (IRCBot.URL, event["command_prefix"], event["command_prefix"],
                 event["command_prefix"]))
 
