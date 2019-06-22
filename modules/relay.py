@@ -38,7 +38,10 @@ class Module(ModuleManager.BaseModule):
                 message = utils.irc.protocol.privmsg(other_channel.name,
                     relay_message)
                 server._relay_ignore.append(message.id)
-                server.send(message)
+                self.bot.trigger(self._send_factory(server, message))
+
+    def _send_factory(self, server, message):
+        return lambda: server.send(message)
 
     def _has_relay_for(self, channel, server_id, channel_name):
         relays = self._get_relays(channel)
