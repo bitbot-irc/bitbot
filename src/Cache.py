@@ -20,7 +20,8 @@ class Cache(object):
         expirations = list(filter(None, expirations))
         if not expirations:
             return None
-        expirations = [e-time.monotonic() for e in expirations]
+        now = time.monotonic()
+        expirations = [e-now for e in expirations]
         return max(min(expirations), 0)
 
     def expire(self):
