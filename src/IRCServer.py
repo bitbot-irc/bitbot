@@ -237,7 +237,7 @@ class Server(IRCObject.Object):
         return max(0, (self.socket.last_read+READ_TIMEOUT_SECONDS
             )-time.monotonic())
     def read_timed_out(self) -> bool:
-        return self.until_read_timeout == 0
+        return self.until_read_timeout() == 0
 
     def read(self) -> typing.Optional[typing.List[str]]:
         lines = self.socket.read()
