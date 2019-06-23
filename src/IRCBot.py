@@ -275,7 +275,6 @@ class Bot(object):
                 self.log.warn("No servers, exiting")
                 break
 
-            self._check()
 
             try:
                 item = self._event_queue.get(block=True,
@@ -284,6 +283,8 @@ class Bot(object):
                 # caused by timeout being hit. loop back round because a _check
                 # call is due
                 continue
+            finally:
+                self._check()
 
             if item.type == TriggerEventType.Action:
                 try:
