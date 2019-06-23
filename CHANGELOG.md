@@ -1,3 +1,8 @@
+# TBD - BitBot v1.11.0
+
+Added:
+- `rss.py`
+
 # 2019-06-23 - BitBot v1.10.0
 
 Added:
