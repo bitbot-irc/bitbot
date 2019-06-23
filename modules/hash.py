@@ -4,7 +4,7 @@ import hashlib
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.hash", min_args=2)
+    @utils.hook("received.command.hash", min_args=2, remove_empty=False)
     def hash(self, event):
         """
         :help: Hash a given string with a given algorithm
