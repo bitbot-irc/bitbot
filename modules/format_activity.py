@@ -9,13 +9,11 @@ class Module(ModuleManager.BaseModule):
             minimal=minimal, **kwargs)
 
     def _mode_symbols(self, user, channel, server):
-        modes = channel.get_user_status(user)
-        symbols = []
         modes = list(channel.get_user_status(user))
-        modes.sort(key=lambda x: list(server.prefix_modes.keys()).index(x))
-        for mode in modes:
-            symbols.append(server.prefix_modes[mode])
-        return "".join(symbols)
+        if modes:
+            modes.sort(key=lambda x: list(server.prefix_modes.keys()).index(x))
+            return server.prefix_modes[modes[0]]
+        return ""
 
     def _privmsg(self, event, channel, user, nickname):
         symbols = ""
