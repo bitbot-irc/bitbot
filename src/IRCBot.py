@@ -275,7 +275,8 @@ class Bot(object):
                 self.log.warn("No servers, exiting")
                 break
 
-            kill = False
+            self._check()
+
             item = self._event_queue.get(block=True, timeout=None)
 
             if item.type == TriggerEventType.Action:
@@ -337,7 +338,6 @@ class Bot(object):
         while self.running:
             events = self._read_poll.poll(self.get_poll_timeout())
 
-            self.trigger(self._check, False)
 
             for fd, event in events:
                 if fd == self._rtrigger_server.fileno():
@@ -357,8 +357,9 @@ class Bot(object):
                             server.disconnect()
                             continue
 
-                        self.trigger(self._post_read_factory(server, lines),
-                            False)
+                        event_item = TriggerEvent(TriggerEventType.Action,
+                            self._post_read_factory(server, lines))
+                        self._event_queue.put(event_item)
                     elif event & select.POLLHUP:
                         self.log.warn("Recieved POLLHUP for %s", [str(server)])
                         server.disconnect()
