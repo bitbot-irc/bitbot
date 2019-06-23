@@ -33,7 +33,7 @@ def handle_005(events, event):
 
     if "NAMESX" in isupport and not event["server"].has_capability_str(
             "multi-prefix"):
-        event["server"].send("PROTOCTL NAMESX")
+        event["server"].send_raw("PROTOCTL NAMESX")
 
     if "PREFIX" in isupport:
         modes, symbols = isupport["PREFIX"][1:].split(")", 1)
