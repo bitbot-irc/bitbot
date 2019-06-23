@@ -28,6 +28,7 @@ Changed:
 - Convert IRC glob to regex, instead of using fnmatch
 - `EventManager` calls can only come from the main thread
 - IRCv3: `labeled-response` now depends on `batch`
+- `format_activity.py` now only shows highest channel access symbol
 
 Fixed:
 - `KeyError` when sts `port` key not present
@@ -38,6 +39,9 @@ Fixed:
 - IRCv3: pay attention to our own msgids (`ircv3_msgid.py`)
 - catch and WARN when trying to remove a self-mode we didn't know we had
 - `until_read_timeout` -> `until_read_timeout()`
+- `PROTOCTL NAMESX` should have been send_raw() not send()
+- IRCv3: handle `CAP ACK -<cap>`
+- IRCv3: handle `CAP ACK` in response to `CAP REQ` that came from outside `ircv3.py`
 
 Removed:
 - `!set`/`!channelset`/`!serverset`/`!botset` (replaced with `!config`)
