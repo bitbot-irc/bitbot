@@ -51,13 +51,13 @@ class Module(ModuleManager.BaseModule):
             for channel in channels:
                 seen_ids = channel.get_setting("rss-seen-ids", [])
                 new_ids = []
-                valid = 1
-                for entry in feed["entries"]:
+                valid = 0
+                for entry in feed["entries"][::-1]:
                     if entry["id"] in seen_ids:
                         new_ids.append(entry["id"])
                         continue
 
-                    if valid == 4:
+                    if valid == 3:
                         continue
                     valid += 1
 
