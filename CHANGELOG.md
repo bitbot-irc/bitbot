@@ -27,6 +27,7 @@ Changed:
 - Get `"city, state, country"` from geocoding in `location.py`, use in `weather.py`
 - Convert IRC glob to regex, instead of using fnmatch
 - `EventManager` calls can only come from the main thread
+- IRCv3: `labeled-response` now depends on `batch`
 
 Fixed:
 - `KeyError` when sts `port` key not present
@@ -36,6 +37,7 @@ Fixed:
 - `birthday.py`'s year no longer .lstrip("0")ed
 - IRCv3: pay attention to our own msgids (`ircv3_msgid.py`)
 - catch and WARN when trying to remove a self-mode we didn't know we had
+- `until_read_timeout` -> `until_read_timeout()`
 
 Removed:
 - `!set`/`!channelset`/`!serverset`/`!botset` (replaced with `!config`)
