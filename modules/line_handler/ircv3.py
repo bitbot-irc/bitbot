@@ -84,7 +84,12 @@ def cap(exports, events, event):
         events.on("received.cap.del").call(server=event["server"],
             capabilities=capabilities)
     elif subcommand == "ACK":
-        event["server"].agreed_capabilities.update(capabilities)
+        for cap_name, cap_args in capabilities.items():
+            if cap_name[0] == "-":
+                event["server"].agreed_capabilities.discard(cap_name[1:])
+            else:
+                event["server"].agreed_capabilities.add(cap_name)
+
         events.on("received.cap.ack").call(capabilities=capabilities,
            server=event["server"])
 
@@ -115,12 +120,13 @@ def cap(exports, events, event):
     if subcommand == "ACK" or subcommand == "NAK":
         ack = subcommand == "ACK"
         for capability in capabilities:
-            cap_obj = event["server"].capabilities_requested[capability]
-            del event["server"].capabilities_requested[capability]
-            if ack:
-                cap_obj.ack()
-            else:
-                cap_obj.nak()
+            if capability in event["server"].capabilities_requested:
+                cap_obj = event["server"].capabilities_requested[capability]
+                del event["server"].capabilities_requested[capability]
+                if ack:
+                    cap_obj.ack()
+                else:
+                    cap_obj.nak()
 
         if (not event["server"].capabilities_requested and
                 not event["server"].waiting_for_capabilities()):
