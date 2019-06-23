@@ -207,7 +207,7 @@ class Bot(object):
         timeouts.append(self.next_read_timeout())
         timeouts.append(self.cache.next_expiration())
         min_secs = min([timeout for timeout in timeouts if not timeout == None])
-        return min_secs*1000 # return milliseconds
+        return min_secs
 
     def disconnect(self, server: IRCServer.Server):
         del self.servers[server.fileno()]
@@ -277,7 +277,13 @@ class Bot(object):
 
             self._check()
 
-            item = self._event_queue.get(block=True, timeout=None)
+            try:
+                item = self._event_queue.get(block=True,
+                    timeout=self.get_poll_timeout())
+            except queue.Empty:
+                # caused by timeout being hit. loop back round because a _check
+                # call is due
+                continue
 
             if item.type == TriggerEventType.Action:
                 try:
@@ -336,7 +342,7 @@ class Bot(object):
 
     def _read_loop(self):
         while self.running:
-            events = self._read_poll.poll(self.get_poll_timeout())
+            events = self._read_poll.poll()
 
 
             for fd, event in events:
