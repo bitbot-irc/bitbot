@@ -104,20 +104,15 @@ class Bot(object):
         elif type == TriggerResult.Return:
             return returned
 
-    def panic(self, reason=None):
+    def panic(self, reason=None, throw=True):
         callback = None
 
         if not reason == None:
-            self.log.critical("panic() called: %s", [reason])
+            self.log.critical("panic() called: %s", [reason], exc_info=True)
 
-        exception = sys.exc_info()[1]
-        if exception:
-            def _raise():
-                raise exception
-            callback = _raise
-
-        self._event_queue.put(TriggerEvent(TriggerEventType.Kill, callback))
-        raise BitBotPanic()
+        self._event_queue.put(TriggerEvent(TriggerEventType.Kill))
+        if throw:
+            raise BitBotPanic()
 
     def load_modules(self, safe: bool=False
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
@@ -257,6 +252,11 @@ class Bot(object):
         return thread
 
     def run(self):
+        try:
+            self._run()
+        except BitBotPanic:
+            return
+    def _run(self):
         self.running = True
         self._read_thread = self._daemon_thread(
             lambda: self._loop_catch("read", self._read_loop))
@@ -300,7 +300,7 @@ class Bot(object):
         except BitBotPanic:
             return
         except Exception as e:
-            self.panic("Exception on '%s' thread" % name)
+            self.panic("Exception on '%s' thread" % name, throw=False)
 
     def _write_loop(self):
         while self.running:
