@@ -131,7 +131,7 @@ class Gitea(object):
         outputs = []
         branch = data["ref"].split("/", 2)[2]
         branch = utils.irc.color(branch, colors.COLOR_BRANCH)
-        author = utils.irc.bold(data["pusher"]["name"])
+        author = utils.irc.bold(data["pusher"]["login"])
 
         if len(data["commits"]) <= 3:
             for commit in data["commits"]:
