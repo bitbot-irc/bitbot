@@ -5,7 +5,7 @@
 #--depends-on permissions
 #--depends-on rest_api
 
-import datetime, itertools, json, math, re, urllib.parse
+import datetime, math, re
 from src import EventManager, ModuleManager, utils
 
 COLOR_BRANCH = utils.consts.ORANGE

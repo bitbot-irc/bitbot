@@ -1,4 +1,4 @@
-import itertools, json
+import itertools, json, urllib.parse
 from src import ModuleManager, utils
 from . import colors, github
 
