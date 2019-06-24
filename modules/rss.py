@@ -15,7 +15,7 @@ def _format_entry(feed_title, entry):
     return "%s: %s%s%s" % (feed_title, title, author, link)
 
 class Module(ModuleManager.BaseModule):
-    _title = "RSS"
+    _name = "RSS"
     def on_load(self):
         self.timers.add("rss", RSS_INTERVAL)
 
