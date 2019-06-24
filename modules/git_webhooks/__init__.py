@@ -1,4 +1,4 @@
-import itertools, json, urllib.parse
+import itertools, json, re, urllib.parse
 from src import ModuleManager, utils
 from . import colors, gitea, github
 
