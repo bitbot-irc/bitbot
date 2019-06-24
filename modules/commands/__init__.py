@@ -281,7 +281,8 @@ class Module(ModuleManager.BaseModule):
             else:
                 self.events.on("unknown.command").call(server=event["server"],
                     target=event["channel"], user=event["user"],
-                    command=command, command_prefix=command_prefix)
+                    command=command, command_prefix=command_prefix,
+                    is_channel=True)
         else:
             regex_hooks = self.events.on("command.regex").get_hooks()
             for hook in regex_hooks:
@@ -325,7 +326,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 self.events.on("unknown.command").call(server=event["server"],
                     target=event["user"], user=event["user"], command=command,
-                    command_prefix="")
+                    command_prefix="", is_channel=False)
 
     def _get_usage(self, hook, command, command_prefix=""):
         command = "%s%s" % (command_prefix, command)
