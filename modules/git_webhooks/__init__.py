@@ -35,7 +35,8 @@ class Module(ModuleManager.BaseModule):
         branch = handler.branch(data, headers)
         current_event, event_action = handler.event(data, headers)
 
-        hooks = self.bot.database.channel_settings.find_by_setting("webhooks")
+        hooks = self.bot.database.channel_settings.find_by_setting(
+            "git-webhooks")
 
         targets = []
         repo_hooked = False
@@ -126,7 +127,7 @@ class Module(ModuleManager.BaseModule):
         :usage: events <hook> [category [category ...]]
         :usage: branches <hook> [branch [branch ...]]
         """
-        all_hooks = event["target"].get_setting("webhooks", {})
+        all_hooks = event["target"].get_setting("git-webhooks", {})
         hook_name = None
         existing_hook = None
         if len(event["args_split"]) > 1:
@@ -188,8 +189,8 @@ class Module(ModuleManager.BaseModule):
 
         if not success_message == None:
             if all_hooks:
-                event["target"].set_setting("webhooks", all_hooks)
+                event["target"].set_setting("git-webhooks", all_hooks)
             else:
-                event["target"].del_setting("webhooks")
+                event["target"].del_setting("git-webhooks")
 
             event["stdout"].write(success_message)
