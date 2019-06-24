@@ -278,6 +278,10 @@ class Module(ModuleManager.BaseModule):
                     event["target_str"], True, event["user"], command,
                     args_split, event["tags"], hook,
                     command_prefix=command_prefix)
+            else:
+                self.events.on("unknown.command").call(server=event["server"],
+                    target=event["channel"], user=event["user"],
+                    command=command, command_prefix=command_prefix)
         else:
             regex_hooks = self.events.on("command.regex").get_hooks()
             for hook in regex_hooks:
@@ -318,6 +322,10 @@ class Module(ModuleManager.BaseModule):
                 self.command(event["server"], event["user"],
                     event["user"].nickname, False, event["user"], command,
                     args_split, event["tags"], hook, command_prefix="")
+            else:
+                self.events.on("unknown.command").call(server=event["server"],
+                    target=event["user"], user=event["user"], command=command,
+                    command_prefix="")
 
     def _get_usage(self, hook, command, command_prefix=""):
         command = "%s%s" % (command_prefix, command)
