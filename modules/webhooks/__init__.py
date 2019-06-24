@@ -98,6 +98,8 @@ class Module(ModuleManager.BaseModule):
                         module_name=webhook_name, server=server, message=output,
                         hide_prefix=hide_prefix)
 
+        return {"state": "success", "deliveries": len(targets)}
+
     def _prevent_highlight(self, server, channel, s):
         for user in channel.users:
             if len(user.nickname) == 1:
