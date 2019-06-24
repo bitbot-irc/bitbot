@@ -186,7 +186,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 new_events = [e.lower() for e in event["args_split"][2:]]
                 all_hooks[existing_hook]["events"] = new_events
-                sucess_message = "Updated events for hook %s" % hook_name
+                success_message = "Updated events for hook %s" % hook_name
         elif subcommand == "branches":
             if not existing_hook:
                 raise utils.EventError("No hook found for %s" % hook_name)
