@@ -1,7 +1,6 @@
 #--depends-on-github
 from src import ModuleManager, utils
-
-FORM_ENCODED = "application/x-www-form-urlencoded"
+from . import colors
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
@@ -93,7 +92,7 @@ class GitHub(object):
         organisation = None
         if "organization" in data:
             organisation = data["organization"]["login"]
-        return full_name, repo_username, repo_name, oraganisation
+        return full_name, repo_username, repo_name, organisation
 
     def branch(self, data, headers):
         if "ref" in data:
@@ -107,115 +106,40 @@ class GitHub(object):
             event_action = "%s/%s" % (event, data["action"])
         return event, event_action
 
-    def webhook(self, data, headers):
-        github_event = headers["X-GitHub-Event"]
+    def event_categories(self, event):
+        return EVENT_CATEGORIES.get(event, [event])
 
-        full_name = None
-        repo_username = None
-        repo_name = None
-        if "repository" in data:
-            full_name = data["repository"]["full_name"]
-            repo_username, repo_name = full_name.split("/", 1)
-
-        organisation = None
-        if "organization" in data:
-            organisation = data["organization"]["login"]
-
-        event_action = None
-        if "action" in data:
-            event_action = "%s/%s" % (github_event, data["action"])
-
-        branch = None
-        if "ref" in data:
-            _, _, branch = data["ref"].rpartition("/")
-
-        hooks = self.bot.database.channel_settings.find_by_setting(
-            "github-hooks")
-        targets = []
-
-        repo_hooked = False
-        for server_id, channel_name, hooked_repos in hooks:
-            found_hook = None
-            if full_name and full_name in hooked_repos:
-                found_hook = hooked_repos[full_name]
-            elif repo_username and repo_username in hooked_repos:
-                found_hook = hooked_repos[repo_username]
-            elif organisation and organisation in hooked_repos:
-                found_hook = hooked_repos[organisation]
-
-            if found_hook:
-                repo_hooked = True
-                server = self.bot.get_server_by_id(server_id)
-                if server and channel_name in server.channels:
-                    if (branch and
-                            found_hook["branches"] and
-                            not branch in found_hook["branches"]):
-                        continue
-
-                    github_events = []
-                    for hooked_event in found_hook["events"]:
-                        github_events.append(EVENT_CATEGORIES.get(
-                            hooked_event, [hooked_event]))
-                    github_events = list(itertools.chain(*github_events))
-
-                    channel = server.channels.get(channel_name)
-                    if (github_event in github_events or
-                            (event_action and event_action in github_events)):
-                        targets.append([server, channel])
-
-        if not targets:
-            if not repo_hooked:
-                return None
-            else:
-                return {"state": "success", "deliveries": 0}
-
-        outputs = None
-        if github_event == "push":
-            outputs = self.push(full_name, data)
-        elif github_event == "commit_comment":
-            outputs = self.commit_comment(full_name, data)
-        elif github_event == "pull_request":
-            outputs = self.pull_request(full_name, data)
-        elif github_event == "pull_request_review":
-            outputs = self.pull_request_review(full_name, data)
-        elif github_event == "pull_request_review_comment":
-            outputs = self.pull_request_review_comment(full_name, data)
-        elif github_event == "issue_comment":
-            outputs = self.issue_comment(full_name, data)
-        elif github_event == "issues":
-            outputs = self.issues(full_name, data)
-        elif github_event == "create":
-            outputs = self.create(full_name, data)
-        elif github_event == "delete":
-            outputs = self.delete(full_name, data)
-        elif github_event == "release":
-            outputs = self.release(full_name, data)
-        elif github_event == "check_run":
-            outputs = self.check_run(data)
-        elif github_event == "fork":
-            outputs = self.fork(full_name, data)
-        elif github_event == "ping":
-            outputs = self.ping(data)
-        elif github_event == "membership":
-            outputs = self.membership(organisation, data)
-        elif github_event == "watch":
-            outputs = self.watch(data)
-        return outputs
-
-    def _prevent_highlight(self, server, channel, s):
-        for user in channel.users:
-            if len(user.nickname) == 1:
-                # if we don't ignore 1-letter nicknames, the below while loop
-                # will fire indefininitely.
-                continue
-
-            regex = re.compile(r"(.)\b(%s)(%s)" % (
-                re.escape(user.nickname[0]), re.escape(user.nickname[1:])),
-                re.I)
-            s = regex.sub("\\1\\2\u200c\\3", s)
-
-        return s
-
+    def webhook(self, full_name, event, data, headers):
+        if event == "push":
+            return self.push(full_name, data)
+        elif event == "commit_comment":
+            return self.commit_comment(full_name, data)
+        elif event == "pull_request":
+            return self.pull_request(full_name, data)
+        elif event == "pull_request_review":
+            return self.pull_request_review(full_name, data)
+        elif event == "pull_request_review_comment":
+            return self.pull_request_review_comment(full_name, data)
+        elif event == "issue_comment":
+            return self.issue_comment(full_name, data)
+        elif event == "issues":
+            return self.issues(full_name, data)
+        elif event == "create":
+            return self.create(full_name, data)
+        elif event == "delete":
+            return self.delete(full_name, data)
+        elif event == "release":
+            return self.release(full_name, data)
+        elif event == "check_run":
+            return self.check_run(data)
+        elif event == "fork":
+            return self.fork(full_name, data)
+        elif event == "ping":
+            return self.ping(data)
+        elif event == "membership":
+            return self.membership(organisation, data)
+        elif event == "watch":
+            return self.watch(data)
     def _short_url(self, url):
         try:
             page = utils.http.request("https://git.io", method="POST",
@@ -235,9 +159,9 @@ class GitHub(object):
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
     def _added(self, n):
-        return self._change_count(n, "+", COLOR_POSITIVE)
+        return self._change_count(n, "+", colors.COLOR_POSITIVE)
     def _removed(self, n):
-        return self._change_count(n, "-", COLOR_NEGATIVE)
+        return self._change_count(n, "-", colors.COLOR_NEGATIVE)
     def _modified(self, n):
         return self._change_count(n, "~", utils.consts.PURPLE)
 
@@ -250,7 +174,7 @@ class GitHub(object):
     def push(self, full_name, data):
         outputs = []
         branch = data["ref"].split("/", 2)[2]
-        branch = utils.irc.color(branch, COLOR_BRANCH)
+        branch = utils.irc.color(branch, colors.COLOR_BRANCH)
         author = utils.irc.bold(data["pusher"]["name"])
 
         forced = ""
@@ -263,7 +187,7 @@ class GitHub(object):
         elif len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 hash = commit["id"]
-                hash_colored = utils.irc.color(self._short_hash(hash), COLOR_ID)
+                hash_colored = utils.irc.color(self._short_hash(hash), colors.COLOR_ID)
                 message = commit["message"].split("\n")[0].strip()
                 url = self._short_url(COMMIT_URL % (full_name, hash))
 
@@ -291,11 +215,11 @@ class GitHub(object):
 
     def pull_request(self, full_name, data):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
-            COLOR_ID)
+            colors.COLOR_ID)
         action = data["action"]
         action_desc = "%s %s" % (action, number)
         branch = data["pull_request"]["base"]["ref"]
-        colored_branch = utils.irc.color(branch, COLOR_BRANCH)
+        colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
 
         if action == "opened":
             action_desc = "requested %s merge into %s" % (number,
@@ -303,11 +227,11 @@ class GitHub(object):
         elif action == "closed":
             if data["pull_request"]["merged"]:
                 action_desc = "%s %s into %s" % (
-                    utils.irc.color("merged", COLOR_POSITIVE), number,
+                    utils.irc.color("merged", colors.COLOR_POSITIVE), number,
                     colored_branch)
             else:
                 action_desc = "%s %s" % (
-                    utils.irc.color("closed", COLOR_NEGATIVE), number)
+                    utils.irc.color("closed", colors.COLOR_NEGATIVE), number)
         elif action == "ready_for_review":
             action_desc = "marked %s ready for review" % number
         elif action == "synchronize":
@@ -331,7 +255,7 @@ class GitHub(object):
             return []
 
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
-            COLOR_ID)
+            colors.COLOR_ID)
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["sender"]["login"])
@@ -350,7 +274,7 @@ class GitHub(object):
 
     def pull_request_review_comment(self, full_name, data):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
-            COLOR_ID)
+            colors.COLOR_ID)
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         sender = utils.irc.bold(data["sender"]["login"])
@@ -359,7 +283,7 @@ class GitHub(object):
             (sender, COMMENT_ACTIONS[action], number, pr_title, url)]
 
     def issues(self, full_name, data):
-        number = utils.irc.color("#%s" % data["issue"]["number"], COLOR_ID)
+        number = utils.irc.color("#%s" % data["issue"]["number"], colors.COLOR_ID)
         action = data["action"]
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
@@ -372,7 +296,7 @@ class GitHub(object):
             if data["changes"]["body"]["from"] == data["comment"]["body"]:
                 return
 
-        number = utils.irc.color("#%s" % data["issue"]["number"], COLOR_ID)
+        number = utils.irc.color("#%s" % data["issue"]["number"], colors.COLOR_ID)
         action = data["action"]
         issue_title = data["issue"]["title"]
         type = "PR" if "pull_request" in data["issue"] else "issue"
@@ -384,7 +308,7 @@ class GitHub(object):
 
     def create(self, full_name, data):
         ref = data["ref"]
-        ref_color = utils.irc.color(ref, COLOR_BRANCH)
+        ref_color = utils.irc.color(ref, colors.COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(CREATE_URL % (full_name, ref))
@@ -392,7 +316,7 @@ class GitHub(object):
 
     def delete(self, full_name, data):
         ref = data["ref"]
-        ref_color = utils.irc.color(ref, COLOR_BRANCH)
+        ref_color = utils.irc.color(ref, colors.COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
         return ["%s deleted a %s: %s" % (sender, type, ref_color)]
@@ -433,11 +357,11 @@ class GitHub(object):
             status_str = utils.irc.bold("started")
         elif status == "completed":
             conclusion = data["check_run"]["conclusion"]
-            conclusion_color = COLOR_POSITIVE
+            conclusion_color = colors.COLOR_POSITIVE
             if conclusion in CHECK_RUN_FAILURES:
-                conclusion_color = COLOR_NEGATIVE
+                conclusion_color = colors.COLOR_NEGATIVE
             if conclusion == "neutral":
-                conclusion_color = COLOR_NEUTRAL
+                conclusion_color = colors.COLOR_NEUTRAL
 
             status_str = utils.irc.color(
                 CHECK_RUN_CONCLUSION[conclusion], conclusion_color)

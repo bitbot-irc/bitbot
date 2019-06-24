@@ -1,5 +1,8 @@
+import itertools, json
 from src import ModuleManager, utils
-from . import github
+from . import colors, github
+
+FORM_ENCODED = "application/x-www-form-urlencoded"
 
 @utils.export("channelset", {"setting": "git-prevent-highlight",
     "help": "Enable/disable preventing highlights",
@@ -15,22 +18,22 @@ class Module(ModuleManager.BaseModule):
         self._github = github.GitHub()
 
     @utils.hook("api.post.github")
-    def github_webhook(self, event):
+    def _api_github_webhook(self, event):
         return self._webhook("github", "GitHub", self._github,
             event["data"], event["headers"])
 
     def _webhook(self, webhook_type, webhook_name, handler, payload_str,
             headers):
-        payload = event["data"].decode("utf8")
-        if event["headers"]["Content-Type"] == FORM_ENCODED:
+        payload = payload_str.decode("utf8")
+        if headers["Content-Type"] == FORM_ENCODED:
             payload = urllib.parse.unquote(urllib.parse.parse_qs(payload)[
                 "payload"][0])
         data = json.loads(payload)
 
-        full_name, repo_username, report_name, organisation = handler.names(
+        full_name, repo_username, repo_name, organisation = handler.names(
             data, headers)
         branch = handler.branch(data, headers)
-        event, event_action = handler.event(data, headers)
+        current_event, event_action = handler.event(data, headers)
 
         hooks = self.bot.database.channel_settings.find_by_setting(
             "%s-hooks" % webhook_type)
@@ -46,6 +49,8 @@ class Module(ModuleManager.BaseModule):
                 found_hook = hooked_repos[repo_username]
             elif organisation and organisation in hooked_repos:
                 found_hook = hooked_repos[organisation]
+            else:
+                continue
 
             repo_hooked = True
             server = self.bot.get_server_by_id(server_id)
@@ -57,8 +62,7 @@ class Module(ModuleManager.BaseModule):
 
                 events = []
                 for hooked_event in found_hook["events"]:
-                    events.append(EVENT_CATEGORIES.get(hooked_event,
-                        [hooked_event]))
+                    events.append(handler.event_categories(hooked_event))
                 events = list(itertools.chain(*events))
 
                 channel = server.channels.get(channel_name)
@@ -72,7 +76,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 return {"state": "success", "deliveries": 0}
 
-        outputs = handler.webhook(data, headers)
+        outputs = handler.webhook(full_name, current_event, data, headers)
 
         if outputs:
             for server, channel in targets:
@@ -83,7 +87,7 @@ class Module(ModuleManager.BaseModule):
 
                 for output in outputs:
                     output = "(%s) %s" % (
-                        utils.irc.color(source, COLOR_REPO), output)
+                        utils.irc.color(source, colors.COLOR_REPO), output)
 
                     if channel.get_setting("git-prevent-highlight", False):
                         output = self._prevent_highlight(server, channel,
