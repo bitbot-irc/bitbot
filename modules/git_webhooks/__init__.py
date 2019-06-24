@@ -29,7 +29,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("api.post.gitea")
     def _api_gitea_webhook(self, event):
-        return self._webhook("gitea", "Gitea", self._github,
+        return self._webhook("gitea", "Gitea", self._gitea,
             event["data"], event["headers"])
 
     def _webhook(self, webhook_type, webhook_name, handler, payload_str,
