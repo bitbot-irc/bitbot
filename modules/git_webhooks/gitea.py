@@ -215,8 +215,7 @@ class Gitea(object):
         ref_color = utils.irc.color(ref, colors.COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(CREATE_URL % (full_name, ref))
-        return ["%s created a %s: %s - %s" % (sender, type, ref_color, url)]
+        return ["%s created a %s: %s" % (sender, type, ref_color)]
 
     def delete(self, full_name, data):
         ref = data["ref"]
