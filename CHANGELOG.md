@@ -2,6 +2,10 @@
 
 Added:
 - `rss.py`
+- Show `weather.py` windspeed in MPh too
+
+Changed:
+- Move `_check()` call to event loop func
 
 # 2019-06-23 - BitBot v1.10.0
 
