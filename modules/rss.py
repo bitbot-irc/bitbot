@@ -49,7 +49,7 @@ class Module(ModuleManager.BaseModule):
             entry_formatted = {}
 
             for channel in channels:
-                seen_ids = channel.get_setting("rss-seen-ids", [])
+                seen_ids = channel.get_setting("rss-seen-ids-%s" % url, [])
                 new_ids = []
                 valid = 0
                 for entry in feed["entries"][::-1]:
@@ -71,7 +71,7 @@ class Module(ModuleManager.BaseModule):
                         module_name="RSS", server=server, message=output)
                     new_ids.append(entry["id"])
 
-                channel.set_setting("rss-seen-ids", new_ids)
+                channel.set_setting("rss-seen-ids-%s" % url, new_ids)
 
     def _check_url(self, url):
         try:
@@ -110,7 +110,7 @@ class Module(ModuleManager.BaseModule):
             seen_ids = self._check_url(url)
             if seen_ids == None:
                 raise utils.EventError("Failed to read feed")
-            event["target"].set_setting("rss-seen-ids", seen_ids)
+            event["target"].set_setting("rss-seen-ids-%s" % url, seen_ids)
 
             rss_hooks.append(url)
             changed = True
