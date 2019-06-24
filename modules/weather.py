@@ -63,9 +63,11 @@ class Module(ModuleManager.BaseModule):
                 fahrenheit = "%dF" % ((page.data["main"]["temp"]*(9/5))+32)
                 description = page.data["weather"][0]["description"].title()
                 humidity = "%s%%" % page.data["main"]["humidity"]
-                wind_speed_k = "%sKMh" % page.data["wind"]["speed"]
-                wind_speed_m = "%sMPh" % round(
-                        0.6214*page.data["wind"]["speed"], 1)
+
+                # wind speed is in metres per second - 3.6* for KMh
+                wind_speed = 3.6*page.data["wind"]["speed"]
+                wind_speed_k = "%sKMh" % round(wind_speed, 1)
+                wind_speed_m = "%sMPh" % round(0.6214*wind_speed, 1)
 
                 event["stdout"].write(
                     "(%s) %s/%s | %s | Humidity: %s | Wind: %s/%s" % (
