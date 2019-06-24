@@ -156,7 +156,7 @@ class Module(ModuleManager.BaseModule):
 
         subcommand = event["args_split"][0].lower()
         if subcommand == "list":
-            event["stdout"].write("Registered web hooks: %s" %
+            event["stdout"].write("Registered webhooks: %s" %
                 ", ".join(all_hooks.keys()))
         elif subcommand == "add":
             if existing_hook:
