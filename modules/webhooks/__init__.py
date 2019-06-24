@@ -35,8 +35,7 @@ class Module(ModuleManager.BaseModule):
         branch = handler.branch(data, headers)
         current_event, event_action = handler.event(data, headers)
 
-        hooks = self.bot.database.channel_settings.find_by_setting(
-            "%s-hooks" % webhook_type)
+        hooks = self.bot.database.channel_settings.find_by_setting("webhooks")
 
         targets = []
         repo_hooked = False
