@@ -63,12 +63,14 @@ class Module(ModuleManager.BaseModule):
                 fahrenheit = "%dF" % ((page.data["main"]["temp"]*(9/5))+32)
                 description = page.data["weather"][0]["description"].title()
                 humidity = "%s%%" % page.data["main"]["humidity"]
-                wind_speed = "%sKM/h" % page.data["wind"]["speed"]
+                wind_speed_k = "%sKMh" % page.data["wind"]["speed"]
+                wind_speed_m = "%sMPh" % round(
+                        0.6214*page.data["wind"]["speed"], 1)
 
                 event["stdout"].write(
-                    "(%s) %s/%s | %s | Humidity: %s | Wind: %s" % (
+                    "(%s) %s/%s | %s | Humidity: %s | Wind: %s/%s" % (
                     location_str, celsius, fahrenheit, description, humidity,
-                    wind_speed))
+                    wind_speed_k, wind_speed_m))
             else:
                 event["stderr"].write("No weather information for this location")
         else:
