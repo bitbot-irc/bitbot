@@ -73,6 +73,15 @@ class Module(ModuleManager.BaseModule):
 
                 channel.set_setting("rss-seen-ids", new_ids)
 
+    def _check_url(self, url):
+        try:
+            feed = feedparser.parse(url)
+        except:
+            feed = None
+        if not feed or not feed["feed"]:
+            return None
+        return [entry["id"] for entry in feed["entries"]]
+
     @utils.hook("received.command.rss", min_args=1, channel_only=True)
     def rss(self, event):
         """
@@ -97,6 +106,12 @@ class Module(ModuleManager.BaseModule):
             url = event["args_split"][1]
             if url in rss_hooks:
                 raise utils.EventError("That URL is already being watched")
+
+            seen_ids = self._check_url(url)
+            if seen_ids == None:
+                raise utils.EventError("Failed to read feed")
+            event["target"].set_setting("rss-seen-ids", seen_ids)
+
             rss_hooks.append(url)
             changed = True
             message = "Added RSS feed"
