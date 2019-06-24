@@ -18,6 +18,8 @@ DEFAULT_EVENT_CATEGORIES = [
     "help": "Hide/show command-like prefix on git webhook outputs",
     "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
+    _name = "Webhooks"
+
     def on_load(self):
         self._github = github.GitHub()
         self._gitea = gitea.Gitea()
