@@ -42,6 +42,9 @@ class Module(ModuleManager.BaseModule):
                 "payload"][0])
         data = json.loads(payload)
 
+        if handler.is_private(data, headers):
+            return {"state": "success", "deliveries": 0}
+
         full_name, repo_username, repo_name, organisation = handler.names(
             data, headers)
         branch = handler.branch(data, headers)

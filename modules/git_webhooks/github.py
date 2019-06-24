@@ -80,6 +80,11 @@ CHECK_RUN_CONCLUSION = {
 CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 class GitHub(object):
+    def is_private(self, data, headers):
+        if "repository" in data:
+            return data["repository"]["private"]
+        return False
+
     def names(self, data, headers):
         full_name = None
         repo_username = None

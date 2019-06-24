@@ -44,6 +44,11 @@ COMMENT_ACTIONS = {
 }
 
 class Gitea(object):
+    def is_private(self, data, headers):
+        if "repository" in data:
+            return data["repository"]["private"]
+        return False
+
     def names(self, data, headers):
         full_name = None
         repo_username = None
