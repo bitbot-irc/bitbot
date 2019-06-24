@@ -1,39 +1,20 @@
 from src import ModuleManager, utils
 from . import colors
 
-COMMIT_URL = "https://github.com/%s/commit/%s"
-COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
-CREATE_URL = "https://github.com/%s/tree/%s"
-
-DEFAULT_EVENT_CATEGORIES = [
-    "ping", "code", "pr", "issue", "repo"
-]
 EVENT_CATEGORIES = {
     "ping": [
         "ping" # new webhook received
     ],
-    "code": [
-        "push", "commit_comment"
-    ],
+    "code": ["push"],
     "pr-minimal": [
         "pull_request/opened", "pull_request/closed", "pull_request/reopened"
     ],
     "pr": [
         "pull_request/opened", "pull_request/closed", "pull_request/reopened",
         "pull_request/edited", "pull_request/assigned",
-        "pull_request/unassigned", "pull_request_review",
-        "pull_request_review_comment"
+        "pull_request/unassigned"
     ],
-    "pr-all": [
-        "pull_request", "pull_request_review", "pull_request_review_comment"
-    ],
-    "pr-review-minimal": [
-        "pull_request_review/submitted", "pull_request_review/dismissed"
-    ],
-    "pr-review-comment-minimal": [
-        "pull_request_review_comment/created",
-        "pull_request_review_comment/deleted"
-    ],
+    "pr-all": ["pull_request"],
     "issue-minimal": [
         "issues/opened", "issues/closed", "issues/reopened", "issues/deleted"
     ],
@@ -51,15 +32,8 @@ EVENT_CATEGORIES = {
         "create", # a repository, branch or tag has been created
         "delete", # same as above but deleted
         "release",
-        "fork"
-    ],
-    "team": [
-        "membership"
-    ],
-    "star": [
-        # "watch" is a misleading name for this event so this add "star" as an
-        # alias for "watch"
-        "watch"
+        "fork",
+        "repository"
     ]
 }
 
@@ -69,15 +43,6 @@ COMMENT_ACTIONS = {
     "deleted": "deleted a comment"
 }
 
-CHECK_RUN_CONCLUSION = {
-    "success": "passed",
-    "failure": "failed",
-    "neutral": "finished",
-    "cancelled": "was cancelled",
-    "timed_out": "timed out",
-    "action_required": "requires action"
-}
-CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 class GitHub(object):
     def names(self, data, headers):
@@ -99,7 +64,7 @@ class GitHub(object):
         return None
 
     def event(self, data, headers):
-        event = headers["X-GitHub-Event"]
+        event = headers["X-Gitea-Event"]
         event_action = None
         if "action" in data:
             event_action = "%s/%s" % (event, data["action"])
@@ -111,34 +76,26 @@ class GitHub(object):
     def webhook(self, full_name, event, data, headers):
         if event == "push":
             return self.push(full_name, data)
-        elif event == "commit_comment":
-            return self.commit_comment(full_name, data)
         elif event == "pull_request":
             return self.pull_request(full_name, data)
-        elif event == "pull_request_review":
-            return self.pull_request_review(full_name, data)
-        elif event == "pull_request_review_comment":
-            return self.pull_request_review_comment(full_name, data)
-        elif event == "issue_comment":
-            return self.issue_comment(full_name, data)
+        elif event == "pull_request_comment":
+            return self.pull_request_comment(full_name, data)
         elif event == "issues":
             return self.issues(full_name, data)
+        elif event == "issue_comment":
+            return self.issue_comment(full_name, data)
         elif event == "create":
             return self.create(full_name, data)
         elif event == "delete":
             return self.delete(full_name, data)
+        elif event == "repository":
+            return self.repository(full_name, data)
         elif event == "release":
             return self.release(full_name, data)
-        elif event == "check_run":
-            return self.check_run(data)
         elif event == "fork":
             return self.fork(full_name, data)
         elif event == "ping":
             return self.ping(data)
-        elif event == "membership":
-            return self.membership(organisation, data)
-        elif event == "watch":
-            return self.watch(data)
     def _short_url(self, url):
         try:
             page = utils.http.request("https://git.io", method="POST",
@@ -176,19 +133,12 @@ class GitHub(object):
         branch = utils.irc.color(branch, colors.COLOR_BRANCH)
         author = utils.irc.bold(data["pusher"]["name"])
 
-        forced = ""
-        if data["forced"]:
-            forced = "%s " % utils.irc.color("force", utils.consts.RED)
-
-        if len(data["commits"]) == 0 and data["forced"]:
-            outputs.append(
-                "%s %spushed to %s" % (author, forced, branch))
-        elif len(data["commits"]) <= 3:
+        if len(data["commits"]) <= 3:
             for commit in data["commits"]:
                 hash = commit["id"]
                 hash_colored = utils.irc.color(self._short_hash(hash), colors.COLOR_ID)
                 message = commit["message"].split("\n")[0].strip()
-                url = self._short_url(COMMIT_URL % (full_name, hash))
+                url = commit["url"]
 
                 outputs.append(
                     "%s %spushed %s to %s: %s - %s"
@@ -196,21 +146,12 @@ class GitHub(object):
         else:
             first_id = data["before"]
             last_id = data["commits"][-1]["id"]
-            url = self._short_url(
-                COMMIT_RANGE_URL % (full_name, first_id, last_id))
+            url = data["compare_url"]
 
             outputs.append("%s %spushed %d commits to %s - %s"
                 % (author, forced, len(data["commits"]), branch, url))
 
         return outputs
-
-    def commit_comment(self, full_name, data):
-        action = data["action"]
-        commit = self._short_hash(data["comment"]["commit_id"])
-        commenter = utils.irc.bold(data["comment"]["user"]["login"])
-        url = self._short_url(data["comment"]["html_url"])
-        return ["[commit/%s] %s %s a comment - %s" % (commit, commenter,
-            action, url)]
 
     def pull_request(self, full_name, data):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
@@ -242,51 +183,16 @@ class GitHub(object):
         return ["[PR] %s %s: %s - %s" % (
             author, action_desc, pr_title, url)]
 
-    def pull_request_review(self, full_name, data):
-        if not data["action"] == "submitted":
-            return []
-
-        if not "submitted_at" in data["review"]:
-            return []
-
-        state = data["review"]["state"]
-        if state == "commented":
-            return []
-
-        number = utils.irc.color("#%s" % data["pull_request"]["number"],
-            colors.COLOR_ID)
-        action = data["action"]
-        pr_title = data["pull_request"]["title"]
-        reviewer = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["review"]["html_url"])
-
-        state_desc = state
-        if state == "approved":
-            state_desc = "approved changes"
-        elif state == "changes_requested":
-            state_desc = "requested changes"
-        elif state == "dismissed":
-            state_desc = "dismissed a review"
-
-        return ["[PR] %s %s on %s: %s - %s" %
-            (reviewer, state_desc, number, pr_title, url)]
-
-    def pull_request_review_comment(self, full_name, data):
-        number = utils.irc.color("#%s" % data["pull_request"]["number"],
-            colors.COLOR_ID)
-        action = data["action"]
-        pr_title = data["pull_request"]["title"]
-        sender = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["comment"]["html_url"])
-        return ["[PR] %s %s on a review on %s: %s - %s" %
-            (sender, COMMENT_ACTIONS[action], number, pr_title, url)]
 
     def issues(self, full_name, data):
-        number = utils.irc.color("#%s" % data["issue"]["number"], colors.COLOR_ID)
+        number = utils.irc.color("#%s" % data["issue"]["number"],
+            colors.COLOR_ID)
         action = data["action"]
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["issue"]["html_url"])
+        url = "%s/issues/%d" % (data["repository"]["html_url"],
+            data["issue"]["number"])
+
         return ["[issue] %s %s %s: %s - %s" %
             (author, action, number, issue_title, url)]
     def issue_comment(self, full_name, data):
@@ -298,7 +204,7 @@ class GitHub(object):
         number = utils.irc.color("#%s" % data["issue"]["number"], colors.COLOR_ID)
         action = data["action"]
         issue_title = data["issue"]["title"]
-        type = "PR" if "pull_request" in data["issue"] else "issue"
+        type = "PR" if data["issue"]["pull_request"] else "issue"
         commenter = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
         return ["[%s] %s %s on %s: %s - %s" %
@@ -320,6 +226,9 @@ class GitHub(object):
         sender = utils.irc.bold(data["sender"]["login"])
         return ["%s deleted a %s: %s" % (sender, type, ref_color)]
 
+    def repository(self, full_name, data):
+        return []
+
     def release(self, full_name, data):
         action = data["action"]
         tag = data["release"]["tag_name"]
@@ -327,59 +236,12 @@ class GitHub(object):
         if name:
             name = ": %s" % name
         author = utils.irc.bold(data["release"]["author"]["login"])
-        url = self._short_url(data["release"]["html_url"])
-        return ["%s %s a release%s - %s" % (author, action, name, url)]
-
-    def check_run(self, data):
-        name = data["check_run"]["name"]
-        commit = self._short_hash(data["check_run"]["head_sha"])
-        commit = utils.irc.color(commit, utils.consts.LIGHTBLUE)
-
-        url = ""
-        if data["check_run"]["details_url"]:
-            url = data["check_run"]["details_url"]
-            url = " - %s" % self.exports.get_one("shortlink")(url)
-
-        duration = ""
-        if data["check_run"]["completed_at"]:
-            started_at = self._iso8601(data["check_run"]["started_at"])
-            completed_at = self._iso8601(data["check_run"]["completed_at"])
-            if completed_at > started_at:
-                seconds = (completed_at-started_at).total_seconds()
-                duration = " in %s" % utils.to_pretty_time(seconds)
-
-        status = data["check_run"]["status"]
-        status_str = ""
-        if status == "queued":
-            status_str = utils.irc.bold("queued")
-        elif status == "in_progress":
-            status_str = utils.irc.bold("started")
-        elif status == "completed":
-            conclusion = data["check_run"]["conclusion"]
-            conclusion_color = colors.COLOR_POSITIVE
-            if conclusion in CHECK_RUN_FAILURES:
-                conclusion_color = colors.COLOR_NEGATIVE
-            if conclusion == "neutral":
-                conclusion_color = colors.COLOR_NEUTRAL
-
-            status_str = utils.irc.color(
-                CHECK_RUN_CONCLUSION[conclusion], conclusion_color)
-
-        return ["[build @%s] %s: %s%s%s" % (
-            commit, name, status_str, duration, url)]
+        return ["%s %s a release%s" % (author, action, name)]
 
     def fork(self, full_name, data):
         forker = utils.irc.bold(data["sender"]["login"])
-        fork_full_name = utils.irc.color(data["forkee"]["full_name"],
+        fork_full_name = utils.irc.color(data["repository"]["full_name"],
             utils.consts.LIGHTBLUE)
-        url = self._short_url(data["forkee"]["html_url"])
+        url = self._short_url(data["repository"]["html_url"])
         return ["%s forked into %s - %s" %
             (forker, fork_full_name, url)]
-
-    def membership(self, organisation, data):
-        return ["%s %s %s to team %s" %
-            (data["sender"]["login"], data["action"], data["member"]["login"],
-            data["team"]["name"])]
-
-    def watch(self, data):
-        return ["%s starred the repository" % data["sender"]["login"]]

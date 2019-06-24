@@ -1,8 +1,12 @@
 import itertools, json, urllib.parse
 from src import ModuleManager, utils
-from . import colors, github
+from . import colors, gitea, github
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
+
+DEFAULT_EVENT_CATEGORIES = [
+    "ping", "code", "pr", "issue", "repo"
+]
 
 @utils.export("channelset", {"setting": "git-prevent-highlight",
     "help": "Enable/disable preventing highlights",
@@ -16,10 +20,16 @@ FORM_ENCODED = "application/x-www-form-urlencoded"
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         self._github = github.GitHub()
+        self._gitea = gitea.Gitea()
 
     @utils.hook("api.post.github")
     def _api_github_webhook(self, event):
         return self._webhook("github", "GitHub", self._github,
+            event["data"], event["headers"])
+
+    @utils.hook("api.post.gitea")
+    def _api_gitea_webhook(self, event):
+        return self._webhook("gitea", "Gitea", self._github,
             event["data"], event["headers"])
 
     def _webhook(self, webhook_type, webhook_name, handler, payload_str,
