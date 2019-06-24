@@ -207,7 +207,7 @@ class Bot(object):
         timeouts.append(self.next_read_timeout())
         timeouts.append(self.cache.next_expiration())
         min_secs = min([timeout for timeout in timeouts if not timeout == None])
-        return min_secs
+        return max([min_secs, 0])
 
     def disconnect(self, server: IRCServer.Server):
         del self.servers[server.fileno()]
