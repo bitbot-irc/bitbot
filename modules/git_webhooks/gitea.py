@@ -95,15 +95,6 @@ class Gitea(object):
             return self.fork(full_name, data)
         elif event == "ping":
             return self.ping(data)
-    def _short_url(self, url):
-        try:
-            page = utils.http.request("https://git.io", method="POST",
-                post_data={"url": url})
-            return page.headers["Location"]
-        except utils.http.HTTPTimeoutException:
-            self.log.warn(
-                "HTTPTimeoutException while waiting for github short URL", [])
-            return url
 
     def _iso8601(self, s):
         return datetime.datetime.strptime(s, utils.ISO8601_PARSE)
@@ -178,7 +169,7 @@ class Gitea(object):
 
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["pull_request"]["html_url"])
+        url = data["pull_request"]["html_url"]
         return ["[PR] %s %s: %s - %s" % (
             author, action_desc, pr_title, url)]
 
@@ -205,7 +196,7 @@ class Gitea(object):
         issue_title = data["issue"]["title"]
         type = "PR" if data["issue"]["pull_request"] else "issue"
         commenter = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["comment"]["html_url"])
+        url = data["comment"]["html_url"]
         return ["[%s] %s %s on %s: %s - %s" %
             (type, commenter, COMMENT_ACTIONS[action], number, issue_title,
             url)]
@@ -240,6 +231,6 @@ class Gitea(object):
         forker = utils.irc.bold(data["sender"]["login"])
         fork_full_name = utils.irc.color(data["repository"]["full_name"],
             utils.consts.LIGHTBLUE)
-        url = self._short_url(data["repository"]["html_url"])
+        url = data["repository"]["html_url"]
         return ["%s forked into %s - %s" %
             (forker, fork_full_name, url)]
