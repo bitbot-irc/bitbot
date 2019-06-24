@@ -3,9 +3,11 @@
 Added:
 - `rss.py`
 - Show `weather.py` windspeed in MPh too
+- `git_webhooks/gitea.py`
 
 Changed:
 - Move `_check()` call to event loop func
+- Split out github webhook functionality to `git_webhooks/github.py`
 
 # 2019-06-23 - BitBot v1.10.0
 
