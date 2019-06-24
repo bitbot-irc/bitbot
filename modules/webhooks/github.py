@@ -1,28 +1,11 @@
-#--depends-on channel_access
-#--depends-on check_mode
-#--depends-on commands
-#--depends-on config
-#--depends-on permissions
-#--depends-on rest_api
-
-import datetime, itertools, json, math, re, urllib.parse
-from src import EventManager, ModuleManager, utils
-
-COLOR_BRANCH = utils.consts.ORANGE
-COLOR_REPO = utils.consts.GREY
-COLOR_POSITIVE = utils.consts.GREEN
-COLOR_NEUTRAL = utils.consts.LIGHTGREY
-COLOR_NEGATIVE = utils.consts.RED
-COLOR_ID = utils.consts.PINK
+#--depends-on-github
+from src import ModuleManager, utils
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
 COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
-
-API_ISSUE_URL = "https://api.github.com/repos/%s/%s/issues/%s"
-API_PULL_URL = "https://api.github.com/repos/%s/%s/pulls/%s"
 
 DEFAULT_EVENT_CATEGORIES = [
     "ping", "code", "pr", "issue", "repo"
@@ -98,289 +81,34 @@ CHECK_RUN_CONCLUSION = {
 }
 CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
-@utils.export("channelset", {"setting": "github-hide-prefix",
-    "help": "Hide/show command-like prefix on Github hook outputs",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "github-hide-organisation",
-    "help": "Hide/show organisation in repository names",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "github-default-repo",
-    "help": "Set the default github repo for the current channel",
-    "example": "jesopo/bitbot"})
-@utils.export("channelset", {"setting": "github-prevent-highlight",
-    "help": "Enable/disable preventing highlights",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "auto-github",
-    "help": "Enable/disable automatically getting github issue/PR info",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "auto-github-cooldown",
-    "help": "Set amount of seconds between auto-github duplicates",
-    "validate": utils.int_or_none, "example": "300"})
-class Module(ModuleManager.BaseModule):
-    def _parse_ref(self, channel, ref):
-        repo, _, number = ref.rpartition("#")
-        org, _, repo = repo.partition("/")
+class GitHub(object):
+    def names(self, data, headers):
+        full_name = None
+        repo_username = None
+        repo_name = None
+        if "repository" in data:
+            full_name = data["repository"]["full_name"]
+            repo_username, repo_name = full_name.split("/", 1)
 
-        default_repo = channel.get_setting("github-default-repo", "")
-        default_org, _, default_repo = default_repo.partition("/")
+        organisation = None
+        if "organization" in data:
+            organisation = data["organization"]["login"]
+        return full_name, repo_username, repo_name, oraganisation
 
-        if org and not repo:
-            repo = org or default_repo
-            org = default_org
-        else:
-            org = org or default_org
-            repo = repo or default_repo
+    def branch(self, data, headers):
+        if "ref" in data:
+            return data["ref"].rpartition("/")[2]
+        return None
 
-        if not org or not repo or not number:
-            raise utils.EventError("Please provide username/repo#number")
-        if not number.isdigit():
-            raise utils.EventError("Issue number must be a number")
-        return org, repo, number
+    def event(self, data, headers):
+        event = headers["X-GitHub-Event"]
+        event_action = None
+        if "action" in data:
+            event_action = "%s/%s" % (event, data["action"])
+        return event, event_action
 
-    def _parse_issue(self, page, username, repository, number):
-        repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
-        number = utils.irc.color("#%s" % number, COLOR_ID)
-        labels = [label["name"] for label in page.data["labels"]]
-        labels_str = ""
-        if labels:
-            labels_str = "[%s] " % ", ".join(labels)
-
-        url = self._short_url(page.data["html_url"])
-
-        state = page.data["state"]
-        if state == "open":
-            state = utils.irc.color("open", COLOR_NEUTRAL)
-        elif state == "closed":
-            state = utils.irc.color("closed", COLOR_NEGATIVE)
-
-        return "(%s issue%s, %s) %s %s%s" % (
-            repo, number, state, page.data["title"], labels_str, url)
-    def _get_issue(self, username, repository, number):
-        return utils.http.request(
-            API_ISSUE_URL % (username, repository, number),
-            json=True)
-
-    @utils.hook("received.command.ghissue", min_args=1)
-    def github_issue(self, event):
-        if event["target"].get_setting("github-hide-prefix", False):
-            event["stdout"].hide_prefix()
-            event["stderr"].hide_prefix()
-
-        username, repository, number = self._parse_ref(
-            event["target"], event["args_split"][0])
-
-        page = self._get_issue(username, repository, number)
-        if page and page.code == 200:
-            self._parse_issue(page, username, repository, number)
-        else:
-            event["stderr"].write("Could not find issue")
-
-    def _parse_pull(self, page, username, repository, number):
-        repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
-        number = utils.irc.color("#%s" % number, COLOR_ID)
-        branch_from = page.data["head"]["label"]
-        branch_to = page.data["base"]["label"]
-        added = self._added(page.data["additions"])
-        removed = self._removed(page.data["deletions"])
-        url = self._short_url(page.data["html_url"])
-
-        state = page.data["state"]
-        if page.data["merged"]:
-            state = utils.irc.color("merged", COLOR_POSITIVE)
-        elif state == "open":
-            state = utils.irc.color("open", COLOR_NEUTRAL)
-        elif state == "closed":
-            state = utils.irc.color("closed", COLOR_NEGATIVE)
-
-        return "(%s PR%s, %s) %s → %s [%s/%s] %s %s" % (
-            repo, number, state, branch_from, branch_to, added, removed,
-            page.data["title"], url)
-    def _get_pull(self, username, repository, number):
-        return utils.http.request(
-            API_PULL_URL % (username, repository, number),
-            json=True)
-    @utils.hook("received.command.ghpull", min_args=1)
-    def github_pull(self, event):
-        if event["target"].get_setting("github-hide-prefix", False):
-            event["stdout"].hide_prefix()
-            event["stderr"].hide_prefix()
-
-        username, repository, number = self._parse_ref(
-            event["target"], event["args_split"][0])
-        page = self._get_pull(username, repository, number)
-
-        if page and page.code == 200:
-            self._parse_pull(page, username, repository, number)
-        else:
-            event["stderr"].write("Could not find pull request")
-
-    def _get_info(self, target, ref):
-        username, repository, number = self._parse_ref(target, ref)
-        page = self._get_issue(username, repository, number)
-        if page and page.code == 200:
-            if "pull_request" in page.data:
-                pull = self._get_pull(username, repository, number)
-                return self._parse_pull(pull, username, repository, number)
-            else:
-                return self._parse_issue(page, username, repository, number)
-        else:
-            return None
-
-    @utils.hook("received.command.gh", alias_of="github")
-    @utils.hook("received.command.github", min_args=1)
-    def github(self, event):
-        if event["target"].get_setting("github-hide-prefix", False):
-            event["stdout"].hide_prefix()
-            event["stderr"].hide_prefix()
-        result = self._get_info(event["target"], event["args_split"][0])
-        if not result == None:
-            event["stdout"].write(result)
-        else:
-            event["stderr"].write("Issue/PR not found")
-
-    def _cache_ref(self, ref):
-        return "auto-github-%s" % ref.lower()
-    def _auto_github_cooldown(self, channel, ref):
-        cooldown = channel.get_setting("auto-github-cooldown", None)
-        if not cooldown == None:
-            cache = self._cache_ref(ref)
-            if not self.bot.cache.has_item(cache):
-                self.bot.cache.temporary_cache(cache, cooldown)
-                return True
-            else:
-                return False
-        else:
-            return True
-
-    @utils.hook("command.regex", ignore_action=False)
-    def url_regex(self, event):
-        """
-        :command: github
-        :pattern: https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)
-        """
-        if event["target"].get_setting("auto-github", False):
-            event.eat()
-            ref = "%s/%s#%s" % (event["match"].group(1),
-                event["match"].group(2), event["match"].group(4))
-            if self._auto_github_cooldown(event["target"], ref):
-                try:
-                    result = self._get_info(event["target"], ref)
-                except utils.EventError:
-                    return
-                if result:
-                    if event["target"].get_setting("github-hide-prefix", False):
-                        event["stdout"].hide_prefix()
-                    event["stdout"].write(result)
-
-    @utils.hook("command.regex", ignore_action=False)
-    def ref_regex(self, event):
-        """
-        :command: github
-        :pattern: (?:\S+(?:\/\S+)?)?#\d+
-        """
-        if event["target"].get_setting("auto-github", False):
-            event.eat()
-            ref = event["match"].group(0)
-            if self._auto_github_cooldown(event["target"], ref):
-                try:
-                    result = self._get_info(event["target"],
-                        event["match"].group(0))
-                except utils.EventError:
-                    return
-                if result:
-                    if event["target"].get_setting("github-hide-prefix", False):
-                       event["stdout"].hide_prefix()
-                    event["stdout"].write(result)
-
-    @utils.hook("received.command.ghwebhook", min_args=1, channel_only=True)
-    def github_webhook(self, event):
-        """
-        :help: Add/remove/modify a github webhook
-        :require_mode: high
-        :require_access: github-webhook
-        :permission: githuboverride
-        :usage: list
-        :usage: add <hook>
-        :usage: remove <hook>
-        :usage: events <hook> [category [category ...]]
-        :usage: branches <hook> [branch [branch ...]]
-        """
-        all_hooks = event["target"].get_setting("github-hooks", {})
-        hook_name = None
-        existing_hook = None
-        if len(event["args_split"]) > 1:
-            hook_name = event["args_split"][1]
-            for existing_hook_name in all_hooks.keys():
-                if existing_hook_name.lower() == hook_name.lower():
-                    existing_hook = existing_hook_name
-                    break
-
-        subcommand = event["args_split"][0].lower()
-        if subcommand == "list":
-            event["stdout"].write("Registered web hooks: %s" %
-                ", ".join(all_hooks.keys()))
-        elif subcommand == "add":
-            if existing_hook:
-                event["stderr"].write("There's already a hook for %s" %
-                    hook_name)
-                return
-
-            all_hooks[hook_name] = {
-                "events": DEFAULT_EVENT_CATEGORIES.copy(),
-                "branches": []
-            }
-            event["target"].set_setting("github-hooks", all_hooks)
-            event["stdout"].write("Added hook for %s" % hook_name)
-        elif subcommand == "remove":
-            if not existing_hook:
-                event["stderr"].write("No hook found for %s" % hook_name)
-                return
-            del all_hooks[existing_hook]
-            if all_hooks:
-                event["target"].set_setting("github-hooks", all_hooks)
-            else:
-                event["target"].del_setting("github-hooks")
-            event["stdout"].write("Removed hook for %s" % hook_name)
-        elif subcommand == "events":
-            if not existing_hook:
-                event["stderr"].write("No hook found for %s" % hook_name)
-                return
-
-            if len(event["args_split"]) < 3:
-                event["stdout"].write("Events for hook %s: %s" %
-                    (hook_name, " ".join(all_hooks[existing_hook]["events"])))
-            else:
-                new_events = [e.lower() for e in event["args_split"][2:]]
-                all_hooks[existing_hook]["events"] = new_events
-                event["target"].set_setting("github-hooks", all_hooks)
-                event["stdout"].write("Updated events for hook %s" % hook_name)
-        elif subcommand == "branches":
-            if not existing_hook:
-                event["stderr"].write("No hook found for %s" % hook_name)
-                return
-
-            if len(event["args_split"]) < 3:
-                branches = ",".join(all_hooks[existing_hook]["branches"])
-                event["stdout"].write("Branches shown for hook %s: %s" %
-                    (hook_name, branches))
-            else:
-                all_hooks[existing_hook]["branches"] = event["args_split"][2:]
-                event["target"].set_setting("github-hooks", all_hooks)
-                event["stdout"].write("Updated shown branches for hook %s" %
-                    hook_name)
-        else:
-            event["stderr"].write("Unknown command '%s'" %
-                event["args_split"][0])
-
-    @utils.hook("api.post.github")
-    def webhook(self, event):
-        payload = event["data"].decode("utf8")
-        if event["headers"]["Content-Type"] == FORM_ENCODED:
-            payload = urllib.parse.unquote(urllib.parse.parse_qs(payload)[
-                "payload"][0])
-        data = json.loads(payload)
-
-        github_event = event["headers"]["X-GitHub-Event"]
+    def webhook(self, data, headers):
+        github_event = headers["X-GitHub-Event"]
 
         full_name = None
         repo_username = None
@@ -472,30 +200,7 @@ class Module(ModuleManager.BaseModule):
             outputs = self.membership(organisation, data)
         elif github_event == "watch":
             outputs = self.watch(data)
-
-
-        if outputs:
-            for server, channel in targets:
-                source = full_name or organisation
-                hide_org = channel.get_setting(
-                    "github-hide-organisation", False)
-                if repo_name and hide_org:
-                    source = repo_name
-
-                for output in outputs:
-                    output = "(%s) %s" % (
-                        utils.irc.color(source, COLOR_REPO), output)
-
-                    if channel.get_setting("github-prevent-highlight", False):
-                        output = self._prevent_highlight(server, channel,
-                            output)
-
-                    self.events.on("send.stdout").call(target=channel,
-                        module_name="Github", server=server, message=output,
-                        hide_prefix=channel.get_setting(
-                        "github-hide-prefix", False))
-
-        return {"state": "success", "deliveries": len(targets)}
+        return outputs
 
     def _prevent_highlight(self, server, channel, s):
         for user in channel.users:
@@ -575,7 +280,6 @@ class Module(ModuleManager.BaseModule):
                 % (author, forced, len(data["commits"]), branch, url))
 
         return outputs
-
 
     def commit_comment(self, full_name, data):
         action = data["action"]
