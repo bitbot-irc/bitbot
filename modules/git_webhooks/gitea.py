@@ -44,7 +44,7 @@ COMMENT_ACTIONS = {
 }
 
 
-class GitHub(object):
+class Gitea(object):
     def names(self, data, headers):
         full_name = None
         repo_username = None
