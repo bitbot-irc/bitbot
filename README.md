@@ -7,8 +7,8 @@ Python3.6+ and [BeautifulSoup4](https://pypi.python.org/pypi/beautifulsoup4), [f
 ## Setup
 See [docs/help/setup.md](docs/help/setup.md).
 
-## Github web hooks
-I run BitBot as-a-service on most popular networks and offer github-to-IRC web hook notifications for free to FOSS projects. Contact me for more information!
+## Github/Gitea web hooks
+I run BitBot as-a-service on most popular networks and offer github/gitea-to-IRC web hook notifications for free to FOSS projects. Contact me for more information!
 
 ## Contact/Support
 Come say hi at [#bitbot on freenode](https://webchat.freenode.net/?channels=#bitbot)
