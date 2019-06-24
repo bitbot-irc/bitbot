@@ -43,7 +43,6 @@ COMMENT_ACTIONS = {
     "deleted": "deleted a comment"
 }
 
-
 class Gitea(object):
     def names(self, data, headers):
         full_name = None
@@ -141,15 +140,15 @@ class Gitea(object):
                 url = commit["url"]
 
                 outputs.append(
-                    "%s %spushed %s to %s: %s - %s"
-                    % (author, forced, hash_colored, branch, message, url))
+                    "%s pushed %s to %s: %s - %s"
+                    % (author, hash_colored, branch, message, url))
         else:
             first_id = data["before"]
             last_id = data["commits"][-1]["id"]
             url = data["compare_url"]
 
-            outputs.append("%s %spushed %d commits to %s - %s"
-                % (author, forced, len(data["commits"]), branch, url))
+            outputs.append("%s pushed %d commits to %s - %s"
+                % (author, len(data["commits"]), branch, url))
 
         return outputs
 
