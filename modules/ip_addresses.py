@@ -58,7 +58,10 @@ class Module(ModuleManager.BaseModule):
             except dns.resolver.NoAnswer:
                 if not record_type.endswith("?"):
                     raise utils.EventError("Domain does not have a '%s' record"
-                        % record_type)
+                        % record_type_strip)
+            except dns.rdatatype.UnknownRdatatype:
+               raise utils.EventError("Unknown record type '%s'"
+                    % record_type_strip)
 
         results_str = ["%s: %s" % (t, ", ".join(r)) for t, r in results]
         event["stdout"].write("(%s) %s" % (hostname, " | ".join(results_str)))
