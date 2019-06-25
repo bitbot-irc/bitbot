@@ -343,7 +343,7 @@ class GitHub(object):
         url = ""
         if data["check_run"]["details_url"]:
             url = data["check_run"]["details_url"]
-            url = " - %s" % self.exports.get_one("shortlink")(url)
+            url = " - %s" % self.exports.get_one("shorturl-any")(url)
 
         duration = ""
         if data["check_run"]["completed_at"]:

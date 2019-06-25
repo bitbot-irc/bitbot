@@ -25,6 +25,10 @@ class Exports(object):
                 self._context_exports[context][setting] = []
             self._context_exports[context][setting].append(value)
 
+    def _get_keys(self):
+        return set(list(self._exports.keys())
+            +list(self._context_exports.keys()))
+
     def get_all(self, setting: str) -> typing.List[typing.Any]:
         return self._exports.get(setting, []) + sum([
             exports.get(setting, []) for exports in
@@ -33,6 +37,14 @@ class Exports(object):
             ) -> typing.Optional[typing.Any]:
         values = self.get_all(setting)
         return values[0] if values else default
+
+    def find_one(self, setting_prefix: str, default: typing.Any=None
+            ) -> typing.Optional[typing.Any]:
+        keys = self._get_keys()
+        for key in keys:
+            if key.startswith(setting_prefix):
+                return key
+        return default
 
     def purge_context(self, context: str):
         if context in self._context_exports:

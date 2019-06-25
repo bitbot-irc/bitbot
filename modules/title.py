@@ -1,5 +1,6 @@
 #--depends-on commands
 #--depends-on config
+#--depends-on shorturl
 
 import hashlib, re, urllib.parse
 from src import EventManager, ModuleManager, utils
@@ -40,8 +41,8 @@ class Module(ModuleManager.BaseModule):
                 "\r", "").replace("  ", " ").strip()
 
             if channel.get_setting("title-shorten", False):
-                short_url = self.exports.get_one("shortlink", lambda x: x
-                    )(url)
+                short_url = self.exports.get_one("shorturl")(
+                    event["server"], url)
                 return "%s - %s" % (title, short_url)
             return title
         else:

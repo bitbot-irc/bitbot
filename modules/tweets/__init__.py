@@ -1,5 +1,6 @@
 #--depends-on commands
 #--depends-on permissions
+#--depends-on shorturl
 #--require-config twitter-api-key
 #--require-config twitter-api-secret
 #--require-config twitter-access-token
@@ -34,8 +35,8 @@ class BitBotStreamListener(tweepy.StreamListener):
                     if server and channel_name in server.channels:
                         follows.append([server, server.channels.get(channel_name)])
 
-        tweet = format._tweet(_exports, status)
         for server, channel in follows:
+            tweet = format._tweet(_exports, server, status)
             _events.on("send.stdout").call(target=channel,
                 module_name="Tweets", server=server, message=tweet)
 

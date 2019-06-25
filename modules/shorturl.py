@@ -1,38 +1,53 @@
-#--depends-on commands
-#--require-config bitly-api-key
-
 import re
 from src import ModuleManager, utils
 
-URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
-
+@utils.export("serverset", {"setting": "url-shortener",
+    "help": "Set URL shortener service", "example": "bitly"})
+@utils.export("botset", {"setting": "url-shortener",
+    "help": "Set URL shortener service", "example": "bitly"})
 class Module(ModuleManager.BaseModule):
-    _name = "Short"
-
     def on_load(self):
-        self.exports.add("shortlink", self._shortlink)
+        self.exports.add("shorturl", self._shorturl)
+        self.exports.add("shorturl-any", self._shorturl_any)
 
-    def _shortlink(self, url):
-        if not re.match(utils.http.REGEX_URL, url):
-            url = "http://%s" % url
+    def _get_shortener(self, name):
+        return self.exports.get_one("shorturl-s-%s" % name, None)
+    def _call_shortener(self, shortener_name, url):
+        shortener = self._get_shortener(shortener_name)
+        if shortener == None:
+            return None
+        short_url = shortener(url)
+        if short_url == None:
+            return None
+        return short_url
 
-        page = utils.http.request(URL_BITLYSHORTEN, get_params={
-            "access_token": self.bot.config["bitly-api-key"],
-            "longUrl": url}, json=True)
+    def _shorturl_any(self, url):
+        global_shortener_name = self.bot.get_setting("url-shortener", "bitly")
+        if global_shortener_name:
+            return self._call_shortener(global_shortener_name, url) or url
 
-        if page and page.data["data"]:
-            return page.data["data"]["url"]
-        return url
+        shortener_name = self.exports.find_one("shorturl-s-", None)
+        if shortener_name == None:
+            return url
+        return self._call_shortener(shortener_name, url) or url
+
+    def _shorturl(self, server, url):
+        shortener_name = server.get_setting("url-shortener", "bitly")
+        if shortener_name == None:
+            return url
+        return self._call_shortener(shortener_name, url) or url
 
     @utils.hook("received.command.shorten")
     def shorten(self, event):
         """
-        :help: Shorten a given URL using the is.gd service
+        :help: Shorten a given URL
         :usage: <url>
         """
         url = None
         if len(event["args"]) > 0:
             url = event["args_split"][0]
+            if not re.match(utils.http.REGEX_URL, url):
+                url = "http://%s" % url
         else:
             url = event["target"].buffer.find(utils.http.REGEX_URL)
             if url:
@@ -40,7 +55,5 @@ class Module(ModuleManager.BaseModule):
         if not url:
             raise utils.EventError("No URL provided/found.")
 
-        if url:
-            event["stdout"].write("Shortened URL: %s" % self._shortlink(url))
-        else:
-            event["stderr"].write("Unable to shorten that URL.")
+        event["stdout"].write("Shortened URL: %s" % self._shorturl(
+            event["server"], url))

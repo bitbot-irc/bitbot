@@ -1,3 +1,8 @@
+#--depends-on channel_access
+#--depends-on check_mode
+#--depends-on commands
+#--depends-on shorturl
+
 import itertools, json, re, urllib.parse
 from src import ModuleManager, utils
 from . import colors, gitea, github
