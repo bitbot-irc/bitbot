@@ -10,7 +10,7 @@ STR_NOVOTE = "Unknown vote '%s'"
 class VoteCastResult(enum.Enum):
     Cast = 1
     Changed = 2
-@utils.export("channelset", {"setting": "vote-start-restricted",
+@utils.export("channelset", {"setting": "votes-start-restricted",
     "help": "Whether starting a vote should be restricted to ops",
     "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
@@ -76,7 +76,7 @@ class Module(ModuleManager.BaseModule):
         :usage: <description>
         """
 
-        if event["target"].get_setting("vote-start-restricted", True):
+        if event["target"].get_setting("votes-start-restricted", True):
             event["check_assert"](utils.Check("channel-mode", "o")|
                 utils.Check("permission", "vote")|
                 utils.Check("channel-access", "vote"))
