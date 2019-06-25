@@ -2,32 +2,59 @@
 
 import re, socket
 from src import ModuleManager, utils
+import dns.resolver
 
 URL_GEOIP = "http://ip-api.com/json/%s"
 REGEX_IPv6 = r"(?:(?:[a-f0-9]{1,4}:){2,}|[a-f0-9:]*::)[a-f0-9:]*"
 REGEX_IPv4 = r"(?:\d{1,3}\.){3}\d{1,3}"
 REGEX_IP = re.compile("(%s)|(%s)" % (REGEX_IPv4, REGEX_IPv6), re.I)
 
+def _dns_validate(s):
+    if utils.is_ip(s):
+        return s
+    return None
+
+@utils.export("serverset", {"setting": "dns-nameserver",
+    "help": "Set DNS nameserver", "example": "8.8.8.8"})
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.dns", min_args=1)
     def dns(self, event):
         """
         :help: Get all addresses for a given hostname (IPv4/IPv6)
-        :usage: <hostname>
+        :usage: <hostname> [type [type ...]]
         :prefix: DNS
         """
         hostname = event["args_split"][0]
-        try:
-            address_info = socket.getaddrinfo(hostname, 1, 0,
-                socket.SOCK_DGRAM)
-        except socket.gaierror:
-            raise utils.EventError("Failed to find hostname")
+        nameserver = event["server"].get_setting("dns-nameserver", None)
+        has_nameserver = not nameserver == None
 
-        ips = []
-        for _, _, _, _, address in address_info:
-            ips.append(address[0])
-        event["stdout"].write("%s: %s" % (hostname, ", ".join(ips)))
+        record_types = ["A?", "AAAA?"]
+        if len(event["args_split"]) > 1:
+            record_types = [t.upper() for t in event["args_split"][1:]]
 
+        if not nameserver == None:
+            resolver = dns.resolver.Resolver(configure=False)
+            resolver.nameservers = [nameserver]
+        else:
+            resolver = dns.resolver
+
+        results = []
+
+        for record_type in record_types:
+            try:
+                record_type_strip = record_type.rstrip("?")
+                query_result = resolver.query(hostname, record_type_strip)
+                query_results = [q.to_text() for q in query_result]
+                results.append([record_type_strip, query_results])
+            except dns.resolver.NXDOMAIN:
+                raise utils.EventError("Domain not found")
+            except dns.resolver.NoAnswer:
+                if not record_type.endswith("?"):
+                    raise utils.EventError("Domain does not have a '%s' record"
+                        % record_type)
+
+        results_str = ["%s: %s" % (t, ", ".join(r)) for t, r in results]
+        event["stdout"].write("(%s) %s" % (hostname, " | ".join(results_str)))
 
     @utils.hook("received.command.geoip", min_args=1)
     def geoip(self, event):

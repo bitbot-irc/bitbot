@@ -1,4 +1,5 @@
 beautifulsoup4
+dnspython
 feedparser
 lxml
 netifaces
