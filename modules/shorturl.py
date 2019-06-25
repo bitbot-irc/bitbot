@@ -1,6 +1,8 @@
 import re
 from src import ModuleManager, utils
 
+URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
+
 @utils.export("serverset", {"setting": "url-shortener",
     "help": "Set URL shortener service", "example": "bitly"})
 @utils.export("botset", {"setting": "url-shortener",
@@ -9,6 +11,8 @@ class Module(ModuleManager.BaseModule):
     def on_load(self):
         self.exports.add("shorturl", self._shorturl)
         self.exports.add("shorturl-any", self._shorturl_any)
+
+        self.exports.add("shorturl-s-bitly", self._bitly)
 
     def _get_shortener(self, name):
         return self.exports.get_one("shorturl-s-%s" % name, None)
@@ -22,20 +26,26 @@ class Module(ModuleManager.BaseModule):
         return short_url
 
     def _shorturl_any(self, url):
-        global_shortener_name = self.bot.get_setting("url-shortener", "bitly")
-        if global_shortener_name:
-            return self._call_shortener(global_shortener_name, url) or url
-
-        shortener_name = self.exports.find_one("shorturl-s-", None)
-        if shortener_name == None:
-            return url
-        return self._call_shortener(shortener_name, url) or url
+        return self._call_shortener("bitly", url) or url
 
     def _shorturl(self, server, url):
         shortener_name = server.get_setting("url-shortener", "bitly")
         if shortener_name == None:
             return url
         return self._call_shortener(shortener_name, url) or url
+
+    def _bitly(self, url):
+        if len(url) < 22:
+            return None
+
+        access_token = self.bot.config.get("bitly-api-key", None)
+        if access_token:
+            page = utils.http.request(URL_BITLYSHORTEN, get_params={
+                "access_token": access_token, "longUrl": url}, json=True)
+
+            if page and page.data["data"]:
+                return page.data["data"]["url"]
+        return None
 
     @utils.hook("received.command.shorten")
     def shorten(self, event):
