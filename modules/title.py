@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
         return "sha256:%s" % hashlib.sha256(url.lower().encode("utf8")
             ).hexdigest()
 
-    def _get_title(self, channel, url):
+    def _get_title(self, server, channel, url):
         if not urllib.parse.urlparse(url).scheme:
             url = "http://%s" % url
 
@@ -41,8 +41,7 @@ class Module(ModuleManager.BaseModule):
                 "\r", "").replace("  ", " ").strip()
 
             if channel.get_setting("title-shorten", False):
-                short_url = self.exports.get_one("shorturl")(
-                    event["server"], url)
+                short_url = self.exports.get_one("shorturl")(server, url)
                 return "%s - %s" % (title, short_url)
             return title
         else:
@@ -58,7 +57,8 @@ class Module(ModuleManager.BaseModule):
         if event["target"].get_setting("auto-title", False):
             event.eat()
             url = event["match"].group(0)
-            title = self._get_title(event["target"], event["match"].group(0))
+            title = self._get_title(event["server"], event["target"],
+                event["match"].group(0))
 
             if title:
                 message = title
@@ -95,7 +95,7 @@ class Module(ModuleManager.BaseModule):
         if not url:
             raise utils.EventError("No URL provided/found.")
 
-        title = self._get_title(event["target"], url)
+        title = self._get_title(event["server"], event["target"], url)
 
         if title:
             event["stdout"].write(title)
