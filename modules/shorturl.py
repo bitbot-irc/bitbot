@@ -70,3 +70,21 @@ class Module(ModuleManager.BaseModule):
 
         event["stdout"].write("Shortened URL: %s" % self._shorturl(
             event["server"], url))
+
+    @utils.hook("received.command.unshorten", min_args=1)
+    def unshorten(self, event):
+        url = event["args_split"][0]
+        if not re.match(utils.http.REGEX_URL, url):
+            url = "http://%s" % url
+
+        try:
+            response = utils.http.request(url, method="HEAD",
+                allow_redirects=False)
+        except:
+            response = None
+
+        if response and "location" in response.headers:
+            event["stdout"].write("Unshortened: %s" %
+                response.headers["location"])
+        else:
+            event["stderr"].write("Failed to unshorten URL")
