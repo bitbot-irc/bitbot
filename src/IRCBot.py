@@ -275,13 +275,11 @@ class Bot(object):
                 self.log.warn("No servers, exiting")
                 break
 
-
             try:
                 item = self._event_queue.get(block=True,
                     timeout=self.get_poll_timeout())
             except queue.Empty:
-                # caused by timeout being hit. loop back round because a _check
-                # call is due
+                # caused by timeout being hit.
                 continue
             finally:
                 self._check()
@@ -344,7 +342,6 @@ class Bot(object):
     def _read_loop(self):
         while self.running:
             events = self._read_poll.poll()
-
 
             for fd, event in events:
                 if fd == self._rtrigger_server.fileno():
