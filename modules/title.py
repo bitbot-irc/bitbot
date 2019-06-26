@@ -47,13 +47,12 @@ class Module(ModuleManager.BaseModule):
         else:
             return None
 
-    @utils.hook("command.regex", ignore_action=False,
-        priority=EventManager.PRIORITY_MONITOR)
+    @utils.hook("command.regex")
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("priority", EventManager.PRIORITY_MONITOR)
+    @utils.kwarg("command", "title")
+    @utils.kwarg("pattern", utils.http.REGEX_URL)
     def channel_message(self, event):
-        """
-        :command: title
-        :pattern-url: 1
-        """
         if event["target"].get_setting("auto-title", False):
             event.eat()
             url = event["match"].group(0)

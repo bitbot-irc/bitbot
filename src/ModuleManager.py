@@ -205,12 +205,24 @@ class ModuleManager(object):
 
         if not hasattr(module_object, "_name"):
             module_object._name = definition.name.title()
+
+        # @utils.hook() magic
         for attribute_name in dir(module_object):
             attribute = getattr(module_object, attribute_name)
-            for hook in self._get_magic(attribute,
-                    utils.consts.BITBOT_HOOKS_MAGIC, []):
-                context_events.on(hook["event"]).hook(attribute,
-                    **hook["kwargs"])
+            if inspect.ismethod(attribute):
+                kwargs = self._get_magic(attribute,
+                    utils.consts.BITBOT_KWARG_MAGIC, [])
+                kwargs = dict(list(d.items())[0] for d in kwargs)
+
+                for hook in self._get_magic(attribute,
+                        utils.consts.BITBOT_HOOKS_MAGIC, []):
+                    new_kwargs = kwargs.copy()
+                    new_kwargs.update(hook["kwargs"])
+
+                    context_events.on(hook["event"]).hook(attribute,
+                        **new_kwargs)
+
+        # @utils.export() magic
         for export in self._get_magic(module_object,
                 utils.consts.BITBOT_EXPORTS_MAGIC, []):
             context_exports.add(export["setting"], export["value"])

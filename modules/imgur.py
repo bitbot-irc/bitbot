@@ -28,19 +28,20 @@ class Module(ModuleManager.BaseModule):
             text += "%s " % data["account_url"]
         return text
 
-    @utils.hook("command.regex", pattern=REGEX_IMAGE, ignore_action=False)
+    @utils.hook("command.regex")
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "imgur")
+    @utils.kwarg("pattern", REGEX_IMAGE)
     def _regex_image(self, event):
-        """
-        :command: imgur
-        """
         if event["target"].get_setting("auto-imgur", False):
             event["stdout"].write(self._parse_image(event["match"].group(1)))
             event.eat()
-    @utils.hook("command.regex", pattern=REGEX_GALLERY, ignore_action=False)
+
+    @utils.hook("command.regex")
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "imgur")
+    @utils.kwarg("pattern", REGEX_GALLERY)
     def _regex_gallery(self, event):
-        """
-        :command: imgur
-        """
         if event["target"].get_setting("auto-imgur", False):
             event["stdout"].write(self._parse_gallery(event["match"].group(1)))
             event.eat()

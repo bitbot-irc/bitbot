@@ -1,7 +1,7 @@
 #--depends-on commands
 #--depends-on config
 
-import random, time
+import random, re, time
 from src import EventManager, ModuleManager, utils
 
 DUCK = "・゜゜・。。・゜゜\_o< QUACK!"
@@ -44,12 +44,12 @@ class Module(ModuleManager.BaseModule):
                 if show_duck:
                     self._trigger_duck(channel)
 
-    @utils.hook("command.regex", expect_output=False, ignore_action=False)
+    @utils.hook("command.regex")
+    @utils.kwarg("expect_output", False)
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "duck-trigger")
+    @utils.kwarg("patern", re.compile(".+"))
     def channel_message(self, event):
-        """
-        :pattern: .+
-        :command: duck-trigger
-        """
         self._activity(event["target"])
 
     def _trigger_duck(self, channel):

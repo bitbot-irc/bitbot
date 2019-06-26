@@ -184,6 +184,11 @@ def export(setting: str, value: typing.Any):
             {"setting": setting, "value": value})
         return module
     return _export_func
+def kwarg(key: str, value: typing.Any):
+    def _kwarg_func(func):
+        _set_get_append(func, consts.BITBOT_KWARG_MAGIC, {key: value})
+        return func
+    return _kwarg_func
 
 class MultiCheck(object):
     def __init__(self,

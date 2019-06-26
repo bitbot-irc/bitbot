@@ -19,11 +19,9 @@ class Module(ModuleManager.BaseModule):
             event["server"].get_setting(setting, default))
 
     @utils.hook("command.regex")
+    @utils.kwarg("command", "sed")
+    @utils.kwarg("pattern", REGEX_SED)
     def channel_message(self, event):
-        """
-        :command: sed
-        :pattern: ^s/
-        """
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
         if event["message"].startswith("s/") and len(sed_split) > 2:
             if not self._closest_setting(event, "sed", False):

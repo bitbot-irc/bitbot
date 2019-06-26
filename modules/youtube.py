@@ -130,14 +130,12 @@ class Module(ModuleManager.BaseModule):
         else:
            event["stderr"].write("No search phrase provided")
 
-    @utils.hook("command.regex", ignore_action=False,
-        priority=EventManager.PRIORITY_LOW)
+    @utils.hook("command.regex")
+    @utils.kwarg("priority", EventManager.PRIORITY_LOW)
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "youtube")
+    @utils.kwarg("pattern", REGEX_YOUTUBE)
     def channel_message(self, event):
-        """
-        :command: youtube
-        :-pattern: https?://(?:www.)?
-            (?:youtu.be/|youtube.com/watch\?[\S]*v=)([\w\-]{11})
-        """
         if event["target"].get_setting("auto-youtube", False):
             youtube_id = event["match"].group(1)
             video_details = self.video_details(youtube_id)

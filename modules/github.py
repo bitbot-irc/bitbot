@@ -15,6 +15,10 @@ COLOR_NEUTRAL = utils.consts.LIGHTGREY
 COLOR_NEGATIVE = utils.consts.RED
 COLOR_ID = utils.consts.PINK
 
+REGEX_PR_OR_ISSUE = re.compile(
+    r"https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)", re.I)
+REGEX_REF = re.compile(r"(?:\S+(?:\/\S+)?)?#\d+")
+
 API_ISSUE_URL = "https://api.github.com/repos/%s/%s/issues/%s"
 API_PULL_URL = "https://api.github.com/repos/%s/%s/pulls/%s"
 
@@ -182,12 +186,11 @@ class Module(ModuleManager.BaseModule):
         else:
             return True
 
-    @utils.hook("command.regex", ignore_action=False)
+    @utils.hook("command.regex")
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "github")
+    @utils.kwarg("pattern", REGEX_PR_OR_ISSUE)
     def url_regex(self, event):
-        """
-        :command: github
-        :pattern: https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)
-        """
         if event["target"].get_setting("auto-github", False):
             event.eat()
             ref = "%s/%s#%s" % (event["match"].group(1),
@@ -202,12 +205,11 @@ class Module(ModuleManager.BaseModule):
                         event["stdout"].hide_prefix()
                     event["stdout"].write(result)
 
-    @utils.hook("command.regex", ignore_action=False)
+    @utils.hook("command.regex")
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "github")
+    @utils.kwarg("pattern", REGEX_REF)
     def ref_regex(self, event):
-        """
-        :command: github
-        :pattern: (?:\S+(?:\/\S+)?)?#\d+
-        """
         if event["target"].get_setting("auto-github", False):
             event.eat()
             ref = event["match"].group(0)

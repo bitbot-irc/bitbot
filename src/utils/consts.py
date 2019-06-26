@@ -2,6 +2,7 @@ import typing
 from . import _consts_256_color
 
 BITBOT_HOOKS_MAGIC = "__bitbot_hooks"
+BITBOT_KWARG_MAGIC = "__bitbot_kwarg"
 BITBOT_EXPORTS_MAGIC = "__bitbot_exports"
 
 class IRCColor(object):

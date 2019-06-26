@@ -8,6 +8,8 @@ from src import EventManager, ModuleManager, utils
 WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
+REGEX_KARMA = re.compile(r"^(.*)(\+{2}|\-{2})$")
+
 @utils.export("channelset", {"setting": "karma-verbose",
     "help": "Enable/disable automatically responding to karma changes",
     "validate": utils.bool_or_none, "example": "on"})
@@ -28,11 +30,9 @@ class Module(ModuleManager.BaseModule):
         event["user"].last_karma = None
 
     @utils.hook("command.regex")
+    @utils.kwarg("command", "karma")
+    @utils.kwarg("pattern", REGEX_KARMA)
     def channel_message(self, event):
-        """
-        :command: karma
-        :pattern: ^(.*)(\+{2}|\-{2})$
-        """
         verbose = event["target"].get_setting("karma-verbose", False)
         nickname_only = event["server"].get_setting("karma-nickname-only",
             False)

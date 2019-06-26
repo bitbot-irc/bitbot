@@ -3,6 +3,8 @@
 import re
 from src import ModuleManager, utils
 
+REGEX_FACTOID = re.compile("{!factoid ([^}]+)}", re.I)
+
 class Module(ModuleManager.BaseModule):
     def _get_factoid(self, server, factoid):
         name = factoid.lower().strip()
@@ -26,12 +28,11 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Unknown factoid '%s'" % name)
             event["stdout"].write("%s: %s" % (name, value))
 
-    @utils.hook("command.regex", ignore_action=False)
+    @utils.hook("command.regex")
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "factoid")
+    @utils.kwarg("pattern", REGEX_FACTOID)
     def channel_message(self, event):
-        """
-        :command: factoid
-        :pattern: {!factoid ([^}]+)}
-        """
         name, value = self._get_factoid(event["server"],
             event["match"].group(1))
         if not value == None:

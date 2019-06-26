@@ -167,11 +167,11 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("No tweet provided to get information about")
 
-    @utils.hook("command.regex", pattern=REGEX_TWITTERURL, ignore_action=False)
+    @utils.hook("command.regex")
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "tweet")
+    @utils.kwarg("pattern", REGEX_TWITTERURL)
     def regex(self, event):
-        """
-        :command: tweet
-        """
         if event["target"].get_setting("auto-tweet", False):
             event.eat()
             tweet_id = event["match"].group(1)
