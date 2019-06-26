@@ -6,7 +6,8 @@ from src import ModuleManager, utils
 URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.synonym|antonym", min_args=1)
+    @utils.hook("received.command.synonym", min_args=1)
+    @utils.hook("received.command.antonym", min_args=1)
     def thesaurus(self, event):
         """
         :help: Get synonyms/antonyms for a provided phrase

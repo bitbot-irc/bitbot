@@ -40,7 +40,8 @@ def _command_method_validate(s):
     "help": "Disable/enable responding to prefixed commands in-channel",
     "validate": utils.bool_or_none, "example": "on"})
 class Module(ModuleManager.BaseModule):
-    @utils.hook("new.user|channel")
+    @utils.hook("new.user")
+    @utils.hook("new.channel")
     def new(self, event):
         if "user" in event:
             target = event["user"]
