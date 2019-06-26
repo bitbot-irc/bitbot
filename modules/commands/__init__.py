@@ -127,7 +127,7 @@ class Module(ModuleManager.BaseModule):
         returns = []
         if requests:
             for request, request_args in requests:
-                returns.append(event_hook.on(request).call_unsafe_for_result(
+                returns.append(event_hook.on(request).call_for_result_unsafe(
                     **kwargs, request_args=request_args))
         else:
             returns = event_hook.call_unsafe(**kwargs)
