@@ -142,6 +142,9 @@ class EventRoot(object):
     def _call(self, path: typing.List[str], kwargs: dict, safe: bool,
             context: typing.Optional[str], maximum: typing.Optional[int]
             ) -> typing.List[typing.Any]:
+        if not utils.is_main_thread():
+            raise RuntimeError("Can't call events outside of main thread")
+
         returns: typing.List[typing.Any] = []
         path_str = self._path_str(path)
         if not path_str in self._hooks:
