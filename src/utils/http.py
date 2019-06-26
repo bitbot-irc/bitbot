@@ -35,6 +35,7 @@ def request(url: str, method: str="GET", get_params: dict={},
         post_data: typing.Any=None, headers: dict={},
         json_data: typing.Any=None, code: bool=False, json: bool=False,
         soup: bool=False, parser: str="lxml", fallback_encoding: str="utf8",
+        allow_redirects: bool=True
         ) -> Response:
 
     if not urllib.parse.urlparse(url).scheme:
@@ -55,6 +56,7 @@ def request(url: str, method: str="GET", get_params: dict={},
             params=get_params,
             data=post_data,
             json=json_data,
+            allow_redirects=allow_redirects,
             stream=True
         )
         response_content = response.raw.read(RESPONSE_MAX, decode_content=True)
