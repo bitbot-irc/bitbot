@@ -8,7 +8,7 @@ PING_INTERVAL_SECONDS = 30
 class Server(IRCObject.Object):
     def __init__(self,
             bot: "IRCBot.Bot",
-            events: EventManager.EventHook,
+            events: EventManager.Events,
             id: int,
             alias: str,
             connection_params: utils.irc.IRCConnectionParameters):

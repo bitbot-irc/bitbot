@@ -3,7 +3,7 @@ from src import EventManager, IRCBot, IRCChannel, IRCServer, utils
 
 class Channels(object):
     def __init__(self, server: "IRCServer.Server", bot: "IRCBot.Bot",
-            events: EventManager.EventHook):
+            events: EventManager.Events):
         self._server = server
         self._bot = bot
         self._events = events

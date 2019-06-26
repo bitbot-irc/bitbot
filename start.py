@@ -67,11 +67,11 @@ if args.add_server:
 
 cache = Cache.Cache()
 config = Config.Config(args.config)
-events = events = EventManager.EventHook(log)
-exports = exports = Exports.Exports()
+events = EventManager.EventRoot(log).wrap()
+exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
-modules = modules = ModuleManager.ModuleManager(events, exports, timers, config,
-    log, os.path.join(directory, "modules"))
+modules = ModuleManager.ModuleManager(events, exports, timers, config, log,
+    os.path.join(directory, "modules"))
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
     exports, log, modules, timers)

@@ -32,7 +32,7 @@ class Timer(object):
 
 class Timers(object):
     def __init__(self, database: Database.Database,
-            events: EventManager.EventHook,
+            events: EventManager.Events,
             log: Logging.Log):
         self.database = database
         self.events = events

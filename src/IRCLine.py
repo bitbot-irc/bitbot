@@ -138,7 +138,7 @@ class ParsedLine(object):
         return valid, overflow
 
 class SentLine(IRCObject.Object):
-    def __init__(self, events: "EventManager.EventHook",
+    def __init__(self, events: "EventManager.Events",
             send_time: datetime.datetime, hostmask: str, line: ParsedLine):
         self.events = events
         self.send_time = send_time

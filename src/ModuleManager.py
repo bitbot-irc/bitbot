@@ -37,7 +37,7 @@ class ModuleType(enum.Enum):
 class BaseModule(object):
     def __init__(self,
             bot: "IRCBot.Bot",
-            events: EventManager.EventHook,
+            events: EventManager.Events,
             exports: Exports.Exports,
             timers: Timers.Timers,
             log: Logging.Log):
@@ -85,7 +85,7 @@ class LoadedModule(object):
 
 class ModuleManager(object):
     def __init__(self,
-            events: EventManager.EventHook,
+            events: EventManager.Events,
             exports: Exports.Exports,
             timers: Timers.Timers,
             config: Config.Config,
