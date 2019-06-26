@@ -109,9 +109,11 @@ class Module(ModuleManager.BaseModule):
                             "'%s' is an alias of unknown command '%s'"
                            % (command.lower(), alias_of.lower()))
 
-                if not is_channel and potential_hook.kwargs.get("channel_only"):
+                if not is_channel and potential_hook.get_kwarg("channel_only",
+                        False):
                     continue
-                if is_channel and potential_hook.kwargs.get("private_only"):
+                if is_channel and potential_hook.get_kwarg("private_only",
+                        False):
                     continue
 
                 hook = potential_hook
@@ -161,7 +163,7 @@ class Module(ModuleManager.BaseModule):
     def command(self, server, target, target_str, is_channel, user, command,
             args_split, tags, hook, **kwargs):
         message_tags = server.has_capability(MESSAGE_TAGS_CAP)
-        expect_output = hook.kwargs.get("expect_output", True)
+        expect_output = hook.get_kwarg("expect_output", True)
 
         module_name = self._get_prefix(hook) or ""
         if not module_name and hasattr(hook.function, "__self__"):
@@ -184,10 +186,10 @@ class Module(ModuleManager.BaseModule):
         ret = False
         had_out = False
 
-        if hook.kwargs.get("remove_empty", True):
+        if hook.get_kwarg("remove_empty", True):
             args_split = list(filter(None, args_split))
 
-        min_args = hook.kwargs.get("min_args")
+        min_args = hook.get_kwarg("min_args")
         if min_args and len(args_split) < min_args:
             command_prefix = ""
             if is_channel:
@@ -229,7 +231,7 @@ class Module(ModuleManager.BaseModule):
                 stderr.write(str(e)).send(command_method)
                 return True
 
-            if not hook.kwargs.get("skip_out", False):
+            if not hook.get_kwarg("skip_out", False):
                 had_out = stdout.has_text() or stderr.has_text()
                 command_method = self._command_method(target, server)
                 stdout.send(command_method)

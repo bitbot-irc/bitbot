@@ -7,7 +7,7 @@ class Module(ModuleManager.BaseModule):
         hooks = self.events.on("raw.received").on(line.command).get_hooks()
         default_events = []
         for hook in hooks:
-            default_events.append(hook.kwargs.get("default_event", False))
+            default_events.append(hook.get_kwarg("default_event", False))
 
         kwargs = {"server": server, "line": line,
             "direction": utils.Direction.Recv}

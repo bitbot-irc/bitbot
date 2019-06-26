@@ -230,7 +230,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
         permission = event["hook"].get_kwarg("permission", None)
-        authenticated = event["hook"].kwargs.get("authenticated", False)
+        authenticated = event["hook"].get_kwarg("authenticated", False)
         return self._check_command(event, permission, authenticated)
 
     @utils.hook("check.command.permission")
