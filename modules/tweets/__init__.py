@@ -160,7 +160,7 @@ class Module(ModuleManager.BaseModule):
                 tweet = self._from_username(target)
 
             if tweet:
-                tweet_str = format._tweet(self.exports, tweet)
+                tweet_str = format._tweet(self.exports, event["server"], tweet)
                 event["stdout"].write(tweet_str)
             else:
                 event["stderr"].write("Invalid tweet identifiers provided")
@@ -177,6 +177,6 @@ class Module(ModuleManager.BaseModule):
             tweet_id = event["match"].group(1)
             tweet = self._from_id(tweet_id)
             if tweet:
-                tweet_str = format._tweet(self.exports, tweet)
+                tweet_str = format._tweet(self.exports, event["server"], tweet)
                 event["stdout"].write(tweet_str)
 
