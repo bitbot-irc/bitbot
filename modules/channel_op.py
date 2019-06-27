@@ -328,9 +328,9 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.mute", usage="<nickname> [duration]")
     @utils.hook("received.command.unmute", usage="<nickname>")
     @utils.kwarg("min_args", 1)
-    @utils.kwarg("channel-only", True)
-    @utils.kwarg("require-mode", "o")
-    @utils.kwarg("require-access", "mute")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "mute")
     @utils.kwarg("help", "Mute a given user")
     @utils.kwarg("usage", "<nickname>")
     def _mute(self, event):
