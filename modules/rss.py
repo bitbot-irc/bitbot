@@ -38,13 +38,11 @@ class Module(ModuleManager.BaseModule):
             try:
                 data = utils.http.request(url)
                 feed = feedparser.parse(data.data)
+                feed["feed"] or ValueError("Feed info empty")
             except:
-                feed = None
-
-            if not feed or not feed["feed"]:
-                self.log.warn("Failed to parse rss for %s", [url],
+                self.log.warn("Failed to GET RSS for %s", [url],
                     exc_info=True)
-                continue
+                return
 
             feed_title = feed["feed"]["title"]
             entry_formatted = {}
