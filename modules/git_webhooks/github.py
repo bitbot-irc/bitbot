@@ -187,8 +187,8 @@ class GitHub(object):
         range_url = self._short_url(
             COMMIT_RANGE_URL % (full_name, first_id, last_id))
 
-        return self._format_push(branch, author, data["commits"], forced,
-            range_url)
+        return self._format_push(branch, author, data["commits"],
+            data["forced"], range_url)
 
     def _format_push(self, branch, author, commits, forced, range_url):
         outputs = []
