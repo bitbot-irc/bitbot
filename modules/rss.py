@@ -42,7 +42,7 @@ class Module(ModuleManager.BaseModule):
             except Exception as e:
                 self.log.warn("Failed to GET RSS for %s: %s",
                     [url, str(e)])
-                return
+                continue
 
             feed_title = feed["feed"]["title"]
             entry_formatted = {}
