@@ -23,6 +23,8 @@ class InvalidTimeoutException(Exception):
 @utils.export("channelset", {"setting": "ban-format",
     "help": "Set ban format ($n = nick, $u = username, $h = hostname)",
     "example": "*!$u@$h"})
+@utils.export("serverset", {"setting": "quiet-method",
+    "help": "Set this server's method of quieting users", "example": "qmode"})
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 
@@ -310,3 +312,39 @@ class Module(ModuleManager.BaseModule):
         :require_mode: o
         """
         event["target"].send_part()
+
+    def _quiet_method(self, server, user):
+        mask = "*!*@%s" % user.hostname
+        quiet_method = server.get_setting("quiet-method", "qmode").lower()
+
+        if quiet_method == "qmode":
+            return "q", mask
+        elif quiet_method == "insp":
+            return "b", "m:%s" % mask
+        elif quiet_method == "unreal":
+            return "b", "~q:%s" % mask
+        raise ValueError("Unknown quiet-method '%s'" % quiet_method)
+
+
+    @utils.hook("received.command.quiet")
+    @utils.hook("received.command.unquiet")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("channel-only", True)
+    @utils.kwarg("require-mode", "o")
+    @utils.kwarg("require-access", "quiet")
+    @utils.kwarg("help", "Quiet a given user")
+    @utils.kwarg("usage", "<nickname>")
+    def _do_quiet(self, event):
+        add = event.name == "received.command.quiet"
+
+        target_name = event["args_split"][0]
+        if not event["server"].has_user(target_name):
+            raise utils.EventError("No such user")
+
+        target_user = event["server"].get_user(target_name)
+        if not event["target"].has_user(target_user):
+            raise utils.EventError("No such user")
+
+        mode, mask = self._quiet_method(event["server"], target_user)
+        mode_modifier = "+" if add else "-"
+        event["target"].send_mode("%s%s" % (mode_modifier, mode), [mask])
