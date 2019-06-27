@@ -4,6 +4,7 @@ from . import colors
 COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
+PR_COMMIT_RANGE_URL = "https://github.com/%s/pull/%s/files/%s..%s"
 
 DEFAULT_EVENT_CATEGORIES = [
     "ping", "code", "pr", "issue", "repo"
@@ -181,15 +182,26 @@ class GitHub(object):
         branch = utils.irc.color(branch, colors.COLOR_BRANCH)
         author = utils.irc.bold(data["pusher"]["name"])
 
-        forced = ""
-        if data["forced"]:
-            forced = "%s " % utils.irc.color("force", utils.consts.RED)
+        first_id = data["before"]
+        last_id = data["commits"][-1]["id"]
+        range_url = self._short_url(
+            COMMIT_RANGE_URL % (full_name, first_id, last_id))
 
-        if len(data["commits"]) == 0 and data["forced"]:
+        return self._format_push(branch, author, data["commits"], forced,
+            range_url)
+
+    def _format_push(self, branch, author, commits, forced, range_url):
+        outputs = []
+
+        forced_str = ""
+        if forced:
+            forced_str = "%s " % utils.irc.color("force", utils.consts.RED)
+
+        if len(commits) == 0 and forced:
             outputs.append(
-                "%s %spushed to %s" % (author, forced, branch))
-        elif len(data["commits"]) <= 3:
-            for commit in data["commits"]:
+                "%s %spushed to %s" % (author, forced_str, branch))
+        elif len(commits) <= 3:
+            for commit in commits:
                 hash = commit["id"]
                 hash_colored = utils.irc.color(self._short_hash(hash), colors.COLOR_ID)
                 message = commit["message"].split("\n")[0].strip()
@@ -197,15 +209,10 @@ class GitHub(object):
 
                 outputs.append(
                     "%s %spushed %s to %s: %s - %s"
-                    % (author, forced, hash_colored, branch, message, url))
+                    % (author, forced_str, hash_colored, branch, message, url))
         else:
-            first_id = data["before"]
-            last_id = data["commits"][-1]["id"]
-            url = self._short_url(
-                COMMIT_RANGE_URL % (full_name, first_id, last_id))
-
             outputs.append("%s %spushed %d commits to %s - %s"
-                % (author, forced, len(data["commits"]), branch, url))
+                % (author, forced_str, len(commits), branch, range_url))
 
         return outputs
 
@@ -218,12 +225,14 @@ class GitHub(object):
             action, url)]
 
     def pull_request(self, full_name, data):
+        raw_number = data["pull_request"]["number"]
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
             colors.COLOR_ID)
         action = data["action"]
         action_desc = "%s %s" % (action, number)
         branch = data["pull_request"]["base"]["ref"]
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
+        author = utils.irc.bold(data["sender"]["login"])
 
         if action == "opened":
             action_desc = "requested %s merge into %s" % (number,
@@ -241,8 +250,25 @@ class GitHub(object):
         elif action == "synchronize":
             action_desc = "committed to %s" % number
 
+            commits_url = data["pull_request"]["commits_url"]
+            commits = utils.http.request(commits_url, json=True)
+            if commits:
+                seen_before = False
+                new_commits = []
+                for commit in commits.data:
+                    if seen_before:
+                        new_commits.append({"id": commit["ref"],
+                            "message": commit["commit"]["message"]})
+                    elif commit["sha"] == data["before"]:
+                        seen_before = True
+
+                range_url = PR_COMMIT_RANGE_URL % (full_name, raw_number,
+                    data["before"], data["after"])
+                if new_commits:
+                    return self._format_push(number, author, new_commits, False,
+                        range_url)
+
         pr_title = data["pull_request"]["title"]
-        author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["pull_request"]["html_url"])
         return ["[PR] %s %s: %s - %s" % (
             author, action_desc, pr_title, url)]
