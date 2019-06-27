@@ -270,8 +270,11 @@ class GitHub(object):
                     data["before"], data["after"])
                 single_url = PR_COMMIT_URL % (full_name, raw_number, "%s")
                 if new_commits:
-                    return self._format_push(number, author, new_commits, False,
-                        single_url, range_url)
+                    outputs = self._format_push(number, author, new_commits,
+                        False, single_url, range_url)
+                    for i, output in enumerate(outputs):
+                        outputs[i] = "[PR] %s" % output
+                    return outputs
 
         pr_title = data["pull_request"]["title"]
         url = self._short_url(data["pull_request"]["html_url"])
