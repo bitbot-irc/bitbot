@@ -39,9 +39,9 @@ class Module(ModuleManager.BaseModule):
                 data = utils.http.request(url)
                 feed = feedparser.parse(data.data)
                 feed["feed"] or ValueError("Feed info empty")
-            except:
-                self.log.warn("Failed to GET RSS for %s", [url],
-                    exc_info=True)
+            except e:
+                self.log.warn("Failed to GET RSS for %s: %s",
+                    [url, str(e)])
                 return
 
             feed_title = feed["feed"]["title"]
