@@ -36,7 +36,8 @@ class Module(ModuleManager.BaseModule):
 
         for url, channels in hooks.items():
             try:
-                feed = feedparser.parse(url)
+                data = utils.http.request(url)
+                feed = feedparser.parse(data.data)
             except:
                 feed = None
 
@@ -75,7 +76,8 @@ class Module(ModuleManager.BaseModule):
 
     def _check_url(self, url):
         try:
-            feed = feedparser.parse(url)
+            data = utils.http.request(url)
+            feed = feedparser.parse(data.data)
         except:
             feed = None
         if not feed or not feed["feed"]:
