@@ -23,15 +23,15 @@ class InvalidTimeoutException(Exception):
 @utils.export("channelset", {"setting": "ban-format",
     "help": "Set ban format ($n = nick, $u = username, $h = hostname)",
     "example": "*!$u@$h"})
-@utils.export("serverset", {"setting": "quiet-method",
-    "help": "Set this server's method of quieting users", "example": "qmode"})
+@utils.export("serverset", {"setting": "mute-method",
+    "help": "Set this server's method of muting users", "example": "qmode"})
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 
     @utils.hook("timer.unban")
     def _timer_unban(self, event):
         server = self.bot.get_server_by_id(event["server_id"])
-        if event["channel_name"] in server.channels:
+        if server and event["channel_name"] in server.channels:
             channel = server.channels.get(event["channel_name"])
             channel.send_unban(event["hostmask"])
 
@@ -313,29 +313,28 @@ class Module(ModuleManager.BaseModule):
         """
         event["target"].send_part()
 
-    def _quiet_method(self, server, user):
+    def _mute_method(self, server, user):
         mask = "*!*@%s" % user.hostname
-        quiet_method = server.get_setting("quiet-method", "qmode").lower()
+        mute_method = server.get_setting("mute-method", "qmode").lower()
 
-        if quiet_method == "qmode":
+        if mute_method == "qmode":
             return "q", mask
-        elif quiet_method == "insp":
+        elif mute_method == "insp":
             return "b", "m:%s" % mask
-        elif quiet_method == "unreal":
+        elif mute_method == "unreal":
             return "b", "~q:%s" % mask
-        raise ValueError("Unknown quiet-method '%s'" % quiet_method)
+        raise ValueError("Unknown mute-method '%s'" % mute_method)
 
-
-    @utils.hook("received.command.quiet")
-    @utils.hook("received.command.unquiet")
+    @utils.hook("received.command.mute", usage="<nickname> [duration]")
+    @utils.hook("received.command.unmute", usage="<nickname>")
     @utils.kwarg("min_args", 1)
     @utils.kwarg("channel-only", True)
     @utils.kwarg("require-mode", "o")
-    @utils.kwarg("require-access", "quiet")
-    @utils.kwarg("help", "Quiet a given user")
+    @utils.kwarg("require-access", "mute")
+    @utils.kwarg("help", "Mute a given user")
     @utils.kwarg("usage", "<nickname>")
-    def _do_quiet(self, event):
-        add = event.name == "received.command.quiet"
+    def _mute(self, event):
+        add = event.name == "received.command.mute"
 
         target_name = event["args_split"][0]
         if not event["server"].has_user(target_name):
@@ -345,6 +344,23 @@ class Module(ModuleManager.BaseModule):
         if not event["target"].has_user(target_user):
             raise utils.EventError("No such user")
 
-        mode, mask = self._quiet_method(event["server"], target_user)
+        mode, mask = self._mute_method(event["server"], target_user)
+
+        if add and len(event["args_split"]) > 1:
+            duration = utils.from_pretty_time(event["args_split"][1])
+            if duration == None:
+                raise utils.EventError("Invalid duration")
+
+            self.timers.add_persistent("unmute", duration,
+                server_id=event["server"].id, channel_name=event["target"].name,
+                mode=mode, mask=mask)
+
         mode_modifier = "+" if add else "-"
         event["target"].send_mode("%s%s" % (mode_modifier, mode), [mask])
+
+    @utils.hook("timer.unmute")
+    def _timer_unmute(self, event):
+        server = self.bot.get_server_by_id(event["server_id"])
+        if server and event["channel_name"] in server.channels:
+            channel = server.channels.get(event["channel_name"])
+            channel.send_mode("-%s" % event["mode"], [event["mask"]])
