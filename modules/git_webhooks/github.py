@@ -261,7 +261,7 @@ class GitHub(object):
                 new_commits = []
                 for commit in commits.data:
                     if seen_before:
-                        new_commits.append({"id": commit["ref"],
+                        new_commits.append({"id": commit["sha"],
                             "message": commit["commit"]["message"]})
                     elif commit["sha"] == data["before"]:
                         seen_before = True
