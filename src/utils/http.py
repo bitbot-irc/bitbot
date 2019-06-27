@@ -15,11 +15,15 @@ SOUP_CONTENT_TYPES = ["text/html", "text/xml", "application/xml"]
 class HTTPException(Exception):
     pass
 class HTTPTimeoutException(HTTPException):
-    pass
+    def __init__(self):
+        Exception.__init__(self, "HTTP request timed out")
 class HTTPParsingException(HTTPException):
+    def __init__(self):
+        Exception.__init__(self, "HTTP parsing failed")
     pass
 class HTTPWrongContentTypeException(HTTPException):
-    pass
+    def __init__(self):
+        Exception.__init__(self, "HTTP request gave wrong content type")
 
 def throw_timeout():
     raise HTTPTimeoutException()
