@@ -215,7 +215,8 @@ class GitHub(object):
                     % (author, forced_str, hash_colored, branch, message, url))
         else:
             outputs.append("%s %spushed %d commits to %s - %s"
-                % (author, forced_str, len(commits), branch, range_url))
+                % (author, forced_str, len(commits), branch,
+                self._short_url(range_url)))
 
         return outputs
 
