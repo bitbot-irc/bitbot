@@ -4,7 +4,9 @@ from . import colors
 COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
+
 PR_COMMIT_RANGE_URL = "https://github.com/%s/pull/%s/files/%s..%s"
+PR_COMMIT_URL = "https://github.com/%s/pull/%s/commits/%s"
 
 DEFAULT_EVENT_CATEGORIES = [
     "ping", "code", "pr", "issue", "repo"
@@ -188,9 +190,10 @@ class GitHub(object):
             COMMIT_RANGE_URL % (full_name, first_id, last_id))
 
         return self._format_push(branch, author, data["commits"],
-            data["forced"], range_url)
+            data["forced"], COMMIT_URL % (full_name, "%s"), range_url)
 
-    def _format_push(self, branch, author, commits, forced, range_url):
+    def _format_push(self, branch, author, commits, forced, single_url,
+            range_url):
         outputs = []
 
         forced_str = ""
@@ -205,7 +208,7 @@ class GitHub(object):
                 hash = commit["id"]
                 hash_colored = utils.irc.color(self._short_hash(hash), colors.COLOR_ID)
                 message = commit["message"].split("\n")[0].strip()
-                url = self._short_url(COMMIT_URL % (full_name, hash))
+                url = self._short_url(single_url % hash)
 
                 outputs.append(
                     "%s %spushed %s to %s: %s - %s"
@@ -264,9 +267,10 @@ class GitHub(object):
 
                 range_url = PR_COMMIT_RANGE_URL % (full_name, raw_number,
                     data["before"], data["after"])
+                single_url = PR_COMMIT_URL % (full_name, raw_number, "%s")
                 if new_commits:
                     return self._format_push(number, author, new_commits, False,
-                        range_url)
+                        single_url, range_url)
 
         pr_title = data["pull_request"]["title"]
         url = self._short_url(data["pull_request"]["html_url"])
