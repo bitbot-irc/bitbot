@@ -175,9 +175,6 @@ class GitHub(object):
     def _flat_unique(self, commits, key):
         return set(itertools.chain(*(commit[key] for commit in commits)))
 
-    def _commit_message(self, message):
-        return message.split("\n")[0].strip()
-
     def push(self, full_name, data):
         outputs = []
         branch = data["ref"].split("/", 2)[2]
@@ -195,7 +192,7 @@ class GitHub(object):
             for commit in data["commits"]:
                 hash = commit["id"]
                 hash_colored = utils.irc.color(self._short_hash(hash), colors.COLOR_ID)
-                message = self._commit_message(commit["message"])
+                message = commit["message"].split("\n")[0].strip()
                 url = self._short_url(COMMIT_URL % (full_name, hash))
 
                 outputs.append(
@@ -228,8 +225,6 @@ class GitHub(object):
         branch = data["pull_request"]["base"]["ref"]
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
 
-        title = data["pull_request"]["title"]
-
         if action == "opened":
             action_desc = "requested %s merge into %s" % (number,
                 colored_branch)
@@ -245,12 +240,12 @@ class GitHub(object):
             action_desc = "marked %s ready for review" % number
         elif action == "synchronize":
             action_desc = "committed to %s" % number
-            title = self._commit_message(data["commit"]["message"])
 
+        pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["pull_request"]["html_url"])
         return ["[PR] %s %s: %s - %s" % (
-            author, action_desc, title, url)]
+            author, action_desc, pr_title, url)]
 
     def pull_request_review(self, full_name, data):
         if not data["action"] == "submitted":
