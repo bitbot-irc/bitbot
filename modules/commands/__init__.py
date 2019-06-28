@@ -62,8 +62,7 @@ class Module(ModuleManager.BaseModule):
 
     def is_highlight(self, server, s):
         if s and s[-1] in [":", ","]:
-            s = s[:-1]
-        return server.is_own_nickname(s)
+            return server.is_own_nickname(s[:-1])
 
     def _get_aliases(self, server):
         return server.get_setting("command-aliases", {})
