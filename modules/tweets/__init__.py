@@ -14,6 +14,7 @@ import tweepy
 _bot = None
 _events = None
 _exports = None
+_log = None
 
 REGEX_TWITTERURL = re.compile(
     "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)
@@ -25,6 +26,7 @@ class BitBotStreamListener(tweepy.StreamListener):
     def on_status(self, status):
         _bot.trigger(lambda: self._on_status(status))
     def _on_status(self, status):
+        _log.debug("Got tweet from stream: %s", [status])
         given_username = status.user.screen_name.lower()
 
         follows = []
@@ -51,9 +53,11 @@ class Module(ModuleManager.BaseModule):
         global _bot
         global _events
         global _exports
+        global _log
         _bot = self.bot
         _events = self.events
         _exports = self.exports
+        _log = self.log
         self._start_stream()
 
     def unload(self):
