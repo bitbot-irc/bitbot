@@ -26,7 +26,7 @@ class Module(ModuleManager.BaseModule):
     _name = "Webhooks"
 
     def on_load(self):
-        self._github = github.GitHub()
+        self._github = github.GitHub(self.log)
         self._gitea = gitea.Gitea()
 
     @utils.hook("api.post.github")

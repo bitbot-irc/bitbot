@@ -83,6 +83,9 @@ CHECK_RUN_CONCLUSION = {
 CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 class GitHub(object):
+    def __init__(self, log):
+        self.log = log
+
     def is_private(self, data, headers):
         if "repository" in data:
             return data["repository"]["private"]
@@ -147,7 +150,9 @@ class GitHub(object):
             return self.membership(organisation, data)
         elif event == "watch":
             return self.watch(data)
+
     def _short_url(self, url):
+        self.log.debug("git.io shortening: %s" % url)
         try:
             page = utils.http.request("https://git.io", method="POST",
                 post_data={"url": url})
