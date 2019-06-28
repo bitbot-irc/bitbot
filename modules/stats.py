@@ -123,11 +123,3 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("api.get.modules")
     def modules_api(self, event):
         return list(self.bot.modules.modules.keys())
-
-    @utils.hook("received.command.caps")
-    def capabilities(self, event):
-        """
-        :help: List negotiated IRCv3 capabilities
-        """
-        event["stdout"].write("IRCv3 capabilities: %s" %
-            ", ".join(event["server"].agreed_capabilities))
