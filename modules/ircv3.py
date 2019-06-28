@@ -1,5 +1,7 @@
 from src import ModuleManager, utils
 
+@utils.export("serverset", utils.BoolSetting("ircv3-stats",
+    "Whether or not to include the current server in IRCv3 statistics"))
 class Module(ModuleManager.BaseModule):
     _name = "IRCv3"
 
