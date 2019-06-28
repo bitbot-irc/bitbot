@@ -8,16 +8,12 @@ from src import ModuleManager, utils
 URL_VIRUSTOTAL = "https://www.virustotal.com/vtapi/v2/url/report"
 RE_URL = re.compile(r"https?://\S+", re.I)
 
-@utils.export("channelset", {"setting": "check-urls",
-    "help": "Enable/Disable automatically checking for malicious URLs",
-     "validate": utils.bool_or_none, "example": "on"})
-@utils.export("serverset", {"setting": "check-urls",
-    "help": "Enable/Disable automatically checking for malicious URLs",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "check-urls-kick",
-    "help": "Enable/Disable automatically kicking users that "
-    "send malicious URLs", "validate": utils.bool_or_none,
-    "example": "on"})
+@utils.export("channelset", utils.BoolSetting("check-urls",
+    "Enable/Disable automatically checking for malicious URLs"))
+@utils.export("serverset", utils.BoolSetting("check-urls",
+    "Enable/Disable automatically checking for malicious URLs"))
+@utils.export("channelset", utils.BoolSetting("check-urls-kick",
+    "Enable/Disable automatically kicking users that send malicious URLs"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.message.channel")
     def message(self, event):

@@ -6,12 +6,11 @@ LOWHIGH = {
     "low": "v",
     "high": "o"
 }
-@utils.export("channelset", {"setting": "mode-low",
-    "help": "Set which channel mode is considered to be 'low' access",
-    "example": "v"})
-@utils.export("channelset", {"setting": "mode-high",
-    "help": "Set which channel mode is considered to be 'high' access",
-    "example": "o"})
+
+@utils.export("channelset", utils.Setting("mode-low",
+    "Set which channel mode is considered to be 'low' access", example="v"))
+@utils.export("channelset", utils.Setting("mode-high",
+    "Set which channel mode is considered to be 'high' access", example="o"))
 class Module(ModuleManager.BaseModule):
     def _check_command(self, event, channel, require_mode):
         if event["is_channel"] and require_mode:

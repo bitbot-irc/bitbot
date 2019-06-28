@@ -1,7 +1,7 @@
 #--depends-on commands
 #--depends-on config
 
-import datetime
+import datetime, typing
 from src import ModuleManager, utils
 
 DATE_YEAR_FORMAT = "%Y-%m-%d"
@@ -30,20 +30,22 @@ def _format(years, dt):
         return _format_year(dt)
     else:
         return _format_noyear(dt)
-def _check(s):
-    parsed = _parse(s)
-    if parsed:
-        years, parsed = parsed
-        return _format(years, parsed)
-    return None
+
+class BirthdaySetting(utils.Setting):
+    def parse(self, value: str) -> typing.Any:
+        parsed = _parse(value)
+        if parsed:
+            years, parsed = parsed
+            return _format(years, parsed)
+        return None
 
 def _apostrophe(nickname):
     if nickname[-1].lower() == "s":
         return "%s'" % nickname
     return "%s's" % nickname
 
-@utils.export("set", {"setting": "birthday", "help": "Set your birthday",
-    "validate": _check, "example": "1995-09-15"})
+@utils.export("set", BirthdaySetting("birthday", "Set your birthday",
+    example="1995-09-15"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.birthday")
     def birthday(self, event):

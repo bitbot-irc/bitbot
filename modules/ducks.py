@@ -9,15 +9,12 @@ NO_DUCK = "There was no duck!"
 
 DEFAULT_MIN_MESSAGES = 100
 
-@utils.export("channelset", {"setting": "ducks-enabled",
-    "help": "Whether or not to spawn ducks", "validate": utils.bool_or_none,
-    "example": "on"})
-@utils.export("channelset", {"setting": "ducks-min-messages",
-    "help": "Minimum messages between ducks spawning",
-    "validate": utils.int_or_none, "example": "50"})
-@utils.export("channelset", {"setting": "ducks-kick",
-    "help": "Whether or not to kick someone talking to non-existent ducks",
-    "validate": utils.bool_or_none, "example": "on"})
+@utils.export("channelset", utils.BoolSetting("ducks-enabled",
+    "Whether or not to spawn ducks"))
+@utils.export("channelset", utils.IntSetting("ducks-min-messages",
+    "Minimum messages between ducks spawning", example="50"))
+@utils.export("channelset", utils.BoolSetting("ducks-kick",
+    "Whether or not to kick someone talking to non-existent ducks"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.channel")
     def new_channel(self, event):

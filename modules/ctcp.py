@@ -4,9 +4,8 @@ import datetime
 from src import IRCBot, ModuleManager, utils
 
 
-@utils.export("serverset", {"setting": "ctcp-responses",
-    "help": "Set whether I respond to CTCPs on this server",
-    "validate": utils.bool_or_none, "example": "on"})
+@utils.export("serverset", utils.BoolSetting("ctcp-responses",
+    "Set whether I respond to CTCPs on this server"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.ctcp.request.version")
     def ctcp_version(self, event):

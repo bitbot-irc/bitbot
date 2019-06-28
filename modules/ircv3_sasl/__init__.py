@@ -1,6 +1,6 @@
 #--depends-on config
 
-import base64, hashlib, hmac, uuid
+import base64, hashlib, hmac, typing, uuid
 from src import ModuleManager, utils
 from . import scram
 
@@ -13,16 +13,16 @@ USERPASS_MECHANISMS = [
     "PLAIN"
 ]
 
-def _validate(s):
-    mechanism, _, arguments = s.partition(" ")
-    return {"mechanism": mechanism, "args": arguments}
+class SaslSetting(utils.Setting):
+    def parse(self, value: str) -> typing.Any:
+        mechanism, _, arguments = value.partition(" ")
+        return {"mechanism": mechanism, "args": arguments}
 
-@utils.export("serverset", {"setting": "sasl",
-    "help": "Set the sasl username/password for this server",
-    "validate": _validate, "example": "PLAIN BitBot:hunter2"})
-@utils.export("serverset", {"setting": "sasl-hard-fail",
-    "help": "Set whether a SASL failure should cause a disconnect",
-    "validate": utils.bool_or_none, "example": "on"})
+@utils.export("serverset", SaslSetting("sasl",
+    "Set the sasl username/password for this server",
+    example="PLAIN BitBot:hunter2"))
+@utils.export("serverset", utils.BoolSetting("sasl-hard-fail",
+    "Set whether a SASL failure should cause a disconnect"))
 class Module(ModuleManager.BaseModule):
     def _best_userpass_mechanism(self, mechanisms):
         for potential_mechanism in USERPASS_MECHANISMS:

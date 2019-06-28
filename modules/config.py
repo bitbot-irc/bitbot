@@ -84,19 +84,18 @@ class Module(ModuleManager.BaseModule):
             if setting_info:
                 value = target.get_setting(require_setting, None)
                 if value == None:
-                    example = setting_info.get("example", "<value>")
+                    example = setting_info.exaple or "<value>"
                     return "Please set %s, e.g.: %sconfig %s %s %s" % (
                         require_setting, event["command_prefix"], context[0],
                         require_setting, example)
 
     def _get_export_setting(self, context):
         settings = self.exports.get_all(context)
-        return {setting["setting"].lower(): setting for setting in settings}
+        return {setting.name.lower(): setting for setting in settings}
 
     def _config(self, export_settings, target, setting, value=None):
         if not value == None:
-            validation = export_settings[setting].get("validate", lambda x: x)
-            validated_value = validation(value)
+            validated_value = export_settings[setting].parse(value)
             if not validated_value == None:
                 target.set_setting(setting, validated_value)
                 return ConfigResult(ConfigResults.Changed, validated_value)
@@ -181,7 +180,7 @@ class Module(ModuleManager.BaseModule):
             try:
                 result = self._config(export_settings, target, setting, value)
             except ConfigInvalidValue:
-                example = export_settings[setting].get("example", None)
+                example = export_settings[setting].example
                 if not example == None:
                     raise utils.EventError("Invalid value. Example: %s" %
                         example)

@@ -7,8 +7,8 @@ from src import ModuleManager, utils
 
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
-@utils.export("set", {"setting": "lastfm", "help": "Set last.fm username",
-    "example": "jesopo"})
+@utils.export("set", utils.Setting("lastfm", "Set last.fm username",
+    example="jesopo"))
 class Module(ModuleManager.BaseModule):
     _name = "last.fm"
 

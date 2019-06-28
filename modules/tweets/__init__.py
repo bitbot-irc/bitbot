@@ -42,9 +42,8 @@ class BitBotStreamListener(tweepy.StreamListener):
             _events.on("send.stdout").call(target=channel,
                 module_name="Tweets", server=server, message=tweet)
 
-@utils.export("channelset", {"setting": "auto-tweet",
-    "help": "Enable/disable automatically getting tweet info",
-    "validate": utils.bool_or_none, "example": "on"})
+@utils.export("channelset", utils.BoolSetting("auto-tweet",
+    "Enable/disable automatically getting tweet info"))
 class Module(ModuleManager.BaseModule):
     _stream = None
     def on_load(self):

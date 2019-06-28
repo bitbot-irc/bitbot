@@ -5,16 +5,12 @@
 import hashlib, re, urllib.parse
 from src import EventManager, ModuleManager, utils
 
-@utils.export("channelset", {"setting": "auto-title",
-    "help": "Disable/Enable automatically getting info titles from URLs",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "title-shorten",
-    "help": "Enable/disable shortening URLs when getting their title",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "auto-title-first",
-    "help": ("Enable/disable showing who first posted a URL that was "
-        "auto-titled"),
-    "validate": utils.bool_or_none, "exaple": "on"})
+@utils.export("channelset", utils.BoolSetting("auto-title",
+    "Disable/Enable automatically getting info titles from URLs"))
+@utils.export("channelset", utils.BoolSetting("title-shorten",
+    "Enable/disable shortening URLs when getting their title"))
+@utils.export("channelset", utils.BoolSetting("auto-title-first",
+    "Enable/disable showing who first posted a URL that was auto-titled"))
 class Module(ModuleManager.BaseModule):
     def _url_hash(self, url):
         return "sha256:%s" % hashlib.sha256(url.lower().encode("utf8")

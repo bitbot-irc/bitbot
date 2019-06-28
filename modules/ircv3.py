@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
         supporting_servers = []
 
         for server in self.bot.servers.values():
-            if not server.connection_params.hostname == "localhost":
+            if server.get_setting("ircv3-stats", False):
                 if spec in server.server_capabilities:
                     port = str(server.connection_params.port)
                     if server.connection_params.tls:

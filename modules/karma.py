@@ -10,12 +10,10 @@ KARMA_DELAY_SECONDS = 3
 
 REGEX_KARMA = re.compile(r"^(.*)(\+{2}|\-{2})$")
 
-@utils.export("channelset", {"setting": "karma-verbose",
-    "help": "Enable/disable automatically responding to karma changes",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("serverset", {"setting": "karma-nickname-only",
-    "help": "Enable/disable karma being for nicknames only",
-    "validate": utils.bool_or_none, "example": "on"})
+@utils.export("channelset", utils.BoolSetting("karma-verbose",
+    "Enable/disable automatically responding to karma changes"))
+@utils.export("serverset", utils.BoolSetting("karma-nickname-only",
+    "Enable/disable karma being for nicknames only"))
 class Module(ModuleManager.BaseModule):
     def _karma_str(self, karma):
         karma_str = str(karma)

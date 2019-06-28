@@ -110,12 +110,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         return
 
-@utils.export("botset", {"setting": "rest-api",
-    "help": "Enable/disable REST API",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("botset", {"setting": "rest-api-minify",
-    "help": "Enable/disable REST API minifying",
-    "validate": utils.bool_or_none, "example": "on"})
+@utils.export("botset",
+    utils.BoolSetting("rest-api", "Enable/disable REST API"))
+@utils.export("botset",
+    utils.BoolSetting("rest-api", "Enable/disable REST API minifying"))
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         global _bot

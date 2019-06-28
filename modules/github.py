@@ -22,15 +22,13 @@ REGEX_REF = re.compile(r"(?:\S+(?:\/\S+)?)?#\d+")
 API_ISSUE_URL = "https://api.github.com/repos/%s/%s/issues/%s"
 API_PULL_URL = "https://api.github.com/repos/%s/%s/pulls/%s"
 
-@utils.export("channelset", {"setting": "github-default-repo",
-    "help": "Set the default github repo for the current channel",
-    "example": "jesopo/bitbot"})
-@utils.export("channelset", {"setting": "auto-github",
-    "help": "Enable/disable automatically getting github issue/PR info",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "auto-github-cooldown",
-    "help": "Set amount of seconds between auto-github duplicates",
-    "validate": utils.int_or_none, "example": "300"})
+@utils.export("channelset", utils.Setting("github-default-repo",
+    "Set the default github repo for the current channel",
+    example="jesopo/bitbot"))
+@utils.export("channelset", utils.Setting("auto-github",
+    "Enable/disable automatically getting github issue/PR info"))
+@utils.export("channelset", utils.IntSetting("auto-github-cooldown",
+    "Set amount of seconds between auto-github duplicates", example="300"))
 class Module(ModuleManager.BaseModule):
     def _parse_ref(self, channel, ref):
         repo, _, number = ref.rpartition("#")

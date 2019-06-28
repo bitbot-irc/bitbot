@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on permissions
 
-import re, string, typing
+import re, string, traceback, typing
 from src import EventManager, ModuleManager, utils
 from . import outs
 
@@ -20,25 +20,28 @@ def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
         return s.upper()
 
-@utils.export("channelset", {"setting": "command-prefix",
-    "help": "Set the command prefix used in this channel", "example": "!"})
-@utils.export("serverset", {"setting": "command-prefix",
-    "help": "Set the command prefix used on this server", "example": "!"})
-@utils.export("serverset", {"setting": "command-method",
-    "help": "Set the method used to respond to commands",
-    "validate": _command_method_validate, "example": "NOTICE"})
-@utils.export("channelset", {"setting": "command-method",
-    "help": "Set the method used to respond to commands",
-    "validate": _command_method_validate, "example": "NOTICE"})
-@utils.export("channelset", {"setting": "hide-prefix",
-    "help": "Disable/enable hiding prefix in command reponses",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "commands",
-    "help": "Disable/enable responding to commands in-channel",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "prefixed-commands",
-    "help": "Disable/enable responding to prefixed commands in-channel",
-    "validate": utils.bool_or_none, "example": "on"})
+class CommandMethodSetting(utils.Setting):
+    example = "NOTICE"
+    def parse(self, value: str) -> typing.Any:
+        upper = value.upper()
+        if upper in COMMAND_METHODS:
+            return upper
+        return None
+
+@utils.export("channelset", utils.Setting("command-prefix",
+    "Set the command prefix used in this channel", example="!"))
+@utils.export("serverset", utils.Setting("command-prefix",
+    "Set the command prefix used on this server", example="!"))
+@utils.export("serverset", CommandMethodSetting("command-method",
+    "Set the method used to respond to commands"))
+@utils.export("channelset", CommandMethodSetting("command-method",
+    "Set the method used to respond to commands"))
+@utils.export("channelset", utils.BoolSetting("hide-prefix",
+    "Disable/enable hiding prefix in command reponses"))
+@utils.export("channelset", utils.BoolSetting("commands",
+    "Disable/enable responding to commands in-channel"))
+@utils.export("channelset", utils.BoolSetting("prefixed-commands",
+    "Disable/enable responding to prefixed commands in-channel"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.user")
     @utils.hook("new.channel")

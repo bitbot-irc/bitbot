@@ -13,15 +13,12 @@ DEFAULT_EVENT_CATEGORIES = [
     "ping", "code", "pr", "issue", "repo"
 ]
 
-@utils.export("channelset", {"setting": "git-prevent-highlight",
-    "help": "Enable/disable preventing highlights",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "git-hide-organisation",
-    "help": "Hide/show organisation in repository names",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "git-hide-prefix",
-    "help": "Hide/show command-like prefix on git webhook outputs",
-    "validate": utils.bool_or_none, "example": "on"})
+@utils.export("channelset", utils.BoolSetting("git-prevent-highlight",
+    "Enable/disable preventing highlights"))
+@utils.export("channelset", utils.BoolSetting("git-hide-organisation",
+    "Hide/show organisation in repository names"))
+@utils.export("channelset", utils.BoolSetting("git-hide-prefix",
+    "Hide/show command-like prefix on git webhook outputs"))
 class Module(ModuleManager.BaseModule):
     _name = "Webhooks"
 

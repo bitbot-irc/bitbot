@@ -138,21 +138,6 @@ def parse_number(s: str) -> str:
         raise ValueError("Unknown unit '%s' given to parse_number" % unit)
     return str(number)
 
-IS_TRUE = ["true", "yes", "on", "y"]
-IS_FALSE = ["false", "no", "off", "n"]
-def bool_or_none(s: str) -> typing.Optional[bool]:
-    s = s.lower()
-    if s in IS_TRUE:
-        return True
-    elif s in IS_FALSE:
-        return False
-    return None
-def int_or_none(s: str) -> typing.Optional[int]:
-    stripped_s = s.lstrip("0")
-    if stripped_s.isdigit():
-        return int(stripped_s)
-    return None
-
 def prevent_highlight(nickname: str) -> str:
     return nickname[0]+"\u200c"+nickname[1:]
 
@@ -243,3 +228,32 @@ def is_ip(s: str) -> bool:
 
 def is_main_thread() -> bool:
     return threading.current_thread() is threading.main_thread()
+
+class Setting(object):
+    def __init__(self, name: str, help: str=None, example: str=None):
+        self.name = name
+        self.help = help
+        self.example = example
+    def parse(self, value: str) -> typing.Any:
+        return value
+
+SETTING_TRUE = ["true", "yes", "on", "y"]
+SETTING_FALSE = ["false", "no", "off", "n"]
+class BoolSetting(Setting):
+    example = "on"
+    def parse(self, value: str) -> typing.Any:
+        value_lower = value.lower()
+        if value_lower in SETTING_TRUE:
+            return True
+        elif value_lower in SETTING_FALSE:
+            return False
+        return None
+
+class IntSetting(Setting):
+    example = "10"
+    def parse(self, value: str) -> typing.Any:
+        stripped = value.lstrip("0")
+        if stripped.isdigit():
+            return int(stripped)
+        return None
+

@@ -10,21 +10,17 @@ class UserNotFoundException(Exception):
 class InvalidTimeoutException(Exception):
     pass
 
-@utils.export("channelset", {"setting": "highlight-spam-threshold",
-    "help": "Set the number of nicknames in a message that qualifies as spam",
-     "validate": utils.int_or_none, "example": "10"})
-@utils.export("channelset", {"setting": "highlight-spam-protection",
-    "help": "Enable/Disable highlight spam protection",
-    "validate": utils.bool_or_none, "example": "on"})
-@utils.export("channelset", {"setting": "highlight-spam-ban",
-    "help": "Enable/Disable banning highlight spammers "
-    "instead of just kicking", "validate": utils.bool_or_none,
-    "example": "on"})
-@utils.export("channelset", {"setting": "ban-format",
-    "help": "Set ban format ($n = nick, $u = username, $h = hostname)",
-    "example": "*!$u@$h"})
-@utils.export("serverset", {"setting": "mute-method",
-    "help": "Set this server's method of muting users", "example": "qmode"})
+@utils.export("channelset", utils.IntSetting("highlight-spam-threshold",
+    "Set the number of nicknames in a message that qualifies as spam"))
+@utils.export("channelset", utils.BoolSetting("highlight-spam-protection",
+    "Enable/Disable highlight spam protection"))
+@utils.export("channelset", utils.BoolSetting("highlight-spam-ban",
+    "Enable/Disable banning highlight spammers instead of just kicking"))
+@utils.export("channelset", utils.Setting("ban-format",
+    "Set ban format ($n = nick, $u = username, $h = hostname)",
+    example="*!$u@$h"))
+@utils.export("serverset", utils.Setting("mute-method",
+    "Set this server's method of muting users", example="qmode"))
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 

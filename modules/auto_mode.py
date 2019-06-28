@@ -5,9 +5,8 @@
 
 from src import ModuleManager, utils
 
-@utils.export("channelset", {"setting": "automode",
-    "help": "Disable/Enable automode", "validate": utils.bool_or_none,
-    "example": "on"})
+@utils.export("channelset", utils.BoolSetting(
+    "automode", "Disable/Enable automode"))
 class Module(ModuleManager.BaseModule):
     _name = "AutoMode"
 

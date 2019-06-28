@@ -4,9 +4,8 @@
 import datetime
 from src import EventManager, ModuleManager, utils
 
-@utils.export("botset", {"setting": "print-motd",
-    "help": "Set whether I print /motd", "validate": utils.bool_or_none,
-    "example": "on"})
+@utils.export("botset",
+    utils.BoolSetting("print-motd", "Set whether I print /motd"))
 class Module(ModuleManager.BaseModule):
     def _print(self, event):
         self.bot.log.info("%s%s | %s", [

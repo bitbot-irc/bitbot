@@ -9,9 +9,8 @@ WORD_DELIM = "\"'…~*`"
 WORD_START = WORD_DELIM+"“({<"
 WORD_STOP = WORD_DELIM+"”)}>;:.,!?"
 
-@utils.export("set", {"setting": "word-tracking",
-    "help": "Disable/enable tracking your wordcounts",
-    "validate": utils.bool_or_none, "example": "on"})
+@utils.export("set", utils.BoolSetting(
+    "word-tracking", "Disable/enable tracking your wordcounts"))
 class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
         if not user.get_setting("word-tracking", True):
