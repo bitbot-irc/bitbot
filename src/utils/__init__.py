@@ -257,3 +257,15 @@ class IntSetting(Setting):
             return int(stripped)
         return None
 
+class OptionsSetting(Setting):
+    def __init__(self, name: str, options: typing.List[str], help: str=None,
+            example: str=None):
+        self._options = options
+        Setting.__init__(name, help, example)
+
+    def parse(self, value: str) -> typing.Any:
+        value_lower = value.lower()
+        for option in self._options:
+            if option.lower() == value_lower:
+                return option
+        return None

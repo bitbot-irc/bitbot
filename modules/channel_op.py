@@ -19,8 +19,9 @@ class InvalidTimeoutException(Exception):
 @utils.export("channelset", utils.Setting("ban-format",
     "Set ban format ($n = nick, $u = username, $h = hostname)",
     example="*!$u@$h"))
-@utils.export("serverset", utils.Setting("mute-method",
-    "Set this server's method of muting users", example="qmode"))
+@utils.export("serverset", utils.OptionsSetting("mute-method",
+    ["qmode", "insp", "unreal"], "Set this server's method of muting users",
+    example="qmode"))
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 
