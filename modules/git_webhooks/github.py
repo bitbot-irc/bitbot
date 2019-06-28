@@ -191,7 +191,7 @@ class GitHub(object):
             range_url = self._short_url(
                 COMMIT_RANGE_URL % (full_name, first_id, last_id))
 
-        single_url = COMMIT_URL % (full_name, "%s"),
+        single_url = COMMIT_URL % (full_name, "%s")
 
         return self._format_push(branch, author, data["commits"],
             data["forced"], single_url, range_url)
