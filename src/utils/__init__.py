@@ -230,7 +230,7 @@ def is_main_thread() -> bool:
     return threading.current_thread() is threading.main_thread()
 
 class Setting(object):
-    example: str = None
+    example: typing.Optional[str] = None
     def __init__(self, name: str, help: str=None, example: str=None):
         self.name = name
         self.help = help
@@ -269,17 +269,26 @@ class IntSetting(Setting):
 
 class OptionsSetting(Setting):
     def __init__(self, name: str, options: typing.List[str], help: str=None,
-            example: str=None):
+            example: str=None,
+            options_factory: typing.Callable[[], typing.List[str]]=None):
         self._options = options
+        self._options_factory = options_factory
         Setting.__init__(self, name, help, example)
+
+    def _get_options(self):
+        if not self._options_factory == None:
+            return self._options_factory()
+        else:
+            return self._options
 
     def parse(self, value: str) -> typing.Any:
         value_lower = value.lower()
-        for option in self._options:
+        for option in self._get_options():
             if option.lower() == value_lower:
                 return option
         return None
 
     def _format_example(self):
-        options = ["'%s'" % option for option in self._options]
-        return "Options: %s" % ", ".join(options)
+        options = self._get_options()
+        options_str = ["'%s'" % option for option in options]
+        return "Options: %s" % ", ".join(options_str)

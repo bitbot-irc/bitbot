@@ -6,16 +6,22 @@ from src import ModuleManager, utils
 
 URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
 
-@utils.export("serverset", utils.Setting("url-shortener",
-    "Set URL shortener service", example="bitly"))
-@utils.export("botset", utils.Setting("url-shortener",
-    "Set URL shortener service", example="bitly"))
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         self.exports.add("shorturl", self._shorturl)
         self.exports.add("shorturl-any", self._shorturl_any)
 
         self.exports.add("shorturl-s-bitly", self._bitly)
+
+        setting = utils.OptionsSetting("url-shortener",
+            "Set URL shortener service",
+            options_factory=self._shorturl_options_factory)
+        self.exports.add("serverset", setting)
+        self.exports.add("botset", setting)
+
+    def _shorturl_options_factory(self):
+        shorteners = self.exports.find("shorturl-s-")
+        return [s.replace("shorturl-s-", "", 1) for s in shorteners]
 
     def _get_shortener(self, name):
         return self.exports.get_one("shorturl-s-%s" % name, None)
