@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
 
         self.exports.add("shorturl-s-bitly", self._bitly)
 
-        setting = utils.OptionsSetting("url-shortener",
+        setting = utils.OptionsSetting("url-shortener", [],
             "Set URL shortener service",
             options_factory=self._shorturl_options_factory)
         self.exports.add("serverset", setting)
