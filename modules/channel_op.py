@@ -20,8 +20,7 @@ class InvalidTimeoutException(Exception):
     "Set ban format ($n = nick, $u = username, $h = hostname)",
     example="*!$u@$h"))
 @utils.export("serverset", utils.OptionsSetting("mute-method",
-    ["qmode", "insp", "unreal"], "Set this server's method of muting users",
-    example="qmode"))
+    ["qmode", "insp", "unreal"], "Set this server's method of muting users"))
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 

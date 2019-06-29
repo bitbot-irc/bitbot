@@ -10,8 +10,8 @@ REQUIRES_IDENTIFY_INTERNAL = ("You need to be identified to use that command "
  "(/msg %s register | /msg %s identify)")
 
 @utils.export("serverset", utils.OptionsSetting("identity-mechanism",
-    ["internal", "ircv3-account"], "Set the identity mechanism for this server",
-    example="ircv3-account"))
+    ["internal", "ircv3-account"],
+    "Set the identity mechanism for this server"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.user")
     def new_user(self, event):

@@ -230,12 +230,22 @@ def is_main_thread() -> bool:
     return threading.current_thread() is threading.main_thread()
 
 class Setting(object):
+    example: str = None
     def __init__(self, name: str, help: str=None, example: str=None):
         self.name = name
         self.help = help
-        self.example = example
+        if not example == None:
+            self.example = example
     def parse(self, value: str) -> typing.Any:
         return value
+
+    def get_example(self):
+        if not self.example == None:
+            return "Example: %s" % self.example
+        else:
+            return self._format_example()
+    def _format_example(self):
+        return None
 
 SETTING_TRUE = ["true", "yes", "on", "y"]
 SETTING_FALSE = ["false", "no", "off", "n"]
@@ -269,3 +279,7 @@ class OptionsSetting(Setting):
             if option.lower() == value_lower:
                 return option
         return None
+
+    def _format_example(self):
+        options = ["'%s'" % option for option in self._options]
+        return "Options: %s" % ", ".join(options)
