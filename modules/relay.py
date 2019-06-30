@@ -1,4 +1,4 @@
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.server")
@@ -60,6 +60,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.kick")
     @utils.hook("formatted.quit")
     @utils.hook("formatted.rename")
+    @utils.kwarg("priority", EventManager.PRIORITY_LOW)
     def formatted(self, event):
         if event["channel"]:
             self._relay(event, event["channel"])
