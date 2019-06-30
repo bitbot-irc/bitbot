@@ -29,12 +29,9 @@ class Module(ModuleManager.BaseModule):
 
             name_parts = []
             components = result["components"]
-            if "city" in components:
-                name_parts.append(components["city"])
-            if "state" in components:
-                name_parts.append(components["state"])
-            if "country" in components:
-                name_parts.append(components["country"])
+            for part in ["town", "city", "state", "country"]:
+                if part in components:
+                    name_parts.append(components[part])
 
             if not name_parts:
                 name_parts.append(result["formatted"])
