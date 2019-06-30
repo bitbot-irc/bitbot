@@ -32,7 +32,9 @@ class Module(ModuleManager.BaseModule):
                 if not other_channel.name == channel.name:
                     relay_prefix_channel = channel.name
 
-                relay_message = "[relay/%s%s] %s" % (str(event["server"]),
+                server_name = utils.irc.color(str(event["server"]),
+                    utils.consts.LIGHTBLUE)
+                relay_message = "[relay/%s%s] %s" % (server_name,
                     relay_prefix_channel, event["line"])
 
                 message = utils.irc.protocol.privmsg(other_channel.name,
