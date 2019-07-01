@@ -1,3 +1,7 @@
+#--depends-on commands
+#--depends-on format_activity
+#--depends-on permissions
+
 from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
