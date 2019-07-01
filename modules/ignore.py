@@ -70,7 +70,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Removed ignore for '%s'%s" %
                 (user.nickname, for_str))
 
-    @utils.hook("received.command.serverignore", in_args=1)
+    @utils.hook("received.command.serverignore", min_args=1)
     def server_ignore(self, event):
         """
         :permission: server-ignore
@@ -86,7 +86,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Now ignoring '%s' for %s" %
                 (command, str(event["server"])))
 
-    @utils.hook("received.command.serverunignore", in_args=1)
+    @utils.hook("received.command.serverunignore", min_args=1)
     def server_unignore(self, event):
         """
         :permission: server-unignore
