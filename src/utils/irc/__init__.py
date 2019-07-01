@@ -306,7 +306,7 @@ class Capability(object):
 
     def copy(self):
         return Capability(*self._caps, alias=self.alias,
-            depends_on=self.depends_on)
+            depends_on=self.depends_on[:])
 
     def on_ack(self, callback: typing.Callable[[], None]):
         self._on_ack_callbacks.append(callback)
