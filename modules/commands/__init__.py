@@ -427,7 +427,7 @@ class Module(ModuleManager.BaseModule):
             return "You do not have permission to do this"
 
     @utils.hook("check.command.is-channel")
-    def check_command_self(self, event):
+    def check_command_is_channel(self, event):
         if event["is_channel"]:
             return utils.consts.PERMISSION_FORCE_SUCCESS
         else:
