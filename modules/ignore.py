@@ -21,6 +21,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.private")
     @utils.hook("received.message.channel")
+    @utils.hook("received.notice.private")
+    @utils.hook("received.notice.channel")
     def message(self, event):
         if self._user_ignored(event["user"]):
             event.eat()
