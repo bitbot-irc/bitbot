@@ -425,3 +425,10 @@ class Module(ModuleManager.BaseModule):
             return utils.consts.PERMISSION_FORCE_SUCCESS
         else:
             return "You do not have permission to do this"
+
+    @utils.hook("check.command.is-channel")
+    def check_command_self(self, event):
+        if event["is_channel"]:
+            return utils.consts.PERMISSION_FORCE_SUCCESS
+        else:
+            return "This command can only be used in-channel"
