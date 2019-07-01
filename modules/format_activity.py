@@ -54,13 +54,13 @@ class Module(ModuleManager.BaseModule):
         self._event("notice.private", event["server"], line, None,
             parsed_line=event["line"])
 
-    @utils.hook("received.notice.channel", priority=EventManager.PRIORITY_HIGH)
+    @utils.hook("received.notice.channel")
     def channel_notice(self, event):
         self._channel_notice(event, event["user"].nickname, event["channel"])
     @utils.hook("send.notice.channel")
     def self_notice_channel(self, event):
         self._channel_notice(event, event["server"].nickname, event["channel"])
-    @utils.hook("received.notice.private", priority=EventManager.PRIORITY_HIGH)
+    @utils.hook("received.notice.private")
     def private_notice(self, event):
         self._private_notice(event, event["user"].nickname,
             event["server"].nickname)
@@ -112,7 +112,7 @@ class Module(ModuleManager.BaseModule):
     def self_nick(self, event):
         self._on_nick(event, event["server"].get_user(event["server"].nickname))
 
-    @utils.hook("received.server-notice", priority=EventManager.PRIORITY_HIGH)
+    @utils.hook("received.server-notice")
     def server_notice(self, event):
         line = "(server notice) %s" % event["message"]
         self._event("server-notice", event["server"], line, None)
