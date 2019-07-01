@@ -32,7 +32,7 @@ class Module(ModuleManager.BaseModule):
                 for url in urls:
                     if not url in hooks:
                         hooks[url] = []
-                    hooks[url].append(channel)
+                    hooks[url].append((server, channel))
 
         for url, channels in hooks.items():
             try:
@@ -47,7 +47,7 @@ class Module(ModuleManager.BaseModule):
             feed_title = feed["feed"]["title"]
             entry_formatted = {}
 
-            for channel in channels:
+            for server, channel in channels:
                 seen_ids = channel.get_setting("rss-seen-ids-%s" % url, [])
                 new_ids = []
                 valid = 0
