@@ -129,5 +129,8 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Unknown subcommand '%s'" % subcommand)
 
         if changed:
-            event["target"].set_setting("rss-hooks", rss_hooks)
+            if rss_hooks:
+                event["target"].set_setting("rss-hooks", rss_hooks)
+            else:
+                event["target"].del_setting("rss-hooks")
             event["stdout"].write(message)
