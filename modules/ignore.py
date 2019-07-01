@@ -92,6 +92,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("channel_only", True)
     @utils.kwarg("min_args", 1)
     @utils.kwarg("usage", "<nickname>")
+    @utils.kwarg("permission", "cignore")
     @utils.kwarg("require-mode", "o")
     @utils.kwarg("require-access", "cignore")
     def cignore(self, event):
