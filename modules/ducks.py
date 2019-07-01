@@ -45,7 +45,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("expect_output", False)
     @utils.kwarg("ignore_action", False)
     @utils.kwarg("command", "duck-trigger")
-    @utils.kwarg("patern", re.compile(".+"))
+    @utils.kwarg("pattern", re.compile(".+"))
     def channel_message(self, event):
         self._activity(event["target"])
 
