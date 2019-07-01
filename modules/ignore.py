@@ -1,7 +1,7 @@
 #--depends-on commands
 #--depends-on permissions
 
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def _user_ignored(self, user):
@@ -23,6 +23,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.message.channel")
     @utils.hook("received.notice.private")
     @utils.hook("received.notice.channel")
+    @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
     def message(self, event):
         if self._user_ignored(event["user"]):
             event.eat()
