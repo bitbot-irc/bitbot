@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
                 server_name = utils.irc.color(str(event["server"]),
                     utils.consts.LIGHTBLUE)
                 server_name = "%s%s" % (server_name, utils.consts.RESET)
-                relay_message = "[relay/%s%s] %s" % (server_name,
+                relay_message = "[%s%s] %s" % (server_name,
                     relay_prefix_channel, event["line"])
 
                 message = utils.irc.protocol.privmsg(other_channel.name,
