@@ -14,22 +14,24 @@ class Module(ModuleManager.BaseModule):
             event["server"]._relay_ignore.remove(event["parsed_line"].id)
             return
 
-        relays = self._get_relays(channel)
-        for server_id, channel_name in relays:
-            server = self.bot.get_server_by_id(server_id)
-            if not server == None and channel_name in server.channels:
-                other_channel = server.channels.get(channel_name)
+        relays = {}
+        for relay_group in channel.get_setting("relay-groups", []):
+            targets = self.bot.get_setting("relay-group-%s" % relay_group, [])
+            for server_id, channel_name in targets:
+                server = self.bot.get_server_by_id(server_id)
+                if server and channel_name in server.channels:
+                    relay_channel = server.channels.get(channel_name)
+                    if (not server.id == event["server"].id and
+                            not channel.id == relay_channel.id):
+                        if not server in relays:
+                            relays[server] = []
+                        if not relay_channel in relays[server]:
+                            relays[server].append(relay_channel)
 
-                if not self._has_relay_for(other_channel, event["server"].id,
-                        channel.name):
-                    self.log.warn(
-                        "Tried to relay with one-way config: %s%s -> %s%s",
-                        [str(event["server"]), channel.name, str(server),
-                        other_channel.name])
-                    return
-
+        for server in relays.keys():
+            for relay_channel in relays[server]:
                 relay_prefix_channel = ""
-                if not other_channel.name == channel.name:
+                if not relay_channel.name == channel.name:
                     relay_prefix_channel = channel.name
 
                 server_name = utils.irc.color(str(event["server"]),
@@ -38,21 +40,13 @@ class Module(ModuleManager.BaseModule):
                 relay_message = "[%s%s] %s" % (server_name,
                     relay_prefix_channel, event["line"])
 
-                message = utils.irc.protocol.privmsg(other_channel.name,
+                message = utils.irc.protocol.privmsg(relay_channel.name,
                     relay_message)
                 server._relay_ignore.append(message.id)
                 self.bot.trigger(self._send_factory(server, message))
 
     def _send_factory(self, server, message):
         return lambda: server.send(message)
-
-    def _has_relay_for(self, channel, server_id, channel_name):
-        relays = self._get_relays(channel)
-        for other_server_id, other_channel_name in relays:
-            if (other_server_id == server_id and
-                    other_channel_name == channel_name):
-                return True
-        return False
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
@@ -71,55 +65,72 @@ class Module(ModuleManager.BaseModule):
             for channel in event["user"].channels:
                 self._relay(event, channel)
 
-    @utils.hook("received.command.relay", min_args=3, channel_only=True)
-    def relay(self, event):
-        """
-        :help: Edit configured relays
-        :usage: add <server> <channel>
-        :usage: remove <server> <channel>
-        :permission: relay
-        """
-        target_server_alias = event["args_split"][1].lower()
-        target_server = self.bot.get_server_by_alias(target_server_alias)
-
-        if target_server == None:
-            raise utils.EventError("Unknown server provided")
-
-        current_relays = self._get_relays(event["target"])
-        target_server_relays = list(filter(
-            lambda relay: relay[0] == target_server.id, current_relays))
-        target_relays = list(map(lambda relay: relay[1], target_server_relays))
-
-        target_channel_name = target_server.irc_lower(event["args_split"][2])
-
-        changed = False
-        message = None
-
+    @utils.hook("received.command.relaygroup")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("help", "Edit configured relay groups")
+    @utils.kwarg("usage", "list")
+    @utils.kwarg("usage", "add <name>")
+    @utils.kwarg("usage", "remove <name>")
+    @utils.kwarg("usage", "join <name>")
+    @utils.kwarg("usage", "leave <name>")
+    @utils.kwarg("permission", "relay")
+    def relay_group(self, event):
         subcommand = event["args_split"][0].lower()
-        if subcommand == "add":
-            if target_channel_name in target_relays:
-                raise utils.EventError("Already relaying to that channel")
 
-            if not target_channel_name in target_server.channels:
-                raise utils.EventError("Cannot find the provided channel")
+        group_settings = self.bot.find_settings_prefix("relay-group-")
+        groups = {}
+        for setting, value in group_settings:
+            name = setting.replace("relay-group-", "", 1)
+            groups[name] = value
 
-            current_relays.append((target_server.id, target_channel_name))
+        if subcommand == "list":
+            event["stdout"].write("Relay groups: %s" % ", ".join(groups.keys()))
+            return
 
-            message = "Relay added"
-        elif subcommand == "remove":
-            if not target_channel_name in target_relays:
-                raise utils.EventError("I'm not relaying to that channel")
+        if not len(event["args_split"]) > 1:
+            raise utils.EventError("Please provide a group name")
 
-            for i, (server_id, channel_name) in enumerate(current_relays):
-                if (server_id == target_server.id and
-                        channel_name == target_channel_name):
-                    current_relays.pop(i)
-                    break
+        name = event["args_split"][1].lower()
 
-            message = "Removed relay"
+        event["check_assert"](utils.Check("is-channel"))
+        current_channel = [event["server"].id, event["target"].name]
+        channel_groups = event["target"].get_setting("relay-groups", [])
+
+        message = None
+        remove = False
+
+        if subcommand == "join":
+            if not name in groups:
+                groups[name] = []
+
+            if current_channel in groups[name] or name in channel_groups:
+                raise utils.EventError("Already joined group '%s'" % name)
+
+            groups[name].append(current_channel)
+            channel_groups.append(name)
+            message = "Joined"
+
+        elif subcommand == "leave":
+            if (not name in groups or
+                    not current_channel in groups[name] or
+                    not name in channel_groups):
+                raise utils.EventError("Not in group '%s'" % name)
+
+            groups[name].remove(current_channel)
+            channel_groups.remove(name)
+            message = "Left"
         else:
             raise utils.EventError("Unknown subcommand '%s'" % subcommand)
 
+        if not message == None:
+            if not groups[name]:
+                self.bot.del_setting("relay-group-%s" % name)
+            else:
+                self.bot.set_setting("relay-group-%s" % name, groups[name])
 
-        event["target"].set_setting("channel-relays", current_relays)
-        event["stdout"].write(message)
+            if channel_groups:
+                event["target"].set_setting("relay-groups", channel_groups)
+            else:
+                event["target"].del_setting("relay-groups")
+
+            event["stdout"].write("%s group '%s'" % (message, name))
