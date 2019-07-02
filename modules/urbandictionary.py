@@ -4,7 +4,7 @@ import json, re
 from src import ModuleManager, utils
 
 URL_URBANDICTIONARY = "http://api.urbandictionary.com/v0/define"
-REGEX_DEFNUMBER = re.compile("-n(\d+) \S+")
+REGEX_DEFNUMBER = re.compile("-n ?(\d+) ")
 
 class Module(ModuleManager.BaseModule):
     _name = "UrbanDictionary"
