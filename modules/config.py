@@ -84,7 +84,7 @@ class Module(ModuleManager.BaseModule):
             if setting_info:
                 value = target.get_setting(require_setting, None)
                 if value == None:
-                    example = setting_info.get_example() or "<value>"
+                    example = setting_info.example or "<value>"
                     return "Please set %s, e.g.: %sconfig %s %s %s" % (
                         require_setting, event["command_prefix"], context[0],
                         require_setting, example)
