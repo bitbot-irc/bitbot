@@ -6,6 +6,22 @@ from src import utils
 
 REGEX_URL = re.compile("https?://[A-Z0-9{}]+".format(re.escape("-._~:/%?#[]@!$&'()*+,;=")), re.I)
 
+# best-effort tidying up of URLs
+def url_validate(url: str):
+    if url.endswith(")"):
+        # trim ")" from the end only if there's not a "(" to match it
+        # google.com/) -> google.com/
+        # google.com/() -> google.com/()
+        # google.com/()) -> google.com/()
+
+        if "(" in url:
+            open_index = url.rfind("(")
+            other_index = url.rfind(")", 0, len(url)-1)
+            if other_index == -1 or other_index < open_index:
+                return url
+        return url[:-1]
+    return url
+
 USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
 
