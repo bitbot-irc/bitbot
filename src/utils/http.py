@@ -7,7 +7,7 @@ from src import utils
 REGEX_URL = re.compile("https?://[A-Z0-9{}]+".format(re.escape("-._~:/%?#[]@!$&'()*+,;=")), re.I)
 
 # best-effort tidying up of URLs
-def url_validate(url: str):
+def url_sanitise(url: str):
     if url.endswith(")"):
         # trim ")" from the end only if there's not a "(" to match it
         # google.com/) -> google.com/
