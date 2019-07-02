@@ -108,8 +108,8 @@ class Module(ModuleManager.BaseModule):
         :help: Show top 10 duck friends
         :usage: [channel]
         """
-        stats = self._duck_stats(event["server"], "ducks-befriended", "friends",
-            event["args_split"][0] if event["args"] else None)
+        stats = self._top_duck_stats(event["server"], "ducks-befriended",
+            "friends", event["args_split"][0] if event["args"] else None)
         event["stdout"].write(stats)
     @utils.hook("received.command.enemies")
     def enemies(self, event):
@@ -117,11 +117,11 @@ class Module(ModuleManager.BaseModule):
         :help: Show top 10 duck enemies
         :usage: [channel]
         """
-        stats = self._duck_stats(event["server"], "ducks-shot", "enemies",
+        stats = self._top_duck_stats(event["server"], "ducks-shot", "enemies",
             event["args_split"][0] if event["args"] else None)
         event["stdout"].write(stats)
 
-    def _duck_stats(self, server, setting, description, channel_query):
+    def _top_duck_stats(self, server, setting, description, channel_query):
         channel_query_str = ""
         if not channel_query == None:
             channel_query = server.irc_lower(channel_query)
@@ -141,3 +141,39 @@ class Module(ModuleManager.BaseModule):
         return "Top duck %s%s: %s" % (description, channel_query_str,
             ", ".join(top_10))
 
+    @utils.hook("received.command.duckstats")
+    def duckstats(self, event):
+        """
+        :help: Get yours, or someone else's, duck stats
+        :usage: [nickname]
+        """
+        befs = event["user"].get_channel_settings_per_setting(
+            "ducks-befriended")
+        traps = event["user"].get_channel_settings_per_setting("ducks-shot")
+
+        all = [(chan, val, "bef") for chan, val in befs]
+        all += [(chan, val, "trap") for chan, val in traps]
+
+        current = {"bef": 0, "trap": 0}
+        overall = {"bef": 0, "trap": 0}
+
+        if event["is_channel"]:
+            for channel_name, value, action in all:
+                if not action in overall:
+                    overall[action] = 0
+                overall[action] += 1
+
+                if event["is_channel"]:
+                    channel_name_lower = event["server"].irc_lower(channel_name)
+                    if channel_name_lower == event["target"].name:
+                        current[action] = value
+
+        current_str = ""
+        if current:
+            current_str = " (%d/%d in %s)" % (current["bef"],
+                current["trap"], event["target"].name)
+
+        event["stdout"].write(
+            "%s has befriended %d and trapped %d ducks%s" %
+            (event["user"].nickname, overall["bef"], overall["trap"],
+            current_str))
