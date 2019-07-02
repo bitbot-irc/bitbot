@@ -193,8 +193,7 @@ class GitHub(object):
         if len(data["commits"]):
             first_id = data["before"]
             last_id = data["commits"][-1]["id"]
-            range_url = self._short_url(
-                COMMIT_RANGE_URL % (full_name, first_id, last_id))
+            range_url = COMMIT_RANGE_URL % (full_name, first_id, last_id)
 
         single_url = COMMIT_URL % (full_name, "%s")
 
