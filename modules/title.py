@@ -51,7 +51,7 @@ class Module(ModuleManager.BaseModule):
     def channel_message(self, event):
         if event["target"].get_setting("auto-title", False):
             event.eat()
-            url = event["match"].group(0)
+            url = utils.http.url_sanitise(event["match"].group(0))
             title = self._get_title(event["server"], event["target"],
                 event["match"].group(0))
 
