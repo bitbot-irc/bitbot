@@ -47,7 +47,7 @@ class Module(ModuleManager.BaseModule):
     def _channel_notice(self, event, sender, channel):
         line = self._on_notice(event, sender)
         self._event("notice.channel", event["server"], line,
-            event["channel"].name, parsed_line=event["line"])
+            event["channel"].name, parsed_line=event["line"], channel=channel)
 
     def _private_notice(self, event, sender, target):
         line = self._on_notice(event, sender)
