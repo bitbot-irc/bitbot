@@ -4,6 +4,8 @@
 
 from src import EventManager, ModuleManager, utils
 
+@utils.export("channelset", utils.BoolSetting("relay-extras",
+    "Whether or not to relay joins/parts/quits/modes/etc"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.server")
     def new_server(self, event):
@@ -54,6 +56,10 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
+    @utils.kwarg("priority", EventManager.PRIORITY_LOW)
+    def formatted(self, event):
+        self._relay(event, event["channel"])
+
     @utils.hook("formatted.join")
     @utils.hook("formatted.part")
     @utils.hook("formatted.nick")
@@ -62,12 +68,14 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.quit")
     @utils.hook("formatted.rename")
     @utils.kwarg("priority", EventManager.PRIORITY_LOW)
-    def formatted(self, event):
+    def formatted_extra(self, event):
         if event["channel"]:
-            self._relay(event, event["channel"])
+            if event["channel"].get_setting("relay-extras", True):
+                self._relay(event, event["channel"])
         elif event["user"]:
             for channel in event["user"].channels:
-                self._relay(event, channel)
+                if channel.get_setting("relay-extras", True):
+                    self._relay(event, channel)
 
     @utils.hook("received.command.relaygroup")
     @utils.kwarg("min_args", 1)
