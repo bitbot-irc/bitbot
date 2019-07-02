@@ -2,7 +2,7 @@ from src import ModuleManager, utils
 
 CAP = utils.irc.Capability(None, "bitbot.dev/multiline", alias="multiline")
 BATCH = utils.irc.BatchType(None, "bitbot.dev/multiline")
-TAG = utils.irc.MessageTag(None, "+bitbot.dev/multiline-concat")
+TAG = utils.irc.MessageTag(None, "bitbot.dev/multiline-concat")
 
 @utils.export("cap", CAP)
 class Module(ModuleManager.BaseModule):
