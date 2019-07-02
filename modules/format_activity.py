@@ -47,12 +47,13 @@ class Module(ModuleManager.BaseModule):
     def _channel_notice(self, event, sender, channel):
         line = self._on_notice(event, sender)
         self._event("notice.channel", event["server"], line,
-            event["channel"].name, parsed_line=event["line"], channel=channel)
+            event["channel"].name, parsed_line=event["line"], channel=channel,
+            user=event["user"])
 
     def _private_notice(self, event, sender, target):
         line = self._on_notice(event, sender)
         self._event("notice.private", event["server"], line, None,
-            parsed_line=event["line"])
+            parsed_line=event["line"], user=event["user"])
 
     @utils.hook("received.notice.channel")
     def channel_notice(self, event):
