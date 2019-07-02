@@ -161,7 +161,7 @@ class Module(ModuleManager.BaseModule):
             for channel_name, value, action in all:
                 if not action in overall:
                     overall[action] = 0
-                overall[action] += 1
+                overall[action] += value
 
                 if event["is_channel"]:
                     channel_name_lower = event["server"].irc_lower(channel_name)
