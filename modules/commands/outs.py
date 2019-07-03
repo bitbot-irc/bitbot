@@ -8,7 +8,7 @@ STR_CONTINUED = "(...continued) "
 class Out(object):
     def __init__(self, server, module_name, target, target_str, tags):
         self.server = server
-        self.module_name = module_name
+        self._prefix = self._default_prefix(module_name)
         self._hide_prefix = False
         self.target = target
         self._target_str = target_str
@@ -29,7 +29,7 @@ class Out(object):
         if self.has_text():
             prefix = ""
             if not self._hide_prefix:
-                prefix = utils.consts.RESET + "[%s] " % self.prefix()
+                prefix = utils.consts.RESET + "[%s] " % self._prefix
 
             full_text = "%s%s" % (prefix, self._text)
             line_factory = None
@@ -55,8 +55,12 @@ class Out(object):
 
             sent_line = self.server.send(line)
 
+    def _default_prefix(self, s: str):
+        return s
     def set_prefix(self, prefix):
-        self.module_name = prefix
+        self._prefix = self._default_prefix(prefix)
+    def append_prefix(self, s: str):
+        self._prefix = "%s%s" % (self._prefix, s)
     def hide_prefix(self):
         self._hide_prefix = True
 
@@ -64,9 +68,9 @@ class Out(object):
         return bool(self._text)
 
 class StdOut(Out):
-    def prefix(self):
-        return utils.irc.color(self.module_name, utils.consts.GREEN)
+    def _default_prefix(self, s: str):
+        return utils.irc.color(s, utils.consts.GREEN)
 class StdErr(Out):
-    def prefix(self):
-        return utils.irc.color(self.module_name, utils.consts.RED)
+    def _default_prefix(self, s: str):
+        return utils.irc.color(s, utils.consts.RED)
 
