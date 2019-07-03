@@ -25,6 +25,7 @@ class Module(ModuleManager.BaseModule):
         api_key = self.bot.config["openweathermap-api-key"]
 
         location = None
+        nickname = None
         if event["args"]:
             if len(event["args_split"]) == 1 and event["server"].has_user_id(
                     event["args_split"][0]):
@@ -33,8 +34,11 @@ class Module(ModuleManager.BaseModule):
                 if location == None:
                     raise utils.EventError("%s doesn't have a location set"
                         % target_user.nickname)
+                else:
+                    nickname = target_user.nickname
         else:
             location = self._user_location(event["user"])
+            nickname = event["user"].nickname
             if location == None:
                 raise utils.EventError("You don't have a location set")
 
@@ -69,6 +73,8 @@ class Module(ModuleManager.BaseModule):
                 wind_speed_k = "%sKMh" % round(wind_speed, 1)
                 wind_speed_m = "%sMPh" % round(0.6214*wind_speed, 1)
 
+                if not nickname == None:
+                    event["stdout"].set_prefix("Weather|%s" % nickname)
                 event["stdout"].write(
                     "(%s) %s/%s | %s | Humidity: %s | Wind: %s/%s" % (
                     location_str, celsius, fahrenheit, description, humidity,
