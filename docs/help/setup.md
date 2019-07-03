@@ -31,7 +31,7 @@ Configure the bot to use SASL to authenticate (usually used for `NickServ` ident
 
 ### Commands on-connect
 
-The `perform.py` module allows the bot to execute a saved list of raw IRC commands against a server it's connecting to. Use `/msg <bot> performadd <raw irc command>` to add to the current server's list of commands (`%nick%` in a raw command will be replaced with the bot's current nick.)
+The `perform.py` module allows the bot to execute a saved list of raw IRC commands against a server it's connecting to. Use `/msg <bot> perform add <raw irc command>` to add to the current server's list of commands (`{NICK}` in a raw command will be replaced with the bot's current nick.)
 
 ### Config options
 
