@@ -109,22 +109,31 @@ class Channel(IRCObject.Object):
         else:
             self.add_mode(mode, arg)
 
-    def parse_modes(self, modes: str, args: typing.List[str]):
+    def parse_modes(self, modes: str, args: typing.List[str]
+            ) -> typing.List[typing.Tuple[str, typing.Optional[str]]]:
+        new_modes: typing.List[typing.Tuple[str, typing.Optional[str]]] = []
         for chunk in RE_MODES.findall(modes):
             remove = chunk[0] == "-"
             for mode in chunk[1:]:
+                new_arg = None
                 if mode in self.server.channel_list_modes:
-                    args.pop(0)
+                    new_arg = args.pop(0)
                 elif (mode in self.server.channel_paramatered_modes or
                         mode in self.server.prefix_modes):
-                    self.change_mode(remove, mode, args.pop(0))
+                    new_arg = args.pop(0)
+                    self.change_mode(remove, mode, new_arg)
                 elif mode in self.server.channel_setting_modes:
                     if remove:
                         self.change_mode(remove, mode)
                     else:
-                        self.change_mode(remove, mode, args.pop(0))
+                        new_arg = args.pop(0)
+                        self.change_mode(remove, mode, new_arg)
                 elif mode in self.server.channel_modes:
                     self.change_mode(remove, mode)
+
+                mode_str = "%s%s" % ("-" if remove else "+", mode)
+                new_modes.append((mode_str, new_arg))
+        return new_modes
 
     def set_setting(self, setting: str, value: typing.Any):
         self.bot.database.channel_settings.set(self.id, setting, value)

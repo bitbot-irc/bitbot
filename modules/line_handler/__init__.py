@@ -226,9 +226,9 @@ class Module(ModuleManager.BaseModule):
         core.handle_354(event)
 
     # response to an empty mode command
-    @utils.hook("raw.received.324", default_event=True)
+    @utils.hook("raw.received.324")
     def handle_324(self, event):
-        channel.handle_324(event)
+        channel.handle_324(self.events, event)
 
     # channel creation unix timestamp
     @utils.hook("raw.received.329", default_event=True)

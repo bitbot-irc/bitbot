@@ -117,12 +117,15 @@ def part(events, event):
         events.on("self.part").call(channel=channel, reason=reason,
             server=event["server"])
 
-def handle_324(event):
+def handle_324(events, event):
     if event["line"].args[1] in event["server"].channels:
         channel = event["server"].channels.get(event["line"].args[1])
         modes = event["line"].args[2]
         args = event["line"].args[3:]
-        channel.parse_modes(modes, args[:])
+        new_modes = channel.parse_modes(modes, args[:])
+        events.on("received.324").call(modes=new_modes,
+            channel=channel, server=event["server"], mode_str=modes,
+            args_str=args)
 
 def handle_329(event):
     channel = event["server"].channels.get(event["line"].args[1])

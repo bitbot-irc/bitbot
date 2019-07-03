@@ -127,12 +127,12 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.mode.channel")
     def mode(self, event):
-        args = " ".join(event["mode_args"])
+        args = " ".join(event["args_str"])
         if args:
             args = " %s" % args
 
         line_minimal = "%s set mode %s%s" % (
-            event["user"].nickname, "".join(event["modes"]), args)
+            event["user"].nickname, "".join(event["modes_str"]), args)
         line = "- %s" % line_minimal
 
         self._event("mode.channel", event["server"], line,

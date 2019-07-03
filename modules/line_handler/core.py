@@ -83,10 +83,11 @@ def mode(events, event):
         modes = event["line"].args[1]
         args  = event["line"].args[2:]
 
-        channel.parse_modes(modes, args[:])
+        new_modes = channel.parse_modes(modes, args[:])
 
-        events.on("received.mode.channel").call(modes=modes, mode_args=args,
-            channel=channel, server=event["server"], user=user)
+        events.on("received.mode.channel").call(modes=new_modes,
+            channel=channel, server=event["server"], user=user, modes_str=modes,
+            args_str=args)
     elif event["server"].is_own_nickname(target):
         modes = event["line"].args[1]
         _own_modes(event["server"], modes)
