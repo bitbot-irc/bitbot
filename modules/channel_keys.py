@@ -7,7 +7,6 @@ class Module(ModuleManager.BaseModule):
         channel_id = server.channels.get_id(channel_name)
         return self.bot.database.channel_settings.get(channel_id, "key", None)
     def _set_key(self, channel, key):
-        print("setting key", channel.name, key)
         channel.set_setting("key", key)
 
     @utils.hook("preprocess.send.join")
@@ -38,7 +37,6 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.324")
     @utils.hook("received.mode.channel")
     def on_modes(self, event):
-        print(event["modes"])
         for mode, arg in event["modes"]:
             if mode == "+k":
                 self._set_key(event["channel"], arg)
