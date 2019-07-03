@@ -18,7 +18,13 @@ class Module(ModuleManager.BaseModule):
             "sourceDictionaries": "wiktionary", "api_key": self.bot.config[
             "wordnik-api-key"]}, json=True)
 
-        return page
+        if page:
+            if page.code == 200:
+                return True, page.data[0]
+            else:
+                return True, None
+        else:
+            return False, None
 
     @utils.hook("received.command.define")
     def define(self, event):
@@ -32,11 +38,11 @@ class Module(ModuleManager.BaseModule):
             word = event["target"].buffer.get(from_self=False)
         word = word.replace(" ", "+")
 
-        page = self._get_definition(word)
-        if page:
-            if len(page.data):
-                text = utils.http.strip_html(page.data[0]["text"])
-                event["stdout"].write("%s: %s" % (page.data[0]["word"], text))
+        success, definition = self._get_definition(word)
+        if success:
+            if not definition == None:
+                text = utils.http.strip_html(definition["text"])
+                event["stdout"].write("%s: %s" % (definition["word"], text))
             else:
                 event["stderr"].write("No definitions found")
         else:
@@ -55,10 +61,8 @@ class Module(ModuleManager.BaseModule):
                 "api_key":self.bot.config["wordnik-api-key"],
                 "min_dictionary_count":1},json=True)
             if page and len(page.data):
-                definition = self._get_definition(page.data["word"])
-                if definition and len(definition.data):
-                    definition = definition.data[0]
-                else:
+                success, definition = self._get_definition(page.data["word"])
+                if not success:
                     raise utils.EventError("Try again in a couple of seconds")
 
                 text = utils.http.strip_html(definition["text"])
