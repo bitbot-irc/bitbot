@@ -8,6 +8,8 @@ class Module(ModuleManager.BaseModule):
         return self.bot.database.channel_settings.get(channel_id, "key", None)
     def _set_key(self, channel, key):
         channel.set_setting("key", key)
+    def _unset_key(self, channel):
+        channel.del_setting("key")
 
     @utils.hook("preprocess.send.join")
     def preprocess_send_join(self, event):
@@ -40,3 +42,5 @@ class Module(ModuleManager.BaseModule):
         for mode, arg in event["modes"]:
             if mode == "+k":
                 self._set_key(event["channel"], arg)
+            elif mode == "-k":
+                self._unset_key(event["channel"])
