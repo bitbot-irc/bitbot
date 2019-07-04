@@ -135,3 +135,41 @@ class Module(ModuleManager.BaseModule):
                 exc_info=True)
             return
         event["stdout"].write("Added server '%s'" % alias)
+
+    @utils.hook("received.command.editserver")
+    @utils.kwarg("min_args", 3)
+    @utils.kwarg("help", "Edit server details")
+    @utils.kwarg("usage", "<alias> <option> <value>")
+    @utils.kwarg("permission", "editserver")
+    def edit_server(self, event):
+        alias = event["args_split"][0]
+        server = self.bot.get_server_by_alias(alias)
+        if server == None:
+            raise utils.EventError("Unknown server '%s'" % alias)
+
+        option = event["args_split"][1].lower()
+        value = " ".join(event["args_split"][2:])
+        value_parsed = None
+
+        if option == "hostname":
+            value_parsed = value
+        elif option == "port":
+            if not value.isdigit():
+                raise utils.EventError("Invalid port")
+            value_parsed = int(value.lstrip("0"))
+        elif option == "tls":
+            value_lower = value.lower()
+            if not value_lower in ["yes", "no"]:
+                raise utils.EventError("TLS should be either 'yes' or 'no'")
+            value_parsed = value_lower == "yes"
+        elif option == "password":
+            value_parsed = value
+        elif option == "bindhost":
+            value_parsed = value
+        elif option in ["nickname", "username"]:
+            value_parsed = value
+        else:
+            raise utils.EventError("Unknown option '%s'" % option)
+
+        self.bot.database.servers.edit(server.id, option, value_parsed)
+        event["stdout"].write("Set %s for %s" % (option, alias))

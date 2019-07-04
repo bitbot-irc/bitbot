@@ -39,6 +39,12 @@ class Servers(Table):
         if value:
             return value[0]
         return value
+    def edit(self, id: int, column: str, value: typing.Any):
+        if not column in ["alias", "hostname", "port", "password", "tls",
+                "bindhost", "nickname", "username", "realname"]:
+            raise ValueError("Unknown column on servers table '%s'" % column)
+        self.database.execute(
+            "UPDATE servers SET %s=? WHERE server_id=?" % column, [value, id])
 
 class Channels(Table):
     def add(self, server_id: int, name: str):
