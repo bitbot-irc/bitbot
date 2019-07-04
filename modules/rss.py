@@ -14,10 +14,13 @@ def _format_entry(feed_title, entry):
 
     return "%s: %s%s%s" % (feed_title, title, author, link)
 
+@utils.export("botset", utils.IntSetting("rss-interval",
+    "Interval (in seconds) between RSS polls", example="120"))
 class Module(ModuleManager.BaseModule):
     _name = "RSS"
     def on_load(self):
-        self.timers.add("rss", RSS_INTERVAL)
+        self.timers.add("rss", self.bot.get_setting("rss-interval",
+            RSS_INTERVAL))
 
     @utils.hook("timer.rss")
     def timer(self, event):
