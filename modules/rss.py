@@ -79,7 +79,8 @@ class Module(ModuleManager.BaseModule):
         try:
             data = utils.http.request(url)
             feed = feedparser.parse(data.data)
-        except:
+        except Exception as e:
+            self.log.warn("failed to parse RSS %s", [url], exc_info=True)
             feed = None
         if not feed or not feed["feed"]:
             return None
