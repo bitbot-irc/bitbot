@@ -43,6 +43,9 @@ arg_parser.add_argument("--module", "-m",
 arg_parser.add_argument("--module-args", "-M",
     help="Arguments to give in action against a specific module")
 
+arg_parser.add_argument("--startup-disconnects", "-D",
+    help="Tolerate failed connections on startup", action="store_true")
+
 args = arg_parser.parse_args()
 
 if args.version:
@@ -101,9 +104,9 @@ if len(server_configs):
 
     for server in servers:
         if not bot.connect(server):
-            sys.stderr.write("failed to connect to '%s', exiting\r\n" % (
-                str(server)))
-            sys.exit(1)
+            log.error("Failed to connect to '%s'" % str(server))
+            if not args.startup_disconnects:
+                sys.exit(1)
 
     try:
         bot.run()
