@@ -239,6 +239,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.received.433", default_event=True)
     def handle_433(self, event):
         core.handle_433(event)
+    # nickname/channel is temporarily unavailable
+    @utils.hook("raw.received.437")
+    def handle_437(self, event):
+        core.handle_437(event)
 
     # we need a registered nickname for this channel
     @utils.hook("raw.received.477", default_event=True)

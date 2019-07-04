@@ -140,6 +140,11 @@ def handle_354(event):
         else:
             target.identified_account = None
 
+def _nick_in_use(server):
+    new_nick = "%s|" % server.connection_params.nickname
+    server.send_nick(new_nick)
+
 def handle_433(event):
-    new_nick = "%s|" % event["server"].connection_params.nickname
-    event["server"].send_nick(new_nick)
+    _nick_in_use(event["server"])
+def handle_437(event):
+    _nick_in_use(event["server"])
