@@ -52,7 +52,7 @@ class Server(IRCObject.Object):
             (("o", "@"), ("v", "+")))
 
         self.channel_list_modes = ["b"] # type: typing.List[str]
-        self.channel_paramatered_modes = ["k"] # type: typing.List[str]
+        self.channel_parametered_modes = ["k"] # type: typing.List[str]
         self.channel_setting_modes = ["l"] # type: typing.List[str]
         self.channel_modes = [
             "n", "i", "m", "t", "p", "s"

@@ -46,7 +46,7 @@ def handle_005(events, event):
     if "CHANMODES" in isupport:
         modes = isupport["CHANMODES"].split(",", 3)
         event["server"].channel_list_modes = list(modes[0])
-        event["server"].channel_paramatered_modes = list(modes[1])
+        event["server"].channel_parametered_modes = list(modes[1])
         event["server"].channel_setting_modes = list(modes[2])
         event["server"].channel_modes = list(modes[3])
     if "CHANTYPES" in isupport:

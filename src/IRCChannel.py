@@ -118,7 +118,7 @@ class Channel(IRCObject.Object):
                 new_arg = None
                 if mode in self.server.channel_list_modes:
                     new_arg = args.pop(0)
-                elif (mode in self.server.channel_paramatered_modes or
+                elif (mode in self.server.channel_parametered_modes or
                         mode in self.server.prefix_modes):
                     new_arg = args.pop(0)
                     self.change_mode(remove, mode, new_arg)
