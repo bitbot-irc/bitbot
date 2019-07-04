@@ -36,6 +36,8 @@ class CommandMethodSetting(utils.Setting):
     "Set the method used to respond to commands"))
 @utils.export("channelset", CommandMethodSetting("command-method",
     "Set the method used to respond to commands"))
+@utils.export("botset", CommandMethodSetting("command-method",
+    "Set the method used to respond to commands"))
 @utils.export("channelset", utils.BoolSetting("hide-prefix",
     "Disable/enable hiding prefix in command reponses"))
 @utils.export("channelset", utils.BoolSetting("commands",
@@ -86,7 +88,8 @@ class Module(ModuleManager.BaseModule):
 
     def _command_method(self, target, server):
         return target.get_setting(COMMAND_METHOD,
-            server.get_setting(COMMAND_METHOD, "PRIVMSG")).upper()
+            server.get_setting(COMMAND_METHOD,
+            self.bot.set_setting(COMMAND_METHOD, "PRIVMSG"))).upper()
 
     def _find_command_hook(self, server, command, is_channel, args_split):
         if not self.has_command(command):
