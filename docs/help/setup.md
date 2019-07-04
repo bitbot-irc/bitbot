@@ -6,6 +6,7 @@
 * Run `./start.py` to start the bot.
 * Join `#bitbot` on a server with the bot (or invite it to another channel)
 * `/msg <bot> register <password here>` to register your nickname with the bot
+* (use `/msg <bot> identify <password>` to log in in the future)
 * `/msg <bot> masterlogin <master admin password>` to login as master admin
 * `/msg <bot> givepermission <your nickname> *` to give your account admin permissions
 
