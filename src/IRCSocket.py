@@ -1,4 +1,4 @@
-import datetime, socket, ssl, time, typing
+import datetime, socket, ssl, time, threading, typing
 from src import IRCLine, Logging, IRCObject, utils
 
 THROTTLE_LINES = 4
@@ -25,6 +25,7 @@ class Socket(IRCObject.Object):
         self.connected = False
 
         self._write_buffer = b""
+        self._write_buffer_lock = threading.Lock()
         self._queued_lines = [] # type: typing.List[IRCLine.SentLine]
         self._buffered_lines = [] # type: typing.List[IRCLine.SentLine]
         self._read_buffer = b""
@@ -124,34 +125,37 @@ class Socket(IRCObject.Object):
         self._buffered_lines.append(line)
 
     def send(self, line: IRCLine.SentLine, immediate: bool=False):
-        if immediate:
-            self._immediate_buffer(line)
-        else:
-            self._queued_lines.append(line)
+        with self._write_buffer_lock:
+            if immediate:
+                self._immediate_buffer(line)
+            else:
+                self._queued_lines.append(line)
 
     def _fill_throttle(self):
-        if not self._write_buffer and self._throttle_when_empty:
-            self._throttle_when_empty = False
-            self._write_throttling = True
-            self._recent_sends.clear()
+        with self._write_buffer_lock:
+            if not self._write_buffer and self._throttle_when_empty:
+                self._throttle_when_empty = False
+                self._write_throttling = True
+                self._recent_sends.clear()
 
-        throttle_space = self.throttle_space()
-        if throttle_space:
-            to_buffer = self._queued_lines[:throttle_space]
-            self._queued_lines = self._queued_lines[throttle_space:]
-            for line in to_buffer:
-                self._immediate_buffer(line)
+            throttle_space = self.throttle_space()
+            if throttle_space:
+                to_buffer = self._queued_lines[:throttle_space]
+                self._queued_lines = self._queued_lines[throttle_space:]
+                for line in to_buffer:
+                    self._immediate_buffer(line)
 
     def _send(self) -> typing.List[IRCLine.SentLine]:
-        bytes_written_i = self._socket.send(self._write_buffer)
-        bytes_written = self._write_buffer[:bytes_written_i]
-
-        sent_lines_count = bytes_written.count(b"\n")
         sent_lines = [] # type: typing.List[IRCLine.SentLine]
-        for i in range(sent_lines_count):
-            sent_lines.append(self._buffered_lines.pop(0))
+        with self._write_buffer_lock:
+            bytes_written_i = self._socket.send(self._write_buffer)
+            bytes_written = self._write_buffer[:bytes_written_i]
 
-        self._write_buffer = self._write_buffer[bytes_written_i:]
+            sent_lines_count = bytes_written.count(b"\n")
+            for i in range(sent_lines_count):
+                sent_lines.append(self._buffered_lines.pop(0))
+
+            self._write_buffer = self._write_buffer[bytes_written_i:]
 
         self.bytes_written += bytes_written_i
 
