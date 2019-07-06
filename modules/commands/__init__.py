@@ -89,7 +89,7 @@ class Module(ModuleManager.BaseModule):
     def _command_method(self, target, server):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD,
-            self.bot.set_setting(COMMAND_METHOD, "PRIVMSG"))).upper()
+            self.bot.get_setting(COMMAND_METHOD, "PRIVMSG"))).upper()
 
     def _find_command_hook(self, server, command, is_channel, args_split):
         if not self.has_command(command):
