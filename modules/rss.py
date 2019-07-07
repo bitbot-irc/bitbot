@@ -12,7 +12,9 @@ def _format_entry(feed_title, entry):
     link = entry.get("link", None)
     link = " - %s" % link if link else ""
 
-    return "%s: %s%s%s" % (feed_title, title, author, link)
+    feed_title_str = "%s: " % feed_title if feed_title else ""
+
+    return "%s%s%s%s" % (feed_title_str, title, author, link)
 
 @utils.export("botset", utils.IntSetting("rss-interval",
     "Interval (in seconds) between RSS polls", example="120"))
@@ -47,7 +49,7 @@ class Module(ModuleManager.BaseModule):
                     [url, str(e)])
                 continue
 
-            feed_title = feed["feed"]["title"]
+            feed_title = feed["feed"].get("title", None)
             entry_formatted = {}
 
             for server, channel in channels:
