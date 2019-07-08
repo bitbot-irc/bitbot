@@ -49,6 +49,12 @@ class Module(ModuleManager.BaseModule):
 
         full_name, repo_username, repo_name, organisation = handler.names(
             data, headers)
+
+        full_name_lower = (full_name or "").lower()
+        repo_username_lower = (repo_username or "").lower()
+        repo_name_lower = (repo_name or "").lower()
+        organisation_lower = (organisation or "").lower()
+
         branch = handler.branch(data, headers)
         current_event, event_action = handler.event(data, headers)
 
@@ -60,12 +66,12 @@ class Module(ModuleManager.BaseModule):
 
         for server_id, channel_name, hooked_repos in hooks:
             found_hook = None
-            if full_name and full_name in hooked_repos:
-                found_hook = hooked_repos[full_name]
-            elif repo_username and repo_username in hooked_repos:
-                found_hook = hooked_repos[repo_username]
-            elif organisation and organisation in hooked_repos:
-                found_hook = hooked_repos[organisation]
+            if full_name_lower and full_name_lower in hooked_repos:
+                found_hook = hooked_repos[full_name_lower]
+            elif repo_username_lower and repo_username_lower in hooked_repos:
+                found_hook = hooked_repos[repo_username_lower]
+            elif organisation_lower and organisation_lower in hooked_repos:
+                found_hook = hooked_repos[organisation_lower]
             else:
                 continue
 
