@@ -6,4 +6,5 @@ netifaces
 requests
 scrypt
 suds-jurko
+tornado
 tweepy

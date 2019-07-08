@@ -1,7 +1,7 @@
 import ipaddress, re, signal, socket, traceback, typing
 import urllib.error, urllib.parse
 import json as _json
-import bs4, netifaces, requests
+import bs4, netifaces, requests, tornado.gen, tornado.httpclient, tornado.ioloop
 from src import utils
 
 REGEX_URL = re.compile("https?://[A-Z0-9{}]+".format(re.escape("-._~:/%?#[]@!$&'()*+,;=")), re.I)
@@ -108,6 +108,24 @@ def request(url: str, method: str="GET", get_params: dict={},
             raise HTTPParsingException(str(e))
 
     return Response(response.status_code, data, response_headers)
+
+def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
+    responses = {}
+
+    @tornado.gen.coroutine
+    def _request():
+        for url in urls:
+            client = tornado.httpclient.AsyncHTTPClient()
+            request = tornado.httpclient.HTTPRequest(url, method="GET",
+                connect_timeout=2, request_timeout=2)
+            response = yield client.fetch(request)
+
+            headers = utils.CaseInsensitiveDict(dict(response.headers))
+            data = response.body.decode("utf8")
+            responses[url] = Response(response.code, data, headers)
+
+    tornado.ioloop.IOLoop.current().run_sync(_request)
+    return responses
 
 def strip_html(s: str) -> str:
     return bs4.BeautifulSoup(s, "lxml").get_text()
