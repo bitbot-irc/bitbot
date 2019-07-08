@@ -1,3 +1,4 @@
+import time
 from src import ModuleManager, utils
 import feedparser
 
@@ -26,6 +27,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("timer.rss")
     def timer(self, event):
+        start_time = time.monotonic()
+        self.log.trace("Polling RSS feeds")
+
         event["timer"].redo()
         hook_settings = self.bot.database.channel_settings.find_by_setting(
             "rss-hooks")
@@ -74,6 +78,9 @@ class Module(ModuleManager.BaseModule):
                     new_ids.append(entry["id"])
 
                 channel.set_setting("rss-seen-ids-%s" % url, new_ids)
+
+        total_milliseconds = (time.monotonic() - start_time) * 1000
+        self.log.trace("Polled RSS feeds in %fms", [total_milliseconds])
 
     def _check_url(self, url):
         try:
