@@ -59,23 +59,24 @@ class Module(ModuleManager.BaseModule):
                 new_ids = []
                 valid = 0
                 for entry in feed["entries"][::-1]:
-                    if entry["id"] in seen_ids:
-                        new_ids.append(entry["id"])
+                    entry_id = entry.get("id", entry["link"])
+                    if entry_id in seen_ids:
+                        new_ids.append(entry_id)
                         continue
 
                     if valid == 3:
                         continue
                     valid += 1
 
-                    if not entry["id"] in entry_formatted:
+                    if not entry_id in entry_formatted:
                         output = _format_entry(feed_title, entry)
-                        entry_formatted[entry["id"]] = output
+                        entry_formatted[entry_id] = output
                     else:
-                        output = entry_formatted[entry["id"]]
+                        output = entry_formatted[entry_id]
 
                     self.events.on("send.stdout").call(target=channel,
                         module_name="RSS", server=server, message=output)
-                    new_ids.append(entry["id"])
+                    new_ids.append(entry_id)
 
                 channel.set_setting("rss-seen-ids-%s" % url, new_ids)
 
@@ -91,7 +92,11 @@ class Module(ModuleManager.BaseModule):
             feed = None
         if not feed or not feed["feed"]:
             return None
-        return [entry["id"] for entry in feed["entries"]]
+
+        entry_ids = []
+        for entry in feed["entries"]:
+            entry_ids.append(entry.get("id", entry["link"]))
+        return entry_ids
 
     @utils.hook("received.command.rss", min_args=1, channel_only=True)
     def rss(self, event):
