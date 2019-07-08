@@ -131,7 +131,7 @@ def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
     awaits = []
     for url in urls:
         awaits.append(_request(url))
-    task = asyncio.gather(*awaits, return_exceptions=True)
+    task = asyncio.gather(*awaits, return_exceptions=True, loop=loop)
     loop.run_until_complete(task)
     loop.close()
 
