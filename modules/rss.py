@@ -103,7 +103,7 @@ class Module(ModuleManager.BaseModule):
             if not len(event["args_split"]) > 1:
                 raise utils.EventError("Please provide a URL")
 
-            url = event["args_split"][1]
+            url = utils.http.url_sanitise(event["args_split"][1])
             if url in rss_hooks:
                 raise utils.EventError("That URL is already being watched")
 
@@ -119,7 +119,7 @@ class Module(ModuleManager.BaseModule):
             if not len(event["args_split"]) > 1:
                 raise utils.EventError("Please provide a URL")
 
-            url = event["args_split"][1]
+            url = utils.http.url_sanitise(event["args_split"][1])
             if not url in rss_hooks:
                 raise utils.EventError("I'm not watching that URL")
             rss_hooks.remove(url)
