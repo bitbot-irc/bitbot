@@ -127,12 +127,13 @@ def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
         data = response.body.decode("utf8")
         responses[url] = Response(response.code, data, headers)
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     awaits = []
     for url in urls:
         awaits.append(_request(url))
     task = asyncio.gather(*awaits, return_exceptions=True)
     loop.run_until_complete(task)
+    loop.close()
 
     return responses
 
