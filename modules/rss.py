@@ -42,6 +42,10 @@ class Module(ModuleManager.BaseModule):
         pages = utils.http.request_many(hooks.keys())
 
         for url, channels in hooks.items():
+            if not url in pages:
+                # async url get failed
+                continue
+
             feed = feedparser.parse(pages[url].data)
             feed_title = feed["feed"].get("title", None)
             entry_formatted = {}
