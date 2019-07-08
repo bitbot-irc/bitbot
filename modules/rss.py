@@ -39,16 +39,10 @@ class Module(ModuleManager.BaseModule):
                         hooks[url] = []
                     hooks[url].append((server, channel))
 
-        for url, channels in hooks.items():
-            try:
-                data = utils.http.request(url)
-                feed = feedparser.parse(data.data)
-                feed["feed"] or ValueError("Feed info empty")
-            except Exception as e:
-                self.log.warn("Failed to GET RSS for %s: %s",
-                    [url, str(e)])
-                continue
+        pages = utils.http.request_many(hooks.keys())
 
+        for url, channels in hooks.items():
+            feed = feedparser.parse(pages[url].data)
             feed_title = feed["feed"].get("title", None)
             entry_formatted = {}
 
