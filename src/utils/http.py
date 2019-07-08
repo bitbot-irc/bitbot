@@ -121,7 +121,12 @@ def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
             client = tornado.httpclient.AsyncHTTPClient()
             request = tornado.httpclient.HTTPRequest(url, method="GET",
                 connect_timeout=2, request_timeout=2)
-            response = await client.fetch(request)
+
+            response = None
+            try:
+                response = await client.fetch(request)
+            except:
+                return
 
             headers = utils.CaseInsensitiveDict(dict(response.headers))
             data = response.body.decode("utf8")
