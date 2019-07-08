@@ -116,24 +116,28 @@ def request(url: str, method: str="GET", get_params: dict={},
 def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
     responses = {}
 
-    async def _request():
-        for url in urls:
-            client = tornado.httpclient.AsyncHTTPClient()
-            request = tornado.httpclient.HTTPRequest(url, method="GET",
-                connect_timeout=2, request_timeout=2)
+    async def _request(url):
+        client = tornado.httpclient.AsyncHTTPClient()
+        request = tornado.httpclient.HTTPRequest(url, method="GET",
+            connect_timeout=2, request_timeout=2)
 
-            response = None
-            try:
-                response = await client.fetch(request)
-            except:
-                return
+        response = None
+        try:
+            response = await client.fetch(request)
+        except:
+            return
 
-            headers = utils.CaseInsensitiveDict(dict(response.headers))
-            data = response.body.decode("utf8")
-            responses[url] = Response(response.code, data, headers)
+        headers = utils.CaseInsensitiveDict(dict(response.headers))
+        data = response.body.decode("utf8")
+        responses[url] = Response(response.code, data, headers)
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(_request())
+    awaits = []
+    for url in urls:
+        awaits.append(_request(url))
+    task = asyncio.gather(*awaits, return_exceptions=True)
+    loop.run_until_complete(task)
+
     return responses
 
 def strip_html(s: str) -> str:
