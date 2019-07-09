@@ -283,6 +283,8 @@ class GitHub(object):
                     for i, output in enumerate(outputs):
                         outputs[i] = "[PR] %s" % output
                     return outputs
+        elif action == "labeled":
+            action_desc = "labled %s as '%s'" % (number, data["label"]["name"])
 
         pr_title = data["pull_request"]["title"]
         url = self._short_url(data["pull_request"]["html_url"])
