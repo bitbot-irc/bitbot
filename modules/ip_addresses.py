@@ -63,6 +63,10 @@ class Module(ModuleManager.BaseModule):
             except dns.rdatatype.UnknownRdatatype:
                raise utils.EventError("Unknown record type '%s'"
                     % record_type_strip)
+            except dns.exception.DNSException:
+                message = "Failed to get DNS records"
+                self.log.warn(message, exc_info=True)
+                raise utils.EventError(message)
 
         results_str = ["%s: %s" % (t, ", ".join(r)) for t, r in results]
         event["stdout"].write("(%s) %s" % (hostname, " | ".join(results_str)))
