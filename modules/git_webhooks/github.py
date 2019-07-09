@@ -329,13 +329,18 @@ class GitHub(object):
             (sender, COMMENT_ACTIONS[action], number, pr_title, url)]
 
     def issues(self, full_name, data):
-        number = utils.irc.color("#%s" % data["issue"]["number"], colors.COLOR_ID)
+        number = utils.irc.color("#%s" % data["issue"]["number"],
+            colors.COLOR_ID)
         action = data["action"]
+        action_str = "%s %s" % (action, number)
+        if action == "labeled":
+            action_str = "labeled %s as '%s'" % (number, data["label"]["name"])
+
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["issue"]["html_url"])
-        return ["[issue] %s %s %s: %s - %s" %
-            (author, action, number, issue_title, url)]
+        return ["[issue] %s %s: %s - %s" %
+            (author, action_str, issue_title, url)]
     def issue_comment(self, full_name, data):
         if "changes" in data:
             # don't show this event when nothing has actually changed
