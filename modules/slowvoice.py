@@ -1,3 +1,5 @@
+#--depends-on config
+
 from src import ModuleManager, utils
 
 DELAY = 30 # 30 seconds
