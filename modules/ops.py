@@ -7,6 +7,8 @@ from src import ModuleManager, utils
     "Enable/disable command that highlights all online channel ops"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.ops")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("help", "Alert the ops in the current channel")
     def ops(self, event):
         if event["target"].get_setting("op-ping", False):
             ops = []
