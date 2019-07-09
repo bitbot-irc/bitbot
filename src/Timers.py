@@ -64,14 +64,15 @@ class Timers(object):
             self.timers.remove(timer)
         self.database.bot_settings.delete("timer-%s" % timer.id)
 
-    def add(self, name: str, delay: float, next_due: float=None, **kwargs):
-        self._add(None, name, delay, next_due, None, False, kwargs)
+    def add(self, name: str, delay: float, next_due: float=None, **kwargs
+            ) -> Timer:
+        return self._add(None, name, delay, next_due, None, False, kwargs)
     def add_persistent(self, name: str, delay: float, next_due: float=None,
-            **kwargs):
-        self._add(None, name, delay, next_due, None, True, kwargs)
+            **kwargs) -> Timer:
+        return self._add(None, name, delay, next_due, None, True, kwargs)
     def _add(self, context: typing.Optional[str], name: str, delay: float,
             next_due: typing.Optional[float], id: typing.Optional[str],
-            persist: bool, kwargs: dict):
+            persist: bool, kwargs: dict) -> Timer:
         id = id or str(uuid.uuid4())
         timer = Timer(id, context, name, delay, next_due, kwargs)
         if persist:
@@ -83,6 +84,7 @@ class Timers(object):
             self.context_timers[context].append(timer)
         else:
             self.timers.append(timer)
+        return timer
 
     def next(self) -> typing.Optional[float]:
         times = list(filter(None,
@@ -122,12 +124,12 @@ class TimersContext(object):
         self._parent = parent
         self.context = context
     def add(self, name: str, delay: float, next_due: float=None,
-            **kwargs):
-        self._parent._add(self.context, name, delay, next_due, None, False,
-            kwargs)
+            **kwargs) -> Timer:
+        return self._parent._add(self.context, name, delay, next_due, None,
+            False, kwargs)
     def add_persistent(self, name: str, delay: float, next_due: float=None,
-            **kwargs):
-        self._parent._add(None, name, delay, next_due, None, True,
+            **kwargs) -> Timer:
+        return self._parent._add(None, name, delay, next_due, None, True,
             kwargs)
     def find_all(self, name: str) -> typing.List[Timer]:
         return self._parent.find_all(name)
