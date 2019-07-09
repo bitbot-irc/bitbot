@@ -18,7 +18,7 @@ class Timer(object):
     def set_next_due(self):
         self.next_due = time.time()+self.delay
     def due(self) -> bool:
-        return self.time_left() <= 0
+        return not self.done() and self.time_left() <= 0
     def time_left(self) -> float:
         return self.next_due-time.time()
 
@@ -27,6 +27,8 @@ class Timer(object):
         self.set_next_due()
     def finish(self):
         self._done = True
+    def cancel(self):
+        self.finish()
     def done(self) -> bool:
         return self._done
 
@@ -108,8 +110,8 @@ class Timers(object):
                 timer.finish()
                 self.events.on("timer.%s" % timer.name).call(timer=timer,
                     **timer.kwargs)
-                if timer.done():
-                    self._remove(timer)
+            if timer.done():
+                self._remove(timer)
 
     def purge_context(self, context: str):
         if context in self.context_timers:
