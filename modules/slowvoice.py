@@ -36,7 +36,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.quit")
     def on_quit(self, event):
-        for channel in evnet["user"].channels:
+        for channel in event["user"].channels:
             self._cancel_timer(event["user"], channel)
 
     @utils.hook("self.part")
