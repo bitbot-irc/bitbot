@@ -20,7 +20,8 @@ class InvalidTimeoutException(Exception):
     "Set ban format ($n = nick, $u = username, $h = hostname)",
     example="*!$u@$h"))
 @utils.export("serverset", utils.OptionsSetting("mute-method",
-    ["qmode", "insp", "unreal"], "Set this server's method of muting users"))
+    ["qmode", "insp", "unreal", "none"],
+    "Set this server's method of muting users"))
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 
@@ -319,6 +320,8 @@ class Module(ModuleManager.BaseModule):
             return "b", "m:%s" % mask
         elif mute_method == "unreal":
             return "b", "~q:%s" % mask
+        elif mute_method == "none":
+            return None, None
         raise ValueError("Unknown mute-method '%s'" % mute_method)
 
     @utils.hook("received.command.mute", usage="<nickname> [duration]")
@@ -341,6 +344,8 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("No such user")
 
         mode, mask = self._mute_method(event["server"], target_user)
+        if mode == None:
+            raise utils.EventError("This network doesn't support mutes")
 
         if add and len(event["args_split"]) > 1:
             duration = utils.from_pretty_time(event["args_split"][1])
