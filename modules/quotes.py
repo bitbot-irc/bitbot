@@ -62,23 +62,33 @@ class Module(ModuleManager.BaseModule):
         :usage: <category> = <quote>
         """
         category, remove_quote = self.category_and_quote(event["args"])
-        remove_quote_lower = remove_quote.lower()
-        if category and remove_quote:
-            setting = "quotes-%s" % category
-            quotes = event["server"].get_setting(setting, [])
-            removed = False
+        category = category or event["args"].strip()
+
+        message = None
+        setting = "quotes-%s" % category
+        quotes = event["server"].get_setting(setting, [])
+
+        if not quotes:
+            raise utils.EventError("Quote category '%s' not found" %
+                category)
+
+        if not remove_quote == None:
+            remove_quote_lower = remove_quote.lower()
             for nickname, time_added, quote in quotes[:]:
                 if quote.lower() == remove_quote_lower:
                     quotes.remove([nickname, time_added, quote])
-                    removed = True
-            if removed:
-                event["server"].set_setting(setting, quotes)
-                event["stdout"].write("Removed quote")
-            else:
-                event["stderr"].write("Quote not found")
+                    message = "Removed quote from '%s'"
+                    break
         else:
-            event["stderr"].write("Please provide a category and a quote "
-                "to remove")
+            if quotes:
+                quotes.pop(-1)
+                message = "Removed last '%s' quote"
+
+        if not message == None:
+            event["server"].set_setting(setting, quotes)
+            event["stdout"].write(message % category)
+        else:
+            event["stderr"].write("Quote not found")
 
     @utils.hook("received.command.q", alias_of="quote")
     @utils.hook("received.command.quote", min_args=1)
