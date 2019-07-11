@@ -16,12 +16,12 @@ class Module(ModuleManager.BaseModule):
                 if len(todo) >= index:
                     event["stdout"].write("Todo %d: %s" % (index, todo[index-1]))
                 else:
-                    event["stderr"].write("You do not have that many things in your todo")
+                    event["stderr"].write("You do not have that many things in your todo list")
             else:
                 event["stderr"].write("Please provide a number")
         else:
             todo_count = len(todo)
-            event["stdout"].write("There are %d items in your todo" % todo_count)
+            event["stdout"].write("There are %d items in your todo list" % todo_count)
 
     @utils.hook("received.command.todoadd", min_args=1)
     def todo_add(self, event):
@@ -33,7 +33,7 @@ class Module(ModuleManager.BaseModule):
         todo = event["user"].get_setting("todo", [])
         for item in todo:
             if item.lower() == arg_lower:
-                raise utils.EventError("That is already in your todo")
+                raise utils.EventError("That is already in your todo list")
         todo.append(event["args"])
         event["user"].set_setting("todo", todo)
         event["stdout"].write("Saved")
@@ -53,7 +53,7 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write("Todo item removed")
             else:
                 event["stderr"].write("You do not have that many things in "
-                    "your todo")
+                    "your todo list")
         else:
             event["stderr"].write("Please provided a todo item number to remove")
 
