@@ -55,7 +55,7 @@ class Channels(object):
         old_lower = self._name_lower(old_name)
         new_lower = self._name_lower(new_name)
 
-        channel = self.channels.pop(old_lower)
+        channel = self._channels.pop(old_lower)
         channel.name = new_name
         self._channels[new_name] = channel
 
