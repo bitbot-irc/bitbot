@@ -20,6 +20,11 @@ def _command_method_validate(s):
     if s.upper() in COMMAND_METHODS:
         return s.upper()
 
+class BadContextException(Exception):
+    def __init__(self, required_context):
+        self.required_context = required_context
+        Exception.__init__(self)
+
 class CommandMethodSetting(utils.Setting):
     example = "NOTICE"
     def parse(self, value: str) -> typing.Any:
@@ -103,6 +108,8 @@ class Module(ModuleManager.BaseModule):
                     return None, None
 
         hook = None
+        channel_skip = False
+        private_skip = False
         if self.has_command(command):
             for potential_hook in self.get_hooks(command):
                 alias_of = self._get_alias_of(potential_hook)
@@ -116,13 +123,18 @@ class Module(ModuleManager.BaseModule):
 
                 if not is_channel and potential_hook.get_kwarg("channel_only",
                         False):
+                    channel_skip = True
                     continue
                 if is_channel and potential_hook.get_kwarg("private_only",
                         False):
+                    private_skip = True
                     continue
 
                 hook = potential_hook
                 break
+
+        if not hook and (private_skip or channel_skip):
+            raise BadContextException("channel" if channel_skip else "private")
 
         return hook, args_split
 
@@ -280,8 +292,15 @@ class Module(ModuleManager.BaseModule):
             if event["action"]:
                 return
 
-            hook, args_split = self._find_command_hook(event["server"], command,
-                True, args_split)
+            try:
+                hook, args_split = self._find_command_hook(event["server"],
+                    command, True, args_split)
+            except BadContextException:
+                event["channel"].send_message(
+                    "%s: That command is not valid in a channel" %
+                    event["user"].nickname)
+                return
+
             if hook:
                 self.command(event["server"], event["channel"],
                     event["target_str"], True, event["user"], command,
@@ -325,8 +344,13 @@ class Module(ModuleManager.BaseModule):
 
             args_split = event["message_split"][1:]
 
-            hook, args_split = self._find_command_hook(event["server"], command,
-                False, args_split)
+            try:
+                hook, args_split = self._find_command_hook(event["server"],
+                    command, False, args_split)
+            except BadContextException:
+                event["user"].send_message(
+                    "That command is not valid in a PM")
+                return
 
             if hook:
                 self.command(event["server"], event["user"],
