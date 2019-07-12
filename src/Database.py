@@ -21,6 +21,10 @@ class Servers(Table):
             realname])
         return self.database.execute_fetchone(
             "SELECT server_id FROM servers ORDER BY server_id DESC LIMIT 1")[0]
+    def by_alias(self, alias: str) -> typing.Optional[int]:
+        ids = self.database.execute_fetchone(
+            "SELECT server_id FROM servers WHERE alias=?", [alias])
+        return ids[0] if ids else None
     def get_all(self):
         return self.database.execute_fetchall(
             "SELECT server_id, alias FROM servers")
@@ -45,6 +49,8 @@ class Servers(Table):
             raise ValueError("Unknown column on servers table '%s'" % column)
         self.database.execute(
             "UPDATE servers SET %s=? WHERE server_id=?" % column, [value, id])
+    def delete(self, id: int):
+        self.database.execute("DELETE FROM servers WHERE server_id=?", [id])
 
 class Channels(Table):
     def add(self, server_id: int, name: str):

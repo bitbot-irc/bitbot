@@ -46,6 +46,9 @@ arg_parser.add_argument("--module-args", "-M",
 arg_parser.add_argument("--startup-disconnects", "-D",
     help="Tolerate failed connections on startup", action="store_true")
 
+arg_parser.add_argument("--remove-server", "-R",
+    help="Remove a server by it's alias")
+
 args = arg_parser.parse_args()
 
 if args.version:
@@ -62,6 +65,16 @@ log.info("Starting BitBot %s (Python v%s)",
     [IRCBot.VERSION, platform.python_version()])
 
 database = Database.Database(log, args.database)
+
+if args.remove_server:
+    alias = args.remove_server
+    id = database.servers.by_alias(alias)
+    if not id == None:
+        database.servers.delete(id)
+        print("Deleted server '%s'" % alias)
+    else:
+        sys.stderr.write("Unknown server '%s'\n" % alias)
+    sys.exit(0)
 
 if args.add_server:
     print("Adding a new server")
