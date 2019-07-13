@@ -87,9 +87,9 @@ class Events(object):
         return self._call_limited(maximum, False, kwargs)
 
     def call_for_result(self, default=None, **kwargs):
-        return (self._call_limited(1, True, kwargs) or [defualt])[0]
+        return (self._call_limited(1, True, kwargs) or [default])[0]
     def call_for_result_unsafe(self, default=None, **kwargs):
-        return (self._call_limited(1, False, kwargs) or [defualt])[0]
+        return (self._call_limited(1, False, kwargs) or [default])[0]
 
     def get_children(self):
         return self._root._get_children(self._path)
