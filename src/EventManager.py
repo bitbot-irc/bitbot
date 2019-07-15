@@ -149,11 +149,11 @@ class EventRoot(object):
         path_str = self._path_str(path)
         if not path_str in self._hooks:
             self.log.trace("not calling non-hooked event \"%s\" (params: %s)",
-                [path_str, kwargs])
+                [path_str, str(kwargs)])
             return returns
 
         self.log.trace("calling event: \"%s\" (params: %s)",
-            [path_str, kwargs])
+            [path_str, str(kwargs)])
         start = time.monotonic()
 
         hooks = self._hooks[path_str]
