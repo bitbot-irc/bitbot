@@ -24,6 +24,8 @@ class Out(object):
         self._text += text
         self.written = True
         return self
+    def writeline(self, line):
+        self._text += "%s\n" % line
 
     def send(self, method):
         if self.has_text():
@@ -31,7 +33,11 @@ class Out(object):
             if not self._hide_prefix:
                 prefix = utils.consts.RESET + "[%s] " % self._prefix
 
-            full_text = "%s%s" % (prefix, self._text)
+            text = self._text[:].replace("\r", "")
+            while "\n\n" in text:
+                text = text.replace("\n\n", "\n")
+
+            full_text = "%s%s" % (prefix, text)
             line_factory = None
             if method == "PRIVMSG":
                 line_factory = utils.irc.protocol.privmsg
