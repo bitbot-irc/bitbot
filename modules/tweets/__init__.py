@@ -76,7 +76,8 @@ class Module(ModuleManager.BaseModule):
         return tweepy.API(auth)
 
     def _from_id(self, tweet_id):
-        return self._get_api(self._get_auth()).get_status(tweet_id)
+        return self._get_api(self._get_auth()).get_status(tweet_id,
+            tweet_mode="extended")
     def _from_username(self, username):
         return self._get_api(self._get_auth()).user_timeline(
             screen_name=username, count=1)[0]

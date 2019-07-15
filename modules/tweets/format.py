@@ -24,12 +24,12 @@ def _tweet(exports, server, tweet):
     # having to use hasattr here is nasty.
     if hasattr(tweet, "retweeted_status"):
         original_username = tweet.retweeted_status.user.screen_name
-        original_text = tweet.retweeted_status.text
+        original_text = tweet.retweeted_status.full_text
         original_timestamp = _timestamp(tweet.retweeted_status.created_at)
         return "(@%s%s (%s) retweeted @%s (%s)) %s%s" % (username, verified,
             created_at, original_username, original_timestamp,
             html.unescape(original_text), short_url)
     else:
         return "(@%s%s, %s) %s%s" % (username, verified, created_at,
-            html.unescape(tweet.text), short_url)
+            html.unescape(tweet.full_text), short_url)
 
