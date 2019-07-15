@@ -1,3 +1,6 @@
+#--depends-on config
+#--depends-on shorturl
+
 import time
 from src import ModuleManager, utils
 import feedparser
