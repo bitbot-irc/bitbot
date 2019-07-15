@@ -104,14 +104,18 @@ class ParsedLine(object):
                 else:
                     pieces.append(arg)
 
-        return tags, " ".join(pieces).split("\n")[0].strip("\r")
+        return tags, " ".join(pieces).replace("\r", "")
     def format(self) -> str:
         tags, line = self._format()
+        line, _ = self._newline_truncate(line)
         if tags:
             return "%s %s" % (tags, line)
         else:
             return line
 
+    def _newline_truncate(self, line: str) -> typing.Tuple[str, str]:
+        line, sep, overflow = line.partition("\n")
+        return [line, overflow]
     def _line_max(self, hostmask: str, margin: int) -> int:
         return LINE_MAX-len((":%s " % hostmask).encode("utf8"))-margin
     def truncate(self, hostmask: str, margin: int=0) -> typing.Tuple[str, str]:
@@ -123,7 +127,8 @@ class ParsedLine(object):
         tags_formatted, line_formatted = self._format()
         for i, char in enumerate(line_formatted):
             encoded_char = char.encode("utf8")
-            if len(valid_bytes)+len(encoded_char) > line_max:
+            if (len(valid_bytes)+len(encoded_char) > line_max
+                    or encoded_char == b"\n"):
                 break
             else:
                 valid_bytes += encoded_char
@@ -134,6 +139,8 @@ class ParsedLine(object):
         if tags_formatted:
             valid = "%s %s" % (tags_formatted, valid)
         overflow = line_formatted[valid_index:]
+        if overflow and overflow[0] == "\n":
+            overflow = overflow[1:]
 
         return valid, overflow
 
