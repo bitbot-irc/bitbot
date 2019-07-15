@@ -7,26 +7,31 @@ import feedparser
 
 RSS_INTERVAL = 60 # 1 minute
 
-def _format_entry(feed_title, entry):
-    title = entry["title"]
-
-    author = entry.get("author", None)
-    author = " by %s" % author if author else ""
-
-    link = entry.get("link", None)
-    link = " - %s" % link if link else ""
-
-    feed_title_str = "%s: " % feed_title if feed_title else ""
-
-    return "%s%s%s%s" % (feed_title_str, title, author, link)
-
 @utils.export("botset", utils.IntSetting("rss-interval",
     "Interval (in seconds) between RSS polls", example="120"))
+@utils.export("channelset", utils.BoolSetting("rss-shorten",
+    "Whether or not to shorten RSS urls"))
 class Module(ModuleManager.BaseModule):
     _name = "RSS"
     def on_load(self):
         self.timers.add("rss", self.bot.get_setting("rss-interval",
             RSS_INTERVAL))
+
+    def _format_entry(self, server, feed_title, entry, shorten):
+        title = entry["title"]
+
+        author = entry.get("author", None)
+        author = " by %s" % author if author else ""
+
+        link = entry.get("link", None)
+        if shorten:
+            link = self.exports.get_one("shorturl")(server, link)
+        link = " - %s" % link if link else ""
+
+        feed_title_str = "%s: " % feed_title if feed_title else ""
+
+        return "%s%s%s%s" % (feed_title_str, title, author, link)
+
 
     @utils.hook("timer.rss")
     def timer(self, event):
@@ -55,7 +60,6 @@ class Module(ModuleManager.BaseModule):
 
             feed = feedparser.parse(pages[url].data)
             feed_title = feed["feed"].get("title", None)
-            entry_formatted = {}
 
             for server, channel in channels:
                 seen_ids = channel.get_setting("rss-seen-ids-%s" % url, [])
@@ -71,11 +75,9 @@ class Module(ModuleManager.BaseModule):
                         continue
                     valid += 1
 
-                    if not entry_id in entry_formatted:
-                        output = _format_entry(feed_title, entry)
-                        entry_formatted[entry_id] = output
-                    else:
-                        output = entry_formatted[entry_id]
+                    shorten = channel.get_setting("rss-shorten", False)
+                    output = self._format_entry(server, feed_title, entry,
+                        shorten)
 
                     self.events.on("send.stdout").call(target=channel,
                         module_name="RSS", server=server, message=output)
