@@ -1,6 +1,8 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
+    _name = "isup"
+
     @utils.hook("received.command.isup")
     @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Check if a given URL is up or not")
