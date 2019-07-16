@@ -49,7 +49,8 @@ class Module(ModuleManager.BaseModule):
         for record_type in record_types:
             try:
                 record_type_strip = record_type.rstrip("?")
-                query_result = resolver.query(hostname, record_type_strip)
+                query_result = resolver.query(hostname, record_type_strip,
+                    lifetime=4)
                 query_results = [q.to_text() for q in query_result]
                 results.append([record_type_strip, query_results])
             except dns.resolver.NXDOMAIN:
