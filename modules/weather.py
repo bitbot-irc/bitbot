@@ -44,13 +44,17 @@ class Module(ModuleManager.BaseModule):
 
         args = {"units": "metric", "APPID": api_key}
 
-        location_name = None
-        if location:
-            lat, lon, location_name = location
-            args["lat"] = lat
-            args["lon"] = lon
-        else:
-            args["q"] = event["args"]
+
+        if location == None:
+            location_info = self.exports.get_one("get-location")(event["args"])
+            if location_info == None:
+                raise utils.EventError("Unknown location")
+            location = [location_info["lat"], location_info["lon"],
+                location_info.get("name", None)]
+
+        lat, lon, location_name = location
+        args["lat"] = lat
+        args["lon"] = lon
 
         page = utils.http.request(URL_WEATHER, get_params=args, json=True)
         if page:
