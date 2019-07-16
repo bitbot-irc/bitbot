@@ -25,18 +25,16 @@ class Module(ModuleManager.BaseModule):
         :usage: <hostname> [type [type ...]]
         :prefix: DNS
         """
-        hostname = event["args_split"][0]
-
+        args = event["args_split"][:]
         nameserver = event["server"].get_setting("dns-nameserver", None)
+        for i, arg in enumerate(args):
+            if arg[0] == "@":
+                nameserver = args.pop(i)[1:]
+                break
 
-        record_types = []
-        if len(event["args_split"]) > 1:
-            for arg in event["args_split"][1:]:
-                if arg.startswith("@"):
-                    nameserver = arg[1:]
-                else:
-                    record_types.append(arg.upper())
+        hostname = args[0]
 
+        record_types = args[1:]
         if not record_types:
             record_types = ["A?", "AAAA?"]
 
