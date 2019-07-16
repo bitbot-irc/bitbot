@@ -51,6 +51,9 @@ class Module(ModuleManager.BaseModule):
                         hooks[url] = []
                     hooks[url].append((server, channel))
 
+        if not hooks:
+            return
+
         pages = utils.http.request_many(hooks.keys())
 
         for url, channels in hooks.items():
