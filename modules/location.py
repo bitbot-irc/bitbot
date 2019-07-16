@@ -16,6 +16,7 @@ class Module(ModuleManager.BaseModule):
             example="London, GB")
         setting._func = self._get_location
         self.exports.add("set", setting)
+        self.exports.add("get-location", self._get_location)
 
     def _get_location(self,  s):
         page = utils.http.request(URL_OPENCAGE, get_params={
