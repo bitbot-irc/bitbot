@@ -95,9 +95,9 @@ class Module(ModuleManager.BaseModule):
             return self._ban_user(channel, ban, target_user)
         else:
             if ban:
-                event["target"].send_ban(target)
+                channel.send_ban(target)
             else:
-                event["target"].send_unban(target)
+                channel.send_unban(target)
             return target
 
     @utils.hook("received.command.ban", private_only=True, min_args=2)
