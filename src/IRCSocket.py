@@ -139,7 +139,7 @@ class Socket(IRCObject.Object):
                 self._recent_sends.clear()
 
             throttle_space = self.throttle_space()
-            if throttle_space:
+            if not self._buffered_lines and throttle_space:
                 to_buffer = self._queued_lines[:throttle_space]
                 self._queued_lines = self._queued_lines[throttle_space:]
                 for line in to_buffer:
