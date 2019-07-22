@@ -1,11 +1,16 @@
 from src import ModuleManager, utils
 
+BATCH_MAX = 10
+
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.001")
     def on_connect(self, event):
         channels = event["server"].get_setting("autojoin", [])
         if channels:
-                event["server"].send_joins(channels)
+            channel_batches = [channels[i:i+BATCH_MAX] for i in range(
+                0, len(channels), BATCH_MAX)]
+            for channel_batch in channel_batches:
+                event["server"].send_joins(channel_batch)
 
     @utils.hook("self.join")
     def on_join(self, event):
