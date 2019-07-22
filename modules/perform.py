@@ -6,7 +6,6 @@ from src import EventManager, ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     def _execute(self, server, commands, **kwargs):
         for command in commands:
-            print(command)
             server.send_raw(command.format(**kwargs))
 
     @utils.hook("received.001", priority=EventManager.PRIORITY_URGENT)
