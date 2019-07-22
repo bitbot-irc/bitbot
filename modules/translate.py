@@ -38,7 +38,7 @@ class Module(ModuleManager.BaseModule):
             "client": "gtx", "sl": source_language,
             "tl": target_language, "dt": "t", "q": phrase})
 
-        if page and not page.data == "[null,null,\"\"]":
+        if page and not page.data.startswith("[null,null,"):
             data = page.data
             while ",," in data:
                 data = data.replace(",,", ",null,")
