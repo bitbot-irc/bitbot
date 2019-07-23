@@ -56,32 +56,35 @@ class Module(ModuleManager.BaseModule):
                 return page.data["data"]["url"]
         return None
 
+    def _find_url(self, target, args):
+        url = None
+        if args:
+            url = args[0]
+            if not re.match(utils.http.REGEX_URL, url):
+                url = "http://%s" % url
+        else:
+            url = target.buffer.find(utils.http.REGEX_URL)
+            if url:
+                url = re.search(utils.http.REGEX_URL, url.message).group(0)
+                url = utils.http.url_sanitise(url)
+        if not url:
+            raise utils.EventError("No URL provided/found.")
+        return url
+
     @utils.hook("received.command.shorten")
     def shorten(self, event):
         """
         :help: Shorten a given URL
         :usage: <url>
         """
-        url = None
-        if len(event["args"]) > 0:
-            url = event["args_split"][0]
-            if not re.match(utils.http.REGEX_URL, url):
-                url = "http://%s" % url
-        else:
-            url = event["target"].buffer.find(utils.http.REGEX_URL)
-            if url:
-                url = re.search(utils.http.REGEX_URL, url.message).group(0)
-        if not url:
-            raise utils.EventError("No URL provided/found.")
+        url = self._find_url(event["target"], event["args_split"])
 
         event["stdout"].write("Shortened URL: %s" % self._shorturl(
             event["server"], url))
 
-    @utils.hook("received.command.unshorten", min_args=1)
+    @utils.hook("received.command.unshorten")
     def unshorten(self, event):
-        url = event["args_split"][0]
-        if not re.match(utils.http.REGEX_URL, url):
-            url = "http://%s" % url
+        url = self._find_url(event["target"], event["args_split"])
 
         try:
             response = utils.http.request(url, method="HEAD",
