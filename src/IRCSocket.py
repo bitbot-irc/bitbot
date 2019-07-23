@@ -22,6 +22,9 @@ class Socket(IRCObject.Object):
         self._cert = cert
         self._key = key
 
+        self._throttle_lines = THROTTLE_LINES
+        self._throttle_seconds = THROTTLE_SECONDS
+
         self.connected = False
 
         self._write_buffer = b""
@@ -181,14 +184,14 @@ class Socket(IRCObject.Object):
         popped = 0
         for i, recent_send in enumerate(self._recent_sends[:]):
             time_since = now-recent_send
-            if time_since >= THROTTLE_SECONDS:
+            if time_since >= self._throttle_seconds:
                 self._recent_sends.pop(i-popped)
                 popped += 1
 
     def throttle_space(self) -> int:
         if not self._write_throttling:
             return UNTHROTTLED_MAX_LINES
-        return max(0, THROTTLE_LINES-len(self._recent_sends))
+        return max(0, self._throttle_lines-len(self._recent_sends))
 
     def send_throttle_timeout(self) -> float:
         if len(self._write_buffer) or not self._write_throttling:
@@ -198,9 +201,13 @@ class Socket(IRCObject.Object):
         if self.throttle_space() > 0:
             return 0
 
-        time_left = self._recent_sends[0]+THROTTLE_SECONDS
+        time_left = self._recent_sends[0]+self._throttle_seconds
         time_left = time_left-time.monotonic()
         return time_left
 
     def enable_write_throttle(self):
         self._throttle_when_empty = True
+
+    def set_throttle(self, lines: int, seconds: int):
+        self._throttle_lines = lines
+        self._throttle_seconds = seconds
