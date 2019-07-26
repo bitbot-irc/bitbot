@@ -32,6 +32,8 @@ CHOICES = [
 ]
 
 class Module(ModuleManager.BaseModule):
+    _name = "8Ball"
+
     @utils.hook("received.command.8ball", min_args=1)
     def decide(selfs, event):
         """
