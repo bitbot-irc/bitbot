@@ -2,18 +2,19 @@
 #--depends-on config
 #--require-config google-api-key
 
-import re
+import re, urllib.parse
 from src import EventManager, ModuleManager, utils
 
-REGEX_YOUTUBE = re.compile(
-    "https?://(?:www.)?(?:youtu.be/|youtube.com/watch\?[\S]*v=)([\w\-]{11})",
-    re.I)
+REGEX_YOUTUBE = re.compile("https?://(?:www.)?(?:youtu.be/|youtube.com/)\\S+", re.I)
 REGEX_ISO8601 = re.compile("PT(\d+H)?(\d+M)?(\d+S)?", re.I)
 
 URL_YOUTUBESEARCH = "https://www.googleapis.com/youtube/v3/search"
 URL_YOUTUBEVIDEO = "https://www.googleapis.com/youtube/v3/videos"
+URL_YOUTUBEPLAYLIST = "https://www.googleapis.com/youtube/v3/playlists"
 
 URL_YOUTUBESHORT = "https://youtu.be/%s"
+URL_VIDEO = "https://www.youtube.com/watch?v=%s"
+URL_PLAYLIST = "https://www.youtube.com/playlist?list=%s"
 
 ARROW_UP = "↑"
 ARROW_DOWN = "↓"
@@ -64,6 +65,31 @@ class Module(ModuleManager.BaseModule):
                 video_title, video_duration, video_uploader, "{:,}".format(
                 int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
 
+    def get_playlist_page(self, playlist_id, part):
+         return utils.http.request(URL_YOUTUBEPLAYLIST, get_params={
+            "part": part, "id": playlist_id,
+            "key": self.bot.config["google-api-key"]}, json=True)
+    def playlist_details(self, playlist_id):
+        snippet = self.get_playlist_page(playlist_id, "snippet")
+        if snippet.data["items"]:
+            snippet = snippet.data["items"][0]["snippet"]
+
+            content = self.get_playlist_page(playlist_id, "contentDetails")
+            count = content.data["items"][0]["contentDetails"]["itemCount"]
+
+            return "%s - %s (%d %s) %s" % (snippet["channelTitle"],
+                snippet["title"], count, "video" if count == 1 else "videos",
+                URL_PLAYLIST % playlist_id)
+
+    def _from_url(self, url):
+        parsed = urllib.parse.urlparse(url)
+        query = urllib.parse.parse_qs(parsed.query)
+
+        if parsed.path == "/watch" and "v" in query:
+            return self.video_details(query["v"][0])
+        elif parsed.path == "/playlist" and "list" in query:
+            return self.playlist_details(query["list"][0])
+
     def _search_youtube(self, query):
         video_id = ""
 
@@ -85,48 +111,42 @@ class Module(ModuleManager.BaseModule):
         :help: Find a video on youtube
         :usage: [query/URL]
         """
-        video_id = None
+        url = None
         search = None
         if event["args"]:
             search = event["args"]
-        else:
-            last_youtube = event["target"].buffer.find(REGEX_YOUTUBE)
-            if last_youtube:
-                search = last_youtube.message
-
-        if search:
-            url_match = re.search(REGEX_YOUTUBE, search)
+            url_match = re.match(REGEX_YOUTUBE, event["args"])
             if url_match:
-                video_id = url_match.group(1)
-
-        if search or video_id:
-            safe_setting = event["target"].get_setting("youtube-safesearch",
-                True)
-            safe = "moderate" if safe_setting else "none"
-
-            if not video_id:
-                search_page = utils.http.request(URL_YOUTUBESEARCH,
-                    get_params={"q": search, "part": "snippet",
-                    "maxResults": "1", "type": "video",
-                    "key": self.bot.config["google-api-key"],
-                    "safeSearch": safe}, json=True)
-                if search_page:
-                    if search_page.data["pageInfo"]["totalResults"] > 0:
-                        video_id = search_page.data["items"][0]["id"]["videoId"]
-                    else:
-                        raise utils.EventError("No videos found")
-                else:
-                    raise utils.EventsResultsError()
-            if video_id:
-                details = self.video_details(video_id)
-                if details:
-                    event["stdout"].write(self.video_details(video_id))
-                else:
-                    raise utils.EventsResultsError()
+                url = event["args"]
             else:
-                event["stderr"].write("No search phrase provided")
+                search = event["args"]
         else:
-           event["stderr"].write("No search phrase provided")
+            url = event["target"].buffer.find(REGEX_YOUTUBE)
+
+        if not url:
+            safe_setting = event["target"].get_setting("youtube-safesearch", True)
+            safe = "moderate" if safe_setting else "none"
+            search_page = utils.http.request(URL_YOUTUBESEARCH,
+                get_params={"q": search, "part": "snippet", "maxResults": "1",
+                "type": "video", "key": self.bot.config["google-api-key"],
+                "safeSearch": safe}, json=True)
+            if search_page:
+                if search_page.data["pageInfo"]["totalResults"] > 0:
+                    url = URL_VIDEO % search_page.data[
+                        "items"][0]["id"]["videoId"]
+                else:
+                    raise utils.EventError("No videos found")
+            else:
+                raise utils.EventsResultsError()
+
+        if url:
+            out = self._from_url(url)
+            if not out == None:
+                event["stdout"].write(out)
+            else:
+                raise utils.EventsResultsError()
+        else:
+            event["stderr"].write("No search phrase provided")
 
     @utils.hook("command.regex")
     @utils.kwarg("priority", EventManager.PRIORITY_LOW)
@@ -135,8 +155,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("pattern", REGEX_YOUTUBE)
     def channel_message(self, event):
         if event["target"].get_setting("auto-youtube", False):
-            youtube_id = event["match"].group(1)
-            video_details = self.video_details(youtube_id)
-            if video_details:
-                event["stdout"].write(video_details)
-            event.eat()
+            out = self._from_url(event["match"].group(0))
+            if not out == None:
+                event.eat()
+                event["stdout"].write(out)
