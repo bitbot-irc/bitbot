@@ -209,23 +209,17 @@ class ModuleManager(object):
         # @utils.hook() magic
         for attribute_name in dir(module_object):
             attribute = getattr(module_object, attribute_name)
-            if inspect.ismethod(attribute):
-                kwargs = self._get_magic(attribute,
-                    utils.consts.BITBOT_KWARG_MAGIC, [])
-                kwargs = dict(list(d.items())[0] for d in kwargs)
+            if inspect.ismethod(attribute) and utils.has_magic(attribute):
+                magic = utils.get_magic(attribute)
 
-                for hook in self._get_magic(attribute,
-                        utils.consts.BITBOT_HOOKS_MAGIC, []):
-                    new_kwargs = kwargs.copy()
-                    new_kwargs.update(hook["kwargs"])
-
-                    context_events.on(hook["event"]).hook(attribute,
-                        **new_kwargs)
+                for hook, kwargs in magic.get_hooks():
+                    context_events.on(hook).hook(attribute, **dict(kwargs))
 
         # @utils.export() magic
-        for export in self._get_magic(module_object,
-                utils.consts.BITBOT_EXPORTS_MAGIC, []):
-            context_exports.add(export["setting"], export["value"])
+        if utils.has_magic(module_object):
+            magic = utils.get_magic(module_object)
+            for key, value in magic.get_exports():
+                context_exports.add(key, value)
 
         if definition.name in self.modules:
             raise ModuleNameCollisionException("Module name '%s' "
