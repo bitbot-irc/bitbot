@@ -36,5 +36,5 @@ class Module(ModuleManager.BaseModule):
         return lambda host, port, bind, timeout: self._make_socket(
             ptype, phost, pport, host, port, bind, timeout)
     def _make_socket(self, ptype, phost, pport, host, port, bind, timeout):
-        return socks.create_connection((host, port), 20, bind,
+        return socks.create_connection((host, port), timeout, bind,
             ptype, phost, pport)
