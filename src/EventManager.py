@@ -56,9 +56,9 @@ class EventHook(object):
         elif key in self._multi_kwargs:
             return self._multi_kwargs[key].copy()
         elif key in self.docstring.var_items:
-            return self.docstring.var_items[name]
+            return self.docstring.var_items[key]
         elif key in self.docstring.items:
-            return [self.docstring.items[name]]
+            return [self.docstring.items[key]]
         return []
     def get_kwarg(self, key: str, default: typing.Any=None) -> typing.Any:
         print(self.get_kwargs(key))
