@@ -92,7 +92,7 @@ class ParsedLine(object):
             tags = self._tag_str(self.tags)
 
         if self.source:
-            pieces.append(str(self.source))
+            pieces.append(":%s" % str(self.source))
 
         pieces.append(self.command.upper())
 
