@@ -363,11 +363,7 @@ class Module(ModuleManager.BaseModule):
 
     def _get_usage(self, hook, command, command_prefix=""):
         command = "%s%s" % (command_prefix, command)
-        usage = hook.get_kwarg("usage", None)
-        if usage:
-            usages = [usage]
-        else:
-            usages = hook.docstring.var_items.get("usage", None)
+        usages = hook.get_kwargs("usage")
 
         if usages:
             return " | ".join(

@@ -29,23 +29,40 @@ class Event(object):
 
 class EventHook(object):
     def __init__(self, event_name: str, func: CALLBACK_TYPE,
-            context: typing.Optional[str], priority: int, kwargs: dict):
+            context: typing.Optional[str], priority: int,
+            kwargs: typing.List[typing.Tuple[str, typing.Any]]):
         self.event_name = event_name
         self.function = func
         self.context = context
         self.priority = priority
-        self._kwargs = kwargs
         self.docstring = utils.parse.docstring(func.__doc__ or "")
+
+        self._kwargs = {}
+        self._multi_kwargs = {}
+        for key, value in kwargs:
+            if key in self._multi_kwargs:
+                self._multi_kwargs[key].append(value)
+            elif key in self._kwargs:
+                self._multi_kwargs[key] = [self._kwargs.pop(key), value]
+            else:
+                self._kwargs[key] = value
 
     def call(self, event: Event) -> typing.Any:
         return self.function(event)
 
-    def get_kwarg(self, name: str, default=None) -> typing.Any:
-        if name in self._kwargs:
-            return self._kwargs[name]
-        elif name in self.docstring.items:
-            return self.docstring.items[name]
-        return default
+    def get_kwargs(self, key: str) -> typing.List[typing.Any]:
+        if key in self._kwargs:
+            return [self._kwargs[key]]
+        elif key in self._multi_kwargs:
+            return self._multi_kwargs[key].copy()
+        elif key in self.docstring.var_items:
+            return self.docstring.var_items[name]
+        elif key in self.docstring.items:
+            return [self.docstring.items[name]]
+        return []
+    def get_kwarg(self, key: str, default: typing.Any=None) -> typing.Any:
+        print(self.get_kwargs(key))
+        return (self.get_kwargs(key) or [default])[0]
 
 class Events(object):
     def __init__(self, root: "EventRoot", path: typing.List[str],
@@ -71,6 +88,9 @@ class Events(object):
 
     def hook(self, func: CALLBACK_TYPE, priority: int = DEFAULT_PRIORITY,
             **kwargs):
+        self._hook(func, priority, list(kwargs.items()))
+    def _hook(self, func: CALLBACK_TYPE, priority: int = DEFAULT_PRIORITY,
+            kwargs: typing.List[typing.Tuple[str, typing.Any]] = []):
         self._root._hook(self._path, func, self._context, priority, kwargs)
 
     def call(self, **kwargs):

@@ -213,7 +213,7 @@ class ModuleManager(object):
                 magic = utils.get_magic(attribute)
 
                 for hook, kwargs in magic.get_hooks():
-                    context_events.on(hook).hook(attribute, **dict(kwargs))
+                    context_events.on(hook)._hook(attribute, kwargs=kwargs)
 
         # @utils.export() magic
         if utils.has_magic(module_object):
