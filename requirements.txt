@@ -3,6 +3,7 @@ dnspython
 feedparser
 lxml
 netifaces
+PySocks
 requests
 scrypt
 suds-jurko
