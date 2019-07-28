@@ -4,17 +4,21 @@ import hashlib
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.hash", min_args=2, remove_empty=False)
+    @utils.hook("received.command.hash", remove_empty=False)
     def hash(self, event):
         """
         :help: Hash a given string with a given algorithm
         :usage: <algo> <string>
         """
-        algorithm = event["args_split"][0].lower()
-        if algorithm in hashlib.algorithms_available:
+        if event["args_split"]:
+            algorithm = event["args_split"][0].lower()
             phrase = " ".join(event["args_split"][1:])
-            cipher_text = hashlib.new(algorithm, phrase.encode("utf8")
-                ).hexdigest()
-            event["stdout"].write("%s -> %s" % (phrase, cipher_text))
+            if algorithm in hashlib.algorithms_available:
+                cipher_text = hashlib.new(algorithm, phrase.encode("utf8")
+                    ).hexdigest()
+                event["stdout"].write("%s -> %s" % (phrase, cipher_text))
+            else:
+                event["stderr"].write("Unknown algorithm provided")
         else:
-            event["stderr"].write("Unknown algorithm provided")
+            event["stdout"].write("Available algorithms: %s" %
+                ", ".join(hashlib.algorithms_available))
