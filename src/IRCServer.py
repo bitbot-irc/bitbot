@@ -95,6 +95,7 @@ class Server(IRCObject.Object):
             tls_verify=self.get_setting("ssl-verify", True),
             cert=self.bot.config.get("tls-certificate", None),
             key=self.bot.config.get("tls-key", None))
+        self.events.on("preprocess.connect").call(server=self)
         self.socket.connect()
 
         if self.connection_params.password:

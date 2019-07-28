@@ -58,12 +58,15 @@ class Socket(IRCObject.Object):
             cert=self._cert, key=self._key, verify=self._tls_verify,
             hostname=server_hostname)
 
+    def _make_socket(self, hostname, port, bindhost, timeout):
+        return socket.create_connection((hostname, port), timeout, bindhost)
+
     def connect(self):
         bindhost = None
         if self._bindhost:
             bindhost = (self._bindhost, 0)
-        self._socket = socket.create_connection((self._hostname, self._port),
-            5.0, bindhost)
+        self._socket = self._make_socket(self._hostname, self._port, bindhost,
+            5.0)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
         if self._tls:
