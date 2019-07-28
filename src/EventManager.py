@@ -61,7 +61,6 @@ class EventHook(object):
             return [self.docstring.items[key]]
         return []
     def get_kwarg(self, key: str, default: typing.Any=None) -> typing.Any:
-        print(self.get_kwargs(key))
         return (self.get_kwargs(key) or [default])[0]
 
 class Events(object):
