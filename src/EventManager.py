@@ -150,7 +150,7 @@ class EventRoot(object):
 
         hook_position = 0
         for i, other_hook in enumerate(hook_array):
-            if other_hook.priority > new_hook.priority:
+            if new_hook.priority > other_hook.priority:
                 hook_position = i
                 break
 
