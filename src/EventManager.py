@@ -148,13 +148,14 @@ class EventRoot(object):
             self._hooks[path_str] = []
         hook_array = self._hooks[path_str]
 
-        hook_position = 0
+        hooked = False
         for i, other_hook in enumerate(hook_array):
             if other_hook.priority > new_hook.priority:
-                hook_position = i
+                hooked = True
+                hook_array.insert(i, new_hook)
                 break
-
-        hook_array.insert(hook_position, new_hook)
+        if not hooked:
+            hook_array.append(new_hook)
         return new_hook
 
     def _call(self, path: typing.List[str], kwargs: dict, safe: bool,
