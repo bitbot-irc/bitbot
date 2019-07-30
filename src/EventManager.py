@@ -90,6 +90,10 @@ class Events(object):
         self._hook(func, priority, list(kwargs.items()))
     def _hook(self, func: CALLBACK_TYPE, priority: int = DEFAULT_PRIORITY,
             kwargs: typing.List[typing.Tuple[str, typing.Any]] = []):
+        for key, value in kwargs:
+            if key == "priority":
+                priority = value
+                break
         self._root._hook(self._path, func, self._context, priority, kwargs)
 
     def call(self, **kwargs):
