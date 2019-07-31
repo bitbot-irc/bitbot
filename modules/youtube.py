@@ -85,7 +85,7 @@ class Module(ModuleManager.BaseModule):
         parsed = urllib.parse.urlparse(url)
         query = urllib.parse.parse_qs(parsed.query)
 
-        if parsed.hostname == "youtu.be" amd parsed.path:
+        if parsed.hostname == "youtu.be" and parsed.path:
             return self.video_details(parsed.path[1:])
         elif parsed.path == "/watch" and "v" in query:
             return self.video_details(query["v"][0])
