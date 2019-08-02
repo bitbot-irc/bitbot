@@ -74,7 +74,7 @@ class Module(ModuleManager.BaseModule):
                         preferred_username, retooted_user, retoot_content,
                         shorturl))
 
-                elif first_item["type"] == "Note":
+                elif first_item["type"] == "Create":
                     content = utils.http.strip_html(
                         first_item["object"]["content"])
                     url = first_itme["object"]["id"]
