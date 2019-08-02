@@ -44,11 +44,17 @@ class Module(ModuleManager.BaseModule):
 
             outbox = utils.http.request(outbox_url, headers=ACTIVITY_HEADERS,
                 json=True)
+            items = None
             if "first" in outbox.data:
-                outbox = utils.http.request(outbox.data["first"],
-                    headers=ACTIVITY_HEADERS, json=True)
+                if type(outbox.data["first"]) == dict:
+                    items = outbox.data["first"]["orderedItems"]
+                else:
+                    first = utils.http.request(outbox.data["first"],
+                        headers=ACTIVITY_HEADERS, json=True)
+                    items = first.data["orderedItems"]
+            else:
+                items = outbox.data["orderedItems"]
 
-            items = outbox.data["orderedItems"]
             if items:
                 first_item = items[0]
                 if first_item["type"] == "Announce":
