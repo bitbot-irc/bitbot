@@ -1,3 +1,4 @@
+import urllib.parse
 from src import ModuleManager, utils
 
 WEBFINGER = "https://%s/.well-known/webfinger"
@@ -49,11 +50,36 @@ class Module(ModuleManager.BaseModule):
 
             items = outbox.data["orderedItems"]
             if items:
-                first_item = items[0]["object"]["content"]
-                first_item = utils.http.strip_html(first_item)
-                url = items[0]["object"]["url"]
-                shorturl = self.exports.get_one("shorturl")(
-                    event["server"], url)
+                first_item = items[0]
+                if first_item["type"] == "Announce":
+                    retoot_url = first_item["object"]
+                    retoot_instance = urllib.parse.urlparse(retoot_url).hostname
+                    retoot = utils.http.request(retoot_url,
+                        headers=ACTIVITY_HEADERS, json=True)
 
-                event["stdout"].write("%s: %s - %s" % (preferred_username,
-                    first_item, shorturl))
+                    original_tooter_url = retoot.data["attributedTo"]
+                    original_tooter = utils.http.request(original_tooter_url,
+                        headers=ACTIVITY_HEADERS, json=True)
+
+                    retooted_user = "@%s@%s" % (
+                        original_tooter.data["preferredUsername"],
+                        retoot_instance)
+
+                    shorturl = self.exports.get_one("shorturl")(
+                        event["server"], retoot_url)
+                    retoot_content = utils.http.strip_html(
+                        retoot.data["content"])
+
+                    event["stdout"].write("%s (boost %s): %s - %s" % (
+                        preferred_username, retooted_user, retoot_content,
+                        shorturl))
+
+                elif first_item["type"] == "Note":
+                    content = utils.http.strip_html(
+                        first_item["object"]["content"])
+                    url = first_itme["object"]["id"]
+                    shorturl = self.exports.get_one("shorturl")(
+                        event["server"], url)
+
+                    event["stdout"].write("%s: %s - %s" % (preferred_username,
+                        content, shorturl))
