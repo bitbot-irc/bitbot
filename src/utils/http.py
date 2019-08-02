@@ -90,7 +90,7 @@ def request(url: str, method: str="GET", get_params: dict={},
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
     response_headers = utils.CaseInsensitiveDict(dict(response.headers))
-    content_type = response.headers["Content-Type"].split(";", 1)[0]
+    content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
 
     def _decode_data():
         return response_content.decode(response.encoding or fallback_encoding)
