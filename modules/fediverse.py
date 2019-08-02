@@ -89,3 +89,5 @@ class Module(ModuleManager.BaseModule):
 
                     event["stdout"].write("%s: %s - %s" % (preferred_username,
                         content, shorturl))
+        else:
+            raise utils.EventError("User not found")
