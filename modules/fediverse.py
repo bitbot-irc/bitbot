@@ -77,7 +77,7 @@ class Module(ModuleManager.BaseModule):
                 elif first_item["type"] == "Create":
                     content = utils.http.strip_html(
                         first_item["object"]["content"])
-                    url = first_itme["object"]["id"]
+                    url = first_item["object"]["id"]
                     shorturl = self.exports.get_one("shorturl")(
                         event["server"], url)
 
