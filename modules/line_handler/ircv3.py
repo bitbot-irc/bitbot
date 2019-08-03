@@ -79,7 +79,7 @@ def cap(exports, events, event):
     if subcommand == "DEL":
         for capability in capabilities.keys():
             event["server"].agreed_capabilities.discard(capability)
-            if capability and event["server"].server_capabilities:
+            if capability in event["server"].server_capabilities:
                 del event["server"].server_capabilities[capability]
 
         events.on("received.cap.del").call(server=event["server"],
