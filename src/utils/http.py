@@ -59,7 +59,7 @@ def request(url: str, method: str="GET", get_params: dict={},
         post_data: typing.Any=None, headers: dict={},
         json_data: typing.Any=None, code: bool=False, json: bool=False,
         soup: bool=False, parser: str="lxml", fallback_encoding: str="utf8",
-        allow_redirects: bool=True
+        allow_redirects: bool=True, check_content_type: bool=True
         ) -> Response:
 
     if not urllib.parse.urlparse(url).scheme:
@@ -96,12 +96,12 @@ def request(url: str, method: str="GET", get_params: dict={},
         return response_content.decode(response.encoding or fallback_encoding)
 
     if soup:
-        if content_type in SOUP_CONTENT_TYPES:
+        if not check_content_type or content_type in SOUP_CONTENT_TYPES:
             soup = bs4.BeautifulSoup(_decode_data(), parser)
             return Response(response.status_code, soup, response_headers)
         else:
             raise HTTPWrongContentTypeException(
-                "Tried to soup non-html/non-xml data")
+                "Tried to soup non-html/non-xml data (%s)" % content_type)
 
     data = _decode_data()
     if json and data:
