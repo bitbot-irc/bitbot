@@ -16,6 +16,7 @@ class Module(ModuleManager.BaseModule):
         setting = utils.OptionsSetting("url-shortener", [],
             "Set URL shortener service",
             options_factory=self._shorturl_options_factory)
+        self.exports.add("channelset", setting)
         self.exports.add("serverset", setting)
         self.exports.add("botset", setting)
 
@@ -37,8 +38,14 @@ class Module(ModuleManager.BaseModule):
     def _shorturl_any(self, url):
         return self._call_shortener("bitly", url) or url
 
-    def _shorturl(self, server, url):
-        shortener_name = server.get_setting("url-shortener", "bitly")
+    def _shorturl(self, server, url, context=None):
+        shortener_name = None
+        if context:
+            shortener_name = context.get_setting("url-shortener",
+                server.get_setting("url-shortener", "bitly"))
+        else:
+            shortener_name = server.get_setting("url-shortener", "bitly")
+
         if shortener_name == None:
             return url
         return self._call_shortener(shortener_name, url) or url
@@ -80,7 +87,7 @@ class Module(ModuleManager.BaseModule):
         url = self._find_url(event["target"], event["args_split"])
 
         event["stdout"].write("Shortened URL: %s" % self._shorturl(
-            event["server"], url))
+            event["server"], url, context=event["target"]))
 
     @utils.hook("received.command.unshorten")
     def unshorten(self, event):

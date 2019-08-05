@@ -37,7 +37,8 @@ class Module(ModuleManager.BaseModule):
                 "\r", "").replace("  ", " ").strip()
 
             if channel.get_setting("title-shorten", False):
-                short_url = self.exports.get_one("shorturl")(server, url)
+                short_url = self.exports.get_one("shorturl")(server, url,
+                    context=channel)
                 return "%s - %s" % (title, short_url)
             return title
         else:
