@@ -24,7 +24,6 @@ class Module(ModuleManager.BaseModule):
 
         hostmeta = utils.http.request(HOSTMETA % instance,
             soup=True, check_content_type=False)
-        print(hostmeta.data)
         webfinger_url = None
         for item in hostmeta.data.find_all("link"):
             if item["rel"] and item["rel"][0] == "lrdd":
@@ -41,7 +40,6 @@ class Module(ModuleManager.BaseModule):
             headers=WEBFINGER_HEADERS,
             get_params={"resource": "acct:%s" % full_username},
             json=True)
-        print(webfinger.data)
 
         activity_url = None
         for link in webfinger.data["links"]:
