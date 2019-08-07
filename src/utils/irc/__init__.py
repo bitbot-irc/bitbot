@@ -79,7 +79,6 @@ def parse_line(line: str) -> IRCLine.ParsedLine:
 
     return IRCLine.ParsedLine(command, args, source, tags)
 
-
 REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % utils.consts.COLOR)
 
 def color(s: str, foreground: utils.consts.IRCColor,
