@@ -91,7 +91,10 @@ class Module(ModuleManager.BaseModule):
         total_milliseconds = (time.monotonic() - start_time) * 1000
         self.log.trace("Polled RSS feeds in %fms", [total_milliseconds])
 
-    def _check_url(self, url):
+    def _get_id(self, entry):
+        return entry.get("id", entry["link"])
+
+    def _get_entries(self, url, max: int=None):
         try:
             data = utils.http.request(url)
             feed = feedparser.parse(data.data)
@@ -99,12 +102,12 @@ class Module(ModuleManager.BaseModule):
             self.log.warn("failed to parse RSS %s", [url], exc_info=True)
             feed = None
         if not feed or not feed["feed"]:
-            return None
+            return None, None
 
         entry_ids = []
         for entry in feed["entries"]:
             entry_ids.append(entry.get("id", entry["link"]))
-        return entry_ids
+        return feed["feed"].get("title", None), feed["entries"][:max]
 
     @utils.hook("received.command.rss", min_args=1, channel_only=True)
     def rss(self, event):
@@ -131,9 +134,11 @@ class Module(ModuleManager.BaseModule):
             if url in rss_hooks:
                 raise utils.EventError("That URL is already being watched")
 
-            seen_ids = self._check_url(url)
+            title, entries = self._get_entries(url)
             if seen_ids == None:
                 raise utils.EventError("Failed to read feed")
+
+            seen_ids = [self._get_id(e) for e in entries]
             event["target"].set_setting("rss-seen-ids-%s" % url, seen_ids)
 
             rss_hooks.append(url)
@@ -149,6 +154,18 @@ class Module(ModuleManager.BaseModule):
             rss_hooks.remove(url)
             changed = True
             message = "Removed RSS feed"
+        elif subcommand == "read":
+            if not len(event["args_split"]) > 1:
+                raise utils.EventError("Please provide a url")
+
+            title, entries = self._get_entries(event["args_split"][1])
+            if not entries:
+                raise utils.EventError("Failed to get RSS entries")
+
+            shorten = event["target"].get_setting("rss-shorten", False)
+            out = self._format_entry(event["server"], title, entries[0],
+                shorten)
+            event["stdout"].write(out)
         else:
             raise utils.EventError("Unknown subcommand '%s'" % subcommand)
 
