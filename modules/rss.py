@@ -135,7 +135,7 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("That URL is already being watched")
 
             title, entries = self._get_entries(url)
-            if seen_ids == None:
+            if entries == None:
                 raise utils.EventError("Failed to read feed")
 
             seen_ids = [self._get_id(e) for e in entries]
