@@ -4,10 +4,60 @@ Added:
 - `rss.py`
 - Show `weather.py` windspeed in MPh too
 - `git_webhooks/gitea.py`
+- `acronym.py`
+- `!editserver` in `admin.py`
+- `channel_keys.py` to centrally track/use channel keys
+- `!mute` and `!unmute` in `channel_op.py`
+- `command_suggestions.py`
+- appendable command prefixes
+- `@utils.kwarg`
+- `fediverse.py`
+- gitea webhooks (`git_webhooks/gitea.py`)
+- Show available `!hash` algorithms
+- per-channel-per-user ignores (`ignore.py`, `!cignore`)
+- `ircv3.py` - to show ircv3 support stats
+- `isup.py`
+- `kick_rejoin.py`
+- Handle `ERR_UNAVAILRESOURCE`
+- `onionoo.py` (thanks @irl)
+- `ops.py` to highlight ops (opt-in)
+- Per-channel `perform.py` (`!cperform`)
+- `proxy.py`
+- Configurable URL shorteners (`shorturl.py`)
+- `!unshorten` (`shorturl.py`)
+- `slowvoice.py`
+- `throttle.py`
+- `!timezone` (`user_time.py`)
+- Show `!weather` target nickname in command prefix
+- Parse youtube playlists (`youtube.py`)
+- `utils.http.url_sanitise()`
+- `utils.http.request_many()`
+- `./start.py --startup-disconnects`
+- `./start.py --remove-server <alias>`
 
 Changed:
 - Move `_check()` call to event loop func
 - Split out github webhook functionality to `git_webhooks/github.py`
+- Refactored @utils.export settings to be object-oriented
+- Warn when channel-only/private-only is not met
+- `8ball.py` -> `eightball.py` (can't import things that start with a digit)
+- `github.py` -> `git_webhooks`
+- revamp `!dns` to take optional nameserver and record typ
+- `!quotedel` without quote removes most recent
+- Relays moved to relay "groups" that channels can "join" and "leave"
+- Rewrote `EventManager` for efficiency and simplicity
+- Moved timers/cache/etc from read loop to event loop
+- Better and more exhaustive channel move tracking
+- Don't silently truncate `ParsedLine` at newline
+- `@utils.hook`/`@utils.export` now use a single object that handles parsing
+
+Fixed:
+- Catch and rethrow not-found definitions in `define.py`
+- `ircv3_botignore.py` event priority
+- `CAP DEL` crash when `DEL`ing something that was not advertised
+- `ParsedLine.format()` didn't prefix `source` with `":"`
+- `_write_buffer` locking to avoid race condition
+- `Capability().copy().depends_on` was mutable to the original copy
 
 # 2019-06-23 - BitBot v1.10.0
 
