@@ -155,10 +155,16 @@ class Module(ModuleManager.BaseModule):
             changed = True
             message = "Removed RSS feed"
         elif subcommand == "read":
+            url = None
             if not len(event["args_split"]) > 1:
-                raise utils.EventError("Please provide a url")
+                if len(rss_hooks) == 1:
+                    url = rss_hooks[0]
+                else:
+                    raise utils.EventError("Please provide a url")
+            else:
+                url = event["args_split"][1]
 
-            title, entries = self._get_entries(event["args_split"][1])
+            title, entries = self._get_entries(url)
             if not entries:
                 raise utils.EventError("Failed to get RSS entries")
 
