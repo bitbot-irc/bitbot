@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on shorturl
 
-import time
+import hashlib, time
 from src import ModuleManager, utils
 import feedparser
 
@@ -63,15 +63,14 @@ class Module(ModuleManager.BaseModule):
 
             feed = feedparser.parse(pages[url].data)
             feed_title = feed["feed"].get("title", None)
+            max_ids = len(feed["entries"])*10
 
             for server, channel in channels:
                 seen_ids = channel.get_setting("rss-seen-ids-%s" % url, [])
-                new_ids = []
                 valid = 0
                 for entry in feed["entries"][::-1]:
-                    entry_id = entry.get("id", entry["link"])
+                    entry_id = self._get_id(entry)
                     if entry_id in seen_ids:
-                        new_ids.append(entry_id)
                         continue
 
                     if valid == 3:
@@ -84,15 +83,18 @@ class Module(ModuleManager.BaseModule):
 
                     self.events.on("send.stdout").call(target=channel,
                         module_name="RSS", server=server, message=output)
-                    new_ids.append(entry_id)
+                    seen_ids.append(entry_id)
 
-                channel.set_setting("rss-seen-ids-%s" % url, new_ids)
+                if len(seen_ids) > max_ids:
+                    seen_ids = seen_ids[len(seen_ids)-max_ids:]
+                channel.set_setting("rss-seen-ids-%s" % url, seen_ids)
 
         total_milliseconds = (time.monotonic() - start_time) * 1000
         self.log.trace("Polled RSS feeds in %fms", [total_milliseconds])
 
     def _get_id(self, entry):
-        return entry.get("id", entry["link"])
+        return "sha1:%s" % hashlib.sha1(entry.get("id", entry["link"]
+            ).encode("utf8")).hexdigest()
 
     def _get_entries(self, url, max: int=None):
         try:
