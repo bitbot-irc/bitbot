@@ -52,7 +52,8 @@ class Module(ModuleManager.BaseModule):
                 query_result = resolver.query(hostname, record_type_strip,
                     lifetime=4)
                 query_results = [q.to_text() for q in query_result]
-                results.append([record_type_strip, query_results])
+                results.append([record_type_strip, query_result.rrset.ttl,
+                    query_results])
             except dns.resolver.NXDOMAIN:
                 raise utils.EventError("Domain not found")
             except dns.resolver.NoAnswer:
@@ -67,7 +68,8 @@ class Module(ModuleManager.BaseModule):
                 self.log.warn(message, exc_info=True)
                 raise utils.EventError(message)
 
-        results_str = ["%s: %s" % (t, ", ".join(r)) for t, r in results]
+        results_str = ["%s (TTL %s): %s" %
+            (t, ttl, ", ".join(r)) for t, ttl, r in results]
         event["stdout"].write("(%s) %s" % (hostname, " | ".join(results_str)))
 
     @utils.hook("received.command.geoip", min_args=1)
