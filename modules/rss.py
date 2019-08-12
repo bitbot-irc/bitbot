@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on shorturl
 
-import hashlib, time
+import difflib, hashlib, time
 from src import ModuleManager, utils
 import feedparser
 
@@ -153,7 +153,11 @@ class Module(ModuleManager.BaseModule):
 
             url = utils.http.url_sanitise(event["args_split"][1])
             if not url in rss_hooks:
-                raise utils.EventError("I'm not watching that URL")
+                matches = difflib.get_close_matches(url, rss_hooks, cutoff=0.5)
+                if matches:
+                    raise utils.EventError("Did you mean %s ?" % matches[0])
+                else:
+                    raise utils.EventError("I'm not watching that URL")
             rss_hooks.remove(url)
             changed = True
             message = "Removed RSS feed"
