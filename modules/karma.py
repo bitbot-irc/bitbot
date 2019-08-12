@@ -25,7 +25,22 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("new.user")
     def new_user(self, event):
-        event["user"].last_karma = None
+        event["user"]._last_positive_karma = None
+        event["user"]._last_negative_karma = None
+
+    def _check_throttle(self, user, positive):
+        timestamp = None
+        if positive:
+            timestamp = user._last_positive_karma
+        else:
+            timestamp = user._last_negative_karma
+        return timestamp == None or (time.time()-timestamp
+            ) >= KARMA_DELAY_SECONDS
+    def _set_throttle(self, user, positive):
+        if positive:
+            user._last_positive_karma = time.time()
+        else:
+            user._last_negative_karma = time.time()
 
     @utils.hook("command.regex")
     @utils.kwarg("command", "karma")
@@ -34,9 +49,9 @@ class Module(ModuleManager.BaseModule):
         verbose = event["target"].get_setting("karma-verbose", False)
         nickname_only = event["server"].get_setting("karma-nickname-only",
             False)
+        positive = event["match"].group(2)[0] == "+"
 
-        if not event["user"].last_karma or (time.time()-event["user"
-                ].last_karma) >= KARMA_DELAY_SECONDS:
+        if self._check_throttle(event["user"], positive):
             target = event["match"].group(1).strip().rstrip("".join(WORD_STOP))
             if not target:
                 return
@@ -55,7 +70,6 @@ class Module(ModuleManager.BaseModule):
                 if not event["target"].has_user(user):
                     return
 
-            positive = event["match"].group(2)[0] == "+"
             karma = setting_target.get_setting(setting, 0)
             karma += 1 if positive else -1
 
@@ -68,7 +82,7 @@ class Module(ModuleManager.BaseModule):
             if verbose:
                 event["stdout"].write(
                     "%s now has %s karma" % (target, karma_str))
-            event["user"].last_karma = time.time()
+            self._set_throttle(event["user"], positive)
         elif verbose:
             event["stderr"].write("Try again in a couple of seconds")
 
