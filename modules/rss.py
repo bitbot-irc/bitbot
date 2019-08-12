@@ -69,8 +69,8 @@ class Module(ModuleManager.BaseModule):
                 seen_ids = channel.get_setting("rss-seen-ids-%s" % url, [])
                 valid = 0
                 for entry in feed["entries"][::-1]:
-                    entry_id = self._get_id(entry)
-                    if entry_id in seen_ids:
+                    entry_id, entry_id_hash = self._get_id(entry)
+                    if entry_id_hash in seen_ids or entry_id in seen_ids:
                         continue
 
                     if valid == 3:
@@ -83,7 +83,7 @@ class Module(ModuleManager.BaseModule):
 
                     self.events.on("send.stdout").call(target=channel,
                         module_name="RSS", server=server, message=output)
-                    seen_ids.append(entry_id)
+                    seen_ids.append(entry_id_hash)
 
                 if len(seen_ids) > max_ids:
                     seen_ids = seen_ids[len(seen_ids)-max_ids:]
@@ -93,8 +93,9 @@ class Module(ModuleManager.BaseModule):
         self.log.trace("Polled RSS feeds in %fms", [total_milliseconds])
 
     def _get_id(self, entry):
-        return "sha1:%s" % hashlib.sha1(entry.get("id", entry["link"]
-            ).encode("utf8")).hexdigest()
+        entry_id = entry.get("id", entry["link"])
+        entry_id_hash = hashlib.sha1(entry_id.encode("utf8")).hexdigest()
+        return entry_id, "sha1:%s" % entry_id_hash
 
     def _get_entries(self, url, max: int=None):
         try:
@@ -140,7 +141,7 @@ class Module(ModuleManager.BaseModule):
             if entries == None:
                 raise utils.EventError("Failed to read feed")
 
-            seen_ids = [self._get_id(e) for e in entries]
+            seen_ids = [self._get_id(e)[1] for e in entries]
             event["target"].set_setting("rss-seen-ids-%s" % url, seen_ids)
 
             rss_hooks.append(url)
