@@ -13,6 +13,11 @@ class BufferLine(object):
         self.from_self = from_self
         self.method = method
 
+class BufferLineMatch(object):
+    def __init__(self, line: BufferLine, match: str):
+        self.line = line
+        self.match = match
+
 class Buffer(object):
     def __init__(self, bot: "IRCBot.Bot", server: "IRCServer.Server"):
         self.bot = bot
@@ -42,7 +47,7 @@ class Buffer(object):
             return line
         return None
     def find(self, pattern: typing.Union[str, typing.Pattern[str]], **kwargs
-            ) -> typing.Optional[BufferLine]:
+            ) -> typing.Optional[BufferLineMatch]:
         from_self = kwargs.get("from_self", True)
         for_user = kwargs.get("for_user", "")
         for_user = self.server.irc_lower(for_user) if for_user else None
@@ -50,13 +55,15 @@ class Buffer(object):
         for line in self._lines:
             if line.from_self and not from_self:
                 continue
-            elif re.search(pattern, line.message):
-                if not_pattern and re.search(not_pattern, line.message):
-                    continue
-                if for_user and not self.server.irc_lower(line.sender
-                        ) == for_user:
-                    continue
-                return line
+            else:
+                match = re.search(pattern, line.message)
+                if match:
+                    if not_pattern and re.search(not_pattern, line.message):
+                        continue
+                    if for_user and not self.server.irc_lower(line.sender
+                            ) == for_user:
+                        continue
+                return BufferLineMatch(line, match.group(0))
         return None
 
     def find_from(self, nickname: str) -> typing.Optional[BufferLine]:

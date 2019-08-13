@@ -152,7 +152,8 @@ class Module(ModuleManager.BaseModule):
         else:
             target = event["target"].buffer.find(REGEX_TWITTERURL)
             if target:
-                target = target.message
+                target = target.match
+
         if target:
             url_match = re.search(REGEX_TWITTERURL, target)
             if url_match or target.isdigit():

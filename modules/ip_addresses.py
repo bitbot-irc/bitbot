@@ -7,7 +7,7 @@ import dns.resolver
 URL_GEOIP = "http://ip-api.com/json/%s"
 REGEX_IPv6 = r"(?:(?:[a-f0-9]{1,4}:){2,}|[a-f0-9:]*::)[a-f0-9:]*"
 REGEX_IPv4 = r"(?:\d{1,3}\.){3}\d{1,3}"
-REGEX_IP = re.compile("(%s)|(%s)" % (REGEX_IPv4, REGEX_IPv6), re.I)
+REGEX_IP = re.compile("%s|%s" % (REGEX_IPv4, REGEX_IPv6), re.I)
 
 class DnsSetting(utils.Setting):
     def parse(self, value: str) -> typing.Any:
@@ -109,8 +109,7 @@ class Module(ModuleManager.BaseModule):
         if not ip:
             line = event["target"].buffer.find(REGEX_IP)
             if line:
-                match = REGEX_IP.search(line.message)
-                ip = match.group(1) or match.group(2)
+                ip = line.match
         if not ip:
             raise utils.EventError("No IP provided")
 

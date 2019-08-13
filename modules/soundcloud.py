@@ -30,8 +30,7 @@ class Module(ModuleManager.BaseModule):
         else:
             last_soundcloud = event["target"].buffer.find(REGEX_SOUNDCLOUD)
             if last_soundcloud:
-                url = re.match(REGEX_SOUNDCLOUD,
-                    last_soundcloud.message).string
+                url = last_soundcloud.match
 
         if not query and not url:
             raise utils.EventError("no search phrase provided")

@@ -72,8 +72,7 @@ class Module(ModuleManager.BaseModule):
         else:
             url = target.buffer.find(utils.http.REGEX_URL)
             if url:
-                url = re.search(utils.http.REGEX_URL, url.message).group(0)
-                url = utils.http.url_sanitise(url)
+                url = utils.http.url_sanitise(url.match)
         if not url:
             raise utils.EventError("No URL provided/found.")
         return url

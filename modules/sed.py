@@ -54,12 +54,13 @@ class Module(ModuleManager.BaseModule):
 
             for_user = event["user"].nickname if self._closest_setting(event,
                 "sed-sender-only", False) else None
-            line = event["target"].buffer.find(pattern, from_self=False,
+            match = event["target"].buffer.find(pattern, from_self=False,
                 for_user=for_user, not_pattern=REGEX_SED)
-            if line:
-                new_message = re.sub(pattern, replace, line.message, count)
-                if line.action:
-                    prefix = "* %s" % line.sender
+            if match:
+                new_message = re.sub(pattern, replace, match.line.message,
+                    count)
+                if match.line.action:
+                    prefix = "* %s" % match.line.sender
                 else:
-                    prefix = "<%s>" % line.sender
+                    prefix = "<%s>" % match.line.sender
                 event["stdout"].write("%s %s" % (prefix, new_message))

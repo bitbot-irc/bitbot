@@ -84,9 +84,9 @@ class Module(ModuleManager.BaseModule):
         if len(event["args"]) > 0:
             url = event["args_split"][0]
         else:
-            url = event["target"].buffer.find(utils.http.REGEX_URL)
-            if url:
-                url = re.search(utils.http.REGEX_URL, url.message).group(0)
+            match = event["target"].buffer.find(utils.http.REGEX_URL)
+            if match:
+                url = match.match
         if not url:
             raise utils.EventError("No URL provided/found.")
 
