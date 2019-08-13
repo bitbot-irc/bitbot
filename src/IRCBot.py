@@ -3,7 +3,7 @@ import typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import Socket, utils
 
-VERSION = "v1.11.0-rc1"
+VERSION = "v1.11.0-rc2"
 SOURCE = "https://git.io/bitbot"
 URL = "https://bitbot.dev"
 
