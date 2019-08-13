@@ -51,3 +51,7 @@ This is generally done within settings of your repository and may depend on the 
 * HTTP Method: TODO: is it supposed to be POST or GET? I am assuming POST.
 * POST Content Type: TODO: application/json or application/x-www-form-urlencoded ?
 * Secret: the `<random-string>` which in case of Gitea was likely automatically moved here
+
+### Managing API keys
+
+TODO: How to list, remove and rename API keys?
