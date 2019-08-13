@@ -4,7 +4,7 @@
 #--require-config tls-api-key
 #--require-config tls-api-certificate
 
-import http.server, json, ssl, threading, uuid, urllib.parse
+import http.server, json, socket, ssl, threading, uuid, urllib.parse
 from src import ModuleManager, utils
 
 _bot = None
@@ -110,6 +110,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         return
 
+class BitBotIPv6HTTPd(http.server.HTTPServer):
+    address_family = socket.AF_INET6
+
 @utils.export("botset",
     utils.BoolSetting("rest-api", "Enable/disable REST API"))
 @utils.export("botset",
@@ -128,7 +131,7 @@ class Module(ModuleManager.BaseModule):
         self.httpd = None
         if self.bot.get_setting("rest-api", False):
             port = int(self.bot.config.get("api-port", "5000"))
-            self.httpd = http.server.HTTPServer(("", port), Handler)
+            self.httpd = BitBotIPv6HTTPd(("", port), Handler)
 
             self.httpd.socket = utils.security.ssl_wrap(self.httpd.socket,
                 cert=self.bot.config["tls-api-certificate"],
