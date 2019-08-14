@@ -6,12 +6,11 @@ SECONDS_MAX = utils.SECONDS_WEEKS*8
 SECONDS_MAX_DESCRIPTION = "8 weeks"
 
 class Module(ModuleManager.BaseModule):
+    @utils.hook("received.command.remindme", alias_of="in")
     @utils.hook("received.command.in", min_args=2)
+    @utils.kwarg("help", "Set a reminder")
+    @utils.kwarg("usage", "<time> <message>")
     def in_command(self, event):
-        """
-        :help: Set a reminder
-        :usage: <time> <message>
-        """
         seconds = utils.from_pretty_time(event["args_split"][0])
         message = " ".join(event["args_split"][1:])
         if seconds:
