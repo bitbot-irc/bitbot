@@ -16,7 +16,6 @@ class Module(ModuleManager.BaseModule):
                 event["channel"].users))
 
             highlights = set(nicknames) & set(event["message_split"])
-            print(highlights)
             if len(highlights) > 1 and len(highlights) >= event["channel"
                     ].get_setting("highlight-spam-threshold", 10):
                 has_mode = event["channel"].mode_or_above(event["user"], "v")
