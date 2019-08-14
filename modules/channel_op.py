@@ -20,6 +20,8 @@ KICK_REASON_SETTING = utils.Setting("default-kick-reason",
 @utils.export("serverset", KICK_REASON_SETTING)
 @utils.export("channelset", KICK_REASON_SETTING)
 class Module(ModuleManager.BaseModule):
+    _name = "ChanOp"
+
     def _parse_time(self, args, min_args):
         if args[0][0] == "+":
             if len(args[1:]) < min_args:
