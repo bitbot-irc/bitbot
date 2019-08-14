@@ -102,7 +102,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "[+time] <nickname> [reason]")
     def kickban(self, event):
         time, args = self._parse_time(event["args_split"], 1)
-        self._ban(event["server"], event["target"], args[0], False, time)
+        self._ban(event["server"], event["target"], args[0], False, time, True)
         self._kick(event["server"], event["target"], args[0], args[1:])
 
     @utils.hook("received.command.op")
