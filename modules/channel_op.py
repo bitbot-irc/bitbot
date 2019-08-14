@@ -174,18 +174,18 @@ class Module(ModuleManager.BaseModule):
             return None, None
         raise ValueError("Unknown mute-method '%s'" % mute_method)
 
-    @utils.hook("received.command.mute", usage="<nickname> [duration]")
+    @utils.hook("received.command.mute", usage="[+time] <nickname>")
     @utils.hook("received.command.unmute", usage="<nickname>")
     @utils.kwarg("min_args", 1)
     @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "mute")
     @utils.kwarg("help", "Mute a given user")
-    @utils.kwarg("usage", "<nickname>")
     def _mute(self, event):
         add = event.name == "received.command.mute"
+        time, args = self._parse_time(event["args_split"], 1)
 
-        target_name = event["args_split"][0]
+        target_name = args[0]
         if not event["server"].has_user(target_name):
             raise utils.EventError("No such user")
 
@@ -197,12 +197,8 @@ class Module(ModuleManager.BaseModule):
         if mode == None:
             raise utils.EventError("This network doesn't support mutes")
 
-        if add and len(event["args_split"]) > 1:
-            duration = utils.from_pretty_time(event["args_split"][1])
-            if duration == None:
-                raise utils.EventError("Invalid duration")
-
-            self.timers.add_persistent("unmute", duration,
+        if add and time:
+            self.timers.add_persistent("unmute", time,
                 server_id=event["server"].id, channel_name=event["target"].name,
                 mode=mode, mask=mask)
 
