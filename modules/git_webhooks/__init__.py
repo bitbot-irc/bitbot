@@ -65,13 +65,14 @@ class Module(ModuleManager.BaseModule):
         repo_hooked = False
 
         for server_id, channel_name, hooked_repos in hooks:
+            hooked_repos_lower = {k.lower(): v for k, v in hooked_repos.items()}
             found_hook = None
-            if full_name_lower and full_name_lower in hooked_repos:
-                found_hook = hooked_repos[full_name_lower]
-            elif repo_username_lower and repo_username_lower in hooked_repos:
-                found_hook = hooked_repos[repo_username_lower]
-            elif organisation_lower and organisation_lower in hooked_repos:
-                found_hook = hooked_repos[organisation_lower]
+            if full_name_lower and full_name_lower in hooked_repos_lower:
+                found_hook = hooked_repos_lower[full_name_lower]
+            elif repo_username_lower and repo_username_lower in hooked_repos_lower:
+                found_hook = hooked_repos_lower[repo_username_lower]
+            elif organisation_lower and organisation_lower in hooked_repos_lower:
+                found_hook = hooked_repos_lowers[organisation_lower]
             else:
                 continue
 
