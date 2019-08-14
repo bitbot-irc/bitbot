@@ -34,6 +34,9 @@ Added:
 - `utils.http.request_many()`
 - `./start.py --startup-disconnects`
 - `./start.py --remove-server <alias>`
+- `!remindme` as an alias of `!in` (`in.py`)
+- `!source` and `!version` (`info.py`)
+- Show TTL for DNS records (`ip_addresses.py`)
 
 Changed:
 - Move `_check()` call to event loop func
@@ -50,6 +53,11 @@ Changed:
 - Better and more exhaustive channel move tracking
 - Don't silently truncate `ParsedLine` at newline
 - `@utils.hook`/`@utils.export` now use a single object that handles parsing
+- `!ban`/`!kickban`/`!mute` duration syntax changed (`channel_op.py`)
+- Highlight spam protection logic moved to own module (`highlight_spam.py`)
+- `IRCBuffer.find()` returns the matched string
+- Positive and negative karma throttled seperately (`karma.py`)
+- REST API now listens in IPv6 (`rest_api.py`)
 
 Fixed:
 - Catch and rethrow not-found definitions in `define.py`
