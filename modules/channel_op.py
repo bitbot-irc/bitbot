@@ -7,12 +7,18 @@ from src import ModuleManager, utils
 
 KICK_REASON = "your behavior is not conducive to the desired environment"
 
+KICK_REASON_SETTING = utils.Setting("default-kick-reason",
+    "Set the default kick reason", example="have a nice trip")
+
 @utils.export("channelset", utils.Setting("ban-format",
     "Set ban format ($n = nick, $u = username, $h = hostname)",
     example="*!$u@$h"))
 @utils.export("serverset", utils.OptionsSetting("mute-method",
     ["qmode", "insp", "unreal", "none"],
     "Set this server's method of muting users"))
+@utils.export("botset", KICK_REASON_SETTING)
+@utils.export("serverset", KICK_REASON_SETTING)
+@utils.export("channelset", KICK_REASON_SETTING)
 class Module(ModuleManager.BaseModule):
     def _parse_time(self, args, min_args):
         if args[0][0] == "+":
@@ -24,10 +30,15 @@ class Module(ModuleManager.BaseModule):
             return time, args[1:]
         return None, args
 
+    def _kick_reason(self, server, channel):
+        return channel.get_setting("default-kick-reason",
+            server.get_setting("default-kick-reason",
+            self.bot.get_setting("default-kick-reson", KICK_REASON)))
+
     def _kick(self, server, channel, target_nickname, reason):
         target_user = server.get_user(target_nickname, create=False)
         if target_user and channel.has_user(target_user):
-            reason = " ".join(reason) or KICK_REASON
+            reason = " ".join(reason) or self._kick_reason(server, channel)
             channel.send_kick(target_user.nickname, reason)
         else:
             raise utils.EventError("No such user")
