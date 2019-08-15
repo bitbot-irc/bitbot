@@ -37,6 +37,7 @@ Added:
 - `!remindme` as an alias of `!in` (`in.py`)
 - `!source` and `!version` (`info.py`)
 - Show TTL for DNS records (`ip_addresses.py`)
+- `!addpoint`/`!rmpoint` as more explicit `++`/`--` for karma (`karma.py`)
 
 Changed:
 - Move `_check()` call to event loop func
