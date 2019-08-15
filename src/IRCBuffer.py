@@ -63,7 +63,7 @@ class Buffer(object):
                     if for_user and not self.server.irc_lower(line.sender
                             ) == for_user:
                         continue
-                return BufferLineMatch(line, match.group(0))
+                    return BufferLineMatch(line, match.group(0))
         return None
 
     def find_from(self, nickname: str) -> typing.Optional[BufferLine]:
