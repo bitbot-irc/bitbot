@@ -42,33 +42,22 @@ class Module(ModuleManager.BaseModule):
         else:
             user._last_negative_karma = time.time()
 
-    @utils.hook("command.regex")
-    @utils.kwarg("command", "karma")
-    @utils.kwarg("pattern", REGEX_KARMA)
-    def channel_message(self, event):
-        verbose = event["target"].get_setting("karma-verbose", False)
-        nickname_only = event["server"].get_setting("karma-nickname-only",
-            False)
-        positive = event["match"].group(2)[0] == "+"
 
-        if self._check_throttle(event["user"], positive):
-            target = event["match"].group(1).strip().rstrip("".join(WORD_STOP))
-            if not target:
-                return
+    def _karma(self, server, sender, target, positive):
+        if self._check_throttle(sender, positive):
+            nickname_only = server.get_setting("karma-nickname-only", False)
 
-            if event["server"].irc_lower(target) == event["user"].name:
-                if verbose:
-                    event["stderr"].write("You cannot change your own karma")
-                return
+            if server.irc_lower(target) == sender.name:
+                return False, "You cannot change your own karma"
 
             setting = "karma-%s" % target
-            setting_target = event["server"]
+            setting_target = server
             if nickname_only:
-                user = event["server"].get_user(target)
+                user = server.get_user(target, create=False)
+                if user == None:
+                    return False, "No such user"
                 setting = "karma"
                 setting_target = user
-                if not event["target"].has_user(user):
-                    return
 
             karma = setting_target.get_setting(setting, 0)
             karma += 1 if positive else -1
@@ -79,12 +68,33 @@ class Module(ModuleManager.BaseModule):
                 setting_target.del_setting(setting)
 
             karma_str = self._karma_str(karma)
+            self._set_throttle(sender, positive)
+            return True, "%s now has %s karma" % (target, karma_str)
+        else:
+            return False, "Try again in a couple of seconds"
+
+    @utils.hook("command.regex")
+    @utils.kwarg("command", "karma")
+    @utils.kwarg("pattern", REGEX_KARMA)
+    def channel_message(self, event):
+        verbose = event["target"].get_setting("karma-verbose", False)
+        positive = event["match"].group(2)[0] == "+"
+        target = event["match"].group(1).strip().rstrip("".join(WORD_STOP))
+        if target:
+            success, message = self._karma(event["server"], event["user"],
+                target, positive)
             if verbose:
-                event["stdout"].write(
-                    "%s now has %s karma" % (target, karma_str))
-            self._set_throttle(event["user"], positive)
-        elif verbose:
-            event["stderr"].write("Try again in a couple of seconds")
+                event["stdout" if success else "stderr"].write(message)
+
+    @utils.hook("received.command.addpoint")
+    @utils.hook("received.command.rmpoint")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("usage", "<target>")
+    def changepoint(self, event):
+        positive = event.name == "received.command.addpoint"
+        success, message = self._karma(event["server"], event["user"],
+            event["args"].strip(), positive)
+        event["stdout" if success else "stderr"].write(message)
 
     @utils.hook("received.command.karma")
     def karma(self, event):
