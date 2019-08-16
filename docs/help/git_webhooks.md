@@ -10,15 +10,13 @@
 
 #### [acme.sh](https://github.com/Neilpang/acme.sh) certificate
 
-Assuming it's already installed and configured,
+Acme.sh is a [LetsEncrypt client](https://letsencrypt.org/). If you have
+already [setup it](https://github.com/Neilpang/acme.sh/blob/master/README.md),
+you can install a certificate for bitbot by: `/root/.acme.sh/acme.sh --install-cert -d <domain> --key-file /somewhere/bitbot/owns/key.pem --fullchain-file /somewhere/bitbot/owns/cert.pem`.
 
-TODO: expand this
+***WARNING!*** Always ensure that other users won't be able to read your
+keys. `chmod -R 700 /path/to/directory/containing/<key.pem-and-cert.pem> &&  chown -R bitbotaccount:bitbotgroup /path/to/directory/containing/<key.pem-and-cert.pem>`
 
-```
-$ACMESH --key-file $BITBOTDIR/key.pem --fullchain-file $BITBOTDIR/cert.pem"
-chmod -R 700 $BITBOTDIR/ssl.key
-chown -R bitbot:bitbot $BITBOTDIR
-```
 ### Configure the bot
 
 1. Enable the REST API in bot.conf by adjusting
