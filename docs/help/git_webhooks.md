@@ -40,18 +40,27 @@ you may change the API port if you wish.
 
 5. add your repository by `/msg <bot> apikey <reponame> /api/github`
 
-6. the bot will reply `[APIKey] New API key ('<name>'): <random-string>`. Keep the `<random-string>` at hand, you will need it in the next part.
+6. the bot will reply `[APIKey] New API key ('<name>'): <random-string>`.
+   Keep the `<random-string>` at hand, you will need it in the next part.
 
 ### Configure the git host
 
-This is generally done within settings of your repository and may depend on the Git host. The details you need are:
+This is generally done within settings of your repository and may depend
+on the Git host. The details you need are:
 
-* Target URL: `https://<your-bot-address>:<your-API-port>/api/github?key=<random-string>`
-    * the `<random-string>` is the same the bot gave you in the previous step 6.
-* HTTP Method: TODO: is it supposed to be POST or GET? I am assuming POST.
-* POST Content Type: TODO: application/json or application/x-www-form-urlencoded ?
-* Secret: the `<random-string>` which in case of Gitea was likely automatically moved here
+* Target URL: `https://<your-bot-address>:<your-API-port>/api/<github|gitea>?key=<random-string>`
+    * `<github|gitea>` means that you either enter `github` if you use
+      GitHub or `gitea` if you use Gitea.
+    * the `<random-string>` is the same the bot gave you in the previous
+      step 6.
+* HTTP Method: POST
+* POST Content Type: `application/json` *or* `application/x-www-form-urlencoded`,
+  bitbot supports both of them.
 
 ### Managing API keys
 
-TODO: How to list, remove and rename API keys?
+This isn't implemented yet, see [issue #123](https://github.com/jesopo/bitbot/issues/123).
+
+### Potential problems
+
+* Response 401 means that your API key is wrong.
