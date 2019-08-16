@@ -131,7 +131,7 @@ class Module(ModuleManager.BaseModule):
                 # will fire indefininitely.
                 continue
 
-            regex = re.compile(r"(.)\b(%s)(%s)" % (
+            regex = re.compile(r"([0-9]|\W)(%s)(%s)" % (
                 re.escape(user.nickname[0]), re.escape(user.nickname[1:])),
                 re.I)
             s = regex.sub("\\1\\2\u200c\\3", s)
