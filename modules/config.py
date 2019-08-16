@@ -156,7 +156,6 @@ class Module(ModuleManager.BaseModule):
                 if name in event["server"].channels:
                     target = event["server"].channels.get(name)
                 else:
-                    event["check_assert"]
                     target = ConfigChannelTarget(self.bot, event["server"],
                         name)
             else:
@@ -167,7 +166,7 @@ class Module(ModuleManager.BaseModule):
                         "Cannot change config for current channel when in "
                         "private message")
             event["check_assert"](permission_check|
-                utils.Check("channel-access", target, "set")|
+                utils.Check("channel-access", target, "config")|
                 utils.Check("channel-mode", target, "o"))
         elif context == "serverset" or context == "botset":
             event["check_assert"](permission_check)
