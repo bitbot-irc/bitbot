@@ -64,6 +64,9 @@ on the Git host. The details you need are:
 
 ### Managing API keys
 
+The API key isn't tied up to a specific git repository. It's recommended
+that every user has their own API key.
+
 This isn't implemented yet, see [issue #123](https://github.com/jesopo/bitbot/issues/123).
 
 ### Potential problems
