@@ -43,7 +43,8 @@ you may change the API port if you wish.
 6. the bot will reply `[APIKey] New API key ('<name>'): <random-string>`.
    Keep the `<random-string>` at hand, you will need it in the next part.
 
-7. add the repository to your channel with `!webhook add <name>`. You can
+7. add the repository to your channel with
+   `!webhook add <username|organization>/<reponame>`. You can
    see the announced webhooks by `!webhook list` or remove them by
    `!webhook remove <name>`
 
