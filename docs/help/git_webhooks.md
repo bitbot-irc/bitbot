@@ -47,6 +47,8 @@ you may change the API port if you wish.
    `!webhook add <username|organization>/<reponame>`. You can
    see the announced webhooks by `!webhook list` or remove them by
    `!webhook remove <name>`
+    * you may `!webhook add `<username|orgname>` to accept all repositories
+      from the user or organization.
 
 ### Configure the git host
 
