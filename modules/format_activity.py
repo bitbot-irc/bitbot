@@ -162,10 +162,13 @@ class Module(ModuleManager.BaseModule):
         reason = ""
         if event["reason"]:
             reason = " (%s)" % event["reason"]
-        line = "%s kicked %s from %s%s" % (
+        line_minimal = "%s kicked %s from %s%s" % (
             event["user"].nickname, nickname, event["channel"].name, reason)
+        line = "- %s" % line_minimal
+
         self._event("kick", event["server"], line, event["channel"].name,
-            channel=event["channel"], user=event.get("user", None))
+            channel=event["channel"], user=event.get("user", None),
+            minimal=line_minimal)
     @utils.hook("received.kick")
     def kick(self, event):
         self._on_kick(event, event["target_user"].nickname)
