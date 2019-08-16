@@ -38,14 +38,14 @@ you may change the API port if you wish.
 
 5. add your repository by `/msg <bot> apikey <reponame> /api/github`
 
-6. the bot will reply `[APIKey] New API key ('<name>'): <random-string>`.
-   Keep the `<random-string>` at hand, you will need it in the next part.
+6. the bot will reply `[APIKey] New API key ('<name>'): <API-key>`.
+   Keep the `<API-key>` at hand, you will need it in the next part.
 
 7. add the repository to your channel with
    `!webhook add <username|organization>/<reponame>`. You can
    see the announced webhooks by `!webhook list` or remove them by
    `!webhook remove <name>`
-    * you may `!webhook add `<username|orgname>` to accept all repositories
+    * you may `!webhook add <username|orgname>` to accept all repositories
       from the user or organization.
 
 ### Configure the git host
@@ -53,10 +53,10 @@ you may change the API port if you wish.
 This is generally done within settings of your repository and may depend
 on the Git host. The details you need are:
 
-* Target URL: `https://<your-bot-address>:<your-API-port>/api/<github|gitea>?key=<random-string>`
+* Target URL: `https://<your-bot-address>:<your-API-port>/api/<github|gitea>?key=<API-key>`
     * `<github|gitea>` means that you either enter `github` if you use
       GitHub or `gitea` if you use Gitea.
-    * the `<random-string>` is the same the bot gave you in the previous
+    * the `<API-key>` is the same the bot gave you in the previous
       step 6.
 * HTTP Method: POST
 * POST Content Type: `application/json` *or* `application/x-www-form-urlencoded`,
