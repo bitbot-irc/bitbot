@@ -5,7 +5,7 @@ class Direction(enum.Enum):
     Send = 0
     Recv = 1
 
-ISO8601_PARSE = "%Y-%m-%dT%H:%M:%S%z"
+ISO8601_PARSE = "%Y-%m-%dT%H:%M:%SZ"
 ISO8601_PARSE_MICROSECONDS = "%Y-%m-%dT%H:%M:%S.%f%z"
 DATETIME_HUMAN = "%Y/%m/%d %H:%M:%S"
 
