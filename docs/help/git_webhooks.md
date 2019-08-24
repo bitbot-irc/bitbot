@@ -74,3 +74,5 @@ This isn't implemented yet, see [issue #123](https://github.com/jesopo/bitbot/is
 * Response 401 means that your API key is wrong.
 * Response 404 means that you haven't done `!webhook add <name>` anywhere
   yet.
+* Private git repositories aren't announced to avoid leaking data. This
+  will be configurable in the future, see [issue #127](https://github.com/jesopo/bitbot/issues/127).
