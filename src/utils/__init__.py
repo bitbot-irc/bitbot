@@ -300,8 +300,25 @@ class IntSetting(Setting):
             return int(stripped)
         return None
 
+class IntRangeSetting(IntSetting):
+    example = None
+    def __init__(self, n_min: int, n_max: int, name: str, help: str=None,
+            example: str=None):
+        self._n_min = n_min
+        self._n_max = n_max
+        Setting.__init__(self, name, help, example)
+
+    def parse(self, value: str) -> typing.Any:
+        out = IntSetting.parse(self, value)
+        if not out == None and self._n_min <= out <= self._n_max:
+            return out
+        return None
+
+    def _format_example(self):
+        return "Must be between %d and %d" % (self._n_min, self._n_max)
+
 class OptionsSetting(Setting):
-    def __init__(self, name: str, options: typing.List[str], help: str=None,
+    def __init__(self, options: typing.List[str], name: str, help: str=None,
             example: str=None,
             options_factory: typing.Callable[[], typing.List[str]]=None):
         self._options = options

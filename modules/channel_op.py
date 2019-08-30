@@ -13,8 +13,8 @@ KICK_REASON_SETTING = utils.Setting("default-kick-reason",
 @utils.export("channelset", utils.Setting("ban-format",
     "Set ban format ($n = nick, $u = username, $h = hostname)",
     example="*!$u@$h"))
-@utils.export("serverset", utils.OptionsSetting("mute-method",
-    ["qmode", "insp", "unreal", "none"],
+@utils.export("serverset", utils.OptionsSetting(
+    ["qmode", "insp", "unreal", "none"], "mute-method",
     "Set this server's method of muting users"))
 @utils.export("botset", KICK_REASON_SETTING)
 @utils.export("serverset", KICK_REASON_SETTING)

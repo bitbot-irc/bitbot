@@ -11,8 +11,8 @@ DEFAULT_MIN_MESSAGES = 100
 
 @utils.export("channelset", utils.BoolSetting("ducks-enabled",
     "Whether or not to spawn ducks"))
-@utils.export("channelset", utils.IntSetting("ducks-min-messages",
-    "Minimum messages between ducks spawning", example="50"))
+@utils.export("channelset", utils.IntRangeSetting(50, 200, "ducks-min-messages",
+    "Minimum messages between ducks spawning"))
 @utils.export("channelset", utils.BoolSetting("ducks-kick",
     "Whether or not to kick someone talking to non-existent ducks"))
 class Module(ModuleManager.BaseModule):
