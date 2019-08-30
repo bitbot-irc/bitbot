@@ -1,3 +1,18 @@
+# 2019-08-30 - BitBot v1.11.1
+
+Added:
+- `utils.IntRangeSetting`
+- `realname` was missing from `!editserver`
+
+Changed:
+- Added `"- "` to start of formatted kick lines
+- Use `"+0000"` instead of `"Z"` for UTC timezone
+
+Fixed:
+- Put a deadline on sed matches to prevent DoS
+- Duplicate `def op` in `channel_op.py` (due to copypaste)
+- `git-prevent-highlight` was failing to unhighlight organisations
+
 # 2019-08-15 - BitBot v1.11.0
 
 Added:
