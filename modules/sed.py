@@ -55,10 +55,10 @@ class Module(ModuleManager.BaseModule):
             for_user = event["user"].nickname if self._closest_setting(event,
                 "sed-sender-only", False) else None
 
-            def _find():
-                return event["target"].buffer.find(pattern, from_self=False,
+            with utils.deadline():
+                match = event["target"].buffer.find(pattern, from_self=False,
                     for_user=for_user, not_pattern=REGEX_SED)
-            match = utils.deadline(_find)
+
             if match:
                 new_message = re.sub(pattern, replace, match.line.message,
                     count)

@@ -1,4 +1,5 @@
-import datetime, decimal, enum, io, ipaddress, re, signal, threading, typing
+import contextlib, datetime, decimal, enum, io, ipaddress, re, signal
+import threading, typing
 from src.utils import cli, consts, irc, http, parse, security
 
 class Direction(enum.Enum):
@@ -348,11 +349,13 @@ class DeadlineExceededException(Exception):
 def _raise_deadline():
     raise DeadlineExceededException()
 
-def deadline(f: typing.Callable[[], typing.Any], seconds: int=10) -> typing.Any:
-    signal.signal(signal.SIGALRM, lambda _1, _2: _raise_deadline())
+@contextlib.contextmanager
+def deadline(seconds: int=10):
+    old_handler = signal.signal(signal.SIGALRM,
+        lambda _1, _2: _raise_deadline())
     signal.alarm(seconds)
 
     try:
-        return f()
+        yield
     finally:
-        signal.signal(signal.SIGALRM, signal.SIG_IGN)
+        signal.signal(signal.SIGALRM, old_handler)
