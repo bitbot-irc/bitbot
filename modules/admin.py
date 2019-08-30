@@ -166,7 +166,7 @@ class Module(ModuleManager.BaseModule):
             value_parsed = value
         elif option == "bindhost":
             value_parsed = value
-        elif option in ["nickname", "username"]:
+        elif option in ["nickname", "username", "realname"]:
             value_parsed = value
         else:
             raise utils.EventError("Unknown option '%s'" % option)
