@@ -136,7 +136,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "voice")
     @utils.kwarg("usage", "[nickname]")
-    def op(self, event):
+    def voice(self, event):
         add = event.name == "received.command.voice"
         target = event["args_split"][0] if event["args"] else event[
             "user"].nickname
