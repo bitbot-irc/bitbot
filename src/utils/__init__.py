@@ -20,7 +20,8 @@ def iso8601_format(dt: datetime.datetime, milliseconds: bool=False) -> str:
 
     ms_format = ""
     if milliseconds:
-        ms_format = ".%d" % (dt.microsecond/1000)
+        ms_format = ".%s" % str(int(dt.microsecond/1000)).zfill(3)
+
     return "%s%s%s" % (dt_format, ms_format, tz_format)
 def iso8601_format_now(milliseconds: bool=False) -> str:
     now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
