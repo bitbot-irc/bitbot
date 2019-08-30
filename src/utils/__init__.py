@@ -1,4 +1,4 @@
-import datetime, decimal, enum, io, ipaddress, re, threading, typing
+import datetime, decimal, enum, io, ipaddress, re, signal, threading, typing
 from src.utils import cli, consts, irc, http, parse, security
 
 class Direction(enum.Enum):
@@ -342,3 +342,17 @@ class OptionsSetting(Setting):
         options = self._get_options()
         options_str = ["'%s'" % option for option in options]
         return "Options: %s" % ", ".join(options_str)
+
+class DeadlineExceededException(Exception):
+    pass
+def _raise_deadline():
+    raise DeadlineExceededException()
+
+def deadline(f: typing.Callable[[], typing.Any], seconds: int=10) -> typing.Any:
+    signal.signal(signal.SIGALRM, lambda _1, _2: _raise_deadline())
+    signal.alarm(seconds)
+
+    try:
+        return f()
+    finally:
+        signal.signal(signal.SIGALRM, signal.SIG_IGN)
