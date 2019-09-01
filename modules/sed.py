@@ -5,7 +5,7 @@ import re, traceback
 from src import ModuleManager, utils
 
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
-REGEX_SED = re.compile("^s/")
+REGEX_SED = re.compile("^(?:(\\S+): )?s/")
 
 @utils.export("channelset",
     utils.BoolSetting("sed","Disable/Enable sed in a channel"))
@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("pattern", REGEX_SED)
     def channel_message(self, event):
         sed_split = re.split(REGEX_SPLIT, event["message"], 3)
-        if event["message"].startswith("s/") and len(sed_split) > 2:
+        if len(sed_split) > 2:
             if not self._closest_setting(event, "sed", False):
                 return
 
@@ -52,8 +52,9 @@ class Module(ModuleManager.BaseModule):
                 return
             replace = utils.irc.bold(sed_split[2].replace("\\/", "/"))
 
-            for_user = event["user"].nickname if self._closest_setting(event,
-                "sed-sender-only", False) else None
+            for_user = event["match"].group(1)
+            if self._closest_setting(event, "sed-sender-only", False):
+                for_user = event["user"].nickname
 
             with utils.deadline():
                 match = event["target"].buffer.find(pattern, from_self=False,
