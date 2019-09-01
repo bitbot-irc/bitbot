@@ -40,6 +40,7 @@ class Bot(object):
         self.start_time = time.time()
         self.running = False
         self.servers = {}
+        self.reconnections = {}
 
         self._event_queue = queue.Queue() # type: typing.Queue[TriggerEvent]
 
@@ -217,6 +218,8 @@ class Bot(object):
         if not self.reconnect(event["server_id"],
                 event.get("connection_params", None)):
             event["timer"].redo()
+        else:
+            del self.reconnections[event["server_id"]]
     def reconnect(self, server_id: int, connection_params: typing.Optional[
             utils.irc.IRCConnectionParameters]=None) -> bool:
         args = {} # type: typing.Dict[str, str]
@@ -387,8 +390,11 @@ class Bot(object):
 
                 if not self.get_server_by_id(server.id):
                     reconnect_delay = self.config.get("reconnect-delay", 10)
-                    self._timers.add("reconnect", reconnect_delay,
+
+                    timer = self._timers.add("reconnect", reconnect_delay,
                         server_id=server.id)
+                    self.reconnections[server.id] = timer
+
                     self.log.warn(
                         "Disconnected from %s, reconnecting in %d seconds",
                         [str(server), reconnect_delay])
