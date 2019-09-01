@@ -83,8 +83,15 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Unknown server alias")
 
         server = self.bot.get_server_by_id(id)
-        server.disconnect()
-        self.bot.disconnect(server)
+        if not server == None:
+            server.disconnect()
+            self.bot.disconnect(server)
+        elif id in event["server"].reconnections:
+            event["server"].reconnections[id].cancel()
+            del event["server"].reconnections[id]
+        else:
+            raise utils.EventError("Server not connected")
+
         event["stdout"].write("Disconnected from %s" % str(server))
 
     @utils.hook("received.command.shutdown")
