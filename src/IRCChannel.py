@@ -3,6 +3,7 @@ from src import EventManager, IRCBot, IRCBuffer, IRCObject, IRCServer, IRCUser
 from src import utils
 
 RE_MODES = re.compile(r"[-+]\w+")
+SETTING_CACHE_EXPIRATION = 60.0*5.0 # 5 minutes
 
 class Channel(IRCObject.Object):
     name = ""
@@ -22,6 +23,8 @@ class Channel(IRCObject.Object):
         self.user_modes = {} # type: typing.Dict[IRCUser.User, typing.Set]
         self.created_timestamp = None
         self.buffer = IRCBuffer.Buffer(bot, server)
+
+        self._setting_cache_prefix = "channelsetting%s-" % self.id
 
     def __repr__(self) -> str:
         return "IRCChannel.Channel(%s|%s)" % (self.server.name, self.name)
@@ -135,12 +138,27 @@ class Channel(IRCObject.Object):
                 new_modes.append((mode_str, new_arg))
         return new_modes
 
+    def _setting_cache_key(self, key: str) -> str:
+        return self._setting_cache_prefix+key
+
+    def _cache_setting(self, key: str, value: typing.Any) -> str:
+        return self.bot.cache.temporary_cache(key, value,
+            SETTING_CACHE_EXPIRATION)
+
     def set_setting(self, setting: str, value: typing.Any):
         self.bot.database.channel_settings.set(self.id, setting, value)
+        self._cache_setting(self._setting_cache_key(setting), value)
     def get_setting(self, setting: str, default: typing.Any=None
             ) -> typing.Any:
-        return self.bot.database.channel_settings.get(self.id, setting,
+        cache_key = self._setting_cache_key(setting)
+        if self.bot.cache.has_item(cache_key):
+            return self.bot.cache.get(cache_key)
+
+        value = self.bot.database.channel_settings.get(self.id, setting,
             default)
+        self._cache_setting(cache_key, value)
+        return value
+
     def find_settings(self, pattern: str, default: typing.Any=[]
             ) -> typing.List[typing.Any]:
         return self.bot.database.channel_settings.find(self.id, pattern,
@@ -151,6 +169,10 @@ class Channel(IRCObject.Object):
             prefix, default)
     def del_setting(self, setting: str):
         self.bot.database.channel_settings.delete(self.id, setting)
+
+        cache_key = self._setting_cache_key(setting)
+        if self.bot.cache.has_item(cache_key):
+            self.bot.cache.remove(cache_key)
 
     def set_user_setting(self, user_id: int, setting: str, value: typing.Any):
         self.bot.database.user_channel_settings.set(user_id, self.id,
