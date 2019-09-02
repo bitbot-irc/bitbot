@@ -73,24 +73,21 @@ def request(url: str, method: str="GET", get_params: dict={},
     if not "User-Agent" in headers:
         headers["User-Agent"] = USER_AGENT
 
-    signal.signal(signal.SIGALRM, lambda _1, _2: throw_timeout())
-    signal.alarm(5)
-    try:
-        response = requests.request(
-            method.upper(),
-            url,
-            headers=headers,
-            params=get_params,
-            data=post_data,
-            json=json_data,
-            allow_redirects=allow_redirects,
-            stream=True
-        )
-        response_content = response.raw.read(RESPONSE_MAX, decode_content=True)
-    except TimeoutError:
-        raise HTTPTimeoutException()
-    finally:
-        signal.signal(signal.SIGALRM, signal.SIG_IGN)
+    with utils.deadline(seconds=5):
+        try:
+            response = requests.request(
+                method.upper(),
+                url,
+                headers=headers,
+                params=get_params,
+                data=post_data,
+                json=json_data,
+                allow_redirects=allow_redirects,
+                stream=True
+            )
+            response_content = response.raw.read(RESPONSE_MAX, decode_content=True)
+        except DeadlineExceededException:
+            raise HTTPTimeoutException()
 
     response_headers = utils.CaseInsensitiveDict(dict(response.headers))
     content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
