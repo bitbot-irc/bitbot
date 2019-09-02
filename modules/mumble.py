@@ -25,10 +25,12 @@ class Module(ModuleManager.BaseModule):
         pong_packet = s.recv(24)
         pong = struct.unpack(">bbbbQiii", pong_packet)
 
+        version = ".".join(str(v) for v in pong[1:4])
         ping = (datetime.datetime.utcnow().microsecond-timestamp)/1000
         users = pong[5]
         max_users = pong[6]
         bandwidth = pong[7]/1000 # kbit/s
 
-        event["stdout"].write("%s: %d/%d users, %.1fms ping, %dkbit/s bandwidth"
-            % (server, users, max_users, ping, bandwidth))
+        event["stdout"].write(
+            "%s (v%s): %d/%d users, %.1fms ping, %dkbit/s bandwidth"
+            % (server, version, users, max_users, ping, bandwidth))
