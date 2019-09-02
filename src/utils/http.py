@@ -41,7 +41,7 @@ class HTTPTimeoutException(HTTPException):
     def __init__(self):
         Exception.__init__(self, "HTTP request timed out")
 class HTTPParsingException(HTTPException):
-    def __init__(self, message: str=None):
+    def __init__(self, message: str, data: str=None):
         Exception.__init__(self, message or "HTTP parsing failed")
 class HTTPWrongContentTypeException(HTTPException):
     def __init__(self, message: str=None):
@@ -112,7 +112,7 @@ def request(url: str, method: str="GET", get_params: dict={},
             return Response(response.status_code, _json.loads(data),
                 response_headers)
         except _json.decoder.JSONDecodeError as e:
-            raise HTTPParsingException(str(e))
+            raise HTTPParsingException(str(e), data)
 
     return Response(response.status_code, data, response_headers)
 
