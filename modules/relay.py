@@ -70,11 +70,11 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("priority", EventManager.PRIORITY_LOW)
     def formatted_extra(self, event):
         if event["channel"]:
-            if event["channel"].get_setting("relay-extras", True):
+            if event["channel"].get_setting("relay-extras", False):
                 self._relay(event, event["channel"])
         elif event["user"]:
             for channel in event["user"].channels:
-                if channel.get_setting("relay-extras", True):
+                if channel.get_setting("relay-extras", False):
                     self._relay(event, channel)
 
     @utils.hook("received.command.relaygroup")
