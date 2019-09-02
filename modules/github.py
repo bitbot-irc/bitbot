@@ -1,9 +1,5 @@
-#--depends-on channel_access
-#--depends-on check_mode
 #--depends-on commands
 #--depends-on config
-#--depends-on permissions
-#--depends-on rest_api
 
 import datetime, math, re
 from src import EventManager, ModuleManager, utils
