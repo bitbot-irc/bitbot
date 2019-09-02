@@ -15,6 +15,8 @@ class DnsSetting(utils.Setting):
             return value
         return None
 
+@utils.export("botset", utils.BoolSetting("configurable-nameservers",
+    "Whether or not users can configure their own nameservers"))
 @utils.export("serverset", DnsSetting("dns-nameserver",
     "Set DNS nameserver", example="8.8.8.8"))
 @utils.export("channelset", DnsSetting("dns-nameserver",
@@ -28,12 +30,14 @@ class Module(ModuleManager.BaseModule):
         :prefix: DNS
         """
         args = event["args_split"][:]
-        nameserver = event["channel"].get_setting("dns-nameserver",
-            event["server"].get_setting("dns-nameserver", None))
-        for i, arg in enumerate(args):
-            if arg[0] == "@":
-                nameserver = args.pop(i)[1:]
-                break
+        nameserver = None
+        if self.bot.get_setting("configurable-nameservers", True):
+            nameserver = event["channel"].get_setting("dns-nameserver",
+                event["server"].get_setting("dns-nameserver", None))
+            for i, arg in enumerate(args):
+                if arg[0] == "@":
+                    nameserver = args.pop(i)[1:]
+                    break
 
         hostname = args[0]
 
