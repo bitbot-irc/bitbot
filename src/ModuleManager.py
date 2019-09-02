@@ -20,6 +20,8 @@ class ModuleUnloadException(ModuleException):
 
 class ModuleNotLoadedWarning(ModuleWarning):
     pass
+class ModuleNotLoadableWarning(ModuleWarning):
+    pass
 
 class ModuleDependencyNotFulfilled(ModuleException):
     def __init__(self, module, dependency):
@@ -161,6 +163,19 @@ class ModuleManager(object):
             ) -> typing.Any:
         return getattr(obj, magic) if hasattr(obj, magic) else default
 
+    def _check_hashflags(self, bot: "IRCBot.Bot", definition: ModuleDefinition
+            ) -> bool:
+        for hashflag, value in definition.hashflags:
+            if hashflag == "ignore":
+               # nope, ignore this module.
+               raise ModuleNotLoadableWarning("module ignored")
+
+            elif hashflag == "require-config" and value:
+                if not self.config.get(value.lower(), None):
+                    # nope, required config option not present.
+                    raise ModuleNotLoadableWarning(
+                        "required config not present")
+
     def _load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition,
             check_dependency: bool=True) -> LoadedModule:
         if check_dependency:
@@ -170,15 +185,7 @@ class ModuleManager(object):
                     raise ModuleDependencyNotFulfilled(definition.name,
                         dependency)
 
-        for hashflag, value in definition.hashflags:
-            if hashflag == "ignore":
-               # nope, ignore this module.
-               raise ModuleNotLoadedWarning("module ignored")
-
-            elif hashflag == "require-config" and value:
-                if not self.config.get(value.lower(), None):
-                    # nope, required config option not present.
-                    raise ModuleNotLoadedWarning("required config not present")
+        self._check_hashflags(bot, definition)
 
         import_name = self._import_name(definition.name)
         import_spec = importlib.util.spec_from_file_location(import_name,
@@ -252,11 +259,14 @@ class ModuleManager(object):
         definition_dependencies = {
             d.name: d.get_dependencies() for d in definitions}
 
-        for name, deps in definition_dependencies.items():
+        for name, deps in list(definition_dependencies.items())[:]:
             for dep in deps:
                 if not dep in definition_dependencies:
                     # unknown dependency!
-                    raise ModuleDependencyNotFulfilled(name, dep)
+                    self.log.warn(
+                        "Module '%s' not loaded - unfulfilled dependency '%s'" %
+                        (name, dep))
+                    del definition_dependencies[name]
 
         while definition_dependencies:
             changed = False
@@ -298,9 +308,20 @@ class ModuleManager(object):
         fail = []
         success = []
 
-        module_definitions = self._dependency_sort(self.list_modules())
+        module_definitions = self.list_modules()
 
+        loadable_definitions = []
         for definition in module_definitions:
+            try:
+                self._check_hashflags(bot, definition)
+            except ModuleNotLoadableWarning:
+                self.log.warn("Could not load '%s'" % definition.name)
+                continue
+            loadable_definitions.append(definition)
+
+        loadable_definitions = self._dependency_sort(loadable_definitions)
+
+        for definition in loadable_definitions:
             if definition.name in whitelist or (
                     not whitelist and not definition.name in blacklist):
                 try:
