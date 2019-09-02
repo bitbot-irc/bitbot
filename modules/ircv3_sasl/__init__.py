@@ -16,7 +16,7 @@ USERPASS_MECHANISMS = [
 class SaslSetting(utils.Setting):
     def parse(self, value: str) -> typing.Any:
         mechanism, _, arguments = value.partition(" ")
-        return {"mechanism": mechanism, "args": arguments}
+        return {"mechanism": mechanism.upper(), "args": arguments}
 
 @utils.export("serverset", SaslSetting("sasl",
     "Set the sasl username/password for this server",
