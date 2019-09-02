@@ -20,7 +20,11 @@ class Module(ModuleManager.BaseModule):
         timestamp = datetime.datetime.utcnow().microsecond
         ping_packet = struct.pack(">iQ", 0, timestamp)
         s = socket.socket(type=socket.SOCK_DGRAM)
-        s.sendto(ping_packet, (server, port))
+
+        try:
+            s.sendto(ping_packet, (server, port))
+        except socket.gaierror as e:
+            raise utils.EventError(str(e))
 
         pong_packet = s.recv(24)
         pong = struct.unpack(">bbbbQiii", pong_packet)
