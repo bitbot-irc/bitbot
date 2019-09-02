@@ -1,4 +1,5 @@
 #--depends-on config
+#--require-config opencagedata-api-key
 
 import typing
 from src import ModuleManager, utils
