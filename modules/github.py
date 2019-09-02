@@ -177,7 +177,7 @@ class Module(ModuleManager.BaseModule):
         if not cooldown == None:
             cache = self._cache_ref(ref)
             if not self.bot.cache.has_item(cache):
-                self.bot.cache.temporary_cache(cache, cooldown)
+                self.bot.cache.temporary_cache(cache, True, cooldown)
                 return True
             else:
                 return False

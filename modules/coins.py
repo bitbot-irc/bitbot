@@ -185,7 +185,7 @@ class Module(ModuleManager.BaseModule):
                     redeem_amount))
 
                 redeem_delay = self._redeem_delay(event["server"])
-                self.bot.cache.temporary_cache(cache, redeem_delay)
+                self.bot.cache.temporary_cache(cache, True, redeem_delay)
             else:
                 time_left = self.bot.cache.until_expiration(cache)
                 event["stderr"].write("%s: Please wait %s before redeeming" % (
