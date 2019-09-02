@@ -364,12 +364,12 @@ def deadline(seconds: int=10):
         lambda _1, _2: _raise_deadline())
     old_seconds, _ = signal.setitimer(signal.ITIMER_REAL, seconds, 0)
 
-    if not old_seconds == 0.0 and seconds > old_seconds:
-        raise ValueError(
-            "Deadline timeout larger than parent deadline (%s > %s)" %
-            (seconds, old_seconds))
-
     try:
+        if not old_seconds == 0.0 and seconds > old_seconds:
+            raise ValueError(
+                "Deadline timeout larger than parent deadline (%s > %s)" %
+                (seconds, old_seconds))
+
         yield
     finally:
         signal.signal(signal.SIGALRM, old_handler)
