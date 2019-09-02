@@ -5,25 +5,28 @@ import bs4, netifaces, requests
 import tornado.httpclient
 from src import utils
 
-REGEX_URL = re.compile("https?://[A-Z0-9{}]+".format(re.escape("-._~:/%?#[]@!$&'()*+,;=")), re.I)
+REGEX_URL = re.compile("https?://\S+", re.I)
+
+PAIRED_CHARACTERS = ["<>", "()"]
 
 # best-effort tidying up of URLs
 def url_sanitise(url: str):
     if not urllib.parse.urlparse(url).scheme:
         url = "http://%s" % url
 
-    if url.endswith(")"):
+    for pair_start, pair_end in PAIRED_CHARACTERS:
         # trim ")" from the end only if there's not a "(" to match it
         # google.com/) -> google.com/
         # google.com/() -> google.com/()
         # google.com/()) -> google.com/()
-
-        if "(" in url:
-            open_index = url.rfind("(")
-            other_index = url.rfind(")", 0, len(url)-1)
-            if other_index == -1 or other_index < open_index:
-                return url
-        return url[:-1]
+        if url.endswith(pair_end):
+            if pair_start in url:
+                open_index = url.rfind("(")
+                other_index = url.rfind(")", 0, len(url)-1)
+                if not other_index == -1 and other_index < open_index:
+                    url = url[:-1]
+            else:
+                url = url[:-1]
     return url
 
 USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
