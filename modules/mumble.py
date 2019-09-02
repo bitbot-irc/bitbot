@@ -17,14 +17,15 @@ class Module(ModuleManager.BaseModule):
         else:
             port = DEFAULT_PORT
 
-        ping_packet = struct.pack(">iQ", 0, datetime.datetime.now().microsecond)
+        timestamp = datetime.datetime.utcnow().microsecond
+        ping_packet = struct.pack(">iQ", 0, timestamp)
         s = socket.socket(type=socket.SOCK_DGRAM)
         s.sendto(ping_packet, (server, port))
 
         pong_packet = s.recv(24)
         pong = struct.unpack(">bbbbQiii", pong_packet)
 
-        ping = (datetime.datetime.now().microsecond - pong[4])/1000
+        ping = (datetime.datetime.utcnow().microsecond-timestamp)/1000
         users = pong[5]
         max_users = pong[6]
         bandwidth = pong[7]/1000 # kbit/s
