@@ -20,13 +20,21 @@ class Module(ModuleManager.BaseModule):
         timestamp = datetime.datetime.utcnow().microsecond
         ping_packet = struct.pack(">iQ", 0, timestamp)
         s = socket.socket(type=socket.SOCK_DGRAM)
+        s.settimeout(5)
 
-        try:
-            s.sendto(ping_packet, (server, port))
-        except socket.gaierror as e:
-            raise utils.EventError(str(e))
+        with utils.deadline():
+            try:
+                s.sendto(ping_packet, (server, port))
+            except socket.gaierror as e:
+                raise utils.EventError(str(e))
 
-        pong_packet = s.recv(24)
+            try:
+                pong_packet = s.recv(24)
+            except socket.timeout:
+                raise utils.EventError(
+                    "Timed out waiting for response from %s:%d"
+                    % (server, port))
+
         pong = struct.unpack(">bbbbQiii", pong_packet)
 
         version = ".".join(str(v) for v in pong[1:4])
