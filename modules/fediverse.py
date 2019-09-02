@@ -8,17 +8,39 @@ ACTIVITY_TYPE = "application/activity+json"
 ACTIVITY_HEADERS = {"Accept": ("application/ld+json; "
     'profile="https://www.w3.org/ns/activitystreams"')}
 
+def _parse_username(s):
+    username, _, instance = s.lstrip("@").partition("@")
+    if username and instance:
+        return "@%s@%s" % (username, instance)
+    return None
+
+@utils.export("set", utils.FunctionSetting(_parse_username, "fediverse",
+    help="Set your fediverse account", example="@gargron@mastodon.social"))
 class Module(ModuleManager.BaseModule):
     _name = "Fedi"
 
     @utils.hook("received.command.fediverse")
     @utils.hook("received.command.fedi", alias_of="fediverse")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Get someone's latest toot")
     @utils.kwarg("usage", "@<user>@<instance>")
     def fedi(self, event):
-        full_username = event["args_split"][0].lstrip("@")
-        username, _, instance = full_username.partition("@")
+        account = None
+        if not event["args"]:
+            account = event["user"].get_setting("fediverse", None)
+        elif not "@" in event["args"]:
+            target = event["args_split"][0]
+            if event["server"].has_user_id(target):
+                target_user = event["server"].get_user(target)
+                account = target_user.get_setting("fediverse", None)
+        else:
+            account = event["args_split"][0]
+
+        username = None
+        instance = None
+        if account:
+            account = account.lstrip("@")
+            username, _, instance = account.partition("@")
+
         if not username or not instance:
             raise utils.EventError("Please provide @<user>@<instance>")
 
@@ -33,12 +55,11 @@ class Module(ModuleManager.BaseModule):
         if webfinger_url == None:
             raise utils.EventError("host-meta lookup failed for %s" %
                 instance)
-        webfinger_url = webfinger_url.replace("{uri}",
-            "acct:%s" % full_username)
+        webfinger_url = webfinger_url.replace("{uri}", "acct:%s" % account)
 
         webfinger = utils.http.request(webfinger_url,
             headers=WEBFINGER_HEADERS,
-            get_params={"resource": "acct:%s" % full_username},
+            get_params={"resource": "acct:%s" % account},
             json=True)
 
         activity_url = None
@@ -61,8 +82,10 @@ class Module(ModuleManager.BaseModule):
 
         if "first" in outbox.data:
             if type(outbox.data["first"]) == dict:
+                # pleroma
                 items = outbox.data["first"]["orderedItems"]
             else:
+                # mastodon
                 first = utils.http.request(outbox.data["first"],
                     headers=ACTIVITY_HEADERS, json=True)
                 items = first.data["orderedItems"]

@@ -344,6 +344,15 @@ class OptionsSetting(Setting):
         options_str = ["'%s'" % option for option in options]
         return "Options: %s" % ", ".join(options_str)
 
+class FunctionSetting(Setting):
+    def __init__(self, func: typing.Callable[[str], bool], name: str,
+            help: str=None, example: str=None):
+        self._func = func
+        Setting.__init__(self, name, help, example)
+
+    def parse(self, value: str) -> typing.Any:
+        return self._func(value)
+
 class DeadlineExceededException(Exception):
     pass
 def _raise_deadline():
