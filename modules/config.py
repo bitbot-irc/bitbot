@@ -6,8 +6,6 @@
 import enum
 from src import ModuleManager, utils
 
-CHANNELSET_HELP = "Get a specified channel setting for the current channel"
-
 class ConfigInvalidValue(Exception):
     pass
 class ConfigSettingInexistent(Exception):
