@@ -17,6 +17,8 @@ class DnsSetting(utils.Setting):
 
 @utils.export("serverset", DnsSetting("dns-nameserver",
     "Set DNS nameserver", example="8.8.8.8"))
+@utils.export("channelset", DnsSetting("dns-nameserver",
+    "Set DNS nameserver", example="8.8.8.8"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.dns", min_args=1)
     def dns(self, event):
@@ -26,7 +28,8 @@ class Module(ModuleManager.BaseModule):
         :prefix: DNS
         """
         args = event["args_split"][:]
-        nameserver = event["server"].get_setting("dns-nameserver", None)
+        nameserver = event["channel"].get_setting("dns-nameserver",
+            event["server"].get_setting("dns-nameserver", None))
         for i, arg in enumerate(args):
             if arg[0] == "@":
                 nameserver = args.pop(i)[1:]
