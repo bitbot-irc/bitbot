@@ -124,7 +124,7 @@ class Module(ModuleManager.BaseModule):
                 search = event["args"]
         else:
             url = event["target"].buffer.find(REGEX_YOUTUBE)
-            url = url.match if url else None
+            url = utils.http.url_sanitise(url.match) if url else None
 
         if not url:
             safe_setting = event["target"].get_setting("youtube-safesearch", True)
