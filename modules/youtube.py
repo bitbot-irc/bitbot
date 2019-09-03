@@ -158,7 +158,8 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("pattern", REGEX_YOUTUBE)
     def channel_message(self, event):
         if event["target"].get_setting("auto-youtube", False):
-            out = self._from_url(event["match"].group(0))
+            url = utils.http.url_sanitise(event["match"].group(0))
+            out = self._from_url(url)
             if not out == None:
                 event.eat()
                 event["stdout"].write(out)
