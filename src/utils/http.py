@@ -86,7 +86,7 @@ def request(url: str, method: str="GET", get_params: dict={},
                 stream=True
             )
             response_content = response.raw.read(RESPONSE_MAX, decode_content=True)
-        except DeadlineExceededException:
+        except utils.DeadlineExceededException:
             raise HTTPTimeoutException()
 
     response_headers = utils.CaseInsensitiveDict(dict(response.headers))
