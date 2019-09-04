@@ -147,6 +147,7 @@ class Channel(IRCObject.Object):
 
     def set_setting(self, setting: str, value: typing.Any):
         self.bot.database.channel_settings.set(self.id, setting, value)
+        cache_key = self._setting_cache_key(setting)
         self._cache_setting(self._setting_cache_key(setting), value)
     def get_setting(self, setting: str, default: typing.Any=None
             ) -> typing.Any:
@@ -154,10 +155,12 @@ class Channel(IRCObject.Object):
         if self.bot.cache.has_item(cache_key):
             return self.bot.cache.get(cache_key)
 
-        value = self.bot.database.channel_settings.get(self.id, setting,
-            default)
-        self._cache_setting(cache_key, value)
-        return value
+        value = self.bot.database.channel_settings.get(self.id, setting, None)
+        if value == None:
+            return default
+        else:
+            self._cache_setting(cache_key, value)
+            return value
 
     def find_settings(self, pattern: str, default: typing.Any=[]
             ) -> typing.List[typing.Any]:
