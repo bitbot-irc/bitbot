@@ -29,6 +29,12 @@ class Module(ModuleManager.BaseModule):
             page = utils.http.request(API % location["timezone"], json=True)
 
             if page and page.data and not page.data.get("error", None):
+                iso8601 = page.data["datetime"]
+                iso8601_dt, sep, timezone = iso8601.partition("+")
+                if sep:
+                    iso8601 = "%s+%s" % (
+                        iso8601_dt, timezone.replace(":", "", 1))
+
                 dt = utils.iso8601_parse(page.data["datetime"],
                     microseconds=True)
                 human = utils.datetime_human(dt)
