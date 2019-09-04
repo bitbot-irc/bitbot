@@ -106,7 +106,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("There are no quotes for this category")
 
-    @utils.hook("recieved.command.grab", alias_of="quotegrab")
+    @utils.hook("received.command.grab", alias_of="quotegrab")
     @utils.hook("received.command.quotegrab", min_args=1, channel_only=True)
     def quote_grab(self, event):
         line = event["target"].buffer.find_from(event["args_split"][0])
