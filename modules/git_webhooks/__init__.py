@@ -19,6 +19,8 @@ DEFAULT_EVENT_CATEGORIES = [
     "Hide/show organisation in repository names"))
 @utils.export("channelset", utils.BoolSetting("git-hide-prefix",
     "Hide/show command-like prefix on git webhook outputs"))
+@utils.export("botset", utils.BoolSetting("git-show-private",
+    "Whether or not to show git activity for private repositories"))
 class Module(ModuleManager.BaseModule):
     _name = "Webhooks"
 
@@ -44,7 +46,8 @@ class Module(ModuleManager.BaseModule):
                 "payload"][0])
         data = json.loads(payload)
 
-        if handler.is_private(data, headers):
+        if handler.is_private(data, headers) and not self.bot.get_setting(
+                "git-show-private", False):
             return {"state": "success", "deliveries": 0}
 
         full_name, repo_username, repo_name, organisation = handler.names(
