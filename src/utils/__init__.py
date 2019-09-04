@@ -63,7 +63,8 @@ def time_unit(seconds: int) -> typing.Tuple[int, str]:
         unit = "%ss" % unit # pluralise the unit
     return (since, unit)
 
-REGEX_PRETTYTIME = re.compile("\d+[wdhms]", re.I)
+REGEX_PRETTYTIME = re.compile(
+    r"(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?", re.I)
 
 SECONDS_MINUTES = 60
 SECONDS_HOURS = SECONDS_MINUTES*60
@@ -72,17 +73,15 @@ SECONDS_WEEKS = SECONDS_DAYS*7
 
 def from_pretty_time(pretty_time: str) -> typing.Optional[int]:
     seconds = 0
-    for match in re.findall(REGEX_PRETTYTIME, pretty_time):
-        number, unit = int(match[:-1]), match[-1].lower()
-        if unit == "m":
-            number = number*SECONDS_MINUTES
-        elif unit == "h":
-            number = number*SECONDS_HOURS
-        elif unit == "d":
-            number = number*SECONDS_DAYS
-        elif unit == "w":
-            number = number*SECONDS_WEEKS
-        seconds += number
+
+    match = re.match(REGEX_PRETTYTIME, pretty_time)
+    if match:
+        seconds += int(match.group(1) or 0)*SECONDS_WEEKS
+        seconds += int(match.group(2) or 0)*SECONDS_DAYS
+        seconds += int(match.group(3) or 0)*SECONDS_HOURS
+        seconds += int(match.group(4) or 0)*SECONDS_MINUTES
+        seconds += int(match.group(5) or 0)
+
     if seconds > 0:
         return seconds
     return None
