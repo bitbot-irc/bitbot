@@ -9,17 +9,16 @@ REGEX_IPv6 = r"(?:(?:[a-f0-9]{1,4}:){2,}|[a-f0-9:]*::)[a-f0-9:]*"
 REGEX_IPv4 = r"(?:\d{1,3}\.){3}\d{1,3}"
 REGEX_IP = re.compile("%s|%s" % (REGEX_IPv4, REGEX_IPv6), re.I)
 
-class DnsSetting(utils.Setting):
-    def parse(self, value: str) -> typing.Any:
-        if utils.is_ip(value):
-            return value
-        return None
+def _parse(value):
+    if utils.is_ip(value):
+        return value
+    return None
 
 @utils.export("botset", utils.BoolSetting("configurable-nameservers",
     "Whether or not users can configure their own nameservers"))
-@utils.export("serverset", DnsSetting("dns-nameserver",
+@utils.export("serverset", utils.FunctionSetting(_parse, "dns-nameserver",
     "Set DNS nameserver", example="8.8.8.8"))
-@utils.export("channelset", DnsSetting("dns-nameserver",
+@utils.export("channelset", utils.FunctionSetting(_parse, "dns-nameserver",
     "Set DNS nameserver", example="8.8.8.8"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.dns", min_args=1)

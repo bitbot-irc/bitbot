@@ -8,13 +8,12 @@ TYPES = {
     "http": socks.HTTP
 }
 
-class ProxySetting(utils.Setting):
-    def parse(self, value: str) -> typing.Any:
-        parsed = urllib.parse.urlparse(value)
-        if parsed.scheme in TYPES and parsed.hostname:
-            return value
+def _parse(value):
+    parsed = urllib.parse.urlparse(value)
+    if parsed.scheme in TYPES and parsed.hostname:
+        return value
 
-@utils.export("serverset", ProxySetting("proxy",
+@utils.export("serverset", utils.FunctionSetting(_parse, "proxy",
     "Proxy configuration for the current server",
     example="socks5://localhost:9050"))
 class Module(ModuleManager.BaseModule):

@@ -13,12 +13,11 @@ USERPASS_MECHANISMS = [
     "PLAIN"
 ]
 
-class SaslSetting(utils.Setting):
-    def parse(self, value: str) -> typing.Any:
-        mechanism, _, arguments = value.partition(" ")
-        return {"mechanism": mechanism.upper(), "args": arguments}
+def _parse(value):
+    mechanism, _, arguments = value.partition(" ")
+    return {"mechanism": mechanism.upper(), "args": arguments}
 
-@utils.export("serverset", SaslSetting("sasl",
+@utils.export("serverset", utils.FunctionSetting(_parse, "sasl",
     "Set the sasl username/password for this server",
     example="PLAIN BitBot:hunter2"))
 @utils.export("serverset", utils.BoolSetting("sasl-hard-fail",

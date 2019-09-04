@@ -6,16 +6,10 @@ from src import ModuleManager, utils
 
 URL_OPENCAGE = "https://api.opencagedata.com/geocode/v1/json"
 
-class LocationSetting(utils.Setting):
-    _func = None
-    def parse(self, value: str) -> typing.Any:
-        return self._func(value)
-
 class Module(ModuleManager.BaseModule):
     def on_load(self):
-        setting = LocationSetting("location", "Set your location",
-            example="London, GB")
-        setting._func = self._get_location
+        setting = utils.FunctionSetting(self._get_location, "location",
+            "Set your location", example="London, GB")
         self.exports.add("set", setting)
         self.exports.add("get-location", self._get_location)
 

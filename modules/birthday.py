@@ -31,21 +31,20 @@ def _format(years, dt):
     else:
         return _format_noyear(dt)
 
-class BirthdaySetting(utils.Setting):
-    def parse(self, value: str) -> typing.Any:
-        parsed = _parse(value)
-        if parsed:
-            years, parsed = parsed
-            return _format(years, parsed)
-        return None
+def _parse_setting(value):
+    parsed = _parse(value)
+    if parsed:
+        years, parsed = parsed
+        return _format(years, parsed)
+    return None
 
 def _apostrophe(nickname):
     if nickname[-1].lower() == "s":
         return "%s'" % nickname
     return "%s's" % nickname
 
-@utils.export("set", BirthdaySetting("birthday", "Set your birthday",
-    example="1995-09-15"))
+@utils.export("set", utils.FunctionSetting(_parse_setting, "birthday",
+    "Set your birthday", example="1995-09-15"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.birthday")
     def birthday(self, event):

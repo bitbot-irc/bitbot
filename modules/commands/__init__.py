@@ -16,33 +16,21 @@ MSGID_TAG = utils.irc.MessageTag("msgid", "draft/msgid")
 
 NON_ALPHANUMERIC = [char for char in string.printable if not char.isalnum()]
 
-def _command_method_validate(s):
-    if s.upper() in COMMAND_METHODS:
-        return s.upper()
-
 class BadContextException(Exception):
     def __init__(self, required_context):
         self.required_context = required_context
         Exception.__init__(self)
 
-class CommandMethodSetting(utils.Setting):
-    example = "NOTICE"
-    def parse(self, value: str) -> typing.Any:
-        upper = value.upper()
-        if upper in COMMAND_METHODS:
-            return upper
-        return None
+SETTING_COMMANDMETHOD = utils.OptionsSetting(COMMAND_METHODS, COMMAND_METHOD,
+    "Set the method used to respond to commands")
 
 @utils.export("channelset", utils.Setting("command-prefix",
     "Set the command prefix used in this channel", example="!"))
 @utils.export("serverset", utils.Setting("command-prefix",
     "Set the command prefix used on this server", example="!"))
-@utils.export("serverset", CommandMethodSetting("command-method",
-    "Set the method used to respond to commands"))
-@utils.export("channelset", CommandMethodSetting("command-method",
-    "Set the method used to respond to commands"))
-@utils.export("botset", CommandMethodSetting("command-method",
-    "Set the method used to respond to commands"))
+@utils.export("serverset", SETTING_COMMANDMETHOD)
+@utils.export("channelset", SETTING_COMMANDMETHOD)
+@utils.export("botset", SETTING_COMMANDMETHOD)
 @utils.export("channelset", utils.BoolSetting("hide-prefix",
     "Disable/enable hiding prefix in command reponses"))
 @utils.export("channelset", utils.BoolSetting("commands",
@@ -94,7 +82,7 @@ class Module(ModuleManager.BaseModule):
     def _command_method(self, target, server):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD,
-            self.bot.get_setting(COMMAND_METHOD, "PRIVMSG"))).upper()
+            self.bot.get_setting(COMMAND_METHOD, "PRIVMSG")))
 
     def _find_command_hook(self, server, command, is_channel, args_split):
         if not self.has_command(command):
