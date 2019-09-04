@@ -1,13 +1,12 @@
 from src import ModuleManager, utils
 
-class ThrottleSetting(utils.Setting):
-    def parse(self, value):
-        lines, _, seconds = value.partition(":")
-        if lines.isdigit() and seconds.isdigit():
-            return [int(lines), int(seconds)]
-        return None
+def _parse(value):
+    lines, _, seconds = value.partition(":")
+    if lines.isdigit() and seconds.isdigit():
+        return [int(lines), int(seconds)]
+    return None
 
-@utils.export("serverset", ThrottleSetting("throttle",
+@utils.export("serverset", utils.FunctionSetting(_parse, "throttle",
     "Configure lines:seconds throttle for the current server", example="4:2"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.001")
