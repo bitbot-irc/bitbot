@@ -8,7 +8,7 @@ Python3 event-driven modular IRC bot!
 See [docs/help/setup.md](docs/help/setup.md).
 
 ## Github/Gitea web hooks
-I run BitBot as-a-service on most popular networks and offer github/gitea-to-IRC web hook notifications for free to FOSS projects. Contact me for more information!
+I run BitBot as-a-service on most popular networks (willing to add more networks!) and offer github/gitea-to-IRC web hook notifications for free to FOSS projects. Contact me for more information!
 
 ## Contact/Support
 Come say hi at [#bitbot on freenode](https://webchat.freenode.net/?channels=#bitbot)
