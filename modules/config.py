@@ -39,7 +39,7 @@ class ConfigChannelTarget(object):
         self._bot.database.channel_settings.delete(channel_id, setting)
 
     def get_user_setting(self, user_id, setting, default=None):
-        return self.bot.database.user_channel_settings.get(user_id,
+        return self._bot.database.user_channel_settings.get(user_id,
             self._get_id(), setting, default)
 
 class Module(ModuleManager.BaseModule):
