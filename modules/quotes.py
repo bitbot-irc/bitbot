@@ -30,30 +30,6 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Please provide a category AND quote")
 
-    @utils.hook("received.command.qget", alias_of="quoteget")
-    @utils.hook("received.command.quoteget", min_args=1)
-    def quote_get(self, event):
-        """
-        :help: Get a quote from a ccategory
-        :usage: <category> = <search>
-        """
-        category, to_find = self.category_and_quote(event["args"])
-        if category and to_find:
-            to_find = to_find.lower()
-            quotes = event["server"].get_setting("quotes-%s" % category, [])
-            found = []
-            for nickname, time_added, quote in quotes:
-                if to_find in quote.lower():
-                    found.append(quote)
-            if found:
-                event["stdout"].write("%d quote%s found: %s" % (len(found),
-                    "s" if len(found) > 1 else "", found[0]))
-            else:
-                event["stderr"].write("No quotes found")
-        else:
-            event["stderr"].write("Please provide a category and a "
-                "part of a quote to find")
-
     @utils.hook("received.command.qdel", alias_of="quotedel")
     @utils.hook("received.command.quotedel", min_args=1)
     def quote_del(self, event):
