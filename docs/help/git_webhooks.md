@@ -39,7 +39,6 @@ you may change the API port if you wish.
 5. create a new API key by `/msg <bot> apikey <apikey-name> /api/<github|gitea>`
    * The `apikey-name` is how you can later revoke it in case of trouble.
 
-
 6. the bot will reply `[APIKey] New API key ('<apikey-name>'): <API-key>`.
    Keep the `<API-key>` at hand, you will need it in the next part.
 
@@ -98,3 +97,4 @@ There are several options that can be configured
   yet.
 * Private git repositories aren't announced by default to avoid leaking
   data, please see the Additional configuration section above.
+
