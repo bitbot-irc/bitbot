@@ -10,21 +10,26 @@ class Module(ModuleManager.BaseModule):
             channels = event["line"].args[0].split(",")
             keys = event["line"].args[1:]
 
-            remove = []
+            changed = False
+            channels_out = []
             for channel_name in channels:
                 id = event["server"].channels.get_id(channel_name, create=False)
-                if not id == None:
-                    if self.bot.database.channel_settings.get(id, "blacklist",
-                            False):
-                        remove.append(channel_name)
-                        if keys:
-                            keys.pop(0)
-            for channel_name in remove:
-                channels.remove(channel_name)
+                if not id == None and self.bot.database.channel_settings.get(
+                        id, "blacklist", False):
+                    changed = True
+                    if keys:
+                        keys.pop(0)
+                else:
+                    key = None
+                    if keys:
+                        key = keys.pop(0)
+                    channels_out.append([channel_name, key])
 
-            if remove:
-                if not channels:
+            if changed:
+                if not channels_out:
                     event["line"].invalidate()
                 else:
+                    channels = [c[0] for c in channels_out]
+                    keys = [c[1] for c in channels_out if c[1]]
                     event["line"].args[0] = ",".join(channels)
                     event["line"].args[1:] = keys
