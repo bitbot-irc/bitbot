@@ -97,14 +97,22 @@ class Module(ModuleManager.BaseModule):
         :help: Get a random quote from a category
         :usage: <category>
         """
-        category = event["args"].strip().lower()
+        category, search = self.category_and_quote(event["args"])
         quotes = event["server"].get_setting("quotes-%s" % category, [])
+        if search:
+            search_lower = search.lower()
+            quotes = [q for q in quotes if search_lower in q[-1].lower()]
+
         if quotes:
             index = random.randint(0, len(quotes)-1)
             nickname, time_added, quote = quotes[index]
-            event["stdout"].write("%s: %s" % (category, quote))
+
+            category_str = category
+            if search:
+                category_str = "%s (%s)" % (category_str, search)
+            event["stdout"].write("%s: %s" % (category_str, quote))
         else:
-            event["stderr"].write("There are no quotes for this category")
+            event["stderr"].write("No matching quotes")
 
     @utils.hook("received.command.grab", alias_of="quotegrab")
     @utils.hook("received.command.quotegrab", min_args=1, channel_only=True)
