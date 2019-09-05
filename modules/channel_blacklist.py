@@ -33,3 +33,8 @@ class Module(ModuleManager.BaseModule):
                     keys = [c[1] for c in channels_out if c[1]]
                     event["line"].args[0] = ",".join(channels)
                     event["line"].args[1:] = keys
+
+    @utils.hook("received.join")
+    def on_join(self, event):
+        if event["channel"].get_setting("blacklist", False):
+            event["channel"].send_part()
