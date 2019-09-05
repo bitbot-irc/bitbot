@@ -25,8 +25,9 @@ class Channels(object):
     def items(self):
         return self._channels.items()
 
-    def get_id(self, channel_name: str) -> int:
-        self._bot.database.channels.add(self._server.id, channel_name)
+    def get_id(self, channel_name: str, create: bool=True) -> int:
+        if create:
+            self._bot.database.channels.add(self._server.id, channel_name)
         return self._bot.database.channels.get_id(self._server.id, channel_name)
 
     def _name_lower(self, channel_name: str) -> str:
