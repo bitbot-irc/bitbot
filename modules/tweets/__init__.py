@@ -80,7 +80,7 @@ class Module(ModuleManager.BaseModule):
             tweet_mode="extended")
     def _from_username(self, username):
         return self._get_api(self._get_auth()).user_timeline(
-            screen_name=username, count=1)[0]
+            screen_name=username, count=1, tweet_mode="extended")[0]
 
     def _start_stream(self):
         self._dispose_stream()
