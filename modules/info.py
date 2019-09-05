@@ -7,14 +7,12 @@ class Module(ModuleManager.BaseModule):
         commit_hash = None
         git_dir = os.path.join(self.bot.directory, ".git")
         head_filepath = os.path.join(git_dir, "HEAD")
-        print(head_filepath)
         if os.path.isfile(head_filepath):
             ref = None
             with open(head_filepath, "r") as head_file:
                 ref = head_file.readline().split(" ", 1)[1].strip()
 
             ref_filepath = os.path.join(git_dir, ref)
-            print(ref_filepath)
             if os.path.isfile(ref_filepath):
                 with open(ref_filepath, "r") as ref_file:
                     commit_hash = ref_file.readline().strip()
