@@ -2,9 +2,9 @@
 #--depends-on location
 
 import datetime
+import pytz
 from src import ModuleManager, utils
 
-API = "http://worldtimeapi.org/api/timezone/%s"
 NOLOCATION = "%s doesn't have a location set"
 
 class Module(ModuleManager.BaseModule):
@@ -26,22 +26,10 @@ class Module(ModuleManager.BaseModule):
     def time(self, event):
         target_user, location = self._find_setting(event)
         if not location == None:
-            page = utils.http.request(API % location["timezone"], json=True)
-
-            if page and page.data and not page.data.get("error", None):
-                iso8601 = page.data["datetime"]
-                iso8601_dt, sep, timezone = iso8601.partition("+")
-                if sep:
-                    iso8601 = "%s+%s" % (
-                        iso8601_dt, timezone.replace(":", "", 1))
-
-                dt = utils.iso8601_parse(page.data["datetime"],
-                    microseconds=True)
-                human = utils.datetime_human(dt)
-                event["stdout"].write("Time for %s: %s" % (target_user.nickname,
-                    human))
-            else:
-                raise utils.EventsResultsError()
+            dt = datetime.datetime.now(tz=pytz.timezone(location["timezone"]))
+            human = utils.datetime_human(dt)
+            event["stdout"].write("Time for %s: %s" % (target_user.nickname,
+                human))
         else:
             event["stderr"].write(NOLOCATION % target_user.nickname)
 
