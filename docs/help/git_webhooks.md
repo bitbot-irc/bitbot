@@ -71,10 +71,30 @@ that every user has their own API key.
 
 This isn't implemented yet, see [issue #123](https://github.com/jesopo/bitbot/issues/123).
 
+### Additional configuration
+
+There are several options that can be configured
+
+* on the bot level:
+    * `!config bot git-show-private on` to also show private git
+      repositories. They are hidden by default to avoid accidental leakage
+      of private data.
+* on the channel level:
+    * `!config channel auto-github-cooldown on` to ???
+    * `!config channel auto-github on` to ???
+    * `!config channel github-default-repo <user|orgname/repo>` in order to
+      have the bot link `<#issuenumber>` messages into the issues with
+      details on them.
+    * `!config channel git-hide-prefix on` to not show the the webhook name
+      in front of new messages?
+    * `!config channel git-hide-organisation on` to ???
+    * `!config channel git-prevent-highlight on` to add hidden characters
+      into the messages so the users won't get pinged on their own activity.
+
 ### Potential problems
 
 * Response 401 means that your API key is wrong.
 * Response 404 means that you haven't done `!webhook add <name>` anywhere
   yet.
-* Private git repositories aren't announced to avoid leaking data. This
-  will be configurable in the future, see [issue #127](https://github.com/jesopo/bitbot/issues/127).
+* Private git repositories aren't announced by default to avoid leaking
+  data, please see the Additional configuration section above.
