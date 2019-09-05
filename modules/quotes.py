@@ -109,7 +109,8 @@ class Module(ModuleManager.BaseModule):
 
             category_str = category
             if search:
-                category_str = "%s (%s)" % (category_str, search)
+                category_str = "%s (%s [%d found])" % (category_str, search,
+                    len(quotes))
             event["stdout"].write("%s: %s" % (category_str, quote))
         else:
             event["stderr"].write("No matching quotes")
