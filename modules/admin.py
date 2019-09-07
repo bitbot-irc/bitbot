@@ -86,9 +86,9 @@ class Module(ModuleManager.BaseModule):
         if not server == None:
             server.disconnect()
             self.bot.disconnect(server)
-        elif id in event["server"].reconnections:
-            event["server"].reconnections[id].cancel()
-            del event["server"].reconnections[id]
+        elif id in self.bot.reconnections:
+            self.bot.reconnections[id].cancel()
+            del self.bot.reconnections[id]
         else:
             raise utils.EventError("Server not connected")
 
