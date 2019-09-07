@@ -5,7 +5,7 @@ import re, traceback
 from src import ModuleManager, utils
 
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
-REGEX_SED = re.compile("^(?:(\\S+): )?s/")
+REGEX_SED = re.compile("^(?:(\\S+)[:,] )?s/")
 
 @utils.export("channelset",
     utils.BoolSetting("sed","Disable/Enable sed in a channel"))
