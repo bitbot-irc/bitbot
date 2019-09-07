@@ -2,6 +2,7 @@ import urllib.parse
 from src import ModuleManager, utils
 
 HOSTMETA = "https://%s/.well-known/host-meta"
+WEBFINGER_DEFAULT = "https://%s/.well-known/webfinger?resource={uri}"
 WEBFINGER_HEADERS = {"Accept": "application/jrd+json"}
 
 ACTIVITY_TYPE = "application/activity+json"
@@ -55,8 +56,8 @@ class Module(ModuleManager.BaseModule):
                 break
 
         if webfinger_url == None:
-            raise utils.EventError("host-meta lookup failed for %s" %
-                instance)
+            self.log.debug("host-meta lookup failed for %s" % instance)
+            webfinger_url = WEBFINGER_DEFAULT % instance
         webfinger_url = webfinger_url.replace("{uri}", "acct:%s" % account)
 
         webfinger = utils.http.request(webfinger_url,
