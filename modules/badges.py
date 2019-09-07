@@ -10,7 +10,7 @@ DATE_FORMAT = "%Y-%m-%d"
 
 class Module(ModuleManager.BaseModule):
     def _now(self):
-        return datetime.datetime.utcnow()
+        return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
     def _parse_date(self, dt: str):
         if dt.lower() == "today":
@@ -24,7 +24,7 @@ class Module(ModuleManager.BaseModule):
                 year=int(match.group(1)),
                 month=int(match.group(2)),
                 day=int(match.group(3))
-            )
+            ).replace(tzinfo=datetime.timezone.utc)
 
     def _date_str(self, dt: datetime.datetime):
         return datetime.datetime.strftime(dt, DATE_FORMAT)
