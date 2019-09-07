@@ -41,7 +41,7 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Unknown alias '%s'" % alias)
 
             channels, users = networks[alias]
-            event["stdout"].write("%s has %d %s and %d visible %s" %
+            event["stdout"].write("on %s I have %d %s and %d visible %s" %
                 (alias, channels, self._plural("channel", channels), users,
                 self._plural("user", users)))
         else:
