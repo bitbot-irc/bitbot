@@ -65,12 +65,8 @@ class Server(IRCObject.Object):
         self.motd_lines = [] # type: typing.List[str]
         self.motd_done = False
 
-        self.attempted_join = {} # type: typing.Dict[str, typing.Optional[str]]
-
         self.ping_sent = False
         self.send_enabled = True
-
-        self.events.on("timer.rejoin").hook(self.try_rejoin)
 
     def __repr__(self) -> str:
         return "IRCServer.Server(%s)" % self.__str__()
@@ -342,10 +338,6 @@ class Server(IRCObject.Object):
     def send_pong(self, nonce: str) -> typing.Optional[IRCLine.SentLine]:
         return self.send(utils.irc.protocol.pong(nonce), immediate=True)
 
-    def try_rejoin(self, event: EventManager.Event):
-        if event["server_id"] == self.id and event["channel_name"
-                ] in self.attempted_join:
-            self.send_join(event["channel_name"], [event["key"]])
     def send_join(self, channel_name: str, keys: typing.List[str]=None
             ) -> typing.Optional[IRCLine.SentLine]:
         return self.send(utils.irc.protocol.join(channel_name, keys))

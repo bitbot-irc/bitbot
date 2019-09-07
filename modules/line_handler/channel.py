@@ -90,8 +90,6 @@ def join(events, event):
     user.join_channel(channel)
 
     if is_self:
-        if channel.name in event["server"].attempted_join:
-            del event["server"].attempted_join[channel.name]
         events.on("self.join").call(channel=channel, server=event["server"],
             account=account, realname=realname)
         channel.send_mode()
@@ -132,11 +130,7 @@ def handle_329(event):
     channel.creation_timestamp = int(event["line"].args[2])
 
 def handle_477(timers, event):
-    channel_name = event["server"].irc_lower(event["line"].args[1])
-    if channel_name in event["server"].channels:
-        key = event["server"].attempted_join[channel_name]
-        timers.add("rejoin", 5, channel_name=channe_name, key=key,
-            server_id=event["server"].id)
+    pass
 
 def kick(events, event):
     user = event["server"].get_user(event["line"].source.nickname)
