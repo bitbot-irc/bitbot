@@ -248,7 +248,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.received.477", default_event=True)
     def handle_477(self, event):
         channel_name = event["server"].irc_lower(event["line"].args[1])
-        if channel_name in event["server"].channels:
+        if not channel_name in event["server"].channels:
             key = event["server"].attempted_join[channel_name]
             self.timers.add("rejoin", 5, channel_name=channe_name, key=key,
                 server_id=event["server"].id)
