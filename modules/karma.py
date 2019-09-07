@@ -8,7 +8,7 @@ from src import EventManager, ModuleManager, utils
 WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
-REGEX_KARMA = re.compile(r"^(?:\S+[:,] )?(.*)(\+{2}|\-{2})$")
+REGEX_KARMA = re.compile(r"^(?:(\S+:) )?(.*)(\+{2}|\-{2})$")
 
 @utils.export("channelset", utils.BoolSetting("karma-verbose",
     "Enable/disable automatically responding to karma changes"))
@@ -78,8 +78,13 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("pattern", REGEX_KARMA)
     def channel_message(self, event):
         verbose = event["target"].get_setting("karma-verbose", False)
-        positive = event["match"].group(2)[0] == "+"
-        target = event["match"].group(1).strip().rstrip("".join(WORD_STOP))
+        positive = event["match"].group(3)[0] == "+"
+
+        target = event["match"].group(2).strip().rstrip("".join(WORD_STOP))
+        if event["match"].group(1):
+            if not event["server"].has_user(event["match"].group(1)[:-1]):
+                target = "%s %s" % (event["match"].group(1), target)
+
         if target:
             success, message = self._karma(event["server"], event["user"],
                 target, positive)
