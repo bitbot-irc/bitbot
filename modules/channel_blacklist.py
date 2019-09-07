@@ -12,7 +12,7 @@ class Module(ModuleManager.BaseModule):
 
             changed = False
             channels_out = []
-            for channel_name in channels:
+            for channel_name in filter(None, channels):
                 id = event["server"].channels.get_id(channel_name, create=False)
                 if not id == None and self.bot.database.channel_settings.get(
                         id, "blacklist", False):
