@@ -5,9 +5,12 @@ from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def category_and_quote(self, s):
-        if "=" in s:
-            return [part.strip() for part in s.split("=", 1)]
-        return None, None
+        category, sep, quote = s.partition("=")
+        category = category.strip()
+
+        if not sep:
+            return category, None
+        return category, quote.strip()
 
     def _get_quotes(self, server, category):
         return server.get_setting("quotes-%s" % category, [])
