@@ -8,7 +8,7 @@ from src import EventManager, ModuleManager, utils
 WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
-REGEX_KARMA = re.compile(r"^(?:(\S+)[:,] )?(.*)(\+{2}|\-{2})$")
+REGEX_KARMA = re.compile(r"^(?:\S+[:,] )?(.*)(\+{2}|\-{2})$")
 
 @utils.export("channelset", utils.BoolSetting("karma-verbose",
     "Enable/disable automatically responding to karma changes"))
