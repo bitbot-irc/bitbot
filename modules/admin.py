@@ -21,7 +21,11 @@ class Module(ModuleManager.BaseModule):
         :usage: <raw line>
         :permission: raw
         """
-        event["server"].send_raw(event["args"])
+        line = event["server"].send_raw(event["args"])
+        if not line == None:
+            event["stdout"].write("Sent: %s" % line.parsed_line.format())
+        else:
+            event["stderr"].write("Line was filtered")
 
     @utils.hook("received.command.part")
     def part(self, event):
