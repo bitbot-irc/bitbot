@@ -18,32 +18,47 @@ class Module(ModuleManager.BaseModule):
         return self._uptime()
 
     def _stats(self):
-        networks = len(self.bot.servers)
-        channels = 0
-        users = 0
+        networks = {}
+
         for server in self.bot.servers.values():
-            channels += len(server.channels)
-            users += len(server.users)
-        return [networks, channels, users]
+            networks[server.alias.lower()] = [len(server.channels),
+                len(server.users)]
+
+        return networks
+
+    def _plural(self, s, count):
+        return "%s%s" % (s, "" if count == 1 else "s")
 
     @utils.hook("received.command.stats")
+    @utils.kwarg("help", "Show my network/channel/user stats")
+    @utils.kwarg("usage", "[network]")
     def stats(self, event):
-        """
-        :help: Show my network/channel/user stats
-        """
-        networks, channels, users = self._stats()
+        networks = self._stats()
 
-        response = "I currently have %d network" % networks
-        if networks > 1:
-            response += "s"
-        response += ", %d channel" % channels
-        if channels > 1:
-            response += "s"
-        response += " and %d visible user" % users
-        if users > 1:
-            response += "s"
+        if event["args"]:
+            alias = event["args_split"][0].lower()
+            if not alias in networks:
+                raise utils.EventError("Unknown alias '%s'" % alias)
 
-        event["stdout"].write(response)
+            channels, users = networks[alias]
+            event["stdout"].write("%s has %d %s and %d visible %s" %
+                (alias, channels, self._plural("channel", channels), users,
+                self._plural("user", users)))
+        else:
+            total_channels = 0
+            total_users = 0
+            for channels, users in networks.values():
+                total_channels += channels
+                total_users += users
+
+            network_count = len(networks.keys())
+            network_plural = self._plural("network", network_count)
+            channel_plural = self._plural("channel", total_channels)
+            user_plural = self._plural("user", total_users)
+            event["stdout"].write(
+                "I currently have %d %s, %d %s and %d visible %s" %
+                (network_count, network_plural, total_channels, channel_plural,
+                total_users, user_plural))
 
     @utils.hook("api.get.stats")
     def stats_api(self, event):
