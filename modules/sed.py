@@ -6,6 +6,7 @@ from src import ModuleManager, utils
 
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^(?:(\\S+)[:,] )?s/")
+SED_AMPERSAND = re.compile(r"((?:^|[^\\])(?:\\\\)*)&")
 
 @utils.export("channelset",
     utils.BoolSetting("sed","Disable/Enable sed in a channel"))
@@ -50,7 +51,6 @@ class Module(ModuleManager.BaseModule):
                 traceback.print_exc()
                 event["stderr"].write("Invalid regex in pattern")
                 return
-            replace = utils.irc.bold(sed_split[2].replace("\\/", "/"))
 
             for_user = event["match"].group(1)
             if self._closest_setting(event, "sed-sender-only", False):
@@ -61,6 +61,11 @@ class Module(ModuleManager.BaseModule):
                     for_user=for_user, not_pattern=REGEX_SED)
 
             if match:
+                replace = sed_split[2]
+                replace = replace.replace("\\/", "/")
+                replace = re.sub(SED_AMPERSAND, match.match, replace)
+                replace = utils.irc.bold(replace)
+
                 new_message = re.sub(pattern, replace, match.line.message,
                     count)
                 if match.line.action:
