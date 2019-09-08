@@ -63,7 +63,7 @@ class Module(ModuleManager.BaseModule):
             if match:
                 replace = sed_split[2]
                 replace = replace.replace("\\/", "/")
-                replace = re.sub(SED_AMPERSAND, match.match, replace)
+                replace = re.sub(SED_AMPERSAND, "\\1%s" % match.match, replace)
                 replace = utils.irc.bold(replace)
 
                 new_message = re.sub(pattern, replace, match.line.message,
