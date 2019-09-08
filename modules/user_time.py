@@ -72,9 +72,13 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_setting", "location")
     @utils.kwarg("require_setting_unless", "1")
     def timezone(self, event):
-        target_user, location = self._find_setting(event)
-        if not location == None:
-            event["stdout"].write("%s is in %s" % (target_user.nickname,
-                location["timezone"]))
+        type, name, timezone = self._find_setting(event)
+        if not timezone == None:
+            event["stdout"].write("%s is in %s" % (name, timezone))
         else:
-            event["stderr"].write(NOLOCATION % target_user.nickname)
+            out = None
+            if type == LocationType.USER:
+                out = NOLOCATION_USER
+            else:
+                out = NOLOCATION_NAME
+            event["stderr"].write(out % name)
