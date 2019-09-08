@@ -154,7 +154,6 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("No search phrase provided")
 
     @utils.hook("command.regex")
-    @utils.kwarg("priority", EventManager.PRIORITY_LOW)
     @utils.kwarg("ignore_action", False)
     @utils.kwarg("command", "youtube")
     @utils.kwarg("pattern", REGEX_YOUTUBE)
