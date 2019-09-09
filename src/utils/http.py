@@ -60,7 +60,7 @@ class Response(object):
 
 def _meta_content(s: str) -> typing.Dict[str, str]:
     out = {}
-    for keyvalue in str.split(";"):
+    for keyvalue in s.split(";"):
         key, _, value = keyvalue.strip().partition("=")
         out[key] = value
     return out
