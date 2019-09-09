@@ -10,7 +10,7 @@ ACTIVITY_HEADERS = {"Accept": ("application/ld+json; "
     'profile="https://www.w3.org/ns/activitystreams"')}
 
 def _parse_username(s):
-    username, _, instance = s.partition("@")
+    username, _, instance = s.rpartition("@")
     if username.startswith("@"):
         username = username[1:]
     if username and instance:
