@@ -61,9 +61,7 @@ class Module(ModuleManager.BaseModule):
         webfinger_url = webfinger_url.replace("{uri}", "acct:%s" % account)
 
         webfinger = utils.http.request(webfinger_url,
-            headers=WEBFINGER_HEADERS,
-            get_params={"resource": "acct:%s" % account},
-            json=True)
+            headers=WEBFINGER_HEADERS, json=True)
 
         activity_url = None
         for link in webfinger.data["links"]:
