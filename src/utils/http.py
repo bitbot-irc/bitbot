@@ -79,6 +79,7 @@ def _find_encoding(soup: bs4.BeautifulSoup) -> typing.Optional[str]:
                 bs4.Doctype)] or None
             if doctype and doctype[0] == "html":
                 return "utf8"
+    return None
 
 def request(url: str, method: str="GET", get_params: dict={},
         post_data: typing.Any=None, headers: dict={},
