@@ -155,7 +155,7 @@ class GitHub(object):
         self.log.debug("git.io shortening: %s" % url)
         try:
             page = utils.http.request("https://git.io", method="POST",
-                post_data={"url": url})
+                post_data={"url": url}, detect_encoding=False)
             return page.headers["Location"]
         except utils.http.HTTPTimeoutException:
             self.log.warn(
