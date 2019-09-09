@@ -66,19 +66,21 @@ def _meta_content(s: str) -> typing.Dict[str, str]:
     return out
 
 def _find_encoding(soup: bs4.BeautifulSoup) -> typing.Optional[str]:
-    meta_charset = soup.meta.get("charset")
-    if not meta_charset == None:
-        return meta_charset
-    else:
+    if not soup.meta == None:
+        meta_charset = soup.meta.get("charset")
+        if not meta_charset == None:
+            return meta_charset
+
         meta_content_type = soup.findAll("meta",
             {"http-equiv": lambda v: (v or "").lower() == "content-type"})
         if meta_content_type:
             return _meta_content(meta_content_type[0].get("content"))["charset"]
-        else:
-            doctype = [item for item in soup.contents if isinstance(item,
-                bs4.Doctype)] or None
-            if doctype and doctype[0] == "html":
-                return "utf8"
+
+    doctype = [item for item in soup.contents if isinstance(item,
+        bs4.Doctype)] or None
+    if doctype and doctype[0] == "html":
+        return "utf8"
+
     return None
 
 def request(url: str, method: str="GET", get_params: dict={},
