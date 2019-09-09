@@ -125,7 +125,7 @@ def request(url: str, method: str="GET", get_params: dict={},
     encoding = response.encoding
     if content_type and content_type in SOUP_CONTENT_TYPES:
         souped = bs4.BeautifulSoup(response_content, parser)
-        encoding = _find_encoding(souped) or encoding
+        encoding = _find_encoding(souped) or encoding or "iso-8859-1"
 
     def _decode_data():
         return response_content.decode(encoding)
