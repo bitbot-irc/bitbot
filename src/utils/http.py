@@ -121,10 +121,10 @@ def request(url: str, method: str="GET", get_params: dict={},
     response_headers = utils.CaseInsensitiveDict(dict(response.headers))
     content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
 
-    encoding = response.encoding
+    encoding = response.encoding or "iso-8859-1"
     if detect_encoding and content_type and content_type in SOUP_CONTENT_TYPES:
         souped = bs4.BeautifulSoup(response_content, parser)
-        encoding = _find_encoding(souped) or encoding or "iso-8859-1"
+        encoding = _find_encoding(souped) or encoding
 
     def _decode_data():
         return response_content.decode(encoding)
@@ -137,15 +137,15 @@ def request(url: str, method: str="GET", get_params: dict={},
             raise HTTPWrongContentTypeException(
                 "Tried to soup non-html/non-xml data (%s)" % content_type)
 
-    data = _decode_data()
-    if json and data:
+    if json and response_content:
+        data = _decode_data()
         try:
             return Response(response.status_code, _json.loads(data),
                 response_headers)
         except _json.decoder.JSONDecodeError as e:
             raise HTTPParsingException(str(e), data)
 
-    return Response(response.status_code, data, response_headers)
+    return Response(response.status_code, response_content, response_headers)
 
 def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
     responses = {}
