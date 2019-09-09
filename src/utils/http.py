@@ -86,9 +86,9 @@ def _find_encoding(soup: bs4.BeautifulSoup) -> typing.Optional[str]:
 def request(url: str, method: str="GET", get_params: dict={},
         post_data: typing.Any=None, headers: dict={},
         json_data: typing.Any=None, code: bool=False, json: bool=False,
-        soup: bool=False, parser: str="lxml", fallback_encoding: str="utf8",
-        allow_redirects: bool=True, check_content_type: bool=True
-        ) -> Response:
+        soup: bool=False, parser: str="lxml", detect_encoding: bool=True,
+        fallback_encoding: str="utf8", allow_redirects: bool=True,
+        check_content_type: bool=True) -> Response:
 
     if not urllib.parse.urlparse(url).scheme:
         url = "http://%s" % url
@@ -121,9 +121,8 @@ def request(url: str, method: str="GET", get_params: dict={},
     response_headers = utils.CaseInsensitiveDict(dict(response.headers))
     content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
 
-    souped = None
     encoding = response.encoding
-    if content_type and content_type in SOUP_CONTENT_TYPES:
+    if detect_encoding and content_type and content_type in SOUP_CONTENT_TYPES:
         souped = bs4.BeautifulSoup(response_content, parser)
         encoding = _find_encoding(souped) or encoding or "iso-8859-1"
 
