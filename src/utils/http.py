@@ -58,6 +58,28 @@ class Response(object):
         self.data = data
         self.headers = headers
 
+def _meta_content(s: str) -> typing.Dict[str, str]:
+    out = {}
+    for keyvalue in str.split(";"):
+        key, _, value = keyvalue.strip().partition("=")
+        out[key] = value
+    return out
+
+def _find_encoding(soup: bs4.BeautifulSoup) -> typing.Optional[str]:
+    meta_charset = soup.meta.get("charset")
+    if not meta_charset == None:
+        return meta_charset
+    else:
+        meta_content_type = soup.findAll("meta",
+            {"http-equiv": lambda v: (v or "").lower() == "content-type"})
+        if meta_content_type:
+            return _meta_content(meta_content_type[0].get("content"))["charset"]
+        else:
+            doctype = [item for item in soup.contents if isinstance(item,
+                bs4.Doctype)] or None
+            if doctype and doctype[0] == "html":
+                return "utf8"
+
 def request(url: str, method: str="GET", get_params: dict={},
         post_data: typing.Any=None, headers: dict={},
         json_data: typing.Any=None, code: bool=False, json: bool=False,
@@ -85,15 +107,25 @@ def request(url: str, method: str="GET", get_params: dict={},
                 allow_redirects=allow_redirects,
                 stream=True
             )
-            response_content = response.raw.read(RESPONSE_MAX, decode_content=True)
+            response_content = response.raw.read(RESPONSE_MAX,
+                decode_content=True)
+            if not response_content or not response.raw.read(1) == b"":
+                # response too large!
+                pass
         except utils.DeadlineExceededException:
             raise HTTPTimeoutException()
 
     response_headers = utils.CaseInsensitiveDict(dict(response.headers))
     content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
 
+    souped = None
+    encoding = response.encoding
+    if content_type and content_type in SOUP_CONTENT_TYPES:
+        souped = bs4.BeautifulSoup(response_content, parser)
+        encoding = _find_encoding(souped) or encoding
+
     def _decode_data():
-        return response_content.decode(response.encoding or fallback_encoding)
+        return response_content.decode(encoding)
 
     if soup:
         if not check_content_type or content_type in SOUP_CONTENT_TYPES:
