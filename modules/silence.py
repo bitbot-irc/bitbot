@@ -29,7 +29,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("preprocess.command", priority=EventManager.PRIORITY_HIGH)
     def preprocess_command(self, event):
-        if event["is_channel"]:
+        if event["is_channel"] and not event["hook"].get_kwarg(
+                "unsilence", False):
             silence_until = event["target"].get_setting("silence-until", None)
             if silence_until:
                 if self._is_silenced(event["target"]):
