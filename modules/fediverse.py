@@ -152,9 +152,11 @@ class Module(ModuleManager.BaseModule):
         our_username, our_instance = self._ap_self()
 
         resource = event["params"].get("resource", None)
-        if resource and resource.startswith("acct:"):
-            request = resource.split(":", 1)[1]
-            requested_username, requested_instance = _parse_username(request)
+        if resource.startswith("acct:"):
+            resource = resource.split(":", 1)[1]
+
+        if resource:
+            requested_username, requested_instance = _parse_username(resource)
 
             if (requested_username == our_username and
                     requested_instance == our_instance):
