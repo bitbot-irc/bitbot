@@ -166,6 +166,7 @@ class Module(ModuleManager.BaseModule):
                     "type": "Create"
                 })
 
+            event["response"].content_type = ACTIVITY_TYPE
             event["response"].write_json({
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "id": outbox,
