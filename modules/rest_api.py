@@ -141,7 +141,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
         response = _bot.trigger(lambda: self._handle(method, path, endpoint,
             args))
         self._respond(response)
-        self.finish()
 
         _log.debug("[HTTP] finishing _handle for %s from %s:%d (%d)",
             [method, self.client_address[0], self.client_address[1],
