@@ -162,5 +162,5 @@ class Module(ModuleManager.BaseModule):
                         "rel": "self",
                         "type": ACTIVITY_TYPE
                     }],
-                    "subject": resouce
+                    "subject": resource
                 })
