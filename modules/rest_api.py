@@ -84,7 +84,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             get_params_str = ""
             if get_params:
                 get_params_str = "?%s" % urllib.parse.urlencode(get_params)
-            return "%s:%d/%s/%s%s" % (host, port, route, endpoint,
+            return "%s:%s/%s/%s%s" % (host, port, route, endpoint,
                 get_params_str)
         else:
             return None
