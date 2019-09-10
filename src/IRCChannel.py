@@ -73,7 +73,10 @@ class Channel(IRCObject.Object):
         out_modes = "".join(mode for mode, args in modes)
         out_args = " ".join(args[0] for mode, args in modes if args)
 
-        return "+%s%s" % (out_modes, " %s" % out_args if out_args else "")
+        if out_modes:
+            return "+%s%s" % (out_modes, " %s" % out_args if out_args else "")
+        else:
+            return ""
 
     def add_mode(self, mode: str, arg: str=None):
         if not mode in self.modes:
