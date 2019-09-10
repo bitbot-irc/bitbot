@@ -64,7 +64,8 @@ class Module(ModuleManager.BaseModule):
         if webfinger_url == None:
             self.log.debug("host-meta lookup failed for %s" % instance)
             webfinger_url = WEBFINGER_DEFAULT % instance
-        webfinger_url = webfinger_url.replace("{uri}", "acct:%s" % account)
+        webfinger_url = webfinger_url.replace("{uri}",
+            "acct:%s@%s" % (username, instance))
 
         webfinger = utils.http.request(webfinger_url,
             headers=WEBFINGER_HEADERS, json=True)
