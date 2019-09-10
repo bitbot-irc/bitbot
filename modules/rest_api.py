@@ -77,11 +77,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def url_for(self, headers, route, endpoint, get_params={}):
         if "Host" in headers:
-            host = headers["Host"]
+            host, _, port = headers["Host"].partition(":")
+            if not port:
+                port = _bot.config.get("api-port", "5000")
+
             get_params_str = ""
             if get_params:
                 get_params_str = "?%s" % urllib.parse.urlencode(get_params)
-            return "%s/%s/%s%s" % (host, route, endpoint, get_params_str)
+            return "%s:%d/%s/%s%s" % (host, port, route, endpoint,
+                get_params_str)
         else:
             return None
     def _url_for(self, headers):
