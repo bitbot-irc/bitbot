@@ -64,6 +64,10 @@ class Module(ModuleManager.BaseModule):
                     }],
                     "subject": resource
                 })
+            else:
+                event["response"].code = 404
+        else:
+            event["response"].code = 400
 
     @utils.hook("api.get.ap-user")
     @utils.kwarg("authenticated", False)
