@@ -194,8 +194,7 @@ class Module(ModuleManager.BaseModule):
                 "id": self_id,
                 "type": "Person",
                 "preferredUsername": our_username,
-                "inbox": index,
-
+                "inbox": inbox,
                 "publicKey": {
                     "id": "%s#key" % self_id,
                     "owner": self_id,
