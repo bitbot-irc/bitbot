@@ -76,14 +76,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return _bot.get_setting("rest-api-minify", False)
 
     def url_for(self, headers, route, endpoint, get_params={}):
-        hostname = headers.get("Host", None)
-        if not hostname:
-            return None
-        else:
+        if "Host" in headers:
+            host = headers["Host"]
             get_params_str = ""
             if get_params:
                 get_params = "?%s" % urllib.parse.urlencode(get_params)
-            return "%s/%s/%s%s" % (hostname, route, endpoint, get_params_str)
+            return "%s/%s/%s%s" % (host, route, endpoint, get_params_str)
+        else:
+            return None
     def _url_for(self, headers):
         return lambda route, endpoint, get_params={}: self.url_for(
             headers, route, endpoint, get_params)
