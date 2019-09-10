@@ -70,22 +70,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response.get_data())
 
-    def _get_settings(self, key):
-        key_setting = _bot.get_setting("api-key-%s" % key, {})
-        minify = _bot.get_setting("rest-api-minify", False)
-        return [key_setting, minify]
+    def _key_settings(self, key):
+        return _bot.get_setting("api-key-%s" % key, {})
+    def _minify_setting(self):
+        return _bot.get_setting("rest-api-minify", False)
 
-    def _handle(self, method):
-        path, endpoint, args = self._path_data()
-
-        _log.debug("[HTTP] starting _handle for %s from %s:%d: %s",
-            [method, self.client_address[0], self.client_address[1], path])
-
+    def _handle(self, method, path, endpoint, args):
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
         params = self._url_params()
         data = self._body()
 
-        response = Response()
+        response = Response(compact=self._minify_setting())
         response.code = 404
 
         hooks = _events.on("api").on(method).on(endpoint).get_hooks()
@@ -94,7 +89,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             hook = hooks[0]
             authenticated = hook.get_kwarg("authenticated", True)
             key = params.get("key", None)
-            key_setting, minify = _bot.trigger(lambda: self._get_settings(key))
+            key_setting = self._key_settings(key)
             permissions = key_setting.get("permissions", [])
 
             if key_setting:
@@ -105,11 +100,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 if path.startswith("/api/"):
                     event_response = None
                     try:
-                        event_response = _bot.trigger(lambda:
-                            _events.on("api").on(method).on(
+                        event_response = _events.on("api").on(method).on(
                             endpoint).call_for_result_unsafe(params=params,
                             path=args, data=data, headers=headers,
-                            response=response))
+                            response=response)
                     except Exception as e:
                         _log.error("failed to call API endpoint \"%s\"",
                             [path], exc_info=True)
@@ -120,7 +114,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         response.content_type = "application/json"
             else:
                 response.code = 401
+        return response
 
+    def _handle_wrap(self, method):
+        path, endpoint, args = self._path_data()
+        _log.debug("[HTTP] starting _handle for %s from %s:%d: %s",
+            [method, self.client_address[0], self.client_address[1], path])
+
+        response = _bot.trigger(lambda: self._handle(method, path, endpoint,
+            args))
         self._respond(response)
 
         _log.debug("[HTTP] finishing _handle for %s from %s:%d (%d)",
@@ -128,10 +130,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             response.code])
 
     def do_GET(self):
-        self._handle("GET")
+        self._handle_wrap("GET")
 
     def do_POST(self):
-        self._handle("POST")
+        self._handle_wrap("POST")
 
     def log_message(self, format, *args):
         return
