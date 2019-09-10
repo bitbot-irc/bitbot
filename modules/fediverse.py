@@ -14,10 +14,17 @@ def _parse_username(s):
     if username.startswith("@"):
         username = username[1:]
     if username and instance:
-        return "@%s@%s" % (username, instance)
+        return username, instance
+    return None, None
+def _format_username(username, instance):
+    return "@%s@%s" % (username, instance)
+def _setting_parse(s):
+    username, instance = _parse_username(s)
+    if username and instance:
+        return _format_username(username, instance)
     return None
 
-@utils.export("set", utils.FunctionSetting(_parse_username, "fediverse",
+@utils.export("set", utils.FunctionSetting(_setting_parse, "fediverse",
     help="Set your fediverse account", example="@gargron@mastodon.social"))
 class Module(ModuleManager.BaseModule):
     _name = "Fedi"
@@ -41,8 +48,7 @@ class Module(ModuleManager.BaseModule):
         username = None
         instance = None
         if account:
-            account = account.lstrip("@")
-            username, _, instance = account.partition("@")
+            username, instance = _parse_username(account)
 
         if not username or not instance:
             raise utils.EventError("Please provide @<user>@<instance>")
@@ -129,3 +135,31 @@ class Module(ModuleManager.BaseModule):
 
             event["stdout"].write("%s: %s - %s" % (preferred_username,
                 content, shorturl))
+
+    @utils.hook("api.get.ap-webfinger")
+    @utils.kwarg("authenticated", False)
+    def webfinger(self, event):
+        our_username = self.bot.get_setting("fediverse", None)
+        our_username, our_instance = _parse_username(our_username)
+
+        resource = event["params"].get("resource", None)
+        if resource and resource.startswith("acct:"):
+            request = resource.split(":", 1)[1]
+            requested_username, requested_instance = _parse_username(request)
+
+            if (requested_username == our_username and
+                    requested_instance == our_instance):
+                event["response"].content_type = "application/jrd+json"
+
+                location = "https://%s" % event["url_for"]("api", "ap-user",
+                    {"u": our_username})
+
+                event["response"].write_json({
+                    "aliases": [location],
+                    "links": [{
+                        "href": location,
+                        "rel": "self",
+                        "type": ACTIVITY_TYPE
+                    }],
+                    "subject": resouce
+                })

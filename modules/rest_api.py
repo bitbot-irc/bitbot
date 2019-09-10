@@ -75,6 +75,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def _minify_setting(self):
         return _bot.get_setting("rest-api-minify", False)
 
+    def url_for(self, headers, route, endpoint, get_params={}):
+        hostname = headers.get("Host", None)
+        if not hostname:
+            return None
+        else:
+            get_params_str = ""
+            if get_params:
+                get_params = "?%s" % urllib.parse.urlencode(get_params)
+            return "%s/%s/%s%s" % (hostname, route, endpoint, get_params_str)
+    def _url_for(self, headers):
+        return lambda route, endpoint, get_params={}: self.url_for(
+            headers, route, endpoint, get_params)
+
     def _handle(self, method, path, endpoint, args):
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
         params = self._url_params()
@@ -103,7 +116,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         event_response = _events.on("api").on(method).on(
                             endpoint).call_for_result_unsafe(params=params,
                             path=args, data=data, headers=headers,
-                            response=response)
+                            response=response, url_for=self._url_for(headers))
                     except Exception as e:
                         _log.error("failed to call API endpoint \"%s\"",
                             [path], exc_info=True)
