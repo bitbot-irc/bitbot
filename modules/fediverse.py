@@ -142,7 +142,7 @@ class Module(ModuleManager.BaseModule):
     def _ap_self(self):
         our_username = self.bot.get_setting("fediverse", None)
         return _parse_username(our_username)
-    def _ap_self_id(self, for_url, our_username):
+    def _ap_self_id(self, url_for, our_username):
         return "https://%s" % url_for("api", "ap-user", {"u": our_username})
 
 
@@ -177,7 +177,7 @@ class Module(ModuleManager.BaseModule):
         our_username, our_instance = self._ap_self()
         username = event["params"].get("u", None)
         if username and username == our_username:
-            self_id = self._ap_self._id(event["url_for"], our_username)
+            self_id = self._ap_self_id(event["url_for"], our_username)
             inbox = event["url_for"]("api", "ap-inbox", {"u": our_username})
 
             cert_filename = self.bot.config["tls-certificate"]
