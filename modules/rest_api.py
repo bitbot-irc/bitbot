@@ -20,7 +20,7 @@ class Response(object):
         self._data += data.encode("utf8")
     def write_json(self, obj):
         if self._compact:
-            data = json.dumps(obj, sort_keys=True, separators=(",", ":"))
+            data = json.dumps(obj, separators=(",", ":"))
         else:
             data = json.dumps(obj, sort_keys=True, indent=4)
         self._data += data.encode("utf8")
