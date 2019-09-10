@@ -20,10 +20,9 @@ class Response(object):
         self._data += data.encode("utf8")
     def write_json(self, obj):
         if self._compact:
-            data = json.dumps(event_response, sort_keys=True,
-                separators=(",", ":"))
+            data = json.dumps(obj, sort_keys=True, separators=(",", ":"))
         else:
-            data = json.dumps(event_response, sort_keys=True, indent=4)
+            data = json.dumps(obj, sort_keys=True, indent=4)
         self._data += data.encode("utf8")
 
     def set_header(self, key: str, value: str):
