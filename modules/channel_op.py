@@ -125,7 +125,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_access", "op")
     @utils.kwarg("usage", "[nickname]")
     def op(self, event):
-        add = event.name == "received.command.op"
+        add = event["command"] == "op"
         target = event["args_split"][0] if event["args"] else event[
             "user"].nickname
         event["target"].send_mode("+o" if add else "-o", target)
@@ -137,7 +137,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_access", "voice")
     @utils.kwarg("usage", "[nickname]")
     def voice(self, event):
-        add = event.name == "received.command.voice"
+        add = event["command"] == "voice"
         target = event["args_split"][0] if event["args"] else event[
             "user"].nickname
         event["target"].send_mode("+v" if add else "-v", target)
@@ -184,7 +184,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_access", "mute")
     @utils.kwarg("help", "Mute a given user")
     def _mute(self, event):
-        add = event.name == "received.command.mute"
+        add = event["command"] == "mute"
         time, args = self._parse_time(event["args_split"], 1)
 
         target_name = args[0]

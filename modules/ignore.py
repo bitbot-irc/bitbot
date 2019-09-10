@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require-mode", "o")
     @utils.kwarg("require-access", "cignore")
     def cignore(self, event):
-        remove = event.name == "received.command.cunignore"
+        remove = event["command"] == "cunignore"
 
         target_user = event["server"].get_user(event["args_split"][0])
         is_ignored = event["target"].get_user_setting(target_user.get_id(),

@@ -96,7 +96,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("min_args", 1)
     @utils.kwarg("usage", "<target>")
     def changepoint(self, event):
-        positive = event.name == "received.command.addpoint"
+        positive = event["command"] == "addpoint"
         success, message = self._karma(event["server"], event["user"],
             event["args"].strip(), positive)
         event["stdout" if success else "stderr"].write(message)
