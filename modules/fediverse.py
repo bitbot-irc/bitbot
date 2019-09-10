@@ -182,7 +182,7 @@ class Module(ModuleManager.BaseModule):
 
             cert_filename = self.bot.config["tls-certificate"]
             with open(cert_filename) as cert_file:
-                cert = cert_file.read()
+                cert = cert_file.read().strip()
 
             event["response"].content_type = ("application/ld+json; "
                 "profile=\"https://www.w3.org/ns/activitystreams\"")
