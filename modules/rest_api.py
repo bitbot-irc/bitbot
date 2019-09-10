@@ -90,6 +90,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         hooks = _events.on("api").on(method).on(endpoint).get_hooks()
         if hooks:
+            response.code = 200
             hook = hooks[0]
             authenticated = hook.get_kwarg("authenticated", True)
             key = params.get("key", None)
