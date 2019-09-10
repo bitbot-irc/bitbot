@@ -144,7 +144,7 @@ class BitBotIPv6HTTPd(http.server.HTTPServer):
 @utils.export("botset",
     utils.BoolSetting("rest-api", "Enable/disable REST API"))
 @utils.export("botset",
-    utils.BoolSetting("rest-api", "Enable/disable REST API minifying"))
+    utils.BoolSetting("rest-api-minify", "Enable/disable REST API minifying"))
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         global _bot
