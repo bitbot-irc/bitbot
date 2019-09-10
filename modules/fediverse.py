@@ -163,9 +163,9 @@ class Module(ModuleManager.BaseModule):
 
                 event["response"].content_type = "application/jrd+json"
                 event["response"].write_json({
-                    "aliases": [location],
+                    "aliases": [self_id],
                     "links": [{
-                        "href": location,
+                        "href": self_id,
                         "rel": "self",
                         "type": ACTIVITY_TYPE
                     }],
