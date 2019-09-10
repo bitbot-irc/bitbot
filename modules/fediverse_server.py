@@ -156,7 +156,7 @@ class Module(ModuleManager.BaseModule):
 
             activities = []
             for activity_id, content, timestamp in self._get_activities():
-                activity_url, activity_object = self._prepare_actitivy(
+                activity_url, activity_object = self._prepare_activity(
                     event["url_for"], self_id, activity_id, content, timestamp)
                 activities.append({
                     "actor": self_id,
