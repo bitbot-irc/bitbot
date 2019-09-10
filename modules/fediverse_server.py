@@ -38,8 +38,8 @@ class Module(ModuleManager.BaseModule):
         activities = []
         for setting, (content, timestamp) in self.bot.find_settings_prefix(
                 ACTIVITY_SETTING_PREFIX):
-            activities[setting.replace(ACTIVITY_SETTING_PREFIX, "", 1)
-                ] = [content, timestamp]
+            activity_id = setting.replace(ACTIVITY_SETTING_PREFIX, "", 1)
+            activities.append([activity_id, content, timestamp])
         return activities
     def _make_activity(self, content):
         timestamp = utils.iso8601_format_now()
@@ -155,7 +155,7 @@ class Module(ModuleManager.BaseModule):
             outbox = self._ap_outbox_url(event["url_for"], our_username)
 
             activities = []
-            for activity_id, (content, timestamp) in self._get_activities():
+            for activity_id, content, timestamp in self._get_activities():
                 activity_url, activity_object = self._prepare_actitivy(
                     event["url_for"], self_id, activity_id, content, timestamp)
                 activities.append({
