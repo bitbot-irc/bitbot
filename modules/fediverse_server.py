@@ -24,8 +24,9 @@ def _setting_parse(s):
         return _format_username(username, instance)
     return None
 
-@utils.export("set", utils.FunctionSetting(_setting_parse, "fediverse",
-    help="Set your fediverse account", example="@gargron@mastodon.social"))
+@utils.export("botset", utils.FunctionSetting(_setting_parse, "fediverse",
+    help="Set the bot's fediverse server account",
+    example="@gargron@mastodon.social"))
 class Module(ModuleManager.BaseModule):
     _name = "Fedi"
 
