@@ -3,7 +3,6 @@
 import binascii, os, urllib.parse
 from src import ModuleManager, utils
 
-ACTIVITY_TYPE = "application/activity+json"
 ACTIVITY_TYPE = ("application/ld+json; "
     "profile=\"https://www.w3.org/ns/activitystreams\"")
 WEBFINGER_TYPE = "application/jrd+json"
