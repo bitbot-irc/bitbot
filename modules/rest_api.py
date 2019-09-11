@@ -36,6 +36,7 @@ class Response(object):
             headers[key] = value
         if not has_content_type:
             headers["Content-Type"] = self.content_type
+        headers["Content-Length"] = len(self._data)
         return headers
 
     def get_data(self):
