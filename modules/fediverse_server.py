@@ -89,7 +89,7 @@ class Module(ModuleManager.BaseModule):
                         "rel": "self",
                         "type": ACTIVITY_TYPE
                     }],
-                    "subject": resource
+                    "subject": "acct:%s" % resource
                 })
             else:
                 event["response"].code = 404
