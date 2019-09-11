@@ -227,6 +227,10 @@ def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
 
     return responses
 
+class Client(object):
+    request = request
+    request_many = request_many
+
 def strip_html(s: str) -> str:
     return bs4.BeautifulSoup(s, "lxml").get_text()
 
