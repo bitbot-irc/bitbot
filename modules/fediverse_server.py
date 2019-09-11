@@ -138,10 +138,11 @@ class Module(ModuleManager.BaseModule):
     def _prepare_activity(self, url_for, self_id, activity_id, content,
             timestamp):
         activity_url = self._ap_activity_url(url_for, activity_id)
+        context = "data:%s" % activity_id
         return activity_url, {
             "attributedTo": self_id,
             "content": content,
-            "conversation": activity_id, "context": activity_id,
+            "conversation": context, "context": context,
             "id": activity_url, "url": activity_url,
             "published": timestamp,
             "summary": "", # content warning here
