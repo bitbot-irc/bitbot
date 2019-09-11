@@ -26,7 +26,7 @@ class Module(ModuleManager.BaseModule):
             return None
 
         try:
-            page = utils.http.request(url, parse=True)
+            page = self.bot.http_client().request(url, parse=True)
         except utils.http.HTTPWrongContentTypeException:
             return None
         except Exception as e:
