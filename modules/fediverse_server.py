@@ -113,7 +113,7 @@ class Module(ModuleManager.BaseModule):
             event["response"].content_type = ACTIVITY_TYPE
             event["response"].write_json({
                 "@context": "https://www.w3.org/ns/activitystreams",
-                "id": self_id,
+                "id": self_id, "url": self_id,
                 "type": "Person",
                 "summary": "beep boop",
                 "preferredUsername": our_username, "name": our_username,
