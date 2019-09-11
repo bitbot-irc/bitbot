@@ -34,6 +34,7 @@ USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
 
 RESPONSE_MAX = (1024*1024)*100
 SOUP_CONTENT_TYPES = ["text/html", "text/xml", "application/xml"]
+DECODE_CONTENT_TYPES = ["text/plain"]+SOUP_CONTENT_TYPES
 
 class HTTPException(Exception):
     pass
@@ -145,7 +146,11 @@ def request(url: str, method: str="GET", get_params: dict={},
         except _json.decoder.JSONDecodeError as e:
             raise HTTPParsingException(str(e), data)
 
-    return Response(response.status_code, response_content, response_headers)
+    if content_type in DECODE_CONTENT_TYPES:
+        return Response(response.status_code, _decode_data(), response_headers)
+    else:
+        return Response(response.status_code, response_content,
+            response_headers)
 
 def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
     responses = {}
