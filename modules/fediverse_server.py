@@ -59,12 +59,17 @@ class Module(ModuleManager.BaseModule):
     def _ap_self(self):
         our_username = self.bot.get_setting("fediverse", None)
         return _parse_username(our_username)
+
+    def _ap_url(self, url_for, fragment, kwargs):
+        return "https://%s" % url_for("api", fragment, kwargs)
     def _ap_self_url(self, url_for, our_username):
-        return "https://%s" % url_for("api", "ap-user", {"u": our_username})
+        return self._ap_url(url_for, "ap-user", {"u": our_username})
+    def _ap_inbox_url(self, url_for, our_username):
+        return self._ap_url(url_for, "ap-inbox", {"u": our_username})
     def _ap_outbox_url(self, url_for, our_username):
-        return "https://%s" % url_for("api", "ap-outbox", {"u": our_username})
+        return self._ap_url(url_for, "ap-outbox", {"u": our_username})
     def _ap_activity_url(self, url_for, activity_id):
-        return "https://%s" % url_for("api", "ap-activity", {"a": activity_id})
+        return self._ap_url(url_for, "ap-activity", {"a": activity_id})
 
     @utils.hook("api.get.ap-webfinger")
     @utils.kwarg("authenticated", False)
@@ -105,7 +110,7 @@ class Module(ModuleManager.BaseModule):
         username = event["params"].get("u", None)
         if username and username == our_username:
             self_id = self._ap_self_url(event["url_for"], our_username)
-            inbox = event["url_for"]("api", "ap-inbox", {"u": our_username})
+            inbox = self._ap_inbox_url(event["url_for"], our_username)
             outbox = self._ap_outbox_url(event["url_for"], our_username)
 
             cert_filename = self.bot.config["tls-certificate"]
