@@ -59,6 +59,9 @@ class Bot(object):
 
         self._events.on("timer.reconnect").hook(self._timed_reconnect)
 
+    def http_client(self):
+        return self._exports.get_one("http-client", utils.http.Client)
+
     def _trigger_both(self):
         self.trigger_read()
         self.trigger_write()
