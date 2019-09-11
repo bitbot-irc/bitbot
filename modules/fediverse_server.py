@@ -3,8 +3,10 @@
 import binascii, os, urllib.parse
 from src import ModuleManager, utils
 
+
 ACTIVITY_TYPE = ("application/ld+json; "
     "profile=\"https://www.w3.org/ns/activitystreams\"")
+WEBFINGER_LINK = "application/activity+json"
 WEBFINGER_TYPE = "application/jrd+json"
 
 ACTIVITY_SETTING_PREFIX = "ap-activity-"
@@ -87,7 +89,7 @@ class Module(ModuleManager.BaseModule):
                     "links": [{
                         "href": self_id,
                         "rel": "self",
-                        "type": ACTIVITY_TYPE
+                        "type": WEBFINGER_LINK
                     }],
                     "subject": "acct:%s" % resource
                 })
