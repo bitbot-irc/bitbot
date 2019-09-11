@@ -9,7 +9,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "<acronym>")
     def acronym(self, event):
         query = event["args_split"][0].upper()
-        response = utils.http.request(API % query, soup=True)
+        response = utils.http.request(API % query, parse=True)
         if response.data:
             acronyms = []
             for element in response.data.find_all("acro"):

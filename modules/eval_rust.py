@@ -32,8 +32,8 @@ class Module(ModuleManager.BaseModule):
         args = API_ARGS.copy()
         args["code"] = FN_TEMPLATE % event["args"]
         try:
-            page = utils.http.request(EVAL_URL, json_data=args,
-                method="POST", json=True)
+            page = utils.http.request(EVAL_URL, post_data=args,
+                method="POST", json=True, content_type="application/json")
         except socket.timeout:
             raise utils.EventError("%s: eval timed out" %
                 event["user"].nickname)

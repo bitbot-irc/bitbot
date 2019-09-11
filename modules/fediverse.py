@@ -56,7 +56,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Please provide @<user>@<instance>")
 
         hostmeta = utils.http.request(HOSTMETA % instance,
-            soup=True, check_content_type=False)
+            parse=True, check_content_type=False)
         webfinger_url = None
         for item in hostmeta.data.find_all("link"):
             if item["rel"] and item["rel"][0] == "lrdd":

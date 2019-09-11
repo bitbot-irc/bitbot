@@ -12,8 +12,7 @@ class Module(ModuleManager.BaseModule):
         try:
             page = utils.http.request(EVAL_URL,
                 post_data={"input": event["args"]},
-                method="POST",
-                soup=True)
+                method="POST", parse=True)
         except socket.timeout:
             raise utils.EventError("%s: eval timed out" %
                 event["user"].nickname)
