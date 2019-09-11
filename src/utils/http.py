@@ -62,7 +62,7 @@ class Request(object):
             detect_encoding: bool=True,
 
             parser: str="lxml", fallback_encoding="iso-8859-1",
-            content_type: str=None,
+            content_type: str=None, proxy: str=None,
 
             **kwargs):
         self.set_url(url)
@@ -80,6 +80,7 @@ class Request(object):
         self.parser = parser
         self.fallback_encoding = fallback_encoding
         self.content_type = content_type
+        self.proxy = proxy
 
         if kwargs:
             if method == "POST":
