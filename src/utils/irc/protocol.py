@@ -61,8 +61,8 @@ def names(channel_name: str) -> IRCLine.ParsedLine:
     return IRCLine.ParsedLine("NAMES", [channel_name])
 def list(search_for: str=None) -> IRCLine.ParsedLine:
     return IRCLine.ParsedLine("LIST", [search_for] if search_for else [])
-def invite(channel_name: str, target: str) -> IRCLine.ParsedLine:
-    return IRCLine.ParsedLine("INVITE", [channel_name, target])
+def invite(target: str, channel_name: str) -> IRCLine.ParsedLine:
+    return IRCLine.ParsedLine("INVITE", [target, channel_name])
 
 def whois(target: str) -> IRCLine.ParsedLine:
     return IRCLine.ParsedLine("WHOIS", [target])
