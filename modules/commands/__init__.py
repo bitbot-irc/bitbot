@@ -93,7 +93,7 @@ class Module(ModuleManager.BaseModule):
                 try:
                     args_split = self._alias_arg_replace(new_args, args_split)
                 except IndexError:
-                    return None, None
+                    return None, None, None
 
         hook = None
         channel_skip = False
@@ -124,7 +124,7 @@ class Module(ModuleManager.BaseModule):
         if not hook and (private_skip or channel_skip):
             raise BadContextException("channel" if channel_skip else "private")
 
-        return hook, args_split
+        return hook, command, args_split
 
     def _check(self, context, kwargs, requests=[]):
         event_hook = self.events.on(context).on("command")
@@ -281,8 +281,8 @@ class Module(ModuleManager.BaseModule):
                 return
 
             try:
-                hook, args_split = self._find_command_hook(event["server"],
-                    command, True, args_split)
+                hook, command, args_split = self._find_command_hook(
+                    event["server"], command, True, args_split)
             except BadContextException:
                 event["channel"].send_message(
                     "%s: That command is not valid in a channel" %
@@ -333,8 +333,8 @@ class Module(ModuleManager.BaseModule):
             args_split = event["message_split"][1:]
 
             try:
-                hook, args_split = self._find_command_hook(event["server"],
-                    command, False, args_split)
+                hook, command, args_split = self._find_command_hook(
+                    event["server"], command, False, args_split)
             except BadContextException:
                 event["user"].send_message(
                     "That command is not valid in a PM")
