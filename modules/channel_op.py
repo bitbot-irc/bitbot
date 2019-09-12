@@ -213,3 +213,21 @@ class Module(ModuleManager.BaseModule):
         if server and event["channel_name"] in server.channels:
             channel = server.channels.get(event["channel_name"])
             channel.send_mode("-%s" % event["mode"], [event["mask"]])
+
+    @utils.hook("received.command.invite")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "invite")
+    @utils.kwarg("help", "Invite a given user")
+    @utils.kwarg("usage", "<nickname>")
+    def invite(self, event):
+        user_nickname = event["args_split"][0]
+
+        event["target"].send_invite(user_nickname)
+
+        user = event["server"].get_user(user_nickname, create=False)
+        if user:
+            user_nickname = user.nickname
+
+        event["stdout"].write("Invited %s" % user_nickname)
