@@ -276,6 +276,9 @@ class Module(ModuleManager.BaseModule):
                 new_flags_str = "".join(new_flags)
                 event["target"].set_user_setting(target.get_id(), "flags",
                     new_flags_str)
+
+                self._check_flags(event["target"], target)
+
                 event["stdout"].write("Set flags for %s to +%s" % (
                     target.nickname, new_flags_str))
             else:
