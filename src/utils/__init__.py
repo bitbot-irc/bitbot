@@ -355,6 +355,10 @@ class FunctionSetting(Setting):
     def parse(self, value: str) -> typing.Any:
         return self._func(value)
 
+class SensitiveSetting(Setting):
+    def format(self, value: typing.Any):
+        return "*"*16
+
 class DeadlineExceededException(Exception):
     pass
 def _raise_deadline():
