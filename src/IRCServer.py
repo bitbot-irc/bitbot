@@ -378,9 +378,9 @@ class Server(IRCObject.Object):
     def send_list(self, search_for: str=None
             ) -> typing.Optional[IRCLine.SentLine]:
         return self.send(utils.irc.protocol.list(search_for))
-    def send_invite(self, target: str, channel_name: str
+    def send_invite(self, channel_name: str, target: str
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.invite(target, channel_name))
+        return self.send(utils.irc.protocol.invite(channel_name, target))
 
     def send_whois(self, target: str) -> typing.Optional[IRCLine.SentLine]:
         return self.send(utils.irc.protocol.whois(target))
