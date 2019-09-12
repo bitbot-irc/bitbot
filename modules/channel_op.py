@@ -90,6 +90,7 @@ class Module(ModuleManager.BaseModule):
             channel.send_unban(event["hostmask"])
 
     @utils.hook("received.command.ban")
+    @utils.hook("received.command.b", alias_of="ban")
     @utils.kwarg("min_args", 1)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "ban")
