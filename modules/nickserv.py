@@ -3,7 +3,7 @@
 import base64
 from src import EventManager, ModuleManager, utils
 
-@utils.export("serverset", utils.Setting("nickserv-password",
+@utils.export("serverset", utils.SensitiveSetting("nickserv-password",
     "Set the nickserv password for this server", example="hunter2"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.001", priority=EventManager.PRIORITY_URGENT)
