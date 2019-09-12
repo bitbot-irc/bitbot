@@ -239,7 +239,7 @@ class Module(ModuleManager.BaseModule):
         elif s[0] == "-":
             return False, list(s[1:])
         else:
-            return None
+            return None, None
 
     @utils.hook("received.command.flags")
     @utils.kwarg("channel_only", True)
