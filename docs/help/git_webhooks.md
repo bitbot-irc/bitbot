@@ -30,7 +30,7 @@ api-port                 = 5000
 
 you may change the API port if you wish.
 
-2. restart the bot or send it a `SIGUSR1` signal
+2. restart the bot or send it a `SIGHUP` signal
 
 3. enable the REST API by `!config bot rest-api on`
 
