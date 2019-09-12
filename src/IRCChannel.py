@@ -238,5 +238,5 @@ class Channel(IRCObject.Object):
     def has_mode(self, user: IRCUser.User, mode: str) -> bool:
         return user in self.modes.get(mode, [])
 
-    def get_user_status(self, user: IRCUser.User) -> typing.Set:
+    def get_user_modes(self, user: IRCUser.User) -> typing.Set:
         return self.user_modes.get(user, set([]))

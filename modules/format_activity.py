@@ -9,8 +9,9 @@ class Module(ModuleManager.BaseModule):
             minimal=minimal, **kwargs)
 
     def _mode_symbols(self, user, channel, server):
-        modes = list(channel.get_user_status(user))
+        modes = list(channel.get_user_modes(user))
         if modes:
+            modes = [mode for mode in modes if mode in server.prefix_modes]
             modes.sort(key=lambda x: list(server.prefix_modes.keys()).index(x))
             return server.prefix_modes[modes[0]]
         return ""
