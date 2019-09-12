@@ -111,7 +111,8 @@ class Module(ModuleManager.BaseModule):
                     target.del_setting(setting)
                     return ConfigResult(ConfigResults.Removed)
                 else:
-                    return ConfigResult(ConfigResults.Retrieved, existing_value)
+                    formatted = export_settings[setting].format(existing_value)
+                    return ConfigResult(ConfigResults.Retrieved, formatted)
             else:
                 raise ConfigSettingInexistent()
 

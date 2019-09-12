@@ -280,6 +280,9 @@ class Setting(object):
     def _format_example(self):
         return None
 
+    def format(self, value: typing.Any):
+        return repr(value)
+
 SETTING_TRUE = ["true", "yes", "on", "y"]
 SETTING_FALSE = ["false", "no", "off", "n"]
 class BoolSetting(Setting):
