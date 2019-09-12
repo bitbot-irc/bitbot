@@ -299,23 +299,30 @@ class Module(ModuleManager.BaseModule):
 
     def _check_flags(self, channel, user):
         flags = channel.get_user_setting(user.get_id(), "flags", "")
+
         if flags:
+            identified = not user.get_identified_account() == None
+            current_modes = channel.get_user_modes(user)
+
             modes = []
             kick_reason = None
-            identified = not user.get_identified_account() == None
-
             for flag in list(flags):
-                if flag == "O":
+                if flag == "O" and identified:
                     modes.append(("o", user.nickname))
-                elif flag == "V":
+                elif flag == "V" and identified:
                     modes.append(("v", user.nickname))
                 elif flag == "b":
                     modes.append(("b", self._get_hostmask(channel, user)))
                     kick_reason = "User is banned from this channel"
 
+            new_modes = []
+            for mode, arg in modes:
+                if not mode in current_modes:
+                    new_modes.append((mode, arg))
+
             # break up in to chunks of (maximum) 3
             # https://tools.ietf.org/html/rfc2812.html#section-3.2.3
-            for chunk in self._chunk(modes, 3):
+            for chunk in self._chunk(new_modes, 3):
                 chars, args = list(zip(*chunk))
                 channel.send_mode("+%s" % "".join(chars), list(args))
             if not kick_reason == None:
