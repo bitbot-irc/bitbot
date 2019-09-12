@@ -309,7 +309,9 @@ class Module(ModuleManager.BaseModule):
                     modes.append(("b", self._get_hostmask(channel, user)))
                     kick_reason = "User is banned from this channel"
 
-            for chunk in self._chunk(modes, 4):
+            # break up in to chunks of (maximum) 3
+            # https://tools.ietf.org/html/rfc2812.html#section-3.2.3
+            for chunk in self._chunk(modes, 3):
                 chars, args = list(zip(*chunk))
                 channel.send_mode("+%s" % "".join(chars), list(args))
             if not kick_reason == None:
