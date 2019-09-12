@@ -224,6 +224,8 @@ class Channel(IRCObject.Object):
         return self.server.send_topic(self.name, topic)
     def send_part(self, reason: str=None):
         return self.server.send_part(self.name, reason)
+    def send_invite(self, target: str):
+        return self.server.send_invite(self.name, target)
 
     def mode_or_above(self, user: IRCUser.User, mode: str) -> bool:
         mode_orders = list(self.server.prefix_modes)
