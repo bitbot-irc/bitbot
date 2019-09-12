@@ -282,25 +282,34 @@ class Module(ModuleManager.BaseModule):
         return [l[i:i+n] for i in range(0, len(l), n)]
 
     @utils.hook("received.join")
-    def flags_on_join(self, event):
-        flags = event["channel"].get_user_setting(event["user"].get_id(),
-            "flags", "")
+    def on_join(self, event):
+        self._check_flags(event["channel"], event["user"])
+    @utils.hook("received.account.login")
+    @utils.hook("internal.identified")
+    def on_account(self, event):
+        for channel in event["user"].channels:
+            self._check_flags(channel, event["user"])
 
-        modes = []
-        kick_reason = None
+    def _check_flags(self, channel, user):
+        flags = channel.get_user_setting(user.get_id(), "flags", "")
+        if flags:
+            modes = []
+            kick_reason = None
+            identified = not user.get_identified_account() == None
 
-        for flag in list(flags):
-            if flag == "O":
-                modes.append(("o", event["user"].nickname))
-            elif flag == "V":
-                modes.append(("v", event["user"].nickname))
-            elif flag == "b":
-                modes.append(
-                    ("b", self._get_hostmask(event["channel"], event["user"])))
-                kick_reason = "User is banned from this channel"
+            for flag in list(flags):
+                if flag == "O":
+                    modes.append(("o", user.nickname))
+                elif flag == "V":
+                    modes.append(("v", user.nickname))
+                elif flag == "b":
+                    modes.append(("b", self._get_hostmask(channel, user)))
+                    kick_reason = "User is banned from this channel"
 
-        for chunk in self._chunk(modes, 4):
-            chars, args = list(zip(*chunk))
-            event["channel"].send_mode("+%s" % "".join(chars), list(args))
-        if not kick_reason == None:
-            event["channel"].send_kick(event["user"].nickname, kick_reason)
+            print(flags)
+            print(modes)
+            for chunk in self._chunk(modes, 4):
+                chars, args = list(zip(*chunk))
+                channel.send_mode("+%s" % "".join(chars), list(args))
+            if not kick_reason == None:
+                channel.send_kick(user.nickname, kick_reason)
