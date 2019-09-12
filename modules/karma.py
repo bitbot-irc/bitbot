@@ -125,7 +125,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Reset a specified karma to 0
         :usage: <target>
-        :permission: resetkarme
+        :permission: resetkarma
         """
         setting = "karma-%s" % event["args_split"][0]
         karma = event["server"].get_setting(setting, 0)
