@@ -10,8 +10,8 @@ KARMA_DELAY_SECONDS = 3
 
 REGEX_KARMA = re.compile(r"^(?:(\S+:) )?(.*)(\+{2}|\-{2})$")
 
-@utils.export("channelset", utils.BoolSetting("karma-verbose",
-    "Enable/disable automatically responding to karma changes"))
+@utils.export("channelset", utils.BoolSetting("karma-pattern",
+    "Enable/disable parsing ++/-- karma format"))
 @utils.export("serverset", utils.BoolSetting("karma-nickname-only",
     "Enable/disable karma being for nicknames only"))
 class Module(ModuleManager.BaseModule):
@@ -77,18 +77,18 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("command", "karma")
     @utils.kwarg("pattern", REGEX_KARMA)
     def channel_message(self, event):
-        verbose = event["target"].get_setting("karma-verbose", False)
-        positive = event["match"].group(3)[0] == "+"
+        pattern = event["target"].get_setting("karma-pattern", False)
+        if pattern:
+            positive = event["match"].group(3)[0] == "+"
 
-        target = event["match"].group(2).strip().rstrip("".join(WORD_STOP))
-        if event["match"].group(1):
-            if not event["server"].has_user(event["match"].group(1)[:-1]):
-                target = "%s %s" % (event["match"].group(1), target)
+            target = event["match"].group(2).strip().rstrip("".join(WORD_STOP))
+            if event["match"].group(1):
+                if not event["server"].has_user(event["match"].group(1)[:-1]):
+                    target = "%s %s" % (event["match"].group(1), target)
 
-        if target:
-            success, message = self._karma(event["server"], event["user"],
-                target, positive)
-            if verbose:
+            if target:
+                success, message = self._karma(event["server"], event["user"],
+                    target, positive)
                 event["stdout" if success else "stderr"].write(message)
 
     @utils.hook("received.command.addpoint")
