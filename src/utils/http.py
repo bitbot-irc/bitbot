@@ -29,7 +29,7 @@ def url_sanitise(url: str):
                 url = url[:-1]
     return url
 
-USER_AGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
+DEFAULT_USERAGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36")
 
 RESPONSE_MAX = (1024*1024)*100
@@ -62,7 +62,7 @@ class Request(object):
             detect_encoding: bool=True,
 
             parser: str="lxml", fallback_encoding="iso-8859-1",
-            content_type: str=None, proxy: str=None,
+            content_type: str=None, proxy: str=None, useragent: str=None,
 
             **kwargs):
         self.set_url(url)
@@ -81,6 +81,7 @@ class Request(object):
         self.fallback_encoding = fallback_encoding
         self.content_type = content_type
         self.proxy = proxy
+        self.useragent = useragent
 
         if kwargs:
             if method == "POST":
@@ -98,7 +99,7 @@ class Request(object):
         if not "Accept-Language" in headers:
             headers["Accept-Language"] = "en-GB"
         if not "User-Agent" in headers:
-            headers["User-Agent"] = USER_AGENT
+            headers["User-Agent"] = self.useragent or DEFAULT_USERAGENT
         if not "Content-Type" in headers and self.content_type:
             headers["Content-Type"] = self.content_type
         return headers
