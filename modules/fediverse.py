@@ -1,5 +1,3 @@
-#--require-config tls-certificate
-
 import urllib.parse
 from src import ModuleManager, utils
 
