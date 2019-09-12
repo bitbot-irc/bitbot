@@ -1,5 +1,5 @@
 import urllib.parse
-from src import ModuleManager, utils
+from src import IRCBot, ModuleManager, utils
 
 HOSTMETA = "https://%s/.well-known/host-meta"
 WEBFINGER_DEFAULT = "https://%s/.well-known/webfinger?resource={uri}"
@@ -8,6 +8,8 @@ WEBFINGER_HEADERS = {"Accept": "application/jrd+json"}
 ACTIVITY_TYPE = "application/activity+json"
 ACTIVITY_HEADERS = {"Accept": ("application/ld+json; "
     'profile="https://www.w3.org/ns/activitystreams"')}
+
+USERAGENT = "BitBot (%s) Fediverse" % IRCBot.VERSION
 
 def _parse_username(s):
     username, _, instance = s.rpartition("@")
@@ -54,7 +56,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Please provide @<user>@<instance>")
 
         hostmeta = utils.http.request(HOSTMETA % instance,
-            parse=True, check_content_type=False)
+            parse=True, check_content_type=False, useragent=USERAGENT)
         webfinger_url = None
         for item in hostmeta.data.find_all("link"):
             if item["rel"] and item["rel"][0] == "lrdd":
@@ -68,7 +70,7 @@ class Module(ModuleManager.BaseModule):
             "acct:%s@%s" % (username, instance))
 
         webfinger = utils.http.request(webfinger_url,
-            headers=WEBFINGER_HEADERS, json=True)
+            headers=WEBFINGER_HEADERS, json=True, useragent=USERAGENT)
 
         activity_url = None
         for link in webfinger.data["links"]:
@@ -80,12 +82,12 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Failed to find user activity feed")
 
         activity = utils.http.request(activity_url,
-            headers=ACTIVITY_HEADERS, json=True)
+            headers=ACTIVITY_HEADERS, json=True, useragent=USERAGENT)
         preferred_username = activity.data["preferredUsername"]
         outbox_url = activity.data["outbox"]
 
         outbox = utils.http.request(outbox_url, headers=ACTIVITY_HEADERS,
-            json=True)
+            json=True, useragent=USERAGENT)
         items = None
 
         if "first" in outbox.data:
@@ -95,7 +97,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 # mastodon
                 first = utils.http.request(outbox.data["first"],
-                    headers=ACTIVITY_HEADERS, json=True)
+                    headers=ACTIVITY_HEADERS, json=True, useragent=USERAGENT)
                 items = first.data["orderedItems"]
         else:
             items = outbox.data["orderedItems"]
@@ -108,11 +110,11 @@ class Module(ModuleManager.BaseModule):
             retoot_url = first_item["object"]
             retoot_instance = urllib.parse.urlparse(retoot_url).hostname
             retoot = utils.http.request(retoot_url,
-                headers=ACTIVITY_HEADERS, json=True)
+                headers=ACTIVITY_HEADERS, json=True, useragent=USERAGENT)
 
             original_tooter_url = retoot.data["attributedTo"]
             original_tooter = utils.http.request(original_tooter_url,
-                headers=ACTIVITY_HEADERS, json=True)
+                headers=ACTIVITY_HEADERS, json=True, useragent=USERAGENT)
 
             retooted_user = "@%s@%s" % (
                 original_tooter.data["preferredUsername"],
