@@ -231,3 +231,76 @@ class Module(ModuleManager.BaseModule):
             user_nickname = user.nickname
 
         event["stdout"].write("Invited %s" % user_nickname)
+
+    def _parse_flags(self, s):
+        if s[0] == "+":
+            return True, list(s[1:])
+        elif s[0] == "-":
+            return False, list(s[1:])
+        else:
+            return None
+
+    @utils.hook("received.command.flags")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("help", "Configure access flags for a given user")
+    @utils.kwarg("usage", "<nickname> [flags]")
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "flags")
+    def flags(self, event):
+        target = event["server"].get_user(event["args_split"][0])
+        current_flags = event["target"].get_user_setting(target.get_id(),
+            "flags", "")
+
+        if len(event["args_split"]) == 1:
+            current_flags_str = ("+%s" % current_flags) if current_flags else ""
+            event["stdout"].write("Flags for %s: %s" % (target.nickname,
+                current_flags_str))
+        else:
+            is_add, parsed_flags = self._parse_flags(event["args_split"][1])
+            new_flags = None
+
+            if is_add == None:
+                raise utils.EventError("Invalid flags format")
+            elif is_add:
+                new_flags = list(set(list(current_flags)+parsed_flags))
+            else:
+                new_flags = list(set(current_flags)-set(parsed_flags))
+
+            if new_flags:
+                new_flags = sorted(new_flags)
+                new_flags_str = "".join(new_flags)
+                event["target"].set_user_setting(target.get_id(), "flags",
+                    new_flags_str)
+                event["stdout"].write("Set flags for %s to +%s" % (
+                    target.nickname, new_flags_str))
+            else:
+                event["target"].del_user_setting(target.get_id(), "flags")
+                event["stdout"].write("Cleared flags for %s" % target.nickname)
+
+    def _chunk(self, l, n):
+        return [l[i:i+n] for i in range(0, len(l), n)]
+
+    @utils.hook("received.join")
+    def flags_on_join(self, event):
+        flags = event["channel"].get_user_setting(event["user"].get_id(),
+            "flags", "")
+
+        modes = []
+        kick_reason = None
+
+        for flag in list(flags):
+            if flag == "O":
+                modes.append(("o", event["user"].nickname))
+            elif flag == "V":
+                modes.append(("v", event["user"].nickname))
+            elif flag == "b":
+                modes.append(
+                    ("b", self._get_hostmask(event["channel"], event["user"])))
+                kick_reason = "User is banned from this channel"
+
+        for chunk in self._chunk(modes, 4):
+            chars, args = list(zip(*chunk))
+            event["channel"].send_mode("+%s" % "".join(chars), list(args))
+        if not kick_reason == None:
+            event["channel"].send_kick(event["user"].nickname, kick_reason)
