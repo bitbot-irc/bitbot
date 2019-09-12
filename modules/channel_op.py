@@ -270,7 +270,7 @@ class Module(ModuleManager.BaseModule):
             if new_flags:
                 # sort alphanumeric with uppercase after lowercase
                 new_flags = sorted(new_flags,
-                    key=lambda c: ("0" if c.islower() else "1")+c))
+                    key=lambda c: ("0" if c.islower() else "1")+c)
 
                 new_flags_str = "".join(new_flags)
                 event["target"].set_user_setting(target.get_id(), "flags",
