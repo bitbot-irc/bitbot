@@ -78,7 +78,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if "Host" in headers:
             host, _, port = headers["Host"].partition(":")
             if not port:
-                port = _bot.config.get("api-port", "5000")
+                port = _bot.config.get("api-port", "5001")
 
             get_params_str = ""
             if get_params:
