@@ -1,0 +1,13 @@
+server {
+    server_name example.com;
+    listen 5000 ssl;
+    listen [::]:5000 ssl;
+
+    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:5001;
+    }
+}
+
