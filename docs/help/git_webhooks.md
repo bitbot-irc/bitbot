@@ -1,6 +1,6 @@
 ## Configure git webhooks
 
-First, follow instructions at [/docs/rest_api.md](/docs/rest_api.md)
+First, follow instructions at [/docs/help/rest_api.md](/docs/help/rest_api.md)
 
 ### Generate API key
 > /msg &lt;bot> apikey <comment> /api/github /api/gitea`
