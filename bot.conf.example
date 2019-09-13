@@ -6,9 +6,7 @@
 tls-key                  =
 tls-certificate          =
 
-# key/cert used for REST API
-tls-api-key              =
-tls-api-certificate      =
+# localhost port used for REST API
 api-port                 =
 
 # the default channel BitBot automatically joins
