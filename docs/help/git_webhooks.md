@@ -3,11 +3,11 @@
 First, follow instructions at [/docs/help/rest_api.md](/docs/help/rest_api.md)
 
 ### Generate API key
-> /msg &lt;bot> apikey <comment> /api/github /api/gitea`
+> /msg &lt;bot> apikey <comment> /api/github /api/gitea
 
 e.g.
 
-> /msg &lt;bot> apikey github-jesopo /api/github /api/gitea`
+> /msg &lt;bot> apikey github-jesopo /api/github /api/gitea
 
 ### Enable hook in-channel
 
