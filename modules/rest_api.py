@@ -1,8 +1,6 @@
 #--depends-on commands
 #--depends-on config
 #--depends-on permissions
-#--require-config tls-api-key
-#--require-config tls-api-certificate
 
 import http.server, json, socket, ssl, threading, uuid, urllib.parse
 from src import ModuleManager, utils
@@ -177,12 +175,7 @@ class Module(ModuleManager.BaseModule):
         self.httpd = None
         if self.bot.get_setting("rest-api", False):
             port = int(self.bot.config.get("api-port", "5000"))
-            self.httpd = BitBotIPv6HTTPd(("", port), Handler)
-
-            self.httpd.socket = utils.security.ssl_wrap(self.httpd.socket,
-                cert=self.bot.config["tls-api-certificate"],
-                key=self.bot.config["tls-api-key"],
-                server_side=True, verify=False)
+            self.httpd = BitBotIPv6HTTPd(("::1", port), Handler)
 
             self.thread = threading.Thread(target=self.httpd.serve_forever)
             self.thread.daemon = True
