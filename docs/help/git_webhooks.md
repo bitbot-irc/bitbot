@@ -12,10 +12,10 @@ e.g.
 ### Enable hook in-channel
 
 #### For single repository
-> !webhook add <organisation>/<repository>
+> !webhook add &lt;organisation>/&lt;repository>
 
 #### For whole organisation
-> !webhook add <organisation>
+> !webhook add &lt;organisation>
 
 ### Format webhook URL
 
