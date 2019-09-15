@@ -13,7 +13,7 @@ class Actor(object):
     def load(self):
         data = ap_utils.activity_request(self.url)
         self.username = data["preferredUsername"]
-        self.inbox = Inbox(self, data["inbox"])
+        self.inbox = Inbox(data["inbox"])
         self.outbox = Outbox(data["outbox"])
 
 class Outbox(object):
@@ -37,10 +37,9 @@ class Outbox(object):
         return items
 
 class Inbox(object):
-    def __init__(self, actor, url):
-        self.actor = actor
+    def __init__(self, url):
         self._url = url
-    def send(self, activity, private_key):
+    def send(self, sender, activity, private_key):
         now = email.utils.formatdate(timeval=None, localtime=False, usegmt=True)
         parts = urllib.parse.urlparse(self._url)
         headers = [
@@ -51,6 +50,6 @@ class Inbox(object):
         sign_headers.insert(0, ["(request-target)", "post %s" % parts.path])
         signature = ap_security.signature(private_key, sign_headers)
 
-        return ap_utils.activity_request(self._url, activity.format(self.actor),
+        return ap_utils.activity_request(self._url, activity.format(sender),
             method="POST")
 
