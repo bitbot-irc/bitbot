@@ -50,6 +50,8 @@ class Inbox(object):
         sign_headers.insert(0, ["(request-target)", "post %s" % parts.path])
         signature = ap_security.signature(private_key, sign_headers)
 
+        headers.append(["signature", signature])
+
         return ap_utils.activity_request(self._url, activity.format(sender),
-            method="POST")
+            method="POST", headers=headers)
 

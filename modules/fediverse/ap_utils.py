@@ -14,9 +14,9 @@ def split_username(s):
         return username, instance
     return None, None
 
-def activity_request(url, data=None, method="GET", type=ACTIVITY_TYPE):
+def activity_request(url, data=None, method="GET", type=ACTIVITY_TYPE,
+        headers={}):
     content_type = None
-    headers = {}
 
     if method == "POST":
         content_type = type
