@@ -298,9 +298,12 @@ class BoolSetting(Setting):
 class IntSetting(Setting):
     example = "10"
     def parse(self, value: str) -> typing.Any:
-        stripped = value.lstrip("0")
-        if stripped.isdigit():
-            return int(stripped)
+        if value == "0":
+            return 0
+        else:
+            stripped = value.lstrip("0")
+            if stripped.isdigit():
+                return int(stripped)
         return None
 
 class IntRangeSetting(IntSetting):
