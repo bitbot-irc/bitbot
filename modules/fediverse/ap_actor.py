@@ -53,5 +53,5 @@ class Inbox(object):
         headers.append(["signature", signature])
 
         return ap_utils.activity_request(self._url, activity.format(sender),
-            method="POST", headers=headers)
+            method="POST", headers=dict(headers))
 
