@@ -188,13 +188,15 @@ class Server(object):
                     key_id = self._ap_keyid_url(event["url_for"])
                     private_key = self._private_key(key_id)
 
+                    our_actor = ap_actor.Actor(self_id)
+
                     actor = ap_actor.Actor(new_follower)
                     actor.load()
                     accept = ap_activities.Accept(data["id"], data)
-                    actor.inbox.send(accept, private_key)
+                    actor.inbox.send(our_actor, accept, private_key
 
                     follow_id = "data:%s" % str(uuid.uuid4())
-                    follow = ap_activities.Follow(follow_id, self_id)
-                    actor.inbox.send(follow, private_key)
+                    follow = ap_activities.Follow(follow_id, actor.url)
+                    actor.inbox.send(our_actor, follow, private_key)
             else:
                 event["response"].code = 404
