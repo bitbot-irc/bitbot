@@ -193,7 +193,7 @@ class Server(object):
                     actor = ap_actor.Actor(new_follower)
                     actor.load()
                     accept = ap_activities.Accept(data["id"], data)
-                    actor.inbox.send(our_actor, accept, private_key
+                    actor.inbox.send(our_actor, accept, private_key)
 
                     follow_id = "data:%s" % str(uuid.uuid4())
                     follow = ap_activities.Follow(follow_id, actor.url)
