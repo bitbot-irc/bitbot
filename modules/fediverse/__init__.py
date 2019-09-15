@@ -21,6 +21,11 @@ class Module(ModuleManager.BaseModule):
     def on_load(self):
         server_username = self.bot.get_setting("fediverse-server", None)
         if server_username:
+            if not "tls-key" in self.bot.config:
+                raise ValueError("`tls-key` not provided in bot config")
+            if not "tls-certificate" in self.bot.config:
+                raise ValueError("`tls-certificate` not provided in bot config")
+
             server_username, instance = ap_utils.split_username(server_username)
             self.server = ap_server.Server(self.bot, server_username, instance)
 
