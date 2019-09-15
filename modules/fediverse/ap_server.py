@@ -189,6 +189,7 @@ class Server(object):
                     private_key = self._private_key(key_id)
 
                     actor = ap_actor.Actor(new_follower)
+                    actor.load()
                     accept = ap_activities.Accept(data["id"], data)
                     actor.inbox.send(accept, private_key)
 
