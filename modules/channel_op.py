@@ -129,7 +129,7 @@ class Module(ModuleManager.BaseModule):
         add = event["command"] == "op"
         target = event["args_split"][0] if event["args"] else event[
             "user"].nickname
-        event["target"].send_mode("+o" if add else "-o", target)
+        event["target"].send_mode("+o" if add else "-o", [target])
 
     @utils.hook("received.command.voice")
     @utils.hook("received.command.devoice")
@@ -141,7 +141,7 @@ class Module(ModuleManager.BaseModule):
         add = event["command"] == "voice"
         target = event["args_split"][0] if event["args"] else event[
             "user"].nickname
-        event["target"].send_mode("+v" if add else "-v", target)
+        event["target"].send_mode("+v" if add else "-v", [target])
 
     @utils.hook("received.command.topic")
     @utils.kwarg("min_args", 1)
