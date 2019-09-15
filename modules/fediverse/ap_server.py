@@ -27,19 +27,6 @@ class Server(object):
             [content, timestamp])
         return activity_id
 
-    @utils.hook("received.command.toot")
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("permission", "fediverse")
-    def toot(self, event):
-        activity_id = self._make_activity(event["args"])
-        event["stdout"].write("Sent toot %s" % activity_id)
-
-    @utils.hook("received.command.fedifollow")
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("permission", "fediverse")
-    def fedi_follow(self, event):
-        pass
-
     def _toot(self, activity_id):
         content, timestamp = self.bot.get_setting(
             "ap-activity-%s" % activity_id)
