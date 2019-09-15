@@ -25,9 +25,15 @@ class Module(ModuleManager.BaseModule):
     def on_kick(self, event):
         if self._should_rejoin(event["server"], event["channel"]):
             delay = self._get_delay(event["server"], event["channel"])
-            self.timers.add("kick-rejoin", delay, server=event["server"],
-                channel_name=event["channel"].name)
+            if delay == 0:
+                self._rejoin(event["server"], event["channel"].name)
+            else:
+                self.timers.add("kick-rejoin", delay, server=event["server"],
+                    channel_name=event["channel"].name)
 
     @utils.hook("timer.kick-rejoin")
     def timer(self, event):
-        event["server"].send_join(event["channel_name"])
+        self._rejoin(event["server"], event["channel_name"])
+
+    def _rejoin(self, server, channel_name):
+        server.send_join(channel_name)
