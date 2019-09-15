@@ -170,8 +170,7 @@ class Server(object):
         else:
             event["response"].code = 404
 
-    def _private_key(self):
-        id = self._ap_keyid_url(url_for)
+    def _private_key(self, id):
         filename = security.private_key(self.bot.config["tls-certificate"])
         return ap_security.PrivateKey(filename, id)
 
@@ -186,7 +185,9 @@ class Server(object):
                 if not new_follower in followers:
                     followers.add(new_follower)
 
-                    private_key = self._private_key()
+                    key_id = self._ap_keyid_url(event["url_for"])
+                    private_key = self._private_key(key_id)
+
                     actor = ap_actor.Actor(new_follower)
                     accept = ap_activities.Accept(data["id"], data)
                     actor.inbox.send(accept, private_key)
