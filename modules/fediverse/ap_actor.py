@@ -39,7 +39,7 @@ class Outbox(object):
 class Inbox(object):
     def __init__(self, url):
         self._url = url
-    def send(activity, private_key):
+    def send(self, activity, private_key):
         now = email.utils.formatdate(timeval=None, localtime=False, usegmt=True)
         parts = urllib.parse.urlparse(self._url)
         headers = [
