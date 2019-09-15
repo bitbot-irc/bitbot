@@ -8,7 +8,7 @@ SIGNATURE_FORMAT = (
 
 
 def _private_key(key_filename: str) -> rsa.RSAPrivateKey:
-    with open(key_filename) as key_file:
+    with open(key_filename, "rb") as key_file:
         return serialization.load_pem_private_key(
             key_file.read(), password=None, backend=default_backend())
 
