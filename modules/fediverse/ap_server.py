@@ -1,12 +1,13 @@
 import base64, binascii, os, urllib.parse
 from src import ModuleManager, utils
 
-from . import ap_activities, ap_actor, ap_security
+from . import ap_activities, ap_actor, ap_security, ap_utils
 
 ACTIVITY_SETTING_PREFIX = "ap-activity-"
 
 class Server(object):
-    def __init__(self, username, instance):
+    def __init__(self, bot, username, instance):
+        self.bot = bot
         self.username = username
         self.instance = instance
 

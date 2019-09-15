@@ -22,7 +22,7 @@ class Module(ModuleManager.BaseModule):
         server_username = self.bot.get_setting("fediverse-server", None)
         if server_username:
             server_username, instance = ap_utils.split_username(server_username)
-            self.server = ap_server.Server(server_username, instance)
+            self.server = ap_server.Server(self.bot, server_username, instance)
 
             self.events.on("api.get.ap-webfinger").hook(
                 self.server.ap_webfinger, authenticated=False)
