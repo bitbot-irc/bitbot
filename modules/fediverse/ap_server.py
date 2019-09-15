@@ -171,7 +171,7 @@ class Server(object):
             event["response"].code = 404
 
     def _private_key(self, id):
-        filename = self.bot.config["tls-certificate"]
+        filename = self.bot.config["tls-key"]
         return ap_security.PrivateKey(filename, id)
 
     def ap_inbox(self, event):
