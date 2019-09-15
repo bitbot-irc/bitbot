@@ -79,13 +79,13 @@ class Server(object):
 
                 self_id = self._ap_self_url(event["url_for"], self.username)
 
-                event["response"].content_type = consts.JRD_TYPE
+                event["response"].content_type = ap_utils.JRD_TYPE
                 event["response"].write_json({
                     "aliases": [self_id],
                     "links": [{
                         "href": self_id,
                         "rel": "self",
-                        "type": consts.ACTIVITY_TYPE
+                        "type": ap_utils.ACTIVITY_TYPE
                     }],
                     "subject": "acct:%s" % resource
                 })
@@ -106,7 +106,7 @@ class Server(object):
             with open(cert_filename) as cert_file:
                 cert = cert_file.read().strip()
 
-            event["response"].content_type = consts.LD_TYPE
+            event["response"].content_type = ap_utils.LD_TYPE
             event["response"].write_json({
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "id": self_id, "url": self_id,
@@ -158,7 +158,7 @@ class Server(object):
                     "type": "Create"
                 })
 
-            event["response"].content_type = consts.LD_TYPE
+            event["response"].content_type = ap_utils.LD_TYPE
             event["response"].write_json({
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "id": outbox,
