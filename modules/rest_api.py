@@ -5,6 +5,9 @@
 import http.server, json, socket, ssl, threading, uuid, urllib.parse
 from src import ModuleManager, utils
 
+DEFAULT_PORT = 5001
+DEFAULT_PUBLIC_PORT = 5000
+
 class Response(object):
     def __init__(self, compact=False):
         self._compact = compact
@@ -75,16 +78,22 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return _bot.get_setting("rest-api-minify", False)
 
     def url_for(self, headers, route, endpoint, get_params={}):
-        if "Host" in headers:
-            host, _, port = headers["Host"].partition(":")
-            if not port:
-                port = _bot.config.get("api-port", "5001")
+        config_host = _bot.get_setting("rest-api-host", None)
 
+        host = None
+        if not config_host == None:
+            host = config_host
+        elif "Host" in headers:
+            header_host, _, port = headers["Host"].partition(":")
+            if not port:
+                port = _bot.config.get("api-port", DEFAULT_PUBLIC_PORT)
+            host = "%s:%s" % (header_host, port)
+
+        if host:
             get_params_str = ""
             if get_params:
                 get_params_str = "?%s" % urllib.parse.urlencode(get_params)
-            return "%s:%s/%s/%s%s" % (host, port, route, endpoint,
-                get_params_str)
+            return "%s/%s/%s%s" % (host, route, endpoint, get_params_str)
         else:
             return None
     def _url_for(self, headers):
@@ -161,6 +170,8 @@ class BitBotIPv6HTTPd(http.server.HTTPServer):
     utils.BoolSetting("rest-api", "Enable/disable REST API"))
 @utils.export("botset",
     utils.BoolSetting("rest-api-minify", "Enable/disable REST API minifying"))
+@utils.export("botset",
+    utils.Setting("rest-api-host", "Public hostname:port for the REST API"))
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         global _bot
@@ -174,7 +185,7 @@ class Module(ModuleManager.BaseModule):
 
         self.httpd = None
         if self.bot.get_setting("rest-api", False):
-            port = int(self.bot.config.get("api-port", "5000"))
+            port = int(self.bot.config.get("api-port", str(DEFAULT_PORT)))
             self.httpd = BitBotIPv6HTTPd(("::1", port), Handler)
 
             self.thread = threading.Thread(target=self.httpd.serve_forever)
