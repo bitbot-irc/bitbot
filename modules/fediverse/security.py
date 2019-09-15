@@ -7,20 +7,24 @@ SIGNATURE_FORMAT = (
     "keyId=\"%s\",headers=\"%s\",signature=\"%s\",algorithm=\"rsa-sha256\"")
 
 
-def private_key(key_filename: str) -> rsa.RSAPrivateKey:
+def _private_key(key_filename: str) -> rsa.RSAPrivateKey:
     with open(key_filename) as key_file:
         return serialization.load_pem_private_key(
             key_file.read(), password=None, backend=default_backend())
 
-def signature(key: rsa.RSAPrivateKey, key_id: str,
-        headers: typing.List[typing.Tuple[str, str]]) -> str:
-    private_key = _private_key(key_filename)
+class PrivateKey(object):
+    def __init__(self, filename, id):
+        self.key = _private_key(filename)
+        self.id = id
+
+def signature(key: PrivateKey, headers: typing.List[typing.Tuple[str, str]]
+        ) -> str:
     sign_header_keys = " ".join(h[0] for h in headers)
 
     sign_string_parts = ["%s: %s" % (k, v) for k, v in headers]
     sign_string = "\n".join(sign_string_parts)
 
-    signature = private_key.sign(
+    signature = key.key.sign(
         sign_string.encode("utf8"),
         padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()),

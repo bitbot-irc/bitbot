@@ -3,14 +3,9 @@
 import base64, binascii, os, urllib.parse
 from src import ModuleManager, utils
 
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.backends import default_backend
-
-LD_TYPE = ("application/ld+json; "
-    "profile=\"https://www.w3.org/ns/activitystreams\"")
-JRD_TYPE = "application/jrd+json"
-ACTIVITY_TYPE = "application/activity+json"
+from . import actor as ap_actor
+from . import activities as ap_activities
+from . import security as ap_security
 
 ACTIVITY_SETTING_PREFIX = "ap-activity-"
 
@@ -54,44 +49,41 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.toot")
     @utils.kwarg("min_args", 1)
-    @utils.kwarg("permission", "toot")
+    @utils.kwarg("permission", "fediverse")
     def toot(self, event):
         activity_id = self._make_activity(event["args"])
         event["stdout"].write("Sent toot %s" % activity_id)
 
-    def _federate_activity(self, activity_id, content, timestamp):
+    @utils.hook("received.command.fedifollow")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("permission", "fediverse")
+    def fedi_follow(self, event):
+        pass
 
-        message = {
-            "@context": "https://www.w3.org/ns/activitystreams",
-            "type": "Announce",
-            "to": [],
-            "actor": "",
-            "object": ""
-        }
-
-
-    def _federate(self, data):
+    def _toot(self, activity_id):
         our_username, our_instance = self._ap_self()
-        key_id = self._ap_keyid_url(url_for, our_username)
-        now = email.utils.formatdate(timeval=None, localtime=False, usegmt=True)
+        content, timestamp = self.bot.get_setting(
+            "ap-activity-%s" % activity_id)
         url_for = self.exports.get_one("url-for")
+        self_id = self._ap_self_url(url_for, our_username)
+        activity_url = self._ap_activity_url(url_for, activity_id)
 
-        key = security.private_key(self.bot.config["tls-certificate"])
+        object = {
+            "id": activity_url,
+            "type": "Note",
+            "published": timestamp,
+            "attributedTo": self_id,
+            "content": content,
+            "to": "https://www.w3.org/ns/activitystreams#Public"
+        }
+        activity = ap_activities.Create(activity_url, object)
 
-        for inbox in self._get_inboxes():
-            parts = urllib.parse.urlparse(inbox)
-            headers = [
-                ["host", parts.netloc],
-                ["date", now]
-            ]
-            sign_headers = headers[:]
-            sign_headers.insert(0, ["(request-target)", "post %s" % parts.path])
+        private_key = self._private_key()
 
-            signature = security.signature(key, key_id, sign_headers)
-            data = ""
-            request = utils.http.Request(inbox, data=data, headers=headers,
-                content_type=ACTIVITY_TYPE, useragent="BitBot Fediverse")
-            utils.http.request()
+        for actor_url in self._get_actors():
+            actor = ap_actor.Actor(actor_url)
+            actor.load()
+            actor.inbox.send(activity, private_key)
 
     def _ap_self(self):
         our_username = self.bot.get_setting("fediverse", None)
@@ -127,13 +119,13 @@ class Module(ModuleManager.BaseModule):
 
                 self_id = self._ap_self_url(event["url_for"], our_username)
 
-                event["response"].content_type = JRD_TYPE
+                event["response"].content_type = consts.JRD_TYPE
                 event["response"].write_json({
                     "aliases": [self_id],
                     "links": [{
                         "href": self_id,
                         "rel": "self",
-                        "type": ACTIVITY_TYPE
+                        "type": consts.ACTIVITY_TYPE
                     }],
                     "subject": "acct:%s" % resource
                 })
@@ -157,7 +149,7 @@ class Module(ModuleManager.BaseModule):
             with open(cert_filename) as cert_file:
                 cert = cert_file.read().strip()
 
-            event["response"].content_type = LD_TYPE
+            event["response"].content_type = consts.LD_TYPE
             event["response"].write_json({
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "id": self_id, "url": self_id,
@@ -212,7 +204,7 @@ class Module(ModuleManager.BaseModule):
                     "type": "Create"
                 })
 
-            event["response"].content_type = LD_TYPE
+            event["response"].content_type = consts.LD_TYPE
             event["response"].write_json({
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "id": outbox,
@@ -224,3 +216,31 @@ class Module(ModuleManager.BaseModule):
         else:
             event["response"].code = 404
 
+    def _private_key(self):
+        id = self._ap_keyid_url(url_for, our_username)
+        filename = security.private_key(self.bot.config["tls-certificate"])
+        return ap_security.PrivateKey(filename, id)
+
+    @utils.hook("api.post.ap-inbox")
+    @utils.kwarg("authenticated", False)
+    def ap_inbox(self, event):
+        data = json.loads(event["data"])
+        self_id = self._ap_self_url(event["url_for"], our_username)
+
+        if data["type"] == "Follow":
+            if data["object"] == self_id:
+                new_follower = data["actor"]
+                followers = set(self.bot.get_setting("fediverse-followers", []))
+                if not new_follower in followers:
+                    followers.add(new_follower)
+
+                    private_key = self._private_key()
+                    actor = ap_actor.Actor(new_follower)
+                    accept = ap_activities.Accept(data["id"], data)
+                    actor.inbox.send(accept, private_key)
+
+                    follow_id = "data:%s" % str(uuid.uuid4())
+                    follow = ap_activities.Follow(follow_id, self_id)
+                    actor.inbox.send(follow, private_key)
+            else:
+                event["response"].code = 404
