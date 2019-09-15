@@ -75,7 +75,7 @@ class Module(ModuleManager.BaseModule):
             elif repo_username_lower and repo_username_lower in hooked_repos_lower:
                 found_hook = hooked_repos_lower[repo_username_lower]
             elif organisation_lower and organisation_lower in hooked_repos_lower:
-                found_hook = hooked_repos_lowers[organisation_lower]
+                found_hook = hooked_repos_lower[organisation_lower]
             else:
                 continue
 
