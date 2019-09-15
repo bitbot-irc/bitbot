@@ -33,4 +33,4 @@ def signature(key: PrivateKey, headers: typing.List[typing.Tuple[str, str]]
     )
 
     signature = base64.b64encode(signature).decode("ascii")
-    return SIGNATURE_FORMAT % (key_id, sign_header_keys, signature)
+    return SIGNATURE_FORMAT % (key.id, sign_header_keys, signature)
