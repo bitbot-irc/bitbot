@@ -77,7 +77,7 @@ class Server(object):
             if (requested_username == self.username and
                     requested_instance == self.instance):
 
-                self_id = self._ap_self_url(event["url_for"], self.username)
+                self_id = self._ap_self_url(event["url_for"])
 
                 event["response"].content_type = ap_utils.JRD_TYPE
                 event["response"].write_json({
