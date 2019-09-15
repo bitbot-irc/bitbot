@@ -1,4 +1,4 @@
-import base64, binascii, json, os, urllib.parse
+import base64, binascii, json, os, urllib.parse, uuid
 from src import ModuleManager, utils
 
 from . import ap_activities, ap_actor, ap_security, ap_utils
