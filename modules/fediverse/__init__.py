@@ -1,6 +1,6 @@
 import urllib.parse
 from src import IRCBot, ModuleManager, utils
-from . import ap_actor, ap_utils
+from . import ap_actor, ap_server, ap_utils
 
 def _format_username(username, instance):
     return "@%s@%s" % (username, instance)
@@ -10,10 +10,28 @@ def _setting_parse(s):
         return _format_username(username, instance)
     return None
 
+@utils.export("botset", utils.FunctionSetting(_setting_parse,
+    "fediverse-server", "The bot's local fediverse server username",
+    example="@bot@bitbot.dev"))
 @utils.export("set", utils.FunctionSetting(_setting_parse, "fediverse",
     help="Set your fediverse account", example="@gargron@mastodon.social"))
 class Module(ModuleManager.BaseModule):
     _name = "Fedi"
+
+    def on_load(self):
+        server_username = self.bot.get_setting("fediverse-server", None)
+        if server_username:
+            server_username, instance = ap_utils.split_username(server_username)
+            self.server = ap_server.Server(server_username, instance)
+
+            self.events.on("api.get.ap-webfinger").hook(
+                self.server.ap_webfinger, authenticated=False)
+            self.events.on("api.get.ap-user").hook(
+                self.server.ap_user, authenticated=False)
+            self.events.on("api.post.ap-inbox").hook(
+                self.server.ap_inbox, authenticated=False)
+            self.events.on("api.get.ap-outbox").hook(
+                self.server.ap_outbox, authenticated=False)
 
     @utils.hook("received.command.fediverse")
     @utils.hook("received.command.fedi", alias_of="fediverse")

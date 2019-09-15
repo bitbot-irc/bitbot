@@ -1,34 +1,14 @@
-#--require-config tls-certificate
-
 import base64, binascii, os, urllib.parse
 from src import ModuleManager, utils
 
-from . import actor as ap_actor
-from . import activities as ap_activities
-from . import security as ap_security
+from . import ap_activities, ap_actor, ap_security
 
 ACTIVITY_SETTING_PREFIX = "ap-activity-"
 
-def _parse_username(s):
-    username, _, instance = s.rpartition("@")
-    if username.startswith("@"):
-        username = username[1:]
-    if username and instance:
-        return username, instance
-    return None, None
-def _format_username(username, instance):
-    return "@%s@%s" % (username, instance)
-def _setting_parse(s):
-    username, instance = _parse_username(s)
-    if username and instance:
-        return _format_username(username, instance)
-    return None
-
-@utils.export("botset", utils.FunctionSetting(_setting_parse, "fediverse",
-    help="Set the bot's fediverse server account",
-    example="@gargron@mastodon.social"))
-class Module(ModuleManager.BaseModule):
-    _name = "Fedi"
+class Server(object):
+    def __init__(self, username, instance):
+        self.username = username
+        self.instance = instance
 
     def _random_id(self):
         return binascii.hexlify(os.urandom(3)).decode("ascii")
@@ -61,11 +41,10 @@ class Module(ModuleManager.BaseModule):
         pass
 
     def _toot(self, activity_id):
-        our_username, our_instance = self._ap_self()
         content, timestamp = self.bot.get_setting(
             "ap-activity-%s" % activity_id)
         url_for = self.exports.get_one("url-for")
-        self_id = self._ap_self_url(url_for, our_username)
+        self_id = self._ap_self_url(url_for)
         activity_url = self._ap_activity_url(url_for, activity_id)
 
         object = {
@@ -85,39 +64,32 @@ class Module(ModuleManager.BaseModule):
             actor.load()
             actor.inbox.send(activity, private_key)
 
-    def _ap_self(self):
-        our_username = self.bot.get_setting("fediverse", None)
-        return _parse_username(our_username)
-
     def _ap_url(self, url_for, fragment, kwargs):
         return "https://%s" % url_for("api", fragment, kwargs)
-    def _ap_self_url(self, url_for, our_username):
-        return self._ap_url(url_for, "ap-user", {"u": our_username})
-    def _ap_inbox_url(self, url_for, our_username):
-        return self._ap_url(url_for, "ap-inbox", {"u": our_username})
-    def _ap_outbox_url(self, url_for, our_username):
-        return self._ap_url(url_for, "ap-outbox", {"u": our_username})
+    def _ap_self_url(self, url_for):
+        return self._ap_url(url_for, "ap-user", {"u": self.username})
+    def _ap_inbox_url(self, url_for):
+        return self._ap_url(url_for, "ap-inbox", {"u": self.username})
+    def _ap_outbox_url(self, url_for):
+        return self._ap_url(url_for, "ap-outbox", {"u": self.username})
     def _ap_activity_url(self, url_for, activity_id):
         return self._ap_url(url_for, "ap-activity", {"a": activity_id})
-    def _ap_keyid_url(self, url_for, our_username):
-        return "%s#key" % self._ap_self_url(url_for, our_username)
+    def _ap_keyid_url(self, url_for):
+        return "%s#key" % self._ap_self_url(url_for)
 
-    @utils.hook("api.get.ap-webfinger")
-    @utils.kwarg("authenticated", False)
     def ap_webfinger(self, event):
-        our_username, our_instance = self._ap_self()
-
         resource = event["params"].get("resource", None)
         if resource.startswith("acct:"):
             resource = resource.split(":", 1)[1]
 
         if resource:
-            requested_username, requested_instance = _parse_username(resource)
+            requested_username, requested_instance = ap_utils.split_username(
+                resource)
 
-            if (requested_username == our_username and
-                    requested_instance == our_instance):
+            if (requested_username == self.username and
+                    requested_instance == self.instance):
 
-                self_id = self._ap_self_url(event["url_for"], our_username)
+                self_id = self._ap_self_url(event["url_for"], self.username)
 
                 event["response"].content_type = consts.JRD_TYPE
                 event["response"].write_json({
@@ -134,16 +106,13 @@ class Module(ModuleManager.BaseModule):
         else:
             event["response"].code = 400
 
-    @utils.hook("api.get.ap-user")
-    @utils.kwarg("authenticated", False)
     def ap_user(self, event):
-        our_username, our_instance = self._ap_self()
         username = event["params"].get("u", None)
 
-        if username and username == our_username:
-            self_id = self._ap_self_url(event["url_for"], our_username)
-            inbox = self._ap_inbox_url(event["url_for"], our_username)
-            outbox = self._ap_outbox_url(event["url_for"], our_username)
+        if username and username == self.username:
+            self_id = self._ap_self_url(event["url_for"])
+            inbox = self._ap_inbox_url(event["url_for"])
+            outbox = self._ap_outbox_url(event["url_for"])
 
             cert_filename = self.bot.config["tls-certificate"]
             with open(cert_filename) as cert_file:
@@ -155,7 +124,7 @@ class Module(ModuleManager.BaseModule):
                 "id": self_id, "url": self_id,
                 "type": "Person",
                 "summary": "beep boop",
-                "preferredUsername": our_username, "name": our_username,
+                "preferredUsername": self.username, "name": self.username,
                 "inbox": inbox,
                 "outbox": outbox,
                 "publicKey": {
@@ -182,14 +151,11 @@ class Module(ModuleManager.BaseModule):
             "type": "Note",
         }
 
-    @utils.hook("api.get.ap-outbox")
-    @utils.kwarg("authenticated", False)
     def ap_outbox(self, event):
-        our_username, our_instance = self._ap_self()
         username = event["params"].get("u", None)
-        if username and username == our_username:
-            self_id = self._ap_self_url(event["url_for"], our_username)
-            outbox = self._ap_outbox_url(event["url_for"], our_username)
+        if username and username == self.username:
+            self_id = self._ap_self_url(event["url_for"])
+            outbox = self._ap_outbox_url(event["url_for"])
 
             activities = []
             for activity_id, content, timestamp in self._get_activities():
@@ -217,15 +183,13 @@ class Module(ModuleManager.BaseModule):
             event["response"].code = 404
 
     def _private_key(self):
-        id = self._ap_keyid_url(url_for, our_username)
+        id = self._ap_keyid_url(url_for)
         filename = security.private_key(self.bot.config["tls-certificate"])
         return ap_security.PrivateKey(filename, id)
 
-    @utils.hook("api.post.ap-inbox")
-    @utils.kwarg("authenticated", False)
     def ap_inbox(self, event):
         data = json.loads(event["data"])
-        self_id = self._ap_self_url(event["url_for"], our_username)
+        self_id = self._ap_self_url(event["url_for"])
 
         if data["type"] == "Follow":
             if data["object"] == self_id:
