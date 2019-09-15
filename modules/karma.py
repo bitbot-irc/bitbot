@@ -84,7 +84,7 @@ class Module(ModuleManager.BaseModule):
             target = event["match"].group(2).strip().rstrip("".join(WORD_STOP))
             if event["match"].group(1):
                 if not target:
-                    target = event["match"].group(1)[1:]
+                    target = event["match"].group(1)[:1]
                 elif not event["server"].has_user(event["match"].group(1)[:-1]):
                     target = "%s %s" % (event["match"].group(1), target)
 
