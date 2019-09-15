@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
         args = event["args_split"][:]
         nameserver = None
         if self.bot.get_setting("configurable-nameservers", True):
-            nameserver = event["channel"].get_setting("dns-nameserver",
+            nameserver = event["target"].get_setting("dns-nameserver",
                 event["server"].get_setting("dns-nameserver", None))
             for i, arg in enumerate(args):
                 if arg[0] == "@":
