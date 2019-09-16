@@ -22,7 +22,6 @@ API_ARGS = {
 }
 
 class Module(ModuleManager.BaseModule):
-    _name = "Rust"
     @utils.hook("received.command.rust", min_args=1)
     def eval(self, event):
         """
