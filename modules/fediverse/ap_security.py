@@ -26,7 +26,7 @@ def signature(key: PrivateKey, headers: typing.List[typing.Tuple[str, str]]
 
     signature = key.key.sign(
         sign_string.encode("utf8"),
-        padding.PKCS1v15,
+        padding.PKCS1v15(),
         hashes.SHA256()
     )
 
