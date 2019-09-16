@@ -21,8 +21,7 @@ def handle_333(events, event):
     topic_setter = utils.irc.seperate_hostmask(event["line"].args[2])
     topic_time = int(event["line"].args[3])
 
-    channel.set_topic_setter(topic_setter.nickname, topic_setter.username,
-        topic_setter.hostname)
+    channel.set_topic_setter(topic_setter)
     channel.set_topic_time(topic_time)
     events.on("received.333").call(channel=channel,
         setter=topic_setter.nickname, set_at=topic_time, server=event["server"])

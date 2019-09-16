@@ -14,9 +14,7 @@ class Channel(IRCObject.Object):
         self.server = server
         self.bot = bot
         self.topic = ""
-        self.topic_setter_nickname = None # type: typing.Optional[str]
-        self.topic_setter_username = None # type: typing.Optional[str]
-        self.topic_setter_hostname = None # type: typing.Optional[str]
+        self.topic_setter = None # type: typing.Optional[str]
         self.topic_time = 0
         self.users = set([]) # type: typing.Set[IRCUser.User]
         self.modes = {} # type: typing.Dict[str, typing.Set]
@@ -33,11 +31,8 @@ class Channel(IRCObject.Object):
 
     def set_topic(self, topic: str):
         self.topic = topic
-    def set_topic_setter(self, nickname: str, username: str=None,
-            hostname: str=None):
-        self.topic_setter_nickname = nickname
-        self.topic_setter_username = username
-        self.topic_setter_hostname = hostname
+    def set_topic_setter(self, hostmask: IRCLine.Hostmask):
+        self.topic_setter = hostmask
     def set_topic_time(self, unix_timestamp: int):
         self.topic_time = unix_timestamp
 
