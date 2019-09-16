@@ -24,7 +24,7 @@ def handle_333(events, event):
     channel.set_topic_setter(topic_setter)
     channel.set_topic_time(topic_time)
     events.on("received.333").call(channel=channel,
-        setter=topic_setter.nickname, set_at=topic_time, server=event["server"])
+        setter=topic_setter, set_at=topic_time, server=event["server"])
 
 def handle_353(event):
     channel = event["server"].channels.get(event["line"].args[2])

@@ -108,7 +108,7 @@ class Module(ModuleManager.BaseModule):
                 key=lambda nickname: nickname.lower()),
             "topic": channel.topic,
             "topic-set-at": channel.topic_time,
-            "topic-set-by": channel.topic_setter_nickname,
+            "topic-set-by": channel.topic_setter.nickname,
             "modes": channel.mode_str()
         }
     @utils.hook("api.get.channels")

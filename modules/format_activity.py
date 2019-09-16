@@ -150,7 +150,7 @@ class Module(ModuleManager.BaseModule):
             event["topic"])
     @utils.hook("received.333")
     def on_333(self, event):
-        self._on_topic(event, event["setter"], "set",
+        self._on_topic(event, event["setter"].nickname, "set",
             event["channel"].topic)
 
         unix_dt = datetime.datetime.utcfromtimestamp(event["set_at"])
