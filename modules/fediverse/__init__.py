@@ -74,8 +74,12 @@ class Module(ModuleManager.BaseModule):
         if not items:
             raise utils.EventError("No toots found")
 
-        out, url = ap_utils.format_note(actor, items[0])
+        cw, out, url = ap_utils.format_note(actor, items[0])
         shorturl = self.exports.get_one("shorturl")(event["server"], url,
             context=event["target"])
-        out = "%s - %s" % (out, shorturl)
+
+        if not cw == None:
+            out = "CW: %s - %s" % (cw, shorturl)
+        else:
+            out = "%s - %s" % (out, shorturl)
         event["stdout"].write(out)

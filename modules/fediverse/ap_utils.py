@@ -67,13 +67,14 @@ def format_note(actor, note):
         retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
         retoot_content = utils.http.strip_html(retoot.data["content"])
 
-        return "%s (boost %s): %s - %s" % (
-            actor.username, retooted_user, retoot_content), retoot_url
+        return (retoot.data.get("summary", None),  "%s (boost %s): %s - %s" % (
+            actor.username, retooted_user, retoot_content), retoot_url)
 
     elif note["type"] == "Create":
         content = utils.http.strip_html(note["object"]["content"])
         url = note["object"]["id"]
 
-        return "%s: %s" % (actor.username, content), url
+        return (note["object"].get("summary", None),
+            "%s: %s" % (actor.username, content), url)
 
-    return None, None
+    return None, None, None
