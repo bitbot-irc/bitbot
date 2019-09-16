@@ -79,7 +79,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return _bot.get_setting("rest-api-minify", False)
 
     def _url_for(self, headers):
-        return lambda route, endpoint, get_params={}: self.url_for(
+        return lambda route, endpoint, get_params={}: _module._url_for(
             route, endpoint, get_params, headers.get("Host", None))
 
     def _handle(self, method, path, endpoint, args):
