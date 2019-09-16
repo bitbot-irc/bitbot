@@ -54,3 +54,25 @@ def find_actor(username, instance):
         if link["type"] == ACTIVITY_TYPE:
             return link["href"]
 
+def format_note(actor, note):
+    if note["type"] == "Announce":
+        retoot_url = note["object"]
+        retoot_instance = urllib.parse.urlparse(retoot_url).hostname
+        retoot = activity_request(retoot_url)
+
+        original_tooter = ap_actor.Actor(retoot.data["attributedTo"])
+        original_tooter.load()
+        original_tooter = activity_request(original_tooter_url)
+        retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
+        retoot_content = utils.http.strip_html(retoot.data["content"])
+
+        return "%s (boost %s): %s - %s" % (
+            actor.username, retooted_user, retoot_content), retoot_url
+
+    elif note["type"] == "Create":
+        content = utils.http.strip_html(note["object"]["content"])
+        url = note["object"]["id"]
+
+        return "%s: %s" % (actor.username, content), url
+
+    return None, None

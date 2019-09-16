@@ -74,37 +74,8 @@ class Module(ModuleManager.BaseModule):
         if not items:
             raise utils.EventError("No toots found")
 
-        first_item = items[0]
-        if first_item["type"] == "Announce":
-            retoot_url = first_item["object"]
-            retoot_instance = urllib.parse.urlparse(retoot_url).hostname
-            retoot = utils.http.request(retoot_url,
-                headers=ACTIVITY_HEADERS, json=True, useragent=USERAGENT)
-
-            original_tooter = ap_actor.Actor(retoot.data["attributedTo"])
-            original_tooter.load()
-
-            original_tooter = utils.http.request(original_tooter_url,
-                headers=ACTIVITY_HEADERS, json=True, useragent=USERAGENT)
-
-            retooted_user = "@%s@%s" % (original_tooter.username,
-                retoot_instance)
-
-            shorturl = self.exports.get_one("shorturl")(
-                event["server"], retoot_url)
-            retoot_content = utils.http.strip_html(
-                retoot.data["content"])
-
-            event["stdout"].write("%s (boost %s): %s - %s" % (
-                actor.username, retooted_user, retoot_content,
-                shorturl))
-
-        elif first_item["type"] == "Create":
-            content = utils.http.strip_html(
-                first_item["object"]["content"])
-            url = first_item["object"]["id"]
-            shorturl = self.exports.get_one("shorturl")(
-                event["server"], url)
-
-            event["stdout"].write("%s: %s - %s" % (actor.username,
-                content, shorturl))
+        out, url = ap_utils.format_note(actor, items[0])
+        shorturl = self.exports.get_one("shorturl")(event["server"], url,
+            context=event["target"])
+        out = "%s - %s" % (out, shorturl)
+        event["stdout"].write(out)
