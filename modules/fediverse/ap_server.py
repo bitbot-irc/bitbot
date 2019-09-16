@@ -1,4 +1,4 @@
-import base64, binascii, json, os, urllib.parse, uuid
+import base64, binascii, json, os, queue, threading, urllib.parse, uuid
 from src import ModuleManager, utils
 
 from . import ap_activities, ap_actor, ap_security, ap_utils
@@ -6,10 +6,30 @@ from . import ap_activities, ap_actor, ap_security, ap_utils
 ACTIVITY_SETTING_PREFIX = "ap-activity-"
 
 class Server(object):
+    def _request_loop(self):
+        private_key = self._private_key(key_id)
+
+        while self._running:
+            obj = self._request_queue.get()
+            if obj == "kill":
+                break
+            else:
+                our_actor, actor, activity = obj
+                actor.inbox.send(our_actor, activity, private_key)
+
+    def unload(self):
+        self._running = False
+        self._request_queue.put("kill")
+
     def __init__(self, bot, username, instance):
         self.bot = bot
         self.username = username
         self.instance = instance
+
+        self._request_queue = queue.Queue()
+        self._request_loop_thread = threading.Thread(target=self._request_loop)
+        self._request_loop_thread.daemon = True
+        self._request_loop_thread.start()
 
     def _random_id(self):
         return binascii.hexlify(os.urandom(3)).decode("ascii")
@@ -185,18 +205,17 @@ class Server(object):
                 if not new_follower in followers:
                     followers.add(new_follower)
 
-                    key_id = self._ap_keyid_url(event["url_for"])
-                    private_key = self._private_key(key_id)
-
                     our_actor = ap_actor.Actor(self_id)
+
+                    key_id = self._ap_keyid_url(event["url_for"])
 
                     actor = ap_actor.Actor(new_follower)
                     actor.load()
                     accept = ap_activities.Accept(data["id"], data)
-                    actor.inbox.send(our_actor, accept, private_key)
+                    self._request_queue.put([our_actor, actor, accept])
 
                     follow_id = "data:%s" % str(uuid.uuid4())
                     follow = ap_activities.Follow(follow_id, actor.url)
-                    actor.inbox.send(our_actor, follow, private_key)
+                    self._request_queue.put([our_actor, actor, follow])
             else:
                 event["response"].code = 404
