@@ -143,7 +143,8 @@ class EventRoot(object):
         return DEFAULT_EVENT_DELIMITER.join(path_lower)
 
     def _hook(self, path: typing.List[str], func: CALLBACK_TYPE,
-            context: typing.Optional[str], priority: int, kwargs: dict
+            context: typing.Optional[str], priority: int,
+            kwargs: typing.List[typing.Tuple[str, typing.Any]] = []
             ) -> EventHook:
         path_str = self._path_str(path)
         new_hook = EventHook(path_str, func, context, priority, kwargs)
