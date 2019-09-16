@@ -12,12 +12,6 @@ class Server(object):
         self.username = username
         self.instance = instance
 
-        self._request_queue = queue.Queue()
-        self._request_thread = threading.Thread(target=self._request_loop)
-        self._request_thread.daemon = True
-        self._request_thread.start()
-
-    def _request_loop(self):
         url_for = self.exports.get_one("url-for")
 
         key_id = self._ap_keyid_url(url_for)
@@ -27,6 +21,14 @@ class Server(object):
         our_actor = ap_actor.Actor(self_id)
 
         del url_for
+
+        self._request_queue = queue.Queue()
+        self._request_thread = threading.Thread(target=self._request_loop,
+            args=(private_key, our_actor))
+        self._request_thread.daemon = True
+        self._request_thread.start()
+
+    def _request_loop(self, private_key, our_actor):
 
         while True:
             obj = self._request_queue.get()
