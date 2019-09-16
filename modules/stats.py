@@ -135,6 +135,13 @@ class Module(ModuleManager.BaseModule):
                         channel)
             return channels
 
+    @utils.hook("received.command.channels")
+    @utils.kwarg("help", "List all the channel I'm in on this network")
+    @utils.kwarg("permission", "listchannels")
+    def channels_command(self, event):
+        event["stdout"].write("Current channels: %s" %
+            " ".join(event["server"].channels.keys()))
+
     @utils.hook("api.get.modules")
     def modules_api(self, event):
         return list(self.bot.modules.modules.keys())
