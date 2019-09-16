@@ -131,7 +131,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Please provide <hostname>:[+]<port>")
         port = int(port)
 
-        hostmask = utils.irc.seperate_hostmask(event["args_split"][2])
+        hostmask = utils.irc.parse_hostmask(event["args_split"][2])
         nickname = hostmask.nickname
         username = hostmask.username or nickname
         realname = nickname

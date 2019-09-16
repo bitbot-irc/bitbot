@@ -30,7 +30,7 @@ def lower(case_mapping: str, s: str) -> str:
 def equals(case_mapping: str, s1: str, s2: str) -> bool:
     return lower(case_mapping, s1) == lower(case_mapping, s2)
 
-def seperate_hostmask(hostmask: str) -> IRCLine.Hostmask:
+def parse_hostmask(hostmask: str) -> IRCLine.Hostmask:
     nickname, _, username = hostmask.partition("!")
     username, _, hostname = username.partition("@")
     return IRCLine.Hostmask(nickname, username, hostname, hostmask)
@@ -66,7 +66,7 @@ def parse_line(line: str) -> IRCLine.ParsedLine:
 
     if line[0] == ":":
         source_str, line = line[1:].split(" ", 1)
-        source = seperate_hostmask(source_str)
+        source = parse_hostmask(source_str)
 
     command, sep, line = line.partition(" ")
     args = [] # type: typing.List[str]
