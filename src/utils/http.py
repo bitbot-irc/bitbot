@@ -57,7 +57,7 @@ class Request(object):
             get_params: typing.Dict[str, str]={}, post_data: typing.Any=None,
             headers: typing.Dict[str, str]={},
 
-            json: bool=False, allow_redirects: bool=True,
+            json: bool=False, json_body: bool=False, allow_redirects: bool=True,
             check_content_type: bool=True, parse: bool=False,
             detect_encoding: bool=True,
 
@@ -72,6 +72,7 @@ class Request(object):
         self.headers = headers
 
         self.json = json
+        self.json_body = json_body
         self.allow_redirects = allow_redirects
         self.check_content_type = check_content_type
         self.parse = parse
@@ -105,10 +106,13 @@ class Request(object):
         return headers
 
     def get_body(self) -> typing.Any:
-        if self.content_type == "application/json":
-            return _json.dumps(self.post_data)
+        if not self.post_data == None:
+            if self.content_type == "application/json" or self.json_body:
+                return _json.dumps(self.post_data)
+            else:
+                return self.post_data
         else:
-            return self.post_data
+            return None
 
 class Response(object):
     def __init__(self, code: int, data: typing.Any,
