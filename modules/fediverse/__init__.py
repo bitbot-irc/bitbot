@@ -37,6 +37,9 @@ class Module(ModuleManager.BaseModule):
                 self.server.ap_inbox, authenticated=False)
             self.events.on("api.get.ap-outbox").hook(
                 self.server.ap_outbox, authenticated=False)
+    def unload(self):
+        if not self.server == None:
+            self.server.unload()
 
     @utils.hook("received.command.fediverse")
     @utils.hook("received.command.fedi", alias_of="fediverse")
