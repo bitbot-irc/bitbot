@@ -27,7 +27,8 @@ class Module(ModuleManager.BaseModule):
                 raise ValueError("`tls-certificate` not provided in bot config")
 
             server_username, instance = ap_utils.split_username(server_username)
-            self.server = ap_server.Server(self.bot, server_username, instance)
+            self.server = ap_server.Server(self.bot, self.exports,
+                server_username, instance)
 
             self.events.on("api.get.ap-webfinger").hook(
                 self.server.ap_webfinger, authenticated=False)

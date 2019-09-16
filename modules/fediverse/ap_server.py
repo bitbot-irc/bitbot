@@ -6,8 +6,9 @@ from . import ap_activities, ap_actor, ap_security, ap_utils
 ACTIVITY_SETTING_PREFIX = "ap-activity-"
 
 class Server(object):
-    def __init__(self, bot, username, instance):
+    def __init__(self, bot, exports, username, instance):
         self.bot = bot
+        self.exports = exports
         self.username = username
         self.instance = instance
 
