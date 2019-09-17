@@ -251,6 +251,8 @@ class CaseInsensitiveDict(dict):
         return dict.__setitem__(self, key.lower(), value)
     def __contains__(self, key: str):
         return dict.__contains__(self, key.lower())
+    def get(self, key: str, default: typing.Any=None):
+        return dict.get(self, key.lower(), default)
 
 def is_ip(s: str) -> bool:
     try:
