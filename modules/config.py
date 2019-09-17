@@ -46,6 +46,13 @@ class Module(ModuleManager.BaseModule):
     def _to_context(self, server, channel, user, context_desc):
         context_desc_lower = context_desc.lower()
 
+        if context_desc == "*":
+            if channel == user:
+                # we're in PM
+                return user, "set"
+            else:
+                #we're in a channel
+                return channel, "channelset"
         if context_desc_lower[0] in server.channel_types:
             return context_desc, "channelset"
         elif server.irc_lower(context_desc) == user.nickname_lower:
