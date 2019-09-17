@@ -69,10 +69,11 @@ class Module(ModuleManager.BaseModule):
         actor_url = ap_utils.find_actor(username, instance)
 
         if not actor_url:
-            raise utils.EventError("Failed to find actor")
+            raise utils.EventError("Failed to find user")
 
         actor = ap_actor.Actor(actor_url)
-        actor.load()
+        if not actor.load():
+            raise utils.EventError("Failed to find user")
         items = actor.outbox.load()
 
         if not items:
