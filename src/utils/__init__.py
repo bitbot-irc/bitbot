@@ -1,5 +1,5 @@
-import contextlib, datetime, decimal, enum, io, ipaddress, re, signal
-import threading, typing
+import contextlib, datetime, decimal, enum, io, ipaddress, multiprocessing
+import queue, re, signal, threading, typing
 from src.utils import cli, consts, irc, http, parse, security
 
 class Direction(enum.Enum):
@@ -390,18 +390,18 @@ def deadline_process(func: typing.Callable[[], None], seconds: int=10):
         try:
             q.put([True, func()])
         except Exception as e:
-            print(e)
             q.put([False, e])
+        q.close()
 
     p = multiprocessing.Process(target=_wrap, args=(func, q))
     p.start()
-    p.join(seconds)
 
-    if p.is_alive():
-        p.terminate()
+    try:
+        success, out = q.get(block=True, timeout=seconds)
+    except queue.Empty:
+        p.kill()
         _raise_deadline()
 
-    success, out = q.get(block=False)
     if success:
         return out
     else:
