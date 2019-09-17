@@ -32,8 +32,7 @@ class Module(ModuleManager.BaseModule):
                 target_user = event["server"].get_user(event["args_split"][0])
                 location = self._user_location(target_user)
                 if location == None:
-                    raise utils.EventError("%s doesn't have a location set"
-                        % target_user.nickname)
+                    location = event["args_split"][0]
                 else:
                     nickname = target_user.nickname
         else:
