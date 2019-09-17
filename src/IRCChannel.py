@@ -1,6 +1,6 @@
 import re, typing, uuid
-from src import EventManager, IRCBot, IRCBuffer, IRCObject, IRCServer, IRCUser
-from src import utils
+from src import EventManager, IRCBot, IRCBuffer, IRCLine, IRCObject, IRCServer
+from src import IRCUser, utils
 
 RE_MODES = re.compile(r"[-+]\w+")
 SETTING_CACHE_EXPIRATION = 60.0*5.0 # 5 minutes
