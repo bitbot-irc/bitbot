@@ -34,7 +34,7 @@ class Outbox(object):
             else:
                 # mastodon
                 first = ap_utils.activity_request(outbox.data["first"])
-                items = first["orderedItems"]
+                items = first.data["orderedItems"]
         else:
             items = outbox.data["orderedItems"]
         return items
