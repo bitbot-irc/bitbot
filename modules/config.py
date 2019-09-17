@@ -45,7 +45,12 @@ class ConfigChannelTarget(object):
 class Module(ModuleManager.BaseModule):
     def _to_context(self, server, channel, user, context_desc):
         context_desc_lower = context_desc.lower()
-        if "user".startswith(context_desc_lower):
+
+        if context_desc_lower[0] in server.channel_types:
+            return context_desc, "channelset"
+        elif server.irc_lower(context_desc) == user.nickname_lower:
+            return user, "set"
+        elif "user".startswith(context_desc_lower):
             return user, "set"
         elif "channel".startswith(context_desc_lower):
             return channel, "channelset"
