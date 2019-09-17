@@ -38,7 +38,11 @@ class Module(ModuleManager.BaseModule):
             out = help
             if usage:
                 out += ". Usage: %s" % usage
-            event["stdout"].write("%s: %s" % (command, out))
+
+            if out:
+                event["stdout"].write("%s: %s" % (command, out))
+            else:
+                event["stderr"].write("No help for %s" % command)
         else:
             event["stdout"].write("I'm %s. use '%smodules' to list modules, "
                 "'%scommands <module>' to list commands and "
