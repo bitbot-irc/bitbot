@@ -49,22 +49,22 @@ class Module(ModuleManager.BaseModule):
         if context_desc == "*":
             if channel == user:
                 # we're in PM
-                return user, "set"
+                return user, "set", None
             else:
                 #we're in a channel
-                return channel, "channelset"
+                return channel, "channelset", None
         if context_desc_lower[0] in server.channel_types:
-            return context_desc, "channelset"
+            return context_desc, "channelset", context_desc
         elif server.irc_lower(context_desc) == user.nickname_lower:
-            return user, "set"
+            return user, "set", None
         elif "user".startswith(context_desc_lower):
-            return user, "set"
+            return user, "set", None
         elif "channel".startswith(context_desc_lower):
-            return channel, "channelset"
+            return channel, "channelset", None
         elif "server".startswith(context_desc_lower):
-            return server, "serverset"
+            return server, "serverset", None
         elif "bot".startswith(context_desc_lower):
-            return self.bot, "botset"
+            return self.bot, "botset", None
         else:
             raise ValueError()
 
@@ -86,8 +86,8 @@ class Module(ModuleManager.BaseModule):
                 channel = event["target"]
 
             context = context or "user"
-            target, setting_context = self._to_context(event["server"], channel,
-                event["user"], context)
+            target, setting_context, _ = self._to_context(event["server"],
+                channel, event["user"], context)
 
             export_settings = self._get_export_setting(setting_context)
             setting_info = export_settings.get(require_setting, None)
@@ -153,12 +153,14 @@ class Module(ModuleManager.BaseModule):
                 value = " ".join(event["args_split"][2:])
 
         try:
-            target, context = self._to_context(event["server"],
+            target, context, name_override = self._to_context(event["server"],
                 event["target"], event["user"], context_desc)
         except ValueError:
             raise utils.EventError(
                 "Unknown context '%s'. Please provide "
                 "'user', 'channel', 'server' or 'bot'" % context_desc)
+
+        name = name_override or name
 
         permission_check = utils.Check("permission", "config")
 
@@ -206,13 +208,18 @@ class Module(ModuleManager.BaseModule):
             except ConfigSettingInexistent:
                 raise utils.EventError("Setting not set")
 
+            for_str = ""
+            if name_override:
+                for_str = " for %s" % name_override
             if result.result == ConfigResults.Changed:
-                event["stdout"].write("Config '%s' set to %s" %
-                    (setting, result.data))
+                event["stdout"].write("Config '%s' %sset to %s" %
+                    (setting, for_str, result.data))
             elif result.result == ConfigResults.Retrieved:
-                event["stdout"].write("%s: %s" % (setting, result.data))
+                event["stdout"].write("%s%s: %s" % (setting, for_str,
+                    result.data))
             elif result.result == ConfigResults.Removed:
-                event["stdout"].write("Unset setting")
+                event["stdout"].write("Unset setting '%s'%s" %
+                    (setting, for_str))
         else:
             event["stdout"].write("Available config: %s" %
                 ", ".join(export_settings.keys()))
