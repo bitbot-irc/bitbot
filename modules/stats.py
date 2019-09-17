@@ -3,6 +3,8 @@
 import time
 from src import ModuleManager, utils
 
+HIDDEN_MODES = set(["s", "p"])
+
 class Module(ModuleManager.BaseModule):
     def _uptime(self):
         return utils.to_pretty_time(int(time.time()-self.bot.start_time))
@@ -139,8 +141,16 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "List all the channel I'm in on this network")
     @utils.kwarg("permission", "listchannels")
     def channels_command(self, event):
+        channels = []
+        for channel in event["server"].channels.values():
+            hidden = bool(HIDDEN_MODES&set(channel.modes.keys()))
+            if hidden and (
+                    event["is_channel"] and not channel == event["target"]):
+                continue
+            channels.append(channel.name)
+
         event["stdout"].write("Current channels: %s" %
-            " ".join(event["server"].channels.keys()))
+            " ".join(sorted(channels)))
 
     @utils.hook("api.get.modules")
     def modules_api(self, event):
