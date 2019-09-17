@@ -12,6 +12,11 @@ class Module(ModuleManager.BaseModule):
         """
         event["stdout"].write("%s: %d" % (event["user"].nickname,
             event["user"].get_id()))
+    @utils.hook("received.command.myaccount")
+    @utils.kwarg("help", "Show what I think your account name is")
+    def account(self, event):
+        event["stdout"].write("%s: %s" % (event["user"].nickname,
+            event["user"].get_identified_account()))
 
     @utils.hook("received.command.channelid", channel_only=True)
     def channel_id(self, event):
