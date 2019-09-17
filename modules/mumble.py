@@ -9,7 +9,7 @@ def _parse(s):
         if not port.isdigit():
             return None
     else:
-        port = srt(DEFAULT_PORT)
+        port = str(DEFAULT_PORT)
     return "%s:%s" % (host, port)
 
 SETTING = utils.FunctionSetting(_parse, "mumble-server",
