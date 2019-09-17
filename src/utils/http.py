@@ -167,7 +167,7 @@ def _request(request_obj: Request) -> Response:
         )
         response_content = response.raw.read(RESPONSE_MAX,
             decode_content=True)
-        if not response_content or not response.raw.read(1) == b"":
+        if not response.raw.read(1) == b"":
             raise ValueError("Response too large")
 
         our_response = Response(response.status_code, response_content,
