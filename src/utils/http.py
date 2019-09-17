@@ -223,7 +223,12 @@ def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
         request = tornado.httpclient.HTTPRequest(url, method="GET",
             connect_timeout=2, request_timeout=2)
 
-        response = await client.fetch(request)
+        try:
+            response = await client.fetch(request)
+        except:
+            self.log.critical("request_many failed for %s", [url],
+                exc_info=True)
+            return None
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         data = response.body.decode("utf8")
