@@ -176,7 +176,7 @@ def _request(request_obj: Request) -> Response:
         return our_response
 
     try:
-        response = utils.deadline_process(_wrap)
+        response = utils.deadline_process(_wrap, seconds=5)
     except utils.DeadlineExceededException:
         raise HTTPTimeoutException()
 
