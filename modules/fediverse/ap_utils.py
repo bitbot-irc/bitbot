@@ -26,7 +26,7 @@ def activity_request(url, data=None, method="GET", type=ACTIVITY_TYPE,
     request = utils.http.Request(url, headers=headers, useragent=USERAGENT,
         content_type=content_type, post_data=data, method=method, json=True,
         json_body=True)
-    return utils.http.request(request).data
+    return utils.http.request(request)
 
 HOSTMETA_TEMPLATE = "https://%s/.well-known/host-meta"
 WEBFINGER_TEMPLATE = "https://%s/.well-known/webfinger?resource={uri}"
@@ -51,7 +51,7 @@ def find_actor(username, instance):
     webfinger = activity_request(webfinger_url, type=JRD_TYPE)
 
     actor_url = None
-    for link in webfinger["links"]:
+    for link in webfinger.data["links"]:
         if link["type"] == ACTIVITY_TYPE:
             return link["href"]
 
@@ -63,7 +63,6 @@ def format_note(actor, note):
 
         original_tooter = ap_actor.Actor(retoot.data["attributedTo"])
         original_tooter.load()
-        original_tooter = activity_request(original_tooter_url)
         retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
         retoot_content = utils.http.strip_html(retoot.data["content"])
 

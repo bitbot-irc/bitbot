@@ -11,10 +11,13 @@ class Actor(object):
         self.outbox = None
 
     def load(self):
-        data = ap_utils.activity_request(self.url)
-        self.username = data["preferredUsername"]
-        self.inbox = Inbox(data["inbox"])
-        self.outbox = Outbox(data["outbox"])
+        response = ap_utils.activity_request(self.url)
+        if response.code == 200:
+            self.username = response.data["preferredUsername"]
+            self.inbox = Inbox(response.data["inbox"])
+            self.outbox = Outbox(responsedata["outbox"])
+            return True
+        return False
 
 class Outbox(object):
     def __init__(self, url):
@@ -24,16 +27,16 @@ class Outbox(object):
         outbox = ap_utils.activity_request(self._url)
 
         items = None
-        if "first" in outbox:
-            if type(outbox["first"]) == dict:
+        if "first" in outbox.data:
+            if type(outbox.data["first"]) == dict:
                 # pleroma
-                items = outbox["first"]["orderedItems"]
+                items = outbox.data["first"]["orderedItems"]
             else:
                 # mastodon
-                first = ap_utils.activity_request(outbox["first"])
+                first = ap_utils.activity_request(outbox.data["first"])
                 items = first["orderedItems"]
         else:
-            items = outbox["orderedItems"]
+            items = outbox.data["orderedItems"]
         return items
 
 class Inbox(object):
@@ -53,5 +56,5 @@ class Inbox(object):
         headers.append(["signature", signature])
 
         return ap_utils.activity_request(self._url, activity.format(sender),
-            method="POST", headers=dict(headers))
+            method="POST", headers=dict(headers)).data
 
