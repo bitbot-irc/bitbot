@@ -105,12 +105,15 @@ class Module(ModuleManager.BaseModule):
             return servers
 
     def _channel_stats(self, channel):
+        setter = None
+        if not channel.topic_setter == None:
+            setter = channel.topic_setter.nickname
         return {
             "users": sorted([user.nickname for user in channel.users],
                 key=lambda nickname: nickname.lower()),
             "topic": channel.topic,
             "topic-set-at": channel.topic_time,
-            "topic-set-by": channel.topic_setter.nickname,
+            "topic-set-by": setter,
             "modes": channel.mode_str()
         }
     @utils.hook("api.get.channels")
