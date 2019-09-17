@@ -116,10 +116,11 @@ class Request(object):
 
 class Response(object):
     def __init__(self, code: int, data: typing.Any,
-            headers: typing.Dict[str, str]):
+            headers: typing.Dict[str, str], encoding: str):
         self.code = code
         self.data = data
         self.headers = headers
+        self.encoding = encoding
 
 def _meta_content(s: str) -> typing.Dict[str, str]:
     out = {}
@@ -154,59 +155,65 @@ def request(request_obj: typing.Union[str, Request], **kwargs) -> Response:
 def _request(request_obj: Request) -> Response:
     headers = request_obj.get_headers()
 
-    with utils.deadline(seconds=5):
-        try:
-            response = requests.request(
-                request_obj.method,
-                request_obj.url,
-                headers=headers,
-                params=request_obj.get_params,
-                data=request_obj.get_body(),
-                allow_redirects=request_obj.allow_redirects,
-                stream=True
-            )
-            response_content = response.raw.read(RESPONSE_MAX,
-                decode_content=True)
-            if not response_content or not response.raw.read(1) == b"":
-                # response too large!
-                pass
-        except utils.DeadlineExceededException:
-            raise HTTPTimeoutException()
+    def _wrap():
+        response = requests.request(
+            request_obj.method,
+            request_obj.url,
+            headers=headers,
+            params=request_obj.get_params,
+            data=request_obj.get_body(),
+            allow_redirects=request_obj.allow_redirects,
+            stream=True
+        )
+        response_content = response.raw.read(RESPONSE_MAX,
+            decode_content=True)
+        if not response_content or not response.raw.read(1) == b"":
+            raise ValueError("Response too large")
 
-    response_headers = utils.CaseInsensitiveDict(dict(response.headers))
+        our_response = Response(response.status_code, response_content,
+            headers=utils.CaseInsensitiveDict(dict(response.headers)),
+            encoding=response.encoding)
+        return our_response
+
+    try:
+        response = utils.deadline_process(_wrap)
+    except utils.DeadlineExceededException:
+        raise HTTPTimeoutException()
+
     content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
-
     encoding = response.encoding or request_obj.fallback_encoding
+
     if (request_obj.detect_encoding and
             content_type and content_type in SOUP_CONTENT_TYPES):
-        souped = bs4.BeautifulSoup(response_content, request_obj.parser)
+        souped = bs4.BeautifulSoup(response.data, request_obj.parser)
         encoding = _find_encoding(souped) or encoding
 
     def _decode_data():
-        return response_content.decode(encoding)
+        return response.data.decode(encoding)
 
     if request_obj.parse:
         if (not request_obj.check_content_type or
                 content_type in SOUP_CONTENT_TYPES):
             souped = bs4.BeautifulSoup(_decode_data(), request_obj.parser)
-            return Response(response.status_code, souped, response_headers)
+            response.data = souped
+            return response
         else:
             raise HTTPWrongContentTypeException(
                 "Tried to soup non-html/non-xml data (%s)" % content_type)
 
-    if request_obj.json and response_content:
+    if request_obj.json and response.data:
         data = _decode_data()
         try:
-            return Response(response.status_code, _json.loads(data),
-                response_headers)
+            response.data = _json.loads(data)
+            return response
         except _json.decoder.JSONDecodeError as e:
             raise HTTPParsingException(str(e), data)
 
     if content_type in DECODE_CONTENT_TYPES:
-        return Response(response.status_code, _decode_data(), response_headers)
+        response.data = _decode_data()
+        return response
     else:
-        return Response(response.status_code, response_content,
-            response_headers)
+        return response
 
 def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
     responses = {}
