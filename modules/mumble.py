@@ -12,21 +12,21 @@ def _parse(s):
         port = srt(DEFAULT_PORT)
     return "%s:%s" % (host, port)
 
-@utils.export("channelset", utils.FunctionSetting(_parse, "mumble-server",
+SETTING = utils.FunctionSetting(_parse, "mumble-server",
     "Set the mumble server for this channel",
-    example="example.com:%s" % DEFAULT_PORT))
+    example="example.com:%s" % DEFAULT_PORT)
+
+@utils.export("channelset", SETTING)
+@utils.export("serverset", SETTING)
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.mumble")
     @utils.kwarg("help", "Get user and bandwidth stats for a mumble server")
     @utils.kwarg("usage", "[server[:<port>]]")
     def mumble(self, event):
         server = None
-        if not event["args"] and event["is_channel"]:
-            server_setting = event["target"].get_setting("mumble-server", None)
-            if server_setting == None:
-                raise utils.EventError(
-                    "This channel does not have a mumble server configured")
-            server = server_setting
+        if not event["args"]:
+            server = event["target"].get_setting("mumble-server",
+                event["server"].get_setting("mumble-server", None))
         elif event["args"]:
             server = event["args_split"][0]
         if not server:
