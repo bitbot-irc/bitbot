@@ -95,8 +95,15 @@ class Module(ModuleManager.BaseModule):
                 value = target.get_setting(require_setting, None)
                 if value == None:
                     example = setting_info.example or "<value>"
+                    if context == "user":
+                        context = event["user"].nickname
+                    elif context == "channel" and not channel == None:
+                        context = channel.name
+                    else:
+                        context = context[0]
+
                     return "Please set %s, e.g.: %sconfig %s %s %s" % (
-                        require_setting, event["command_prefix"], context[0],
+                        require_setting, event["command_prefix"], context,
                         require_setting, example)
 
     def _get_export_setting(self, context):
