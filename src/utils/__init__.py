@@ -383,3 +383,26 @@ def deadline(seconds: int=10):
     finally:
         signal.signal(signal.SIGALRM, old_handler)
         signal.setitimer(signal.ITIMER_REAL, old_seconds, 0)
+
+def deadline_process(func: typing.Callable[[], None], seconds: int=10):
+    q = multiprocessing.Queue()
+    def _wrap(func, q):
+        try:
+            q.put([True, func()])
+        except Exception as e:
+            print(e)
+            q.put([False, e])
+
+    p = multiprocessing.Process(target=_wrap, args=(func, q))
+    p.start()
+    p.join(seconds)
+
+    if p.is_alive():
+        p.terminate()
+        _raise_deadline()
+
+    success, out = q.get(block=False)
+    if success:
+        return out
+    else:
+        raise out
