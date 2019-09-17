@@ -3,13 +3,36 @@ from src import ModuleManager, utils
 
 DEFAULT_PORT = 64738
 
+def _parse(s):
+    host, _, port = s.partition(":")
+    if port:
+        if not port.isdigit():
+            return None
+    else:
+        port = srt(DEFAULT_PORT)
+    return "%s:%s" % (host, port)
+
+@utils.export("channelset", utils.FunctionSetting(_parse, "mumble-server",
+    "Set the mumble server for this channel",
+    example="example.com:%s" % DEFAULT_PORT))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.mumble")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Get user and bandwidth stats for a mumble server")
-    @utils.kwarg("usage", "<server>[:<port>]")
+    @utils.kwarg("usage", "[server[:<port>]]")
     def mumble(self, event):
-        server, _, port = event["args_split"][0].partition(":")
+        server = None
+        if not event["args"] and event["is_channel"]:
+            server_setting = event["target"].get_setting("mumble-server", None)
+            if server_setting == None:
+                raise utils.EventError(
+                    "This channel does not have a mumble server configured")
+            server = server_setting
+        elif event["args"]:
+            server = event["args_split"][0]
+        if not server:
+            raise utils.EventError("Please provide a server")
+
+        server, _, port = server.partition(":")
         if port:
             if not port.isdigit():
                 raise utils.EventError("Port must be numeric")
@@ -44,5 +67,5 @@ class Module(ModuleManager.BaseModule):
         bandwidth = pong[7]/1000 # kbit/s
 
         event["stdout"].write(
-            "%s (v%s): %d/%d users, %.1fms ping, %dkbit/s bandwidth"
-            % (server, version, users, max_users, ping, bandwidth))
+            "%s:%d (v%s): %d/%d users, %.1fms ping, %dkbit/s bandwidth"
+            % (server, port, version, users, max_users, ping, bandwidth))
