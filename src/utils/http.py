@@ -227,7 +227,7 @@ def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         data = response.body.decode("utf8")
-        responses[url] = Response(response.code, data, headers)
+        responses[url] = Response(response.code, data, headers, "utf8")
 
     loop = asyncio.new_event_loop()
     awaits = []
