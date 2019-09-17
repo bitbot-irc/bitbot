@@ -15,7 +15,7 @@ class Actor(object):
         if response.code == 200:
             self.username = response.data["preferredUsername"]
             self.inbox = Inbox(response.data["inbox"])
-            self.outbox = Outbox(responsedata["outbox"])
+            self.outbox = Outbox(response.data["outbox"])
             return True
         return False
 
