@@ -393,7 +393,6 @@ def deadline_process(func: typing.Callable[[], None], seconds: int=10):
             q.put([True, func()])
         except Exception as e:
             q.put([False, e])
-        q.close()
 
     p = multiprocessing.Process(target=_wrap, args=(func, q))
     p.start()
@@ -404,6 +403,8 @@ def deadline_process(func: typing.Callable[[], None], seconds: int=10):
     except queue.Empty:
         p.kill()
         deadlined = True
+    finally:
+        q.close()
 
     if deadlined:
         _raise_deadline()
