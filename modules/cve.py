@@ -14,7 +14,11 @@ class Module(ModuleManager.BaseModule):
         :help: Get information for a CVE number
         :usage: <CVE>
         """
-        page = utils.http.request(URL_CVE % event["args"].upper(), json=True)
+        cve_id = event["args_split"][0].upper()
+        if not cve_id.startswith("CVE-"):
+            cve_id = "CVE-%s" % cve_id
+
+        page = utils.http.request(URL_CVE % cve_id, json=True)
 
         if page and page.data:
             cve_id = page.data["id"]
