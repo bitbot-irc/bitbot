@@ -44,7 +44,7 @@ class HTTPTimeoutException(HTTPException):
 class HTTPParsingException(HTTPException):
     def __init__(self, message: str, data: str):
         Exception.__init__(self,
-            message or ("HTTP parsing failed:\n%s" % data))
+            "%s\n%s" % ((message or "HTTP parsing failed"), data))
 class HTTPWrongContentTypeException(HTTPException):
     def __init__(self, message: str=None):
         Exception.__init__(self,
