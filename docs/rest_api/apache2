@@ -1,0 +1,20 @@
+# run the bellow command (as root) prior
+# $ a2enmod ssl proxy proxy_http
+
+LoadModule ssl_module modules/mod_ssl.so
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+
+Listen 5000
+<VirtualHost *:5000>
+    ServerName example.com
+
+    SSLEngine on
+    SSLCertificateFile "/etc/letsencrypt/live/example.com/fullchain.pem"
+    SSLCertificateKeyFile "/etc/letsencrypt/live/example.com/privkey.pem"
+
+    ProxyRequests off
+    ProxyPass / http://[::1]:5001/
+    ProxyPassReverse / http://[::1]:5001
+    ProxyPreserveHost on
+</VirtualHost>
