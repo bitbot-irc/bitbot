@@ -1,6 +1,6 @@
 import urllib.parse
 from src import IRCBot, ModuleManager, utils
-from . import ap_actor, ap_server, ap_utils
+from . import ap_actor, ap_security, ap_server, ap_utils
 
 def _format_username(username, instance):
     return "@%s@%s" % (username, instance)
@@ -25,6 +25,9 @@ class Module(ModuleManager.BaseModule):
                 raise ValueError("`tls-key` not provided in bot config")
             if not "tls-certificate" in self.bot.config:
                 raise ValueError("`tls-certificate` not provided in bot config")
+            if not ap_security.has_crypto:
+                raise ValueError("cyprography library is not installed "
+                    "(https://pypi.org/project/cryptography/)")
 
             server_username, instance = ap_utils.split_username(server_username)
             self.server = ap_server.Server(self.bot, self.exports,

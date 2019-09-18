@@ -1,11 +1,15 @@
 import base64, typing
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.backends import default_backend
+
+try:
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding, rsa
+    from cryptography.hazmat.backends import default_backend
+    has_crypto = True
+except ModuleNotFoundError:
+    has_crypto = False
 
 SIGNATURE_FORMAT = (
     "keyId=\"%s\",headers=\"%s\",signature=\"%s\",algorithm=\"rsa-sha256\"")
-
 
 def _private_key(key_filename: str) -> rsa.RSAPrivateKey:
     with open(key_filename, "rb") as key_file:
