@@ -398,10 +398,14 @@ def deadline_process(func: typing.Callable[[], None], seconds: int=10):
     p = multiprocessing.Process(target=_wrap, args=(func, q))
     p.start()
 
+    deadlined = False
     try:
         success, out = q.get(block=True, timeout=seconds)
     except queue.Empty:
         p.kill()
+        deadlined = True
+
+    if deadlined:
         _raise_deadline()
 
     if success:
