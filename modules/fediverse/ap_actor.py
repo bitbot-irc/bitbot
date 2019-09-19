@@ -46,8 +46,8 @@ class Inbox(object):
         now = email.utils.formatdate(timeval=None, localtime=False, usegmt=True)
         parts = urllib.parse.urlparse(self._url)
         headers = [
-            ["host", parts.netloc],
-            ["date", now]
+            ["Host", parts.netloc],
+            ["Date", now]
         ]
         sign_headers = headers[:]
         sign_headers.insert(0, ["(request-target)", "post %s" % parts.path])

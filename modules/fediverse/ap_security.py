@@ -23,9 +23,9 @@ class PrivateKey(object):
 
 def signature(key: PrivateKey, headers: typing.List[typing.Tuple[str, str]]
         ) -> str:
-    sign_header_keys = " ".join(h[0] for h in headers)
+    sign_header_keys = " ".join(h[0].lower() for h in headers)
 
-    sign_string_parts = ["%s: %s" % (k, v) for k, v in headers]
+    sign_string_parts = ["%s: %s" % (k.lower(), v) for k, v in headers]
     sign_string = "\n".join(sign_string_parts)
 
     signature = key.key.sign(
