@@ -243,7 +243,7 @@ def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
             response = await client.fetch(t_request)
         except:
             raise RequestManyException(
-                "request_many failed for %s", [url])
+                "request_many failed for %s" % url)
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         data = response.body.decode("utf8")
