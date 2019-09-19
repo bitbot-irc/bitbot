@@ -21,8 +21,8 @@ def url_sanitise(url: str):
         # google.com/()) -> google.com/()
         if url.endswith(pair_end):
             if pair_start in url:
-                open_index = url.rfind("(")
-                other_index = url.rfind(")", 0, len(url)-1)
+                open_index = url.rfind(pair_start)
+                other_index = url.rfind(pair_end, 0, len(url)-1)
                 if not other_index == -1 and other_index < open_index:
                     url = url[:-1]
             else:
