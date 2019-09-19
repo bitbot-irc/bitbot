@@ -1,5 +1,5 @@
 import asyncio, ipaddress, re, signal, socket, traceback, typing
-import urllib.error, urllib.parse
+import urllib.error, urllib.parse, uuid
 import json as _json
 import bs4, netifaces, requests
 import tornado.httpclient
@@ -54,7 +54,7 @@ def throw_timeout():
     raise HTTPTimeoutException()
 
 class Request(object):
-    def __init__(self, url: str, method: str="GET",
+    def __init__(self, url: str,
             get_params: typing.Dict[str, str]={}, post_data: typing.Any=None,
             headers: typing.Dict[str, str]={},
 
@@ -62,10 +62,13 @@ class Request(object):
             check_content_type: bool=True, parse: bool=False,
             detect_encoding: bool=True,
 
-            parser: str="lxml", fallback_encoding="iso-8859-1",
-            content_type: str=None, proxy: str=None, useragent: str=None,
+            method: str="GET", parser: str="lxml", id: str=None,
+            fallback_encoding="iso-8859-1", content_type: str=None,
+            proxy: str=None, useragent: str=None,
 
             **kwargs):
+        self.id = id or str(uuid.uuid4())
+
         self.set_url(url)
         self.method = method.upper()
         self.get_params = get_params
@@ -218,28 +221,38 @@ def _request(request_obj: Request) -> Response:
 
 class RequestManyException(Exception):
     pass
-def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
+def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
     responses = {}
 
-    async def _request(url):
+    async def _request(request):
         client = tornado.httpclient.AsyncHTTPClient()
-        request = tornado.httpclient.HTTPRequest(url, method="GET",
-            connect_timeout=2, request_timeout=2)
+        url = request.url
+        if request.get_params:
+            url = "%s?%s" % (url, urllib.parse.urlencode(request.get_params))
+
+        t_request = tornado.httpclient.HTTPRequest(
+            request.url,
+            connect_timeout=2, request_timeout=2,
+            method=request.method,
+            body=request.get_body(),
+            headers=request.get_headers(),
+            follow_redirects=request.allow_redirects,
+        )
 
         try:
-            response = await client.fetch(request)
+            response = await client.fetch(t_request)
         except:
             raise RequestManyException(
                 "request_many failed for %s", [url])
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         data = response.body.decode("utf8")
-        responses[url] = Response(response.code, data, headers, "utf8")
+        responses[request.id] = Response(response.code, data, headers, "utf8")
 
     loop = asyncio.new_event_loop()
     awaits = []
-    for url in urls:
-        awaits.append(_request(url))
+    for request in requests:
+        awaits.append(_request(request))
     task = asyncio.wait(awaits, loop=loop, timeout=5)
     loop.run_until_complete(task)
     loop.close()
