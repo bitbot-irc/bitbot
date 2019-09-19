@@ -179,7 +179,7 @@ class Module(ModuleManager.BaseModule):
             args = event["line"].args[2:]
 
             batch = utils.irc.IRCBatch(identifier, batch_type, args,
-                event["line"].tags)
+                event["line"].tags, source=event["line"].source)
             event["server"].batches[identifier] = batch
 
             self.events.on("received.batch.start").call(batch=batch,
