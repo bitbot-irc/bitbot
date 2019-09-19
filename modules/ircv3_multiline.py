@@ -38,4 +38,5 @@ class Module(ModuleManager.BaseModule):
 
             target = event["batch"].args[0]
             message = "\n".join(messages)
-            return [IRCLine.ParsedLine("PRIVMSG", [target, message])]
+            return [IRCLine.ParsedLine("PRIVMSG", [target, message],
+                source=event["batch"].source)]
