@@ -47,7 +47,6 @@ class Module(ModuleManager.BaseModule):
             if server and channel_name in server.channels:
                 channel = server.channels.get(channel_name)
                 for url in urls:
-                    request = utils.http.Request(url, id=url)
                     if not url in hooks:
                         hooks[url] = []
                     hooks[url].append((server, channel))
@@ -55,7 +54,11 @@ class Module(ModuleManager.BaseModule):
         if not hooks:
             return
 
-        pages = utils.http.request_many(hooks.keys())
+        requests = []
+        for url in hooks.keys():
+            requests.append(utils.http.Request(url, id=url))
+
+        pages = utils.http.request_many(requests)
 
         for url, channels in hooks.items():
             if not url in pages:
