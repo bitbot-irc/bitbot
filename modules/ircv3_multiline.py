@@ -1,8 +1,8 @@
 from src import ModuleManager, utils
 
-CAP = utils.irc.Capability(None, "bitbot.dev/multiline", alias="multiline")
-BATCH = utils.irc.BatchType(None, "bitbot.dev/multiline")
-TAG = utils.irc.MessageTag(None, "bitbot.dev/multiline-concat")
+CAP = utils.irc.Capability(None, "draft/multiline", alias="multiline")
+BATCH = utils.irc.BatchType(None, "draft/multiline")
+TAG = utils.irc.MessageTag(None, "draft/multiline-concat")
 
 @utils.export("cap", CAP)
 class Module(ModuleManager.BaseModule):
@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
 
                 target = event["line"].args[0]
                 lines = event["line"].args[1].split("\n")
-                batch = utils.irc.IRCSendBatch("bitbot.dev/multiline",
+                batch = utils.irc.IRCSendBatch("draft/multiline",
                     [target])
                 for line in lines:
                     batch.add_line(utils.irc.protocol.privmsg(target, line))
