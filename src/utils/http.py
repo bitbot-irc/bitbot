@@ -216,6 +216,8 @@ def _request(request_obj: Request) -> Response:
     else:
         return response
 
+class RequestManyException(Exception):
+    pass
 def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
     responses = {}
 
@@ -227,9 +229,8 @@ def request_many(urls: typing.List[str]) -> typing.Dict[str, Response]:
         try:
             response = await client.fetch(request)
         except:
-            self.log.critical("request_many failed for %s", [url],
-                exc_info=True)
-            return None
+            raise RequestManyException(
+                "request_many failed for %s", [url])
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         data = response.body.decode("utf8")
