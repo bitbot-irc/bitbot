@@ -212,7 +212,7 @@ class Module(ModuleManager.BaseModule):
             if name_override:
                 for_str = " for %s" % name_override
             if result.result == ConfigResults.Changed:
-                event["stdout"].write("Config '%s' %sset to %s" %
+                event["stdout"].write("Config '%s'%s set to %s" %
                     (setting, for_str, result.data))
             elif result.result == ConfigResults.Retrieved:
                 event["stdout"].write("%s%s: %s" % (setting, for_str,
