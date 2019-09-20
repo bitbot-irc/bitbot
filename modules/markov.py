@@ -27,8 +27,8 @@ class Module(ModuleManager.BaseModule):
             inserts.append([words[-1], None, None])
 
             for insert in inserts:
-                frequency = self.bot.database.execute("""SELECT frequency
-                    FROM markov WHERE channel_id=? AND first_word=?
+                frequency = self.bot.database.execute_fetchone("""SELECT
+                    frequency FROM markov WHERE channel_id=? AND first_word=?
                     AND second_word=? AND third_word=?""",
                     [event["channel"].id]+insert)
                 frequency = (frequency or [0])[0]+1
