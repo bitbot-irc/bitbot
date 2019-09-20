@@ -53,7 +53,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 #we're in a channel
                 return channel, "channelset", None
-        if context_desc_lower[0] in server.channel_types:
+        elif server.is_channel(context_desc):
             return context_desc, "channelset", context_desc
         elif server.irc_lower(context_desc) == user.nickname_lower:
             return user, "set", None

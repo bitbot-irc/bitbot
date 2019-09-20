@@ -41,10 +41,9 @@ def message(events, event):
     # voiced-or-above users
     target = target_str.lstrip("".join(event["server"].statusmsg))
 
-    is_channel = False
+    is_channel = event["server"].is_channel(target)
 
-    if target[0] in event["server"].channel_types:
-        is_channel = True
+    if is_channel:
         if not target in event["server"].channels:
             return
         target_obj = event["server"].channels.get(target)

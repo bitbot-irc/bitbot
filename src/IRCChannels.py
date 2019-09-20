@@ -34,8 +34,8 @@ class Channels(object):
         return self._server.irc_lower(channel_name)
 
     def contains(self, name: str) -> bool:
-        lower = self._name_lower(name)
-        return name[0] in self._server.channel_types and lower in self._channels
+        return (self._server.is_channel(name) and
+            self._name_lower(name) in self._channels)
 
     def add(self, name: str) -> IRCChannel.Channel:
         id = self.get_id(name)

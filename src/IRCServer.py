@@ -186,10 +186,13 @@ class Server(IRCObject.Object):
         for channel in user.channels:
             channel.remove_user(user)
 
+    def is_channel(self, name: str) -> bool:
+        return name[0] in self.channel_types
+
     def get_target(self, name: str
             ) -> typing.Optional[
             typing.Union[IRCChannel.Channel, IRCUser.User]]:
-        if name[0] in self.channel_types:
+        if self.is_channel(name):
             if name in self.channels:
                 return self.channels.get(name)
         else:

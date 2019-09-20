@@ -77,7 +77,7 @@ def _own_modes(server, modes):
 def mode(events, event):
     user = event["server"].get_user(event["line"].source.nickname)
     target = event["line"].args[0]
-    is_channel = target[0] in event["server"].channel_types
+    is_channel = event["server"].is_channel(target)
     if is_channel:
         channel = event["server"].channels.get(target)
         modes = event["line"].args[1]
