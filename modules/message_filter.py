@@ -72,7 +72,7 @@ class Module(ModuleManager.BaseModule):
         :usage: remove <index>
         :permission: cfilter
         """
-        # mark output as "assured" to it can bypass filtering
+        # mark output as "assured" so it can bypass filtering
         event["stdout"].assure()
         event["stderr"].assure()
 
