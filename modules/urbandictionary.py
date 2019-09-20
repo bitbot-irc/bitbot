@@ -1,10 +1,8 @@
 #--depends-on commands
 
-import json, re
 from src import ModuleManager, utils
 
 URL_URBANDICTIONARY = "http://api.urbandictionary.com/v0/define"
-REGEX_DEFNUMBER = re.compile("-n ?(\d+) ")
 
 class Module(ModuleManager.BaseModule):
     _name = "UrbanDictionary"
@@ -14,14 +12,17 @@ class Module(ModuleManager.BaseModule):
     def ud(self, event):
         """
         :help: Get the definition of a provided term from Urban Dictionary
-        :usage: <term>
+        :usage: <term> [#index]
         """
-        term = event["args"]
         number = 1
-        match = re.match(REGEX_DEFNUMBER, term)
-        if match:
-            number = int(match.group(1))
-            term = term.split(" ", 1)[1]
+        term = event["args_split"]
+        if (event["args_split"][-1].startswith("#") and
+                len(event["args_split"]) > 1 and
+                event["args_split"][-1][1:].isdigit()):
+            number = int(event["args_split"][-1][1:])
+            term = term[:-1]
+        term = " ".join(term)
+
         page = utils.http.request(URL_URBANDICTIONARY,
             get_params={"term": term}, json=True)
         if page:
