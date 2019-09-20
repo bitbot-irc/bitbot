@@ -124,8 +124,11 @@ class Server(object):
         else:
             event["response"].code = 400
 
+    def _get_arg(self, args):
+        return (args or [None])[0]
+
     def ap_user(self, event):
-        username = event["params"].get("u", None)
+        username = self._get_arg(event["args"])
 
         if username and username == self.username:
             self_id = self._ap_self_url(event["url_for"])
@@ -170,7 +173,8 @@ class Server(object):
         }
 
     def ap_outbox(self, event):
-        username = event["params"].get("u", None)
+        username = self._get_arg(event["args"])
+
         if username and username == self.username:
             self_id = self._ap_self_url(event["url_for"])
             outbox = self._ap_outbox_url(event["url_for"])
