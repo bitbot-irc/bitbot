@@ -43,7 +43,18 @@ class Module(ModuleManager.BaseModule):
         words, frequencies = list(zip(*words))
         return random.choices(words, weights=frequencies, k=1)[0]
 
-    def generate(self, channel_id):
+    @utils.hook("received.command.markov")
+    @utils.kwarg("channel_only", True)
+    def generate(self, event):
+        if not event["target"].get_setting("markov", False):
+            raise utils.EventError("Markov chains not enabled in this channel")
+        out = self._generate(event["target"].id)
+        if not out == None:
+            event["stdout"].write(out)
+        else:
+            event["stderr"].write("Failed to generate markov chain")
+
+    def _generate(self, channel_id):
         first_words = self.bot.database.execute_fetchall("""SELECT third_word,
             frequency FROM markov WHERE channel_id=? AND first_word IS NULL AND
             second_word IS NULL AND third_word NOT NULL""", [channel_id])
