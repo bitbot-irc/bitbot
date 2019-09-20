@@ -24,7 +24,6 @@ class Module(ModuleManager.BaseModule):
                 inserts.append(words[i:i+3])
 
             inserts.append([words[-2], words[-1], None])
-            inserts.append([words[-1], None, None])
 
             for insert in inserts:
                 frequency = self.bot.database.execute_fetchone("""SELECT
