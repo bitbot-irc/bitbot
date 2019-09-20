@@ -47,7 +47,7 @@ class Module(ModuleManager.BaseModule):
     def markov(self, event):
         self._markov_for(event["target"], event["stdout"], event["stderr"])
 
-    @utils.hook("received.command.markov")
+    @utils.hook("received.command.markovfor")
     @utils.kwarg("min_args", 1)
     @utils.kwarg("permission", "markovfor")
     @utils.kwarg("help", "Generate a markov chain for a given channel")
