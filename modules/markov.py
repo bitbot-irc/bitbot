@@ -44,18 +44,16 @@ class Module(ModuleManager.BaseModule):
         return random.choices(words, weights=frequencies, k=1)[0]
 
     def generate(self, channel_id):
-        first_words = self.bot.database.execute("""SELECT third_word, frequency
-            FROM markov WHERE channel_id=? AND first_word IS NULL AND
-            second_word IS NULL AND third_word NOT NULL""",
-            [channel_id])
+        first_words = self.bot.database.execute_fetchall("""SELECT third_word,
+            frequency FROM markov WHERE channel_id=? AND first_word IS NULL AND
+            second_word IS NULL AND third_word NOT NULL""", [channel_id])
         if not first_words:
             return None
         first_word = self._choose(first_words)
 
-        second_words = self.bot.database.execute("""SELECT third_word, frequency
-            FROM markov WHERE channel_id=? AND first_word IS NULL AND
-            second_word=? AND third_word NOT NULL""",
-            [channel_id, first_word])
+        second_words = self.bot.database.execute_fetchall("""SELECT third_word,
+            frequency FROM markov WHERE channel_id=? AND first_word IS NULL AND
+            second_word=? AND third_word NOT NULL""", [channel_id, first_word])
         if not second_words:
             return None
         second_word = self._choose(second_words)
@@ -63,9 +61,9 @@ class Module(ModuleManager.BaseModule):
         words = [first_word, second_word]
         for i in range(30):
             two_words = words[-2:]
-            third_words = self.bot.database.execute("""SELECT third_word,
-                frequency FROM markov WHERE channel_id=? AND first_word=? AND
-                second_word=?""", [channel_id]+two_words)
+            third_words = self.bot.database.execute_fetchall("""SELECT
+                third_word, frequency FROM markov WHERE channel_id=? AND
+                first_word=? AND second_word=?""", [channel_id]+two_words)
 
             third_word = self._choose(third_words)
             if third_word == None:
