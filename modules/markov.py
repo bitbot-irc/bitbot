@@ -37,8 +37,6 @@ class Module(ModuleManager.BaseModule):
                     "INSERT OR REPLACE INTO markov VALUES (?, ?, ?, ?, ?)",
                     [event["channel"].id]+insert+[frequency])
 
-            print(self.generate(event["channel"].id))
-
     def _choose(self, words):
         words, frequencies = list(zip(*words))
         return random.choices(words, weights=frequencies, k=1)[0]
