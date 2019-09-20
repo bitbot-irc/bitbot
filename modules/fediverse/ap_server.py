@@ -208,6 +208,9 @@ class Server(object):
         filename = self.bot.config["tls-key"]
         return ap_security.PrivateKey(filename, id)
 
+    def _rand_url(self, url_for):
+        return "https://%s" % url_for("api", "ap-id", args=[str(uuid.uuid4())])
+
     def ap_inbox(self, event):
         data = json.loads(event["data"])
         self_id = self._ap_self_url(event["url_for"])
@@ -221,11 +224,12 @@ class Server(object):
 
                     actor = ap_actor.Actor(new_follower)
                     actor.load()
-                    accept = ap_activities.Accept(data["id"], data)
+                    accept = ap_activities.Accept(
+                        self._rand_url(event["url_for"]), data)
                     self._request_queue.put([actor, accept])
 
-                    follow_id = "data:%s" % str(uuid.uuid4())
-                    follow = ap_activities.Follow(follow_id, actor.url)
+                    follow = ap_activities.Follow(
+                        self._rand_url(event["url_for"]), actor.url)
                     self._request_queue.put([actor, follow])
             else:
                 event["response"].code = 404
