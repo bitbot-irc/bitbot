@@ -23,15 +23,15 @@ class Module(ModuleManager.BaseModule):
         hostname = urllib.parse.urlparse(url).hostname
         if utils.http.is_localhost(hostname):
             self.log.warn("tried to get title of localhost: %s", [url])
-            return None
+            return -1, None
 
         try:
             page = utils.http.request(url, parse=True)
         except utils.http.HTTPWrongContentTypeException:
-            return None
+            return -1, None
         except Exception as e:
             self.log.error("failed to get URL title: %s", [url], exc_info=True)
-            return None
+            return -1, None
         if page.data.title:
             title = page.data.title.text.replace("\n", " ").replace(
                 "\r", "").replace("  ", " ").strip()
@@ -39,10 +39,10 @@ class Module(ModuleManager.BaseModule):
             if channel.get_setting("title-shorten", False):
                 short_url = self.exports.get_one("shorturl")(server, url,
                     context=channel)
-                return "%s - %s" % (title, short_url)
-            return title
+                return page.code, "%s - %s" % (title, short_url)
+            return page.code, title
         else:
-            return None
+            return -1, None
 
     @utils.hook("command.regex")
     @utils.kwarg("ignore_action", False)
@@ -53,9 +53,9 @@ class Module(ModuleManager.BaseModule):
         if event["target"].get_setting("auto-title", False):
             event.eat()
             url = utils.http.url_sanitise(event["match"].group(0))
-            title = self._get_title(event["server"], event["target"], url)
+            code, title = self._get_title(event["server"], event["target"], url)
 
-            if title:
+            if code == 200 and title:
                 message = title
                 if event["target"].get_setting("auto-title-first", False):
                     setting = "url-last-%s" % self._url_hash(url)
@@ -90,7 +90,7 @@ class Module(ModuleManager.BaseModule):
         if not url:
             raise utils.EventError("No URL provided/found.")
 
-        title = self._get_title(event["server"], event["target"], url)
+        code, title = self._get_title(event["server"], event["target"], url)
 
         if title:
             event["stdout"].write(title)
