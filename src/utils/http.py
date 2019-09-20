@@ -188,7 +188,7 @@ def _request(request_obj: Request) -> Response:
     encoding = response.encoding or request_obj.fallback_encoding
 
     if (request_obj.detect_encoding and
-            content_type and content_type in DECODE_CONTENT_TYPES):
+            content_type and content_type in SOUP_CONTENT_TYPES):
         souped = bs4.BeautifulSoup(response.data, request_obj.parser)
         encoding = _find_encoding(souped) or encoding
 
