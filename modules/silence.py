@@ -23,11 +23,6 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_mode", "high")
     @utils.kwarg("permission", "silence")
     def silence(self, event):
-        """
-        :help: Silence me for 5 minutes
-        :require_mode: high
-        :permission: silence
-        """
         duration = SILENCE_TIME
         if event["args"] and event["args_split"][0].startswith("+"):
             duration = utils.from_pretty_time(event["args_split"][0][1:])
