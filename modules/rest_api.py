@@ -81,7 +81,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def _url_for(self, headers):
         return (lambda route, endpoint, args=[], get_params={}:
             _module._url_for(route, endpoint, args, get_params,
-            headers.get("Host", None))
+            headers.get("Host", None)))
 
     def _handle(self, method, path, endpoint, args):
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
