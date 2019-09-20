@@ -43,14 +43,31 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.markov")
     @utils.kwarg("channel_only", True)
-    def generate(self, event):
-        if not event["target"].get_setting("markov", False):
-            raise utils.EventError("Markov chains not enabled in this channel")
-        out = self._generate(event["target"].id)
-        if not out == None:
-            event["stdout"].write(out)
+    @utils.kwarg("help", "Generate a markov chain for the current channel")
+    def markov(self, event):
+        self._markov_for(event["target"], event["stdout"], event["stderr"])
+
+    @utils.hook("received.command.markov")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("permission", "markovfor")
+    @utils.kwarg("help", "Generate a markov chain for a given channel")
+    @utils.kwarg("usage", "<channel>")
+    def markov_for(self, event):
+        if event["args_split"][0] in event["server"].channels:
+            channel = event["server"].channels.get(event["args_split"][0])
+            self._markov_for(channel, event["stdout"], event["stderr"])
         else:
-            event["stderr"].write("Failed to generate markov chain")
+            event["stderr"].write("Unknown channel")
+
+    def _markov_for(self, channel, stdout, stderr):
+        if not channel.get_setting("markov", False):
+            stderr.write("Markov chains not enabled in this channel")
+        else:
+            out = self._generate(channel.id)
+            if not out == None:
+                stdout.write(out)
+            else:
+                stderr.write("Failed to generate markov chain")
 
     def _generate(self, channel_id):
         first_words = self.bot.database.execute_fetchall("""SELECT third_word,
