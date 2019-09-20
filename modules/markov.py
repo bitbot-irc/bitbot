@@ -8,7 +8,7 @@ class Module(ModuleManager.BaseModule):
                 (channel_id INTEGER, first_word TEXT, second_word TEXT,
                 third_word TEXT, frequency INT,
                 FOREIGN KEY (channel_id) REFERENCES channels(channel_id),
-                PRIMARY KEY (channel_id, first_word, second_word)""")
+                PRIMARY KEY (channel_id, first_word, second_word))""")
 
     @utils.hook("received.message.channel")
     def channel_message(self, event):
