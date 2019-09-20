@@ -145,7 +145,7 @@ class Server(object):
             event["response"].write_json({
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "id": self_id, "url": self_id,
-                "type": "Person",
+                "type": "Service",
                 "summary": "beep boop",
                 "preferredUsername": self.username, "name": self.username,
                 "inbox": inbox,
