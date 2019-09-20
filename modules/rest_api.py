@@ -79,8 +79,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return _bot.get_setting("rest-api-minify", False)
 
     def _url_for(self, headers):
-        return lambda route, endpoint, get_params={}: _module._url_for(
-            route, endpoint, get_params, headers.get("Host", None))
+        return (lambda route, endpoint, args=[], get_params={}:
+            _module._url_for(route, endpoint, args, get_params,
+            headers.get("Host", None))
 
     def _handle(self, method, path, endpoint, args):
         headers = utils.CaseInsensitiveDict(dict(self.headers.items()))
@@ -199,7 +200,8 @@ class Module(ModuleManager.BaseModule):
         })
         event["stdout"].write("New API key ('%s'): %s" % (comment, api_key))
 
-    def _url_for(self, route, endpoint, get_params={}, host_override=None):
+    def _url_for(self, route, endpoint, args=[], get_params={},
+            host_override=None):
         host = host_override or self.bot.get_setting("rest-api-host", None)
 
         host, _, port = host.partition(":")
@@ -208,9 +210,13 @@ class Module(ModuleManager.BaseModule):
         host = "%s:%s" % (host, port)
 
         if host:
+            args_str = ""
+            if args:
+                args_str = "/%s" % "/".join(args)
             get_params_str = ""
             if get_params:
                 get_params_str = "?%s" % urllib.parse.urlencode(get_params)
-            return "%s/%s/%s%s" % (host, route, endpoint, get_params_str)
+            return "%s/%s/%s%s%s" % (host, route, endpoint, args_str,
+                get_params_str)
         else:
             return None
