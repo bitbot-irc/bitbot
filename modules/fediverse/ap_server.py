@@ -82,16 +82,16 @@ class Server(object):
             actor.load()
             actor.inbox.send(activity, private_key)
 
-    def _ap_url(self, url_for, fragment, kwargs):
-        return "https://%s" % url_for("api", fragment, kwargs)
+    def _ap_url(self, url_for, fragment, arg):
+        return "https://%s" % url_for("api", fragment, args=[arg])
     def _ap_self_url(self, url_for):
-        return self._ap_url(url_for, "ap-user", {"u": self.username})
+        return self._ap_url(url_for, "ap-user", self.username)
     def _ap_inbox_url(self, url_for):
-        return self._ap_url(url_for, "ap-inbox", {"u": self.username})
+        return self._ap_url(url_for, "ap-inbox", self.username)
     def _ap_outbox_url(self, url_for):
-        return self._ap_url(url_for, "ap-outbox", {"u": self.username})
+        return self._ap_url(url_for, "ap-outbox", self.username)
     def _ap_activity_url(self, url_for, activity_id):
-        return self._ap_url(url_for, "ap-activity", {"a": activity_id})
+        return self._ap_url(url_for, "ap-activity", activity_id)
     def _ap_keyid_url(self, url_for):
         return "%s#key" % self._ap_self_url(url_for)
 
