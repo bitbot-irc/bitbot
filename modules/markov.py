@@ -12,7 +12,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.channel")
     def channel_message(self, event):
-        words = event["message_split"]
+        words = [word.lower() for word in event["message_split"]]
         words_n = len(words)
         if words_n > 2 and event["channel"].get_setting("markov", False):
 
