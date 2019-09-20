@@ -88,8 +88,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("api.get.servers")
     def servers_api(self, event):
-        if event["path"]:
-            server_id = event["path"][0]
+        if event["args"]:
+            server_id = event["args"][0]
             if not server_id.isdigit():
                 return None
             server_id = int(server_id)
@@ -118,8 +118,8 @@ class Module(ModuleManager.BaseModule):
         }
     @utils.hook("api.get.channels")
     def channels_api(self, event):
-        if event["path"]:
-            server_id = event["path"][0]
+        if event["args"]:
+            server_id = event["args"][0]
             if not server_id.isdigit():
                 return None
             server_id = int(server_id)
