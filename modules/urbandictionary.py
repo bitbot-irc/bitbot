@@ -12,7 +12,7 @@ class Module(ModuleManager.BaseModule):
     def ud(self, event):
         """
         :help: Get the definition of a provided term from Urban Dictionary
-        :usage: <term> [#index]
+        :usage: <term> [#<number>]
         """
         number = 1
         term = event["args_split"]
