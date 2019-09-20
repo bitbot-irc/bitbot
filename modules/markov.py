@@ -2,7 +2,7 @@ import random
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    def _on_load(self):
+    def on_load(self):
         if not self.bot.database.has_table("markov"):
             self.bot.database.execute("""CREATE TABLE markov
                 (channel_id INTEGER, first_word TEXT, second_word TEXT,
