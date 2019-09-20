@@ -94,6 +94,8 @@ class Server(object):
         return self._ap_url(url_for, "ap-activity", activity_id)
     def _ap_keyid_url(self, url_for):
         return "%s#key" % self._ap_self_url(url_for)
+    def _ap_uuid_url(self, url_for):
+        return self._ap_url(url_for, "ap-id", [str(uuid.uuid4())])
 
     def ap_webfinger(self, event):
         resource = event["params"].get("resource", None)
@@ -208,9 +210,6 @@ class Server(object):
         filename = self.bot.config["tls-key"]
         return ap_security.PrivateKey(filename, id)
 
-    def _rand_url(self, url_for):
-        return "https://%s" % url_for("api", "ap-id", args=[str(uuid.uuid4())])
-
     def ap_inbox(self, event):
         data = json.loads(event["data"])
         self_id = self._ap_self_url(event["url_for"])
@@ -225,11 +224,11 @@ class Server(object):
                     actor = ap_actor.Actor(new_follower)
                     actor.load()
                     accept = ap_activities.Accept(
-                        self._rand_url(event["url_for"]), data)
+                        self._ap_uuid_url(event["url_for"]), data)
                     self._request_queue.put([actor, accept])
 
                     follow = ap_activities.Follow(
-                        self._rand_url(event["url_for"]), actor.url)
+                        self._ap_uuid_url(event["url_for"]), actor.url)
                     self._request_queue.put([actor, follow])
             else:
                 event["response"].code = 404
