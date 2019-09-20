@@ -110,7 +110,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     try:
                         event_response = _events.on("api").on(method).on(
                             endpoint).call_for_result_unsafe(params=params,
-                            path=args, data=data, headers=headers,
+                            args=args, data=data, headers=headers,
                             response=response, url_for=self._url_for(headers))
                     except Exception as e:
                         _log.error("failed to call API endpoint \"%s\"",
