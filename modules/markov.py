@@ -3,8 +3,8 @@ from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def _on_load(self):
-        if not self.database.has_table("markov"):
-            self.database.execute("""CREATE TABLE markov
+        if not self.bot.database.has_table("markov"):
+            self.bot.database.execute("""CREATE TABLE markov
                 (channel_id INTEGER, first_word TEXT, second_word TEXT,
                 third_word TEXT, frequency INT,
                 FOREIGN KEY (channel_id) REFERENCES channels(channel_id),
@@ -27,13 +27,13 @@ class Module(ModuleManager.BaseModule):
             inserts.append([words[-1], None, None])
 
             for insert in inserts:
-                frequency = self.database.execute("""SELECT frequency
+                frequency = self.bot.database.execute("""SELECT frequency
                     FROM markov WHERE channel_id=? AND first_word=?
                     AND second_word=? AND third_word=?""",
                     [event["channel"].id]+insert)
                 frequency = (frequency or [0])[0]+1
 
-                self.database.execute(
+                self.bot.database.execute(
                     "INSERT OR REPLACE INTO markov VALUES (?, ?, ?, ?, ?)",
                     [event["channel"].id]+insert+[frequency])
 
@@ -44,7 +44,7 @@ class Module(ModuleManager.BaseModule):
         return random.choices(words, weights=frequencies, k=1)[0]
 
     def generate(self, channel_id):
-        first_words = self.database.execute("""SELECT third_word, frequency
+        first_words = self.bot.database.execute("""SELECT third_word, frequency
             FROM markov WHERE channel_id=? AND first_word IS NULL AND
             second_word IS NULL AND third_word NOT NULL""",
             [channel_id])
@@ -52,7 +52,7 @@ class Module(ModuleManager.BaseModule):
             return None
         first_word = self._choose(first_words)
 
-        second_words = self.database.execute("""SELECT third_word, frequency
+        second_words = self.bot.database.execute("""SELECT third_word, frequency
             FROM markov WHERE channel_id=? AND first_word IS NULL AND
             second_word=? AND third_word NOT NULL""",
             [channel_id, first_word])
@@ -63,8 +63,8 @@ class Module(ModuleManager.BaseModule):
         words = [first_word, second_word]
         for i in range(30):
             two_words = words[-2:]
-            third_words = self.database.execute("""SELECT third_word, frequency
-                FROM markov WHERE channel_id=? AND first_word=? AND
+            third_words = self.bot.database.execute("""SELECT third_word,
+                frequency FROM markov WHERE channel_id=? AND first_word=? AND
                 second_word=?""", [channel_id]+two_words)
 
             third_word = self._choose(third_words)
