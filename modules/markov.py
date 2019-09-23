@@ -126,10 +126,20 @@ class Module(ModuleManager.BaseModule):
             frequency FROM markov WHERE channel_id=? AND first_word IS NULL AND
             second_word=? AND third_word NOT NULL""", [channel_id, first_word])
         if not second_words:
-            return None
-        second_word = self._choose(second_words)
+            second_two_words = self.bot.database.execute_fetchall("""SELECT
+                second_word, third_word, frequency FROM markov WHERE
+                channel_id=? AND first_word=? AND second_word NOT NULL AND
+                third_word NOT NULL""", [channel_id, first_word])
+            if not second_two_words:
+                return None
 
-        words = [first_word, second_word]
+            second_word, third_word = self._choose(
+                [[[s, t], f] for s, t, f in second_two_words])
+            words = [first_word, second_word, third_word]
+        else:
+            second_word = self._choose(second_words)
+            words = [first_word, second_word]
+
         for i in range(30):
             two_words = words[-2:]
             third_words = self.bot.database.execute_fetchall("""SELECT
