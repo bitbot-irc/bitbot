@@ -1,3 +1,4 @@
+import urllib.parse
 from src import IRCBot, utils
 
 LD_TYPE = ("application/ld+json; "
