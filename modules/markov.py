@@ -1,6 +1,8 @@
 import random
 from src import ModuleManager, utils
 
+NO_MARKOV = "Markov chains not enabled in this channel"
+
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         if not self.bot.database.has_table("markov"):
@@ -12,29 +14,52 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.message.channel")
     def channel_message(self, event):
-        words = [word.lower() for word in event["message_split"]]
+        if event["channel"].get_setting("markov", False):
+            self._create(event["channel"].id, event["message_split"])
+
+    @utils.hook("received.command.markovlog")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("permission", "markovlog")
+    @utils.kwarg("help", "Load a message-only newline-delimited log in to this "
+        "channel's markov chain")
+    def load_log(self, event):
+        if not event["target"].get_setting("markov", False):
+            raise utils.EventError(NO_MARKOV)
+
+        page = utils.http.request(event["args_split"][0])
+        if page.code == 200:
+            for line in page.data.split("\n"):
+                self._create(event["target"].id, line.strip("\r").split(" "))
+        else:
+            event["stdout"].write("Failed to load log (%d)" % page.code)
+
+    def _create(self, channel_id, words):
+        words = list(filter(None, words))
+        words = [word.lower() for word in words]
         words_n = len(words)
-        if words_n > 2 and event["channel"].get_setting("markov", False):
 
-            inserts = []
-            inserts.append([None, None, words[0]])
-            inserts.append([None, words[0], words[1]])
+        if not words_n > 2:
+            return
 
-            for i in range(words_n-2):
-                inserts.append(words[i:i+3])
+        inserts = []
+        inserts.append([None, None, words[0]])
+        inserts.append([None, words[0], words[1]])
 
-            inserts.append([words[-2], words[-1], None])
+        for i in range(words_n-2):
+            inserts.append(words[i:i+3])
 
-            for insert in inserts:
-                frequency = self.bot.database.execute_fetchone("""SELECT
-                    frequency FROM markov WHERE channel_id=? AND first_word=?
-                    AND second_word=? AND third_word=?""",
-                    [event["channel"].id]+insert)
-                frequency = (frequency or [0])[0]+1
+        inserts.append([words[-2], words[-1], None])
 
-                self.bot.database.execute(
-                    "INSERT OR REPLACE INTO markov VALUES (?, ?, ?, ?, ?)",
-                    [event["channel"].id]+insert+[frequency])
+        for insert in inserts:
+            frequency = self.bot.database.execute_fetchone("""SELECT
+                frequency FROM markov WHERE channel_id=? AND first_word=?
+                AND second_word=? AND third_word=?""",
+                [channel_id]+insert)
+            frequency = (frequency or [0])[0]+1
+
+            self.bot.database.execute(
+                "INSERT OR REPLACE INTO markov VALUES (?, ?, ?, ?, ?)",
+                [channel_id]+insert+[frequency])
 
     def _choose(self, words):
         words, frequencies = list(zip(*words))
@@ -60,7 +85,7 @@ class Module(ModuleManager.BaseModule):
 
     def _markov_for(self, channel, stdout, stderr):
         if not channel.get_setting("markov", False):
-            stderr.write("Markov chains not enabled in this channel")
+            stderr.write(NO_MARKOV)
         else:
             out = self._generate(channel.id)
             if not out == None:
