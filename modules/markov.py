@@ -28,10 +28,11 @@ class Module(ModuleManager.BaseModule):
 
         page = utils.http.request(event["args_split"][0])
         if page.code == 200:
-            for line in page.data.split("\n"):
+            for line in page.data.decode("utf8").split("\n"):
                 self._create(event["target"].id, line.strip("\r").split(" "))
+            event["stdout"].write("Log imported")
         else:
-            event["stdout"].write("Failed to load log (%d)" % page.code)
+            event["stderr"].write("Failed to load log (%d)" % page.code)
 
     def _create(self, channel_id, words):
         words = list(filter(None, words))
