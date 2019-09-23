@@ -111,7 +111,7 @@ class Module(ModuleManager.BaseModule):
                 stderr.write("Failed to generate markov chain")
 
     def _generate(self, channel_id, first_word):
-        if start == None:
+        if first_word == None:
             first_words = self.bot.database.execute_fetchall("""SELECT
                 third_word, frequency FROM markov WHERE channel_id=? AND
                 first_word IS NULL AND second_word IS NULL AND third_word
