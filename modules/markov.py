@@ -1,4 +1,4 @@
-import random
+import random, threading
 from src import ModuleManager, utils
 
 NO_MARKOV = "Markov chains not enabled in this channel"
@@ -26,13 +26,26 @@ class Module(ModuleManager.BaseModule):
         if not event["target"].get_setting("markov", False):
             raise utils.EventError(NO_MARKOV)
 
+        if not self._load_thread == None:
+            raise utils.EventError("Log loading already in progress")
+
         page = utils.http.request(event["args_split"][0])
         if page.code == 200:
-            for line in page.data.decode("utf8").split("\n"):
-                self._create(event["target"].id, line.strip("\r").split(" "))
-            event["stdout"].write("Log imported")
+            event["stdout"].write("Importing...")
+            self._load_thread = threading.Thread(target=self._load_loop,
+                args=[event["target"].id, page.data])
+            self._load_thread.daemon = True
+            self._load_thread.start()
         else:
             event["stderr"].write("Failed to load log (%d)" % page.code)
+
+    def _load_loop(self, channel_id, data):
+        for line in data.decode("utf8").split("\n"):
+            line = line.strip("\r").split(" ")
+            self.bot.trigger(self._create_factory(channel_id, line))
+        self._load_thread = None
+    def _create_factory(self, channel_id, line):
+        return lambda: self._create(channel_id, line)
 
     def _create(self, channel_id, words):
         words = list(filter(None, words))
