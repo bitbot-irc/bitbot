@@ -85,7 +85,8 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("channel_only", True)
     @utils.kwarg("help", "Generate a markov chain for the current channel")
     def markov(self, event):
-        self._markov_for(event["target"], event["stdout"], event["stderr"])
+        self._markov_for(event["target"], event["stdout"], event["stderr"],
+            first_word=(event["args_split"] or [None])[0])
 
     @utils.hook("received.command.markovfor")
     @utils.kwarg("min_args", 1)
@@ -99,23 +100,27 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Unknown channel")
 
-    def _markov_for(self, channel, stdout, stderr):
+    def _markov_for(self, channel, stdout, stderr, first_word=None):
         if not channel.get_setting("markov", False):
             stderr.write(NO_MARKOV)
         else:
-            out = self._generate(channel.id)
+            out = self._generate(channel.id, first_word)
             if not out == None:
                 stdout.write(out)
             else:
                 stderr.write("Failed to generate markov chain")
 
-    def _generate(self, channel_id):
-        first_words = self.bot.database.execute_fetchall("""SELECT third_word,
-            frequency FROM markov WHERE channel_id=? AND first_word IS NULL AND
-            second_word IS NULL AND third_word NOT NULL""", [channel_id])
-        if not first_words:
-            return None
-        first_word = self._choose(first_words)
+    def _generate(self, channel_id, first_word):
+        if start == None:
+            first_words = self.bot.database.execute_fetchall("""SELECT
+                third_word, frequency FROM markov WHERE channel_id=? AND
+                first_word IS NULL AND second_word IS NULL AND third_word
+                NOT NULL""", [channel_id])
+            if not first_words:
+                return None
+            first_word = self._choose(first_words)
+        else:
+            first_word = first_word.lower()
 
         second_words = self.bot.database.execute_fetchall("""SELECT third_word,
             frequency FROM markov WHERE channel_id=? AND first_word IS NULL AND
