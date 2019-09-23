@@ -4,6 +4,8 @@ from src import ModuleManager, utils
 NO_MARKOV = "Markov chains not enabled in this channel"
 
 class Module(ModuleManager.BaseModule):
+    _load_thread = None
+
     def on_load(self):
         if not self.bot.database.has_table("markov"):
             self.bot.database.execute("""CREATE TABLE markov
