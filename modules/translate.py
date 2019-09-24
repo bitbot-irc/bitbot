@@ -38,8 +38,8 @@ class Module(ModuleManager.BaseModule):
             "client": "gtx", "sl": source_language,
             "tl": target_language, "dt": "t", "q": phrase})
 
-        if page and not page.data.startswith("[null,null,"):
-            data = page.data
+        if page and not page.data.startswith(b"[null,null,"):
+            data = page.data.decode("utf8")
             while ",," in data:
                 data = data.replace(",,", ",null,")
                 data = data.replace("[,", "[null,")
