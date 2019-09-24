@@ -13,6 +13,9 @@ KICK_REASON_SETTING = utils.Setting("default-kick-reason",
 @utils.export("channelset", utils.Setting("ban-format",
     "Set ban format ($n = nick, $u = username, $h = hostname, $a = account)",
     example="*!$u@$h"))
+@utils.export("serverset", utils.Setting("ban-format-account",
+    "Set ban format for users with accounts ($a = account)", example="~a:$a"))
+
 @utils.export("serverset", utils.OptionsSetting(
     ["qmode", "insp", "unreal", "none"], "mute-method",
     "Set this server's method of muting users"))
@@ -64,10 +67,13 @@ class Module(ModuleManager.BaseModule):
                 .replace("$a", user.get_identified_account()))
         return "$".join(mask_split)
     def _get_hostmask(self, channel, user):
+        if not user.get_identified_account() == None:
+            account_format = channel.get_setting("ban-format-account", None)
+            if not account_format == None:
+                return self._format_hostmask(user, account_format)
+
         format = channel.get_setting("ban-format", "*!$u@$h")
-        hostmask_split = [
-            self._format_hostmask(user, s) for s in format.split("$$")]
-        return "$".join(hostmask_split)
+        return self._format_hostmask(user, format)
 
     def _ban(self, server, channel, target, allow_hostmask, time, add):
         hostmask = None
