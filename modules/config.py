@@ -219,7 +219,7 @@ class Module(ModuleManager.BaseModule):
                     result.data))
             elif result.result == ConfigResults.Removed:
                 event["stdout"].write("Unset setting '%s'%s" %
-                    (setting, for_str))
+                    (setting.lstrip("-"), for_str))
         else:
             event["stdout"].write("Available config: %s" %
                 ", ".join(export_settings.keys()))
