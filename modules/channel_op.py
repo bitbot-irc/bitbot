@@ -61,7 +61,7 @@ class Module(ModuleManager.BaseModule):
     def _format_hostmask(self, user, s):
         mask_split = s.split("$$")
         for i, mask_part in enumerate(mask_split):
-            mask_split[i] = (s.replace("$n", user.nickname)
+            mask_split[i] = (mask_part.replace("$n", user.nickname)
                 .replace("$u", user.username)
                 .replace("$h", user.hostname)
                 .replace("$a", user.get_identified_account() or ""))
