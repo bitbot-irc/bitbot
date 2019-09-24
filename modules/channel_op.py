@@ -64,7 +64,7 @@ class Module(ModuleManager.BaseModule):
             mask_split[i] = (s.replace("$n", user.nickname)
                 .replace("$u", user.username)
                 .replace("$h", user.hostname)
-                .replace("$a", user.get_identified_account()))
+                .replace("$a", user.get_identified_account() or ""))
         return "$".join(mask_split)
     def _get_hostmask(self, channel, user):
         if not user.get_identified_account() == None:
