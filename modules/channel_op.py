@@ -168,8 +168,8 @@ class Module(ModuleManager.BaseModule):
     def tappend(self, event):
         event["target"].send_topic(event["target"].topic + event["args"])
 
-    def _mute_method(self, server, user):
-        mask = "*!*@%s" % user.hostname
+    def _mute_method(self, server, channel, user):
+        mask = self._get_hostmask(channel, user)
         mute_method = server.get_setting("mute-method", "qmode").lower()
 
         if mute_method == "qmode":
@@ -201,7 +201,8 @@ class Module(ModuleManager.BaseModule):
         if not event["target"].has_user(target_user):
             raise utils.EventError("No such user")
 
-        mode, mask = self._mute_method(event["server"], target_user)
+        mode, mask = self._mute_method(event["server"], event["target"],
+            target_user)
         if mode == None:
             raise utils.EventError("This network doesn't support mutes")
 
