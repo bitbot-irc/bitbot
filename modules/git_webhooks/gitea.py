@@ -124,7 +124,7 @@ class Gitea(object):
 
     def push(self, full_name, data):
         outputs = []
-        branch = data["ref"].split("/", 2)[2]
+        branch = data["ref"].rpartition("/")[2]
         branch = utils.irc.color(branch, colors.COLOR_BRANCH)
         author = utils.irc.bold(data["pusher"]["login"])
 
