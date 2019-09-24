@@ -84,6 +84,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.markov")
     @utils.kwarg("channel_only", True)
     @utils.kwarg("help", "Generate a markov chain for the current channel")
+    @utils.kwarg("usage", "[first-word]")
     def markov(self, event):
         self._markov_for(event["target"], event["stdout"], event["stderr"],
             first_word=(event["args_split"] or [None])[0])
@@ -92,11 +93,12 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("min_args", 1)
     @utils.kwarg("permission", "markovfor")
     @utils.kwarg("help", "Generate a markov chain for a given channel")
-    @utils.kwarg("usage", "<channel>")
+    @utils.kwarg("usage", "<channel> [first-word]")
     def markov_for(self, event):
         if event["args_split"][0] in event["server"].channels:
             channel = event["server"].channels.get(event["args_split"][0])
-            self._markov_for(channel, event["stdout"], event["stderr"])
+            self._markov_for(channel, event["stdout"], event["stderr"],
+                first_word=(event["args_split"][1:] or [None])[0])
         else:
             event["stderr"].write("Unknown channel")
 
