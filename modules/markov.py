@@ -121,13 +121,18 @@ class Module(ModuleManager.BaseModule):
             if not first_words:
                 return None
             first_word = self._choose(first_words)
+
+            second_words = self.bot.database.execute_fetchall("""SELECT
+                third_word, frequency FROM markov WHERE channel_id=? AND
+                first_word IS NULL AND second_word=? AND third_word NOT NULL""",
+                [channel_id, first_word])
+            if not second_words:
+                return None
+
+            second_word = self._choose(second_words)
+            words = [first_word, second_word]
         else:
             first_word = first_word.lower()
-
-        second_words = self.bot.database.execute_fetchall("""SELECT third_word,
-            frequency FROM markov WHERE channel_id=? AND first_word IS NULL AND
-            second_word=? AND third_word NOT NULL""", [channel_id, first_word])
-        if not second_words:
             second_two_words = self.bot.database.execute_fetchall("""SELECT
                 second_word, third_word, frequency FROM markov WHERE
                 channel_id=? AND first_word=? AND second_word NOT NULL AND
@@ -138,9 +143,6 @@ class Module(ModuleManager.BaseModule):
             second_word, third_word = self._choose(
                 [[[s, t], f] for s, t, f in second_two_words])
             words = [first_word, second_word, third_word]
-        else:
-            second_word = self._choose(second_words)
-            words = [first_word, second_word]
 
         for i in range(30):
             two_words = words[-2:]
