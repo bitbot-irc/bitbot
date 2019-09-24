@@ -56,10 +56,13 @@ class Module(ModuleManager.BaseModule):
             event["args_split"][1:])
 
     def _format_hostmask(self, user, s):
-        return (s.replace("$n", user.nickname)
-            .replace("$u", user.username)
-            .replace("$h", user.hostname)
-            .replace("$a", user.get_identified_account()))
+        mask_split = s.split("$$")
+        for i, mask_part in enumerate(mask_split):
+            mask_split[i] = (s.replace("$n", user.nickname)
+                .replace("$u", user.username)
+                .replace("$h", user.hostname)
+                .replace("$a", user.get_identified_account()))
+        return "$".join(mask_split)
     def _get_hostmask(self, channel, user):
         format = channel.get_setting("ban-format", "*!$u@$h")
         hostmask_split = [
