@@ -82,7 +82,7 @@ class Module(ModuleManager.BaseModule):
 
         items = actor.outbox.load()
         for item in items:
-            if item["object"]["inReplyTo"] == None:
+            if item["object"].get("inReplyTo", None) == None:
                 first_item = item
                 break
 
