@@ -35,6 +35,7 @@ DEFAULT_USERAGENT = ("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
 RESPONSE_MAX = (1024*1024)*100
 SOUP_CONTENT_TYPES = ["text/html", "text/xml", "application/xml"]
 DECODE_CONTENT_TYPES = ["text/plain"]+SOUP_CONTENT_TYPES
+UTF8_CONTENT_TYPES = ["application/json"]
 
 class HTTPException(Exception):
     pass
@@ -63,7 +64,7 @@ class Request(object):
             detect_encoding: bool=True,
 
             method: str="GET", parser: str="lxml", id: str=None,
-            fallback_encoding="iso-8859-1", content_type: str=None,
+            fallback_encoding: str=None, content_type: str=None,
             proxy: str=None, useragent: str=None,
 
             **kwargs):
@@ -186,6 +187,12 @@ def _request(request_obj: Request) -> Response:
 
     content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
     encoding = response.encoding or request_obj.fallback_encoding
+
+    if not encoding:
+        if content_type in UTF8_CONTENT_TYPES:
+            encoding = "utf8"
+        else:
+            encoding = "iso-8859-1"
 
     if (request_obj.detect_encoding and
             content_type and content_type in SOUP_CONTENT_TYPES):
