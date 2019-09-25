@@ -1,4 +1,4 @@
-import random, threading
+import random, re, threading
 from src import ModuleManager, utils
 
 NO_MARKOV = "Markov chains not enabled in this channel"
@@ -14,10 +14,14 @@ class Module(ModuleManager.BaseModule):
                 FOREIGN KEY (channel_id) REFERENCES channels(channel_id),
                 PRIMARY KEY (channel_id, first_word, second_word))""")
 
-    @utils.hook("received.message.channel")
+    @utils.hook("command.regex")
+    @utils.kwarg("expect_output", False)
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "markov-trigger")
+    @utils.kwarg("pattern", re.compile(".+"))
     def channel_message(self, event):
-        if event["channel"].get_setting("markov", False):
-            self._create(event["channel"].id, event["message_split"])
+        if event["target"].get_setting("markov", False):
+            self._create(event["target"].id, event["match"].group(0))
 
     @utils.hook("received.command.markovlog")
     @utils.kwarg("min_args", 1)
@@ -43,14 +47,13 @@ class Module(ModuleManager.BaseModule):
 
     def _load_loop(self, channel_id, data):
         for line in data.decode("utf8").split("\n"):
-            line = line.strip("\r").split(" ")
-            self.bot.trigger(self._create_factory(channel_id, line))
+            self.bot.trigger(self._create_factory(channel_id, line.strip()))
         self._load_thread = None
     def _create_factory(self, channel_id, line):
         return lambda: self._create(channel_id, line)
 
-    def _create(self, channel_id, words):
-        words = list(filter(None, words))
+    def _create(self, channel_id, line):
+        words = list(filter(None, line.split(" ")))
         words = [word.lower() for word in words]
         words_n = len(words)
 
