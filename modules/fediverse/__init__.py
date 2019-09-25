@@ -84,6 +84,7 @@ class Module(ModuleManager.BaseModule):
         for item in items:
             if item["object"]["inReplyTo"] == None:
                 first_item = item
+                break
 
         if not first_item:
             raise utils.EventError("No toots found")
