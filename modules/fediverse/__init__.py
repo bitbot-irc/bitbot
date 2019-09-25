@@ -93,7 +93,7 @@ class Module(ModuleManager.BaseModule):
         shorturl = self.exports.get_one("shorturl")(event["server"], url,
             context=event["target"])
 
-        if not cw == None:
+        if cw:
             out = "CW: %s - %s" % (cw, shorturl)
         else:
             out = "%s - %s" % (out, shorturl)
