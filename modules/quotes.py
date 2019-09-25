@@ -3,6 +3,8 @@
 import random, time
 from src import ModuleManager, utils
 
+@utils.export("channelset", utils.BoolSetting("channel-quotes",
+    "Whether or not quotes added from this channel are kept in this channel"))
 class Module(ModuleManager.BaseModule):
     def category_and_quote(self, s):
         category, sep, quote = s.partition("=")
@@ -26,9 +28,15 @@ class Module(ModuleManager.BaseModule):
         """
         category, quote = self.category_and_quote(event["args"])
         if category and quote:
-            quotes = self._get_quotes(event["server"], category)
+            target = event["server"]
+            if event["is_channel"] and event["target"].get_setting(
+                    "channel-quotes", False):
+                target = event["target"]
+
+            quotes = self._get_quotes(target, category)
             quotes.append([event["user"].name, int(time.time()), quote])
-            self._set_quotes(event["server"], category, quotes)
+            self._set_quotes(target, category, quotes)
+
             event["stdout"].write("Quote added")
         else:
             event["stderr"].write("Please provide a category AND quote")
@@ -78,6 +86,9 @@ class Module(ModuleManager.BaseModule):
         """
         category, search = self.category_and_quote(event["args"])
         quotes = event["server"].get_setting("quotes-%s" % category, [])
+        if event["is_channel"]:
+            quotes += self._get_quotes(event["target"], category)
+
         if search:
             search_lower = search.lower()
             quotes = [q for q in quotes if search_lower in q[-1].lower()]
@@ -99,14 +110,21 @@ class Module(ModuleManager.BaseModule):
     def quote_grab(self, event):
         line = event["target"].buffer.find_from(event["args_split"][0])
         if line:
-            quotes = self._get_quotes(event["server"], line.sender)
+            target = event["server"]
+            if event["target"].get_setting("channel-quotes", False):
+                target = event["target"]
+
+            quotes = self._get_quotes(target, line.sender)
+
             text = None
             if line.action:
                 text = "* %s %s" % (line.sender, line.message)
             else:
                 text = "<%s> %s" % (line.sender, line.message)
+
             quotes.append([event["user"].name, int(time.time()), text])
-            self._set_quotes(event["server"], line.sender, quotes)
+            self._set_quotes(target, line.sender, quotes)
+
             event["stdout"].write("Quote added")
         else:
             event["stderr"].write("Nothing found to quote")
