@@ -80,14 +80,17 @@ class Module(ModuleManager.BaseModule):
         :permission: disconnect
         """
         id = event["server"].id
+        alias = event["server"].alias
         if event["args"]:
-            alias = event["args"]
+            alias = event["args_split"][0]
             id = self.bot.database.servers.get_by_alias(alias)
             if id == None:
                 raise utils.EventError("Unknown server alias")
 
         server = self.bot.get_server_by_id(id)
+        alias = None
         if not server == None:
+            alias = str(server)
             server.disconnect()
             self.bot.disconnect(server)
         elif id in self.bot.reconnections:
