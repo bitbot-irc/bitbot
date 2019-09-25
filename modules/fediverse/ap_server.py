@@ -139,7 +139,7 @@ class Server(object):
 
             cert_filename = self.bot.config["tls-certificate"]
             with open(cert_filename) as cert_file:
-                cert = cert_file.read().strip()
+                cert = cert_file.read()
 
             event["response"].content_type = ap_utils.LD_TYPE
             event["response"].write_json({
