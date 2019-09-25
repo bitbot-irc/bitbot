@@ -138,8 +138,7 @@ class Server(object):
             outbox = self._ap_outbox_url(event["url_for"])
 
             cert_filename = self.bot.config["tls-certificate"]
-            with open(cert_filename) as cert_file:
-                cert = cert_file.read()
+            pubkey = ap_security.public_key(cert_filename)
 
             event["response"].content_type = ap_utils.LD_TYPE
             event["response"].write_json({
@@ -153,7 +152,7 @@ class Server(object):
                 "publicKey": {
                     "id": "%s#key" % self_id,
                     "owner": self_id,
-                    "publicKeyPem": cert
+                    "publicKeyPem": pubkey
                 }
             })
         else:
