@@ -99,7 +99,8 @@ class Module(ModuleManager.BaseModule):
         for username in usernames:
             user_ids.append(str(api.get_user(screen_name=username).id))
 
-        self._stream = tweepy.Stream(auth=auth, listener=BitBotStreamListener())
+        self._stream = tweepy.Stream(auth=auth, listener=BitBotStreamListener(),
+            tweet_mode="extended")
 
         self._thread = threading.Thread(
             target=lambda: self._stream.filter(follow=user_ids))
