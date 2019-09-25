@@ -95,7 +95,7 @@ class Server(object):
     def _ap_keyid_url(self, url_for):
         return "%s#key" % self._ap_self_url(url_for)
     def _ap_uuid_url(self, url_for):
-        return self._ap_url(url_for, "ap-id", [str(uuid.uuid4())])
+        return self._ap_url(url_for, "ap-id", str(uuid.uuid4()))
 
     def ap_webfinger(self, event):
         resource = event["params"].get("resource", None)
