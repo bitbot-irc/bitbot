@@ -77,12 +77,16 @@ class Module(ModuleManager.BaseModule):
         actor = ap_actor.Actor(actor_url)
         if not actor.load():
             raise utils.EventError("Failed to find user")
-        items = actor.outbox.load()
 
-        if not items:
+        items = actor.outbox.load()
+        for item in items:
+            if item["object"]["inReplyTo"] == None:
+                first_item = item
+
+        if not first_item:
             raise utils.EventError("No toots found")
 
-        cw, out, url = ap_utils.format_note(actor, items[0])
+        cw, out, url = ap_utils.format_note(actor, first_item)
         shorturl = self.exports.get_one("shorturl")(event["server"], url,
             context=event["target"])
 
