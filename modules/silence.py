@@ -19,11 +19,13 @@ class Module(ModuleManager.BaseModule):
                 target.del_setting("silence-until")
         return False
 
-    @utils.hook("received.command.silence", channel_only=True)
+    @utils.hook("received.command.silence")
+    @utils.kwarg("channel_only", True)
     @utils.kwarg("help", "Prevent me saying anything for a period of time "
         "(default: 5 minutes)")
     @utils.kwarg("usage", "[+time]")
     @utils.kwarg("require_mode", "high")
+    @utils.kwarg("require_access", "silence")
     @utils.kwarg("permission", "silence")
     def silence(self, event):
         duration = SILENCE_TIME
@@ -41,6 +43,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("unsilence", True)
     @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "high")
+    @utils.kwarg("require_access", "unsilence")
     @utils.kwarg("permission", "unsilence")
     def unsiltence(self, event):
         silence_until = event["target"].get_setting("silence-until", None)
