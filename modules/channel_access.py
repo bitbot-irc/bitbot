@@ -18,9 +18,10 @@ class Module(ModuleManager.BaseModule):
             if require_access:
                 if self._has_channel_access(target, event["user"],
                         require_access):
-                    return utils.consts.PERMISSION_FORCE_SUCCESS
+                    return utils.consts.PERMISSION_FORCE_SUCCESS, None
                 else:
-                    return "You do not have permission to do this"
+                    return (utils.consts.PERMISSION_ERROR,
+                        "You do not have permission to do this")
 
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):

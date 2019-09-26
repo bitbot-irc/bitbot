@@ -57,7 +57,7 @@ class Module(ModuleManager.BaseModule):
             silence_until = event["target"].get_setting("silence-until", None)
             if silence_until:
                 if self._is_silenced(event["target"]):
-                    return utils.consts.PERMISSION_HARD_FAIL
+                    return utils.consts.PERMISSION_HARD_FAIL, None
 
     @utils.hook("unknown.command")
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)

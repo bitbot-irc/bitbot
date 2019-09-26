@@ -141,16 +141,20 @@ class Module(ModuleManager.BaseModule):
         force_success = False
         error = None
         for returned in returns:
-            if returned == utils.consts.PERMISSION_HARD_FAIL:
-                hard_fail = True
-                break
-            elif returned == utils.consts.PERMISSION_FORCE_SUCCESS:
-                force_success = True
-            elif returned:
-                error = returned
+            if returned:
+                type, message = returned
+                if type == utils.consts.PERMISSION_HARD_FAIL:
+                    error = message
+                    hard_fail = True
+                    break
+                elif type == utils.consts.PERMISSION_FORCE_SUCCESS:
+                    force_success = True
+                    break
+                elif type == utils.consts.PERMISSION_ERROR:
+                    error = returned
 
         if hard_fail:
-            return False, None
+            return False, error
         elif not force_success and error:
             return False, error
         else:
@@ -242,10 +246,12 @@ class Module(ModuleManager.BaseModule):
         if min_args and len(event["args_split"]) < min_args:
             usage = self._get_usage(event["hook"], event["command"],
                 event["command_prefix"])
+            error = None
             if usage:
-                return "Not enough arguments, usage: %s" % usage
+                error = "Not enough arguments, usage: %s" % usage
             else:
-                return "Not enough arguments (minimum: %d)" % min_args
+                error = "Not enough arguments (minimum: %d)" % min_args
+            return utils.consts.PERMISSION_HARD_FAIL, error
 
     def _command_prefix(self, server, channel):
         return channel.get_setting("command-prefix",
@@ -429,13 +435,15 @@ class Module(ModuleManager.BaseModule):
     def check_command_self(self, event):
         if event["server"].irc_lower(event["request_args"][0]
                 ) == event["user"].name:
-            return utils.consts.PERMISSION_FORCE_SUCCESS
+            return utils.consts.PERMISSION_FORCE_SUCCESS, None
         else:
-            return "You do not have permission to do this"
+            return (utils.consts.PERMISSION_ERROR,
+                "You do not have permission to do this")
 
     @utils.hook("check.command.is-channel")
     def check_command_is_channel(self, event):
         if event["is_channel"]:
-            return utils.consts.PERMISSION_FORCE_SUCCESS
+            return utils.consts.PERMISSION_FORCE_SUCCESS, None
         else:
-            return "This command can only be used in-channel"
+            return (utils.consts.PERMISSION_ERROR,
+                "This command can only be used in-channel")

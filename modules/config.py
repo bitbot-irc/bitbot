@@ -102,9 +102,10 @@ class Module(ModuleManager.BaseModule):
                     else:
                         context = context[0]
 
-                    return "Please set %s, e.g.: %sconfig %s %s %s" % (
+                    error = "Please set %s, e.g.: %sconfig %s %s %s" % (
                         require_setting, event["command_prefix"], context,
                         require_setting, example)
+                    return utils.consts.PERMISSION_ERROR, error
 
     def _get_export_setting(self, context):
         settings = self.exports.get_all(context)

@@ -192,7 +192,7 @@ class Module(ModuleManager.BaseModule):
 
     def _check_command(self, event, permission, authenticated):
         if event["user"].admin_master:
-            return utils.consts.PERMISSION_FORCE_SUCCESS
+            return utils.consts.PERMISSION_FORCE_SUCCESS, None
 
         identity_mechanism = event["server"].get_setting("identity-mechanism",
             "internal")
@@ -213,18 +213,21 @@ class Module(ModuleManager.BaseModule):
             has_permission = permission and (
                 permission in permissions or "*" in permissions)
             if not identified_account or not has_permission:
-                return "You do not have permission to do that"
+                return (utils.consts.PERMISSION_ERROR,
+                    "You do not have permission to do that")
             else:
-                return utils.consts.PERMISSION_FORCE_SUCCESS
+                return utils.consts.PERMISSION_FORCE_SUCCESS, None
         elif authenticated:
             if not identified_account:
+                error = None
                 if identity_mechanism == "internal":
-                    return REQUIRES_IDENTIFY_INTERNAL % (
+                    error = REQUIRES_IDENTIFY_INTERNAL % (
                         event["server"].nickname, event["server"].nickname)
                 else:
-                    return REQUIRES_IDENTIFY
+                    error = REQUIRES_IDENTIFY
+                return utils.consts.PERMISSION_ERROR, error
             else:
-                return utils.consts.PERMISSION_FORCE_SUCCESS
+                return utils.consts.PERMISSION_FORCE_SUCCESS, None
 
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):

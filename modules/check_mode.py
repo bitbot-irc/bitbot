@@ -21,9 +21,10 @@ class Module(ModuleManager.BaseModule):
 
             if not event["target"].mode_or_above(event["user"],
                     require_mode):
-                return "You do not have permission to do this"
+                return (utils.consts.PERMISSION_ERROR,
+                    "You do not have permission to do this")
             else:
-                return utils.consts.PERMISSION_FORCE_SUCCESS
+                return utils.consts.PERMISSION_FORCE_SUCCESS, None
 
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
