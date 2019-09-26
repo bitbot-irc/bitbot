@@ -4,7 +4,7 @@ import random, re
 from src import ModuleManager, utils
 
 ERROR_FORMAT = "Incorrect format! Format must be [number]d[number], e.g. 1d20"
-RE_DICE = re.compile("([1-9]\d*)d([1-9]\d*)((?:[-+]\d+)*)", re.I)
+RE_DICE = re.compile("([1-9]\d*)d([1-9]\d*)((?:[-+][1-9]\d*)*)", re.I)
 RE_MODIFIERS = re.compile("([-+]\d+)")
 
 MAX_DICE = 6
@@ -39,7 +39,7 @@ class Module(ModuleManager.BaseModule):
                     total_n -= int(modifier[1:])
 
             total = ""
-            if len(results) > 1:
+            if len(results) > 1 or modifiers:
                 total = " (total: %d)" % total_n
 
             results_str = ", ".join(str(r) for r in results)
