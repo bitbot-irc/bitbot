@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
     def roll_dice(self, event):
         """
         :help: Roll some dice, DND style
-        :usage: [1-5]d[1-20]
+        :usage: [1-6]d[1-30]
         """
         match = RE_DICE.match(event["args_split"][0])
         if match:
@@ -24,8 +24,8 @@ class Module(ModuleManager.BaseModule):
 
             if dice_count > 6:
                 raise utils.EventError("Max number of dice is 6")
-            if side_count > 20:
-                raise utils.EventError("Max number of sides is 20")
+            if side_count > 30:
+                raise utils.EventError("Max number of sides is 30")
 
             results = random.choices(range(1, side_count+1), k=dice_count)
 
