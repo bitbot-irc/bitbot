@@ -4,7 +4,7 @@ import random, re
 from src import ModuleManager, utils
 
 ERROR_FORMAT = "Incorrect format! Format must be [number]d[number], e.g. 1d20"
-RE_DICE = re.compile("^([1-9]\d*)d([1-9]\d*)((?:[-+][1-9]\d{,2})*)$", re.I)
+RE_DICE = re.compile("^([1-9]\d*)?d([1-9]\d*)((?:[-+][1-9]\d{,2})*)$", re.I)
 RE_MODIFIERS = re.compile("([-+]\d+)")
 
 MAX_DICE = 6
@@ -19,7 +19,7 @@ class Module(ModuleManager.BaseModule):
         match = RE_DICE.match(event["args_split"][0])
         if match:
             roll = match.group(0)
-            dice_count = int(match.group(1))
+            dice_count = int(match.group(1) or "1")
             side_count = int(match.group(2))
             modifiers = RE_MODIFIERS.findall(match.group(3))
 
