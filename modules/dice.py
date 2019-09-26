@@ -9,6 +9,7 @@ RE_MODIFIERS = re.compile("([-+]\d+)")
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.roll", min_args=1)
+    @utils.hook("received.command.dice", alias_of="roll")
     def roll_dice(self, event):
         """
         :help: Roll some dice, DND style
