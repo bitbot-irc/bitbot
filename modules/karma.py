@@ -8,7 +8,7 @@ from src import EventManager, ModuleManager, utils
 WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
-REGEX_KARMA = re.compile(r"^(?:(\S+:) )?(.*)(\+{2}|\-{2})$")
+REGEX_KARMA = re.compile(r'(?:\((.+?)\)|(\S+))(\+\+|--)(\s+|$)')
 
 @utils.export("channelset", utils.BoolSetting("karma-pattern",
     "Enable/disable parsing ++/-- karma format"))
@@ -78,20 +78,20 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("pattern", REGEX_KARMA)
     def channel_message(self, event):
         pattern = event["target"].get_setting("karma-pattern", False)
-        if pattern:
-            positive = event["match"].group(3)[0] == "+"
+        if not pattern:
+            return
+        positive = event["match"].group(3) == "++" # if match group 3 is ++, add karma
 
-            target = event["match"].group(2).strip().rstrip("".join(WORD_STOP))
-            if event["match"].group(1):
-                if not target:
-                    target = event["match"].group(1)[:-1]
-                elif not event["server"].has_user(event["match"].group(1)[:-1]):
-                    target = "%s %s" % (event["match"].group(1), target)
-
-            if target:
-                success, message = self._karma(event["server"], event["user"],
-                    target, positive)
-                event["stdout" if success else "stderr"].write(message)
+        # There are two possible match groups, an arbitrary length text inside (), or a single word followed by ++/--
+        # group 1 is the former, group 2 is the latter
+        target = event["match"].group(1) if event["match"].group(1) else event["match"].group(2)
+        target = target.strip().rstrip("".join(WORD_STOP)) # Strips "," " " or ":" from target
+        
+        # if we have a target...
+        if target:
+            success, message = self._karma(event["server"], event["user"],
+                target, positive)
+            event["stdout" if success else "stderr"].write(message)
 
     @utils.hook("received.command.addpoint")
     @utils.hook("received.command.rmpoint")
