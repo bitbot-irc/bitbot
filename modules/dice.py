@@ -11,12 +11,18 @@ MAX_DICE = 6
 MAX_SIDES = 100
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.roll", min_args=1)
+    @utils.hook("received.command.roll")
     @utils.hook("received.command.dice", alias_of="roll")
     @utils.kwarg("help", "Roll dice DND-style")
     @utils.kwarg("usage", "[1-%s]d[1-%d]" % (MAX_DICE, MAX_SIDES))
     def roll_dice(self, event):
-        match = RE_DICE.match(event["args_split"][0])
+        args = None
+        if event["args_split"]:
+            args = event["args_split"][0]
+        else:
+            args = "1d6"
+
+        match = RE_DICE.match(args)
         if match:
             roll = match.group(0)
             dice_count = int(match.group(1) or "1")
