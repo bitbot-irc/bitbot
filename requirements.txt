@@ -1,4 +1,5 @@
 beautifulsoup4==4.8.0
+cryptography==2.7
 dnspython==1.16.0
 feedparser==5.2.1
 lxml==4.4.1
