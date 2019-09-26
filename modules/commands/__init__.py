@@ -151,7 +151,7 @@ class Module(ModuleManager.BaseModule):
                     force_success = True
                     break
                 elif type == utils.consts.PERMISSION_ERROR:
-                    error = returned
+                    error = message
 
         if hard_fail:
             return False, error
