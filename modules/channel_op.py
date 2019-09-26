@@ -49,7 +49,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("No such user")
 
     @utils.hook("received.command.kick")
-    @utils.hook("received.command.k", alias_of="k")
+    @utils.hook("received.command.k", alias_of="kick")
     @utils.kwarg("min_args", 1)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "kick")
