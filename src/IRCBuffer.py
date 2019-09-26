@@ -67,12 +67,18 @@ class Buffer(object):
         return None
 
     def find_from(self, nickname: str) -> typing.Optional[BufferLine]:
+        return (self.find_many_from(nickname, 1) or [None])[0]
+    def find_many_from(self, nickname: str, max: int
+            ) -> typing.List[BufferLine]:
         nickname_lower = self.server.irc_lower(nickname)
+        found_lines = []
         for line in self._lines:
             if (not line.from_self
                     and self.server.irc_lower(line.sender) == nickname_lower):
-                return line
-        return None
+                found_lines.append(line)
+                if len(found_lines) == max:
+                    break
+        return found_lines
 
     def skip_next(self):
         self._skip_next = True
