@@ -107,20 +107,32 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.grab", alias_of="quotegrab")
     @utils.hook("received.command.quotegrab", min_args=1, channel_only=True)
+    @utils.kwarg("usage", "<nickname> [line-count]")
     def quote_grab(self, event):
-        line = event["target"].buffer.find_from(event["args_split"][0])
-        if line:
+        line_count = 1
+        if len(event["args_split"]) > 1:
+            line_count = utils.parse.try_int(event["args_split"][1])
+            if not line_count or not (0 < line_count < 4):
+                raise utils.EventError(
+                    "Please provide a number between 1 and 3")
+
+        target = event["args_split"][0]
+        lines = event["target"].buffer.find_many_from(target, line_count)
+        if lines:
+            lines.reverse()
             target = event["server"]
             if event["target"].get_setting("channel-quotes", False):
                 target = event["target"]
 
-            quotes = self._get_quotes(target, line.sender)
+            quotes = self._get_quotes(target, target)
 
-            text = None
-            if line.action:
-                text = "* %s %s" % (line.sender, line.message)
-            else:
-                text = "<%s> %s" % (line.sender, line.message)
+            lines_str = []
+            for line in lines:
+                if line.action:
+                    lines_str.append("* %s %s" % (line.sender, line.message))
+                else:
+                    lines_str.append("<%s> %s" % (line.sender, line.message))
+            text = " ".join(lines_str)
 
             quotes.append([event["user"].name, int(time.time()), text])
             self._set_quotes(target, line.sender, quotes)
