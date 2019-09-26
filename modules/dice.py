@@ -45,3 +45,5 @@ class Module(ModuleManager.BaseModule):
             results_str = ", ".join(str(r) for r in results)
             event["stdout"].write("Rolled %s and got %s%s" % (
                 roll, results_str, total))
+        else:
+            event["stderr"].write("Invalid format. Example: 2d12+2")
