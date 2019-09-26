@@ -194,63 +194,58 @@ class Module(ModuleManager.BaseModule):
         if hook.get_kwarg("remove_empty", True):
             args_split = list(filter(None, args_split))
 
-        min_args = hook.get_kwarg("min_args")
-        if min_args and len(args_split) < min_args:
-            command_prefix = ""
-            if is_channel:
-                command_prefix = self._command_prefix(server, target)
-            usage = self._get_usage(hook, command, command_prefix)
-            if usage:
-                stderr.write("Not enough arguments, usage: %s" %
-                    usage).send(command_method)
-            else:
-                stderr.write("Not enough arguments (minimum: %d)" %
-                    min_args).send(command_method)
-        else:
-            event_kwargs = {"hook": hook, "user": user, "server": server,
-                "target": target, "is_channel": is_channel, "tags": tags,
-                "args_split": args_split, "command": command,
-                "args": " ".join(args_split), "stdout": stdout,
-                "stderr": stderr}
-            event_kwargs.update(kwargs)
+        event_kwargs = {"hook": hook, "user": user, "server": server,
+            "target": target, "is_channel": is_channel, "tags": tags,
+            "args_split": args_split, "command": command,
+            "args": " ".join(args_split), "stdout": stdout,
+            "stderr": stderr}
+        event_kwargs.update(kwargs)
 
-            check_assert = lambda check: self._check_assert(event_kwargs, check)
-            event_kwargs["check_assert"] = check_assert
+        check_assert = lambda check: self._check_assert(event_kwargs, check)
+        event_kwargs["check_assert"] = check_assert
 
-            check_success, check_message = self._check("preprocess",
-                event_kwargs)
-            if not check_success:
-                if check_message:
-                    stderr.write(check_message).send(command_method)
-                return True
+        check_success, check_message = self._check("preprocess", event_kwargs)
+        if not check_success:
+            if check_message:
+                stderr.write(check_message).send(command_method)
+            return True
 
-            new_event = self.events.on(hook.event_name).make_event(
-                **event_kwargs)
+        new_event = self.events.on(hook.event_name).make_event(**event_kwargs)
 
-            self.log.trace("calling command '%s': %s",
-                [command, new_event.kwargs])
+        self.log.trace("calling command '%s': %s", [command, new_event.kwargs])
 
-            try:
-                hook.call(new_event)
-            except utils.EventError as e:
-                stderr.write(str(e)).send(command_method)
-                return True
+        try:
+            hook.call(new_event)
+        except utils.EventError as e:
+            stderr.write(str(e)).send(command_method)
+            return True
 
-            if not hook.get_kwarg("skip_out", False):
-                has_out = stdout.has_text() or stderr.has_text()
-                if has_out:
-                    command_method = self._command_method(target, server)
-                    stdout.send(command_method)
-                    stderr.send(command_method)
-                    target.last_stdout = stdout
-                    target.last_stderr = stderr
-            ret = new_event.eaten
+        if not hook.get_kwarg("skip_out", False):
+            has_out = stdout.has_text() or stderr.has_text()
+            if has_out:
+                command_method = self._command_method(target, server)
+                stdout.send(command_method)
+                stderr.send(command_method)
+                target.last_stdout = stdout
+                target.last_stderr = stderr
+        ret = new_event.eaten
 
         if expect_output and message_tags and not has_out:
             server.send(utils.irc.protocol.tagmsg(target_str,
                 {"+draft/typing": "done"}), immediate=True)
 
         return ret
+
+    @utils.hook("preprocess.command")
+    def _check_min_args(self, event):
+        min_args = event["hook"].get_kwarg("min_args")
+        if min_args and len(event["args_split"]) < min_args:
+            usage = self._get_usage(event["hook"], event["command"],
+                event["command_prefix"])
+            if usage:
+                return "Not enough arguments, usage: %s" % usage
+            else:
+                return "Not enough arguments (minimum: %d)" % min_args
 
     def _command_prefix(self, server, channel):
         return channel.get_setting("command-prefix",
