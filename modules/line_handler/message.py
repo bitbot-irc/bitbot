@@ -34,9 +34,9 @@ def message(events, event):
     if from_self:
         user = event["server"].get_user(event["server"].nickname)
     else:
-        user = event["server"].get_user(event["line"].source.nickname)
-        user.username = event["line"].source.username
-        user.hostname = event["line"].source.hostname
+        user = event["server"].get_user(event["line"].source.nickname,
+            username=event["line"].source.username,
+            hostname=event["line"].source.hostname)
 
     # strip prefix_symbols from the start of target, for when people use
     # e.g. 'PRIVMSG +#channel :hi' which would send a message to only

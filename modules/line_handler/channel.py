@@ -44,9 +44,8 @@ def handle_353(event):
         if event["server"].has_capability_str("userhost-in-names"):
             hostmask = utils.irc.parse_hostmask(nickname)
             nickname = hostmask.nickname
-            user = event["server"].get_user(hostmask.nickname)
-            user.username = hostmask.username
-            user.hostname = hostmask.hostname
+            user = event["server"].get_user(hostmask.nickname,
+                username=hostmask.username, hostname=hostmask.hostname)
         else:
             user = event["server"].get_user(nickname)
         user.join_channel(channel)
@@ -68,10 +67,10 @@ def join(events, event):
             account = event["line"].args[1]
         realname = event["line"].args[2]
 
-    user = event["server"].get_user(event["line"].source.nickname)
+    user = event["server"].get_user(event["line"].source.nickname,
+        username=event["line"].source.username,
+        hostname=event["line"].source.hostname)
 
-    user.username = event["line"].source.username
-    user.hostname = event["line"].source.hostname
     if account:
         user.identified_account = account
         user.identified_account_id = event["server"].get_user(account).get_id()
