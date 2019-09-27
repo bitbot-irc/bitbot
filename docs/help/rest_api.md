@@ -21,4 +21,4 @@ Either set up a reverse proxy (with persisted Host header) with your favourite H
 #### Lighttpd
 * Copy example config file from [/docs/rest_api/lighttpd](/docs/rest_api/lighttpd) to `/etc/lighttpd/lighttpd.conf`
 * Edit `ssl.ca-file`, `ssl.pemfile` and `ssl.privkey`
-* `$ service lighttpd restat` as root
+* `$ service lighttpd restart` as root
