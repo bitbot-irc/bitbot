@@ -42,6 +42,7 @@ arg_parser.add_argument("--module", "-m",
     help="Execute an action against a specific module")
 arg_parser.add_argument("--module-args", "-M",
     help="Arguments to give in action against a specific module")
+arg_parser.add_argument("--external", "-e", help="External modules directory")
 
 arg_parser.add_argument("--startup-disconnects", "-D",
     help="Tolerate failed connections on startup", action="store_true")
@@ -87,8 +88,12 @@ events = EventManager.EventRoot(log).wrap()
 exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
 
-module_directories = [os.path.join(directory, "modules"),
-    os.path.join(directory, "external_modules")]
+module_directories = [os.path.join(directory, "modules")]
+if args.external:
+    module_directories.append(os.path.abspath(args.external))
+if "external-modules" in config:
+    module_directories.append(os.path.abspath(config["external-modules"]))
+
 modules = ModuleManager.ModuleManager(events, exports, timers, config, log,
     module_directories)
 
