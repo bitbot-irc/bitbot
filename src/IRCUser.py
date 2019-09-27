@@ -33,7 +33,9 @@ class User(IRCObject.Object):
         return self.nickname
 
     def hostmask(self) -> str:
-        return "%s!%s@%s" % (self.nickname, self.username, self.hostname)
+        if self.nickname and self.username and self.hostname:
+            return "%s!%s@%s" % (self.nickname, self.username, self.hostname)
+        return None
 
     def get_id(self)-> int:
         return (self.identified_account_id_override or
