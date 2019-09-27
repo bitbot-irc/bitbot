@@ -3,6 +3,7 @@ server.pid-file             = "/var/run/lighttpd.pid"
 server.username             = "www-data"
 server.groupname            = "www-data"
 server.port                 = 5000
+server.document-root        = "/dev/null"
 
 server.modules += ("mod_openssl", "mod_proxy", "mod_setenv")
 
@@ -12,8 +13,4 @@ ssl.pemfile = "/etc/letsencrypt/live/example.com/fullchain.pem"
 ssl.privkey = "/etc/letsencrypt/live/example.com/privkey.pem"
 
 proxy.server = ("" => (( "host" => "::1", "port" => 5001 )) )
-
-setenv.add-request-header = (
-    "Host" => "example.com:5000"
-)
-
+proxy.forwarded = ( "host" => 1 )
