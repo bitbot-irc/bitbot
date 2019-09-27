@@ -8,7 +8,7 @@ from src import EventManager, ModuleManager, utils
 WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
-REGEX_KARMA = re.compile(r'(?:\((.+?)\)|(\S+))(\+\+|--)(\s+|$)')
+REGEX_KARMA = re.compile(r'(?:\(([^)]+)\)|(\S+))(\+\+|--)(\s+|$)')
 
 @utils.export("channelset", utils.BoolSetting("karma-pattern",
     "Enable/disable parsing ++/-- karma format"))
@@ -84,9 +84,9 @@ class Module(ModuleManager.BaseModule):
 
         # There are two possible match groups, an arbitrary length text inside (), or a single word followed by ++/--
         # group 1 is the former, group 2 is the latter
-        target = event["match"].group(1) if event["match"].group(1) else event["match"].group(2)
+        target = event["match"].group(1) or event["match"].group(2)
         target = target.strip().rstrip("".join(WORD_STOP)) # Strips "," " " or ":" from target
-        
+
         # if we have a target...
         if target:
             success, message = self._karma(event["server"], event["user"],
