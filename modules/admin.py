@@ -4,7 +4,7 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.changenickname", min_args=1)
+    @utils.hook("received.command.nick", min_args=1)
     def change_nickname(self, event):
         """
         :help: Change my nickname
