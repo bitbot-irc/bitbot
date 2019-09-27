@@ -18,6 +18,9 @@ bot-channel              =
 module-blacklist         =
 module-whitelist         =
 
+# path to an external directory for modules to be found in
+external-modules         =
+
 # https://openweathermap.org/api
 openweathermap-api-key   =
 
