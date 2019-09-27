@@ -92,26 +92,27 @@ class ModuleManager(object):
             timers: Timers.Timers,
             config: Config.Config,
             log: Logging.Log,
-            directory: str):
+            directories: typing.List[str]):
         self.events = events
         self.exports = exports
         self.config = config
         self.timers = timers
         self.log = log
-        self.directory = directory
+        self.directories = directories
 
         self.modules = {} # type: typing.Dict[str, LoadedModule]
 
     def list_modules(self) -> typing.List[ModuleDefinition]:
         modules = []
 
-        for file_module in glob.glob(os.path.join(self.directory, "*.py")):
-            modules.append(self.define_module(ModuleType.FILE, file_module))
+        for directory in self.directories:
+            for file_module in glob.glob(os.path.join(directory, "*.py")):
+                modules.append(self.define_module(ModuleType.FILE, file_module))
 
-        for directory_module in glob.glob(os.path.join(
-                self.directory, "*", "__init__.py")):
-            modules.append(self.define_module(ModuleType.DIRECTORY,
-                directory_module))
+            for directory_module in glob.glob(os.path.join(
+                    directory, "*", "__init__.py")):
+                modules.append(self.define_module(ModuleType.DIRECTORY,
+                    directory_module))
         return sorted(modules, key=lambda module: module.name)
 
     def define_module(self, type: ModuleType, filename: str
@@ -127,23 +128,33 @@ class ModuleManager(object):
 
     def find_module(self, name: str) -> ModuleDefinition:
         type = ModuleType.FILE
-        path = self._module_path(name)
+        paths = self._module_paths(name)
 
-        if os.path.isdir(path):
-            type = ModuleType.DIRECTORY
-            path = os.path.join(path, "__init__.py")
-        else:
-            path = "%s.py" % path
+        path = None
+        for path in paths:
+            if os.path.isdir(path):
+                type = ModuleType.DIRECTORY
+                path = os.path.join(path, "__init__.py")
+            else:
+                possible_path = "%s.py" % path
+                if os.path.isfile(possible_path):
+                    path = possible_path
 
-        if not os.path.exists(path):
+            if path:
+                break
+
+        if not path:
             raise ModuleNotFoundException(name)
 
         return self.define_module(type, path)
 
     def _module_name(self, path: str) -> str:
         return os.path.basename(path).rsplit(".py", 1)[0].lower()
-    def _module_path(self, name: str) -> str:
-        return os.path.join(self.directory, name)
+    def _module_paths(self, name: str) -> str:
+        paths = []
+        for directory in self.directories:
+            paths.append(os.path.join(directory, name))
+        return paths
     def _import_name(self, name: str) -> str:
         return "bitbot_%s" % name
 

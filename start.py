@@ -86,8 +86,11 @@ config = Config.Config(args.config)
 events = EventManager.EventRoot(log).wrap()
 exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
+
+module_directories = [os.path.join(directory, "modules"),
+    os.path.join(directory, "external_modules")]
 modules = ModuleManager.ModuleManager(events, exports, timers, config, log,
-    os.path.join(directory, "modules"))
+    module_directories)
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
     exports, log, modules, timers)
