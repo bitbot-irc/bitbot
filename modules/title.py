@@ -21,8 +21,8 @@ class Module(ModuleManager.BaseModule):
             url = "http://%s" % url
 
         hostname = urllib.parse.urlparse(url).hostname
-        if utils.http.is_localhost(hostname):
-            self.log.warn("tried to get title of localhost: %s", [url])
+        if not utils.http.host_permitted(hostname):
+            self.log.warn("Attempted to get forbidden host: %s", [url])
             return -1, None
 
         try:

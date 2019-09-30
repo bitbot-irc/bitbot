@@ -287,7 +287,7 @@ def is_ip(addr: str) -> bool:
         return False
     return True
 
-def is_localhost(hostname: str) -> bool:
+def host_permitted(hostname: str) -> bool:
     if is_ip(hostname):
         ips = [ipaddress.ip_address(hostname)]
     else:
@@ -300,7 +300,7 @@ def is_localhost(hostname: str) -> bool:
                 )+links.get(netifaces.AF_INET6, []):
             address = ipaddress.ip_address(link["addr"].split("%", 1)[0])
             if address in ips:
-                return True
+                return False
     for ip in ips:
         if ip.version == 6 and ip.ipv4_mapped:
             ip = ip.ipv4_mapped
@@ -309,6 +309,6 @@ def is_localhost(hostname: str) -> bool:
                 ip.is_link_local or
                 ip.is_multicast or
                 ip.is_private):
-            return True
+            return False
 
-    return False
+    return True
