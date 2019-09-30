@@ -116,7 +116,7 @@ class Module(ModuleManager.BaseModule):
                 stderr.write("Failed to generate markov chain")
 
     def _generate(self, channel_id, first_words):
-        if first_word == None:
+        if not first_words:
             first_words = self.bot.database.execute_fetchall("""SELECT
                 third_word, frequency FROM markov WHERE channel_id=? AND
                 first_word IS NULL AND second_word IS NULL AND third_word
@@ -134,21 +134,20 @@ class Module(ModuleManager.BaseModule):
 
             second_word = self._choose(second_words)
             words = [first_word, second_word]
-        else:
-            if len(first_words) == 1:
-                first_word = first_word.lower()
-                second_two_words = self.bot.database.execute_fetchall("""SELECT
-                    second_word, third_word, frequency FROM markov WHERE
-                    channel_id=? AND first_word=? AND second_word NOT NULL AND
-                    third_word NOT NULL""", [channel_id, first_word])
-                if not second_two_words:
-                    return None
+        elif len(first_words) == 1:
+            first_word = first_word.lower()
+            second_two_words = self.bot.database.execute_fetchall("""SELECT
+                second_word, third_word, frequency FROM markov WHERE
+                channel_id=? AND first_word=? AND second_word NOT NULL AND
+                third_word NOT NULL""", [channel_id, first_word])
+            if not second_two_words:
+                return None
 
-                second_word, third_word = self._choose(
-                    [[[s, t], f] for s, t, f in second_two_words])
-                words = [first_word, second_word, third_word]
-            else:
-                words = [word.lower() for word in first_words]
+            second_word, third_word = self._choose(
+                [[[s, t], f] for s, t, f in second_two_words])
+            words = [first_word, second_word, third_word]
+        else:
+            words = [word.lower() for word in first_words]
 
         for i in range(30):
             two_words = words[-2:]
