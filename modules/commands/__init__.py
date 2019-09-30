@@ -69,15 +69,14 @@ class Module(ModuleManager.BaseModule):
             if match.group(1):
                 index = int(match.group(1))
                 continuous = match.group(2) == "-"
+                if index >= len(args_split):
+                    raise IndexError("Unknown alias arg index")
             else:
-                index = -1
+                index = 0
                 continuous = True
 
-            if index >= len(args_split):
-                raise IndexError("Unknown alias arg index")
-
             if continuous:
-                replace = " ".join(args_split[min(index, 0):])
+                replace = " ".join(args_split[index:])
             else:
                 replace = args_split[index]
             s = s.replace(match.group(0), replace)
