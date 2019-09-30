@@ -85,3 +85,6 @@ opencagedata-api-key     =
 
 # https://bitly.com/a/oauth_apps
 bitly-api-key            =
+
+# https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
+github-token             =

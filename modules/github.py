@@ -65,6 +65,14 @@ class Module(ModuleManager.BaseModule):
     def _modified(self, n):
         return self._change_count(n, "~", utils.consts.PURPLE)
 
+    def _get(self, url):
+        oauth2_token = self.bot.config.get("github-token", None)
+        headers = {}
+        if not oauth2_token == None:
+            headers["Authorization"] = "token %s" % oauth2_token
+        request = utils.http.Request(url, headers=headers, json=True)
+        return utils.http.request(request)
+
     def _parse_issue(self, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
         number = utils.irc.color("#%s" % number, COLOR_ID)
@@ -84,9 +92,7 @@ class Module(ModuleManager.BaseModule):
         return "(%s issue%s, %s) %s %s%s" % (
             repo, number, state, page.data["title"], labels_str, url)
     def _get_issue(self, username, repository, number):
-        return utils.http.request(
-            API_ISSUE_URL % (username, repository, number),
-            json=True)
+        return self._get(API_ISSUE_URL % (username, repository, number))
 
     @utils.hook("received.command.ghissue", min_args=1)
     def github_issue(self, event):
@@ -124,9 +130,7 @@ class Module(ModuleManager.BaseModule):
             repo, number, state, branch_from, branch_to, added, removed,
             page.data["title"], url)
     def _get_pull(self, username, repository, number):
-        return utils.http.request(
-            API_PULL_URL % (username, repository, number),
-            json=True)
+        return self._get(API_PULL_URL % (username, repository, number))
     @utils.hook("received.command.ghpull", min_args=1)
     def github_pull(self, event):
         if event["target"].get_setting("github-hide-prefix", False):
