@@ -301,5 +301,14 @@ def is_localhost(hostname: str) -> bool:
             address = ipaddress.ip_address(link["addr"].split("%", 1)[0])
             if address in ips:
                 return True
+    for ip in ips:
+        if ip.version == 6 and ip.ipv4_mapped:
+            ip = ip.ipv4_mapped
+
+        if (ip.is_loopback or
+                ip.is_link_local or
+                ip.is_multicast or
+                ip.is_private):
+            return True
 
     return False
