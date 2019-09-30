@@ -8,7 +8,7 @@ from . import outs
 COMMAND_METHOD = "command-method"
 COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
-REGEX_ARG_NUMBER = re.compile(r"\$(\d+)(-?)")
+REGEX_ARG_NUMBER = re.compile(r"\$(?:(\d+)(-?)|(-))")
 
 MESSAGE_TAGS_CAP = utils.irc.Capability("message-tags",
     "draft/message-tags-0.2")
@@ -66,14 +66,18 @@ class Module(ModuleManager.BaseModule):
 
     def _alias_arg_replace(self, s, args_split):
         for match in REGEX_ARG_NUMBER.finditer(s):
-            index = int(match.group(1))
-            continuous = match.group(2) == "-"
+            if match.group(1):
+                index = int(match.group(1))
+                continuous = match.group(2) == "-"
+            else:
+                index = -1
+                continuous = True
 
             if index >= len(args_split):
                 raise IndexError("Unknown alias arg index")
 
             if continuous:
-                replace = " ".join(args_split[index:])
+                replace = " ".join(args_split[min(index, 0):])
             else:
                 replace = args_split[index]
             s = s.replace(match.group(0), replace)
