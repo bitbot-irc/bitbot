@@ -90,7 +90,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "[first-word]")
     def markov(self, event):
         self._markov_for(event["target"], event["stdout"], event["stderr"],
-            first_word=(event["args_split"] or [None])[0])
+            first_words=event["args_split"][:])
 
     @utils.hook("received.command.markovfor")
     @utils.kwarg("min_args", 1)
@@ -101,21 +101,21 @@ class Module(ModuleManager.BaseModule):
         if event["args_split"][0] in event["server"].channels:
             channel = event["server"].channels.get(event["args_split"][0])
             self._markov_for(channel, event["stdout"], event["stderr"],
-                first_word=(event["args_split"][1:] or [None])[0])
+                first_words=event["args_split"][1:])
         else:
             event["stderr"].write("Unknown channel")
 
-    def _markov_for(self, channel, stdout, stderr, first_word=None):
+    def _markov_for(self, channel, stdout, stderr, first_words):
         if not channel.get_setting("markov", False):
             stderr.write(NO_MARKOV)
         else:
-            out = self._generate(channel.id, first_word)
+            out = self._generate(channel.id, first_words)
             if not out == None:
                 stdout.write(out)
             else:
                 stderr.write("Failed to generate markov chain")
 
-    def _generate(self, channel_id, first_word):
+    def _generate(self, channel_id, first_words):
         if first_word == None:
             first_words = self.bot.database.execute_fetchall("""SELECT
                 third_word, frequency FROM markov WHERE channel_id=? AND
@@ -135,17 +135,20 @@ class Module(ModuleManager.BaseModule):
             second_word = self._choose(second_words)
             words = [first_word, second_word]
         else:
-            first_word = first_word.lower()
-            second_two_words = self.bot.database.execute_fetchall("""SELECT
-                second_word, third_word, frequency FROM markov WHERE
-                channel_id=? AND first_word=? AND second_word NOT NULL AND
-                third_word NOT NULL""", [channel_id, first_word])
-            if not second_two_words:
-                return None
+            if len(first_words) == 1:
+                first_word = first_word.lower()
+                second_two_words = self.bot.database.execute_fetchall("""SELECT
+                    second_word, third_word, frequency FROM markov WHERE
+                    channel_id=? AND first_word=? AND second_word NOT NULL AND
+                    third_word NOT NULL""", [channel_id, first_word])
+                if not second_two_words:
+                    return None
 
-            second_word, third_word = self._choose(
-                [[[s, t], f] for s, t, f in second_two_words])
-            words = [first_word, second_word, third_word]
+                second_word, third_word = self._choose(
+                    [[[s, t], f] for s, t, f in second_two_words])
+                words = [first_word, second_word, third_word]
+            else:
+                words = [word.lower() for word in first_words]
 
         for i in range(30):
             two_words = words[-2:]
