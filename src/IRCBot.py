@@ -273,7 +273,7 @@ class Bot(object):
 
     def _event_loop(self):
         while self.running or not self._event_queue.empty():
-            if not self.servers:
+            if not self.servers and self._event_queue.empty():
                 self._kill()
                 self.log.warn("No servers, exiting")
                 break
