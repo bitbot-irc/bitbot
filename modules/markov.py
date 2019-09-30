@@ -135,7 +135,7 @@ class Module(ModuleManager.BaseModule):
             second_word = self._choose(second_words)
             words = [first_word, second_word]
         elif len(first_words) == 1:
-            first_word = first_word.lower()
+            first_word = first_words[0].lower()
             second_two_words = self.bot.database.execute_fetchall("""SELECT
                 second_word, third_word, frequency FROM markov WHERE
                 channel_id=? AND first_word=? AND second_word NOT NULL AND
