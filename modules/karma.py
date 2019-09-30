@@ -8,7 +8,7 @@ from src import EventManager, ModuleManager, utils
 WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
-REGEX_KARMA = re.compile(r'(?:\(([^)]+)\)|(\S+))(\+\+|--)(\s+|$)')
+REGEX_KARMA = re.compile(r'(?:\(([^)]+)\)|(\S+))\s*(\+\+|--)(\s+|$)')
 
 @utils.export("channelset", utils.BoolSetting("karma-pattern",
     "Enable/disable parsing ++/-- karma format"))
