@@ -17,11 +17,14 @@ def _parse(value):
     mechanism, _, arguments = value.partition(" ")
     return {"mechanism": mechanism.upper(), "args": arguments}
 
+HARDFAIL = utils.BoolSetting("sasl-hard-fail",
+    "Set whether a SASL failure should cause a disconnect")
+
 @utils.export("serverset", utils.FunctionSetting(_parse, "sasl",
     "Set the sasl username/password for this server",
     example="PLAIN BitBot:hunter2"))
-@utils.export("serverset", utils.BoolSetting("sasl-hard-fail",
-    "Set whether a SASL failure should cause a disconnect"))
+@utils.export("serverset", HARDFAIL)
+@utils.export("botset", HARDFAIL)
 class Module(ModuleManager.BaseModule):
     def _best_userpass_mechanism(self, mechanisms):
         for potential_mechanism in USERPASS_MECHANISMS:
@@ -147,7 +150,8 @@ class Module(ModuleManager.BaseModule):
         self._end_sasl(event["server"])
 
     def _panic(self, server, message):
-        if server.get_setting("sasl-hard-fail", True):
+        if server.get_setting("sasl-hard-fail",
+                self.bot.get_setting("sasl-hard-fail", False)):
             message = "SASL panic for %s: %s" % (str(server), message)
             if not server.from_init:
                 self.log.error(message)
