@@ -13,7 +13,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.wolframalpha", min_args=1)
     def wa(self, event):
         """
-        :help: Evauate a given string on Wolfram|Alpha
+        :help: Evaluate a given string on Wolfram|Alpha
         :usage: <query>
         """
         try:
