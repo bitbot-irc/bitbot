@@ -78,7 +78,8 @@ class Module(ModuleManager.BaseModule):
         :usage: <server id>
         :permission: connect
         """
-        server = self._server_from_alias(event["args"])
+        alias = event["args_split"][0]
+        server = self._server_from_alias(alias)
         if server:
             raise utils.EventError("Already connected to %s" % str(
                 existing_server))
