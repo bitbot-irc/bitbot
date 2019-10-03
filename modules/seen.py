@@ -11,8 +11,6 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
-    @utils.hook("formatted.part")
-    @utils.hook("formatted.nick")
     def on_formatted(self, event):
         line = event["minimal"] or event["line"]
 
