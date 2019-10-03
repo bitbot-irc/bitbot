@@ -42,8 +42,10 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("No channel provided")
         event["server"].send_part(target)
 
-    def _from_alias(self, alias):
-        id = self.bot.database.servers.get_by_alias(alias)
+    def _id_from_alias(self, alias):
+        return self.bot.database.servers.get_by_alias(alias)
+    def _server_from_alias(self, alias):
+        id = self._id_from_alias(alias)
         if id == None:
             raise utils.EventError("Unknown server alias")
         return self.bot.get_server_by_id(id)
@@ -58,7 +60,7 @@ class Module(ModuleManager.BaseModule):
         alias = str(event["server"])
         if event["args"]:
             alias = event["args_split"][0]
-            server = self._from_alias(alias)
+            server = self._server_from_alias(alias)
 
         if server:
             line = server.send_quit("Reconnecting")
@@ -76,12 +78,12 @@ class Module(ModuleManager.BaseModule):
         :usage: <server id>
         :permission: connect
         """
-        server = self._from_alias(event["args"])
+        server = self._server_from_alias(event["args"])
         if server:
             raise utils.EventError("Already connected to %s" % str(
                 existing_server))
 
-        server = self.bot.add_server(id)
+        server = self.bot.add_server(self._id_from_alias(alias))
         event["stdout"].write("Connecting to %s" % str(server))
 
     @utils.hook("received.command.disconnect")
@@ -95,7 +97,7 @@ class Module(ModuleManager.BaseModule):
         alias = str(event["server"])
         if event["args"]:
             alias = event["args_split"][0]
-            server = self._from_alias(alias)
+            server = self._server_from_alias(alias)
 
         if not server == None:
             alias = str(server)
