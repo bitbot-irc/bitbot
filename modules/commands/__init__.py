@@ -320,7 +320,8 @@ class Module(ModuleManager.BaseModule):
                         res = self.command(event["server"], event["channel"],
                             event["target_str"], True, event["user"], command,
                             "", event["tags"], hook, match=match,
-                            message=event["message"], command_prefix="")
+                            message=event["message"], command_prefix="",
+                            action=event["action"])
 
                         if res:
                             break
