@@ -5,10 +5,10 @@
 import re, time
 from src import EventManager, ModuleManager, utils
 
-WORD_STOP = [",", ":"]
 KARMA_DELAY_SECONDS = 3
 
-REGEX_KARMA = re.compile(r'(?:\(([^)]+)\)|(\S+))\s*(\+\+|--)(\s+|$)')
+REGEX_WORD = re.compile(r"^([^(\s]+)[:,]?\s*(\+\+|--)\s*$")
+REGEX_PARENS = re.compile(r"\(([^)]+)\)\s*(\+\+|--)")
 
 @utils.export("channelset", utils.BoolSetting("karma-pattern",
     "Enable/disable parsing ++/-- karma format"))
@@ -73,25 +73,17 @@ class Module(ModuleManager.BaseModule):
         else:
             return False, "Try again in a couple of seconds"
 
-    @utils.hook("command.regex")
+    @utils.hook("command.regex", pattern=REGEX_WORD)
+    @utils.hook("command.regex", pattern=REGEX_PARENS)
     @utils.kwarg("command", "karma")
-    @utils.kwarg("pattern", REGEX_KARMA)
-    def channel_message(self, event):
-        pattern = event["target"].get_setting("karma-pattern", False)
-        if not pattern:
-            return
-        positive = event["match"].group(3) == "++" # if match group 3 is ++, add karma
-
-        # There are two possible match groups, an arbitrary length text inside (), or a single word followed by ++/--
-        # group 1 is the former, group 2 is the latter
-        target = event["match"].group(1) or event["match"].group(2)
-        target = target.strip().rstrip("".join(WORD_STOP)) # Strips "," " " or ":" from target
-
-        # if we have a target...
-        if target:
+    def regex_word(self, event):
+        if event["target"].get_setting("karma-pattern", False):
+            target = event["match"].group(1)
+            positive = event["match"].group(2)=="++"
             success, message = self._karma(event["server"], event["user"],
                 target, positive)
             event["stdout" if success else "stderr"].write(message)
+
 
     @utils.hook("received.command.addpoint")
     @utils.hook("received.command.rmpoint")
