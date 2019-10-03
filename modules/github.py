@@ -11,10 +11,12 @@ COLOR_NEUTRAL = utils.consts.LIGHTGREY
 COLOR_NEGATIVE = utils.consts.RED
 COLOR_ID = utils.consts.PINK
 
-REGEX_PR_OR_ISSUE = re.compile(
+REGEX_ISSUE = re.compile(
     r"https?://github.com/([^/]+)/([^/]+)/(pull|issues)/(\d+)", re.I)
-REGEX_REF = re.compile(r"(?:\S+(?:\/\S+)?)?#\d+")
+REGEX_ISSUE_REF = re.compile(r"(?:\S+(?:\/\S+)?)?#\d+")
+REGEX_COMMIT_REF = re.compile(r"(?:\S+(?:\/\S+)?)?@[0-9a-fA-F]+")
 
+API_COMMIT_URL = "https://api.github.com/repos/%s/%s/commits/%s"
 API_ISSUE_URL = "https://api.github.com/repos/%s/%s/issues/%s"
 API_PULL_URL = "https://api.github.com/repos/%s/%s/pulls/%s"
 
@@ -26,8 +28,8 @@ API_PULL_URL = "https://api.github.com/repos/%s/%s/pulls/%s"
 @utils.export("channelset", utils.IntSetting("auto-github-cooldown",
     "Set amount of seconds between auto-github duplicates", example="300"))
 class Module(ModuleManager.BaseModule):
-    def _parse_ref(self, channel, ref):
-        repo, _, number = ref.rpartition("#")
+    def _parse_ref(self, channel, ref, sep):
+        repo, _, number = ref.rpartition(sep)
         org, _, repo = repo.partition("/")
 
         default_repo = channel.get_setting("github-default-repo", "")
@@ -42,8 +44,6 @@ class Module(ModuleManager.BaseModule):
 
         if not org or not repo or not number:
             raise utils.EventError("Please provide username/repo#number")
-        if not number.isdigit():
-            raise utils.EventError("Issue number must be a number")
         return org, repo, number
 
     def _short_url(self, url):
@@ -73,6 +73,42 @@ class Module(ModuleManager.BaseModule):
         request = utils.http.Request(url, headers=headers, json=True)
         return utils.http.request(request)
 
+    def _commit(self, username, repository, commit):
+        page = self._get(API_COMMIT_URL % (username, repository, commit))
+        if page and page.code == 200:
+            repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
+            sha = utils.irc.color(page.data["sha"][:8], COLOR_ID)
+            return "(%s@%s) %s - %s %s" % (repo, sha,
+                page.data["author"]["login"], page.data["commit"]["message"],
+                self._short_url(page.data["html_url"]))
+    def _parse_commit(self, target, ref):
+        username, repository, commit = self._parse_ref(target, ref, "@")
+        return self._commit(username, repository, commit)
+
+    @utils.hook("received.command.ghcommit")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("help", "Get information for a given commit on github")
+    @utils.kwarg("usage", "<organsation>/<repo>@<commit>")
+    def github_commit(self, event):
+        out = self._parse_commit(event["target"], event["args_split"][0])
+        if not out == None:
+            event["stdout"].write(out)
+        else:
+            event["stderr"].write("Commit not found")
+
+    @utils.hook("command.regex")
+    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("command", "github")
+    @utils.kwarg("pattern", REGEX_COMMIT_REF)
+    def commit_regex(self, event):
+        if event["target"].get_setting("auto-github", False):
+            event.eat()
+            ref = event["match"].group(0)
+            if self._auto_github_cooldown(event["target"], ref):
+                out = self._parse_commit(event["target"], ref)
+                if out:
+                    event["stdout"].write(out)
+
     def _parse_issue(self, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
         number = utils.irc.color("#%s" % number, COLOR_ID)
@@ -101,7 +137,9 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].hide_prefix()
 
         username, repository, number = self._parse_ref(
-            event["target"], event["args_split"][0])
+            event["target"], event["args_split"][0], "#")
+        if not number.isdigit():
+            raise utils.EventError("Issue number must be a number")
 
         page = self._get_issue(username, repository, number)
         if page and page.code == 200:
@@ -138,7 +176,10 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].hide_prefix()
 
         username, repository, number = self._parse_ref(
-            event["target"], event["args_split"][0])
+            event["target"], event["args_split"][0], "#")
+        if not number.isdigit():
+            raise utils.EventError("PR number must be a number")
+
         page = self._get_pull(username, repository, number)
 
         if page and page.code == 200:
@@ -147,7 +188,10 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Could not find pull request")
 
     def _get_info(self, target, ref):
-        username, repository, number = self._parse_ref(target, ref)
+        username, repository, number = self._parse_ref(target, ref, "#")
+        if not number.isdigit():
+            raise utils.EventError("PR number must be a number")
+
         page = self._get_issue(username, repository, number)
         if page and page.code == 200:
             if "pull_request" in page.data:
@@ -187,7 +231,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("command.regex")
     @utils.kwarg("ignore_action", False)
     @utils.kwarg("command", "github")
-    @utils.kwarg("pattern", REGEX_PR_OR_ISSUE)
+    @utils.kwarg("pattern", REGEX_ISSUE)
     def url_regex(self, event):
         if event["target"].get_setting("auto-github", False):
             event.eat()
@@ -206,7 +250,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("command.regex")
     @utils.kwarg("ignore_action", False)
     @utils.kwarg("command", "github")
-    @utils.kwarg("pattern", REGEX_REF)
+    @utils.kwarg("pattern", REGEX_ISSUE_REF)
     def ref_regex(self, event):
         if event["target"].get_setting("auto-github", False):
             event.eat()
