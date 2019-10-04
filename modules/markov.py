@@ -158,6 +158,8 @@ class Module(ModuleManager.BaseModule):
                 break
 
             third_word = self._choose(third_words)
+            if third_word == None:
+                break
             words.append(third_word)
 
         return " ".join(words)
