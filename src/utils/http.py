@@ -121,9 +121,10 @@ class Request(object):
 
 class Response(object):
     def __init__(self, code: int, data: typing.Any,
-            headers: typing.Dict[str, str], encoding: str):
+            content_type: str, headers: typing.Dict[str, str], encoding: str):
         self.code = code
         self.data = data
+        self.content_type = content_type
         self.headers = headers
         self.encoding = encoding
 
@@ -158,9 +159,9 @@ def request(request_obj: typing.Union[str, Request], **kwargs) -> Response:
     return _request(request_obj)
 
 def _request(request_obj: Request) -> Response:
-    headers = request_obj.get_headers()
 
     def _wrap():
+        headers = request_obj.get_headers()
         response = requests.request(
             request_obj.method,
             request_obj.url,
@@ -175,8 +176,10 @@ def _request(request_obj: Request) -> Response:
         if not response.raw.read(1) == b"":
             raise ValueError("Response too large")
 
+        headers = utils.CaseInsensitiveDict(dict(response.headers))
+        content_type = headers.get("Content-Type", "").split(";", 1)[0]
         our_response = Response(response.status_code, response_content,
-            headers=utils.CaseInsensitiveDict(dict(response.headers)),
+            content_type=content_type, headers=headers,
             encoding=response.encoding)
         return our_response
 
@@ -185,17 +188,17 @@ def _request(request_obj: Request) -> Response:
     except utils.DeadlineExceededException:
         raise HTTPTimeoutException()
 
-    content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
     encoding = response.encoding or request_obj.fallback_encoding
 
     if not encoding:
-        if content_type in UTF8_CONTENT_TYPES:
+        if response.content_type in UTF8_CONTENT_TYPES:
             encoding = "utf8"
         else:
             encoding = "iso-8859-1"
 
     if (request_obj.detect_encoding and
-            content_type and content_type in SOUP_CONTENT_TYPES):
+            response.content_type and
+            response.content_type in SOUP_CONTENT_TYPES):
         souped = bs4.BeautifulSoup(response.data, request_obj.parser)
         encoding = _find_encoding(souped) or encoding
 
@@ -204,13 +207,14 @@ def _request(request_obj: Request) -> Response:
 
     if request_obj.parse:
         if (not request_obj.check_content_type or
-                content_type in SOUP_CONTENT_TYPES):
+                response.content_type in SOUP_CONTENT_TYPES):
             souped = bs4.BeautifulSoup(_decode_data(), request_obj.parser)
             response.data = souped
             return response
         else:
             raise HTTPWrongContentTypeException(
-                "Tried to soup non-html/non-xml data (%s)" % content_type)
+                "Tried to soup non-html/non-xml data (%s)" %
+                response.content_type)
 
     if request_obj.json and response.data:
         data = _decode_data()
@@ -220,7 +224,7 @@ def _request(request_obj: Request) -> Response:
         except _json.decoder.JSONDecodeError as e:
             raise HTTPParsingException(str(e), data)
 
-    if content_type in DECODE_CONTENT_TYPES:
+    if response.content_type in DECODE_CONTENT_TYPES:
         response.data = _decode_data()
         return response
     else:
