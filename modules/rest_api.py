@@ -2,7 +2,7 @@
 #--depends-on config
 #--depends-on permissions
 
-import http.server, json, socket, ssl, threading, uuid, urllib.parse
+import binascii, http.server, json, os, socket, ssl, threading, urllib.parse
 from src import ModuleManager, utils
 
 DEFAULT_PORT = 5001
@@ -156,6 +156,8 @@ class BitBotIPv6HTTPd(http.server.HTTPServer):
 @utils.export("botset",
     utils.Setting("rest-api-host", "Public hostname:port for the REST API"))
 class Module(ModuleManager.BaseModule):
+    _name = "REST"
+
     def on_load(self):
         global _module
         _module = self
@@ -184,21 +186,70 @@ class Module(ModuleManager.BaseModule):
         if self.httpd:
             self.httpd.shutdown()
 
-    @utils.hook("received.command.apikey", private_only=True, min_args=1)
-    def api_key(self, event):
-        """
-        :help: Generate a new API key
-        :usage: <comment> [endpoint [endpoint ...]]
-        :permission: api-key
-        :prefix: APIKey
-        """
-        api_key = uuid.uuid4().hex
-        comment = event["args_split"][0]
-        self.bot.set_setting("api-key-%s" % api_key, {
-            "comment": comment,
-            "permissions": event["args_split"][1:]
-        })
-        event["stdout"].write("New API key ('%s'): %s" % (comment, api_key))
+    @utils.hook("received.command.apikey")
+    @utils.kwarg("private_only", True)
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("usage", "list")
+    @utils.kwarg("usage", "add <alias> [endpoint [endpoint ...]]")
+    @utils.kwarg("usage", "remove <alias>")
+    @utils.kwarg("usage", "info <alias>")
+    def apikey(self, event):
+        subcommand = event["args_split"][0].lower()
+        alias = None
+        alias_lower = None
+        found = None
+        if len(event["args_split"]) > 1:
+            alias = event["args_split"][1]
+            alias_lower = alias.lower()
+
+        api_keys = {}
+        for key, value in self.bot.find_settings_prefix("api-key-"):
+            api_keys[key] = value
+            if alias and value["comment"].lower() == alias_lower:
+                alias = value["comment"]
+                found = key
+
+        if subcommand == "list":
+            aliases = [v["comment"] for v in api_keys.values()]
+            aliases.sort()
+            event["stdout"].write("API keys: %s" % ", ".join(aliases))
+        elif subcommand == "add":
+            if not len(event["args_split"]) > 1:
+                raise utils.EventError(
+                    "Please provide an alias for the API key")
+
+            if found == None:
+                comment = event["args_split"][1]
+                new_key = binascii.hexlify(os.urandom(16)).decode("ascii")
+                self.bot.set_setting("api-key-%s" % new_key, {
+                    "comment": comment, "permissions": event["args_split"][2:]
+                })
+                event["stdout"].write("New API key '%s': %s" %
+                    (comment, new_key))
+            else:
+                event["stderr"].write("API key alias '%s' already exists" %
+                    alias)
+        elif subcommand == "remove":
+            if not len(event["args_split"]) > 1:
+                raise utils.EventError("Please provide a key alias to remove")
+
+            if not found == None:
+                self.bot.del_setting(found)
+                key = found.replace("api-key-", "", 1)
+                event["stdout"].write("Deleted API key %s ('%s')" %
+                    (key, alias))
+            else:
+                event["stderr"].write("Count not find API key '%s'" % alias)
+        elif subcommand == "info":
+            if not len(event["args_split"]) > 1:
+                raise utils.EventError("Please provide a key alias to remove")
+
+            if not found == None:
+                key = found.replace("api-key-", "", 1)
+                event["stdout"].write("API key %s ('%s') can access: %s" %
+                    (key, alias, " ".join(api_keys[found]["permissions"])))
+            else:
+                event["stderr"].write("Count not find API key '%s'" % alias)
 
     def _url_for(self, route, endpoint, args=[], get_params={},
             host_override=None):
