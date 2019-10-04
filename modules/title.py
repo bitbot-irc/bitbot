@@ -21,14 +21,19 @@ class Module(ModuleManager.BaseModule):
 
     def _different(self, url, title):
         url = url.lower()
-        title_words = [word.lower() for word in title.split()]
+        title_words = []
+        for title_word in title.split():
+            if len(title_word) > 1 or title_word.isalpha():
+                title_words.append(title_word.lower())
+
         present = 0
         for title_word in title_words:
             if title_word in url:
                 present += 1
 
+        similarity = present/len(title_words)
         # if at least 80% of words are in the URL, too similar
-        if (present/len(title_words)) >= 0.8:
+        if similarity >= 0.8:
             return False
         return True
 
