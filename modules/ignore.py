@@ -34,13 +34,13 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
         if self._user_ignored(event["user"]):
-            return utils.consts.PERMISSION_HARD_FAIL
+            return utils.consts.PERMISSION_HARD_FAIL, None
         elif event["is_channel"] and self._user_channel_ignored(event["target"],
                 event["user"]):
-            return utils.consts.PERMISSION_HARD_FAIL
+            return utils.consts.PERMISSION_HARD_FAIL, None
         elif self._is_command_ignored(event["server"], event["user"],
                 event["command"]):
-            return utils.consts.PERMISSION_HARD_FAIL
+            return utils.consts.PERMISSION_HARD_FAIL, None
 
     @utils.hook("received.command.ignore", min_args=1)
     def ignore(self, event):
