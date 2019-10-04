@@ -53,6 +53,9 @@ class Module(ModuleManager.BaseModule):
         return lambda: self._create(channel_id, line)
 
     def _create(self, channel_id, line):
+        if utils.http.REGEX_URL.search(line):
+            return
+
         words = list(filter(None, line.split(" ")))
         words = [word.lower() for word in words]
         words_n = len(words)
