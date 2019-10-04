@@ -154,10 +154,10 @@ class Module(ModuleManager.BaseModule):
             third_words = self.bot.database.execute_fetchall("""SELECT
                 third_word, frequency FROM markov WHERE channel_id=? AND
                 first_word=? AND second_word=?""", [channel_id]+two_words)
+            if not third_words:
+                break
 
             third_word = self._choose(third_words)
-            if third_word == None:
-                break
             words.append(third_word)
 
         return " ".join(words)
