@@ -264,6 +264,9 @@ def is_ip(s: str) -> bool:
 def is_main_thread() -> bool:
     return threading.current_thread() is threading.main_thread()
 
+class SettingParseException(Exception):
+    pass
+
 class Setting(object):
     example: typing.Optional[str] = None
     def __init__(self, name: str, help: str=None, example: str=None):

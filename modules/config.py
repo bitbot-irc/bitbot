@@ -7,7 +7,8 @@ import enum
 from src import ModuleManager, utils
 
 class ConfigInvalidValue(Exception):
-    pass
+    def __init__(self, message: str=None):
+        self.message = message
 class ConfigSettingInexistent(Exception):
     pass
 
@@ -113,7 +114,11 @@ class Module(ModuleManager.BaseModule):
 
     def _config(self, export_settings, target, setting, value=None):
         if not value == None:
-            validated_value = export_settings[setting].parse(value)
+            try:
+                validated_value = export_settings[setting].parse(value)
+            except utils.SettingParseException as e:
+                raise ConfigInvalidValue(str(e))
+
             if not validated_value == None:
                 target.set_setting(setting, validated_value)
                 return ConfigResult(ConfigResults.Changed, validated_value)
@@ -199,7 +204,10 @@ class Module(ModuleManager.BaseModule):
 
             try:
                 result = self._config(export_settings, target, setting, value)
-            except ConfigInvalidValue:
+            except ConfigInvalidValue as e:
+                if not e.message == None:
+                    raise utils.EventError("Invalid value: %s" % e.message)
+
                 example = export_settings[setting].get_example()
                 if not example == None:
                     raise utils.EventError("Invalid value. %s" %

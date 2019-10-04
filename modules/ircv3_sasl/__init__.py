@@ -12,10 +12,17 @@ USERPASS_MECHANISMS = [
     "SCRAM-SHA-1",
     "PLAIN"
 ]
+ALL_MECHANISMS = USERPASS_MECHANISMS+["EXTERNAL"]
 
 def _parse(value):
     mechanism, _, arguments = value.partition(" ")
-    return {"mechanism": mechanism.upper(), "args": arguments}
+    mechanism = mechanism.upper()
+
+    if mechanism in ALL_MECHANISMS:
+        return {"mechanism": mechanism.upper(), "args": arguments}
+    else:
+        raise utils.SettingParseException("Unknown SASL mechanism '%s'"
+            % mechanism)
 
 HARDFAIL = utils.BoolSetting("sasl-hard-fail",
     "Set whether a SASL failure should cause a disconnect")
