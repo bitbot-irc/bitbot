@@ -11,10 +11,26 @@ from src import EventManager, ModuleManager, utils
     "Enable/disable shortening URLs when getting their title"))
 @utils.export("channelset", utils.BoolSetting("auto-title-first",
     "Enable/disable showing who first posted a URL that was auto-titled"))
+@utils.export("channelset", utils.BoolSetting("auto-title-difference",
+    "Enable/disable checking if a <title> is different enough from the URL"
+    " before showing it"))
 class Module(ModuleManager.BaseModule):
     def _url_hash(self, url):
         return "sha256:%s" % hashlib.sha256(url.lower().encode("utf8")
             ).hexdigest()
+
+    def _different(self, url, title):
+        url = url.lower()
+        title_words = [word.lower() for word in title.split()]
+        present = 0
+        for title_word in title_words:
+            if title_word in url:
+                present += 1
+
+        # if at least 80% of words are in the URL, too similar
+        if (present/len(title_words)) >= 0.8:
+            return False
+        return True
 
     def _get_title(self, server, channel, url):
         if not urllib.parse.urlparse(url).scheme:
@@ -35,6 +51,9 @@ class Module(ModuleManager.BaseModule):
         if page.data.title:
             title = page.data.title.text.replace("\n", " ").replace(
                 "\r", "").replace("  ", " ").strip()
+            if (channel.get_setting("auto-title-difference", True) and
+                    not self._different(url, title)):
+                return -2, title
 
             if channel.get_setting("title-shorten", False):
                 short_url = self.exports.get_one("shorturl")(server, url,
@@ -72,6 +91,8 @@ class Module(ModuleManager.BaseModule):
                             [event["user"].nickname, utils.iso8601_format_now(),
                             url])
                 event["stdout"].write(message)
+            if code == -2:
+                self.log.debug("Not showing title for %s, too similar", [url])
 
     @utils.hook("received.command.t", alias_of="title")
     @utils.hook("received.command.title", usage="[URL]")
