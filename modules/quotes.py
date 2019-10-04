@@ -21,11 +21,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.qadd", alias_of="quoteadd")
     @utils.hook("received.command.quoteadd", min_args=1)
+    @utils.kwarg("help", "Add a quote to a category")
+    @utils.kwarg("usage", "<category> = <quote>")
     def quote_add(self, event):
-        """
-        :help: Add a quote to a category
-        :usage: <category> = <quote>
-        """
         category, quote = self.category_and_quote(event["args"])
         if category and quote:
             target = event["server"]
@@ -43,11 +41,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.qdel", alias_of="quotedel")
     @utils.hook("received.command.quotedel", min_args=1)
+    @utils.kwarg("help", "Delete a given quote from a given category")
+    @utils.kwarg("usage", "<category> = <quote>")
     def quote_del(self, event):
-        """
-        :help: Delete a quote from a category
-        :usage: <category> = <quote>
-        """
         category, remove_quote = self.category_and_quote(event["args"])
         category = category or event["args"].strip()
 
@@ -79,11 +75,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.q", alias_of="quote")
     @utils.hook("received.command.quote", min_args=1)
+    @utils.kwarg("help", "Get a random quote from a given category")
+    @utils.kwarg("usage", "<category> [= <search>]")
     def quote(self, event):
-        """
-        :help: Get a random quote from a category
-        :usage: <category>
-        """
         category, search = self.category_and_quote(event["args"])
         quotes = event["server"].get_setting("quotes-%s" % category, [])
         if event["is_channel"]:
@@ -107,6 +101,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.grab", alias_of="quotegrab")
     @utils.hook("received.command.quotegrab", min_args=1, channel_only=True)
+    @utils.kwarg("help", "Grab the latest 1-3 lines from a user and add them "
+        "as a quote")
     @utils.kwarg("usage", "<nickname> [line-count]")
     def quote_grab(self, event):
         line_count = 1
