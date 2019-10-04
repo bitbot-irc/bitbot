@@ -22,6 +22,10 @@ class Module(ModuleManager.BaseModule):
             channel
         :usage: <nickname> <message>
         """
+        target_name = event["args_split"][0]
+        if not event["server"].has_user_id(target_name):
+            raise utils.EventError("I've never seen %s before" % target_name)
+
         target_user = event["server"].get_user(event["args_split"][0])
         messages = event["target"].get_user_setting(target_user.get_id(),
             "to", [])
