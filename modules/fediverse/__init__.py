@@ -53,8 +53,11 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "@<user>@<instance>")
     def fedi(self, event):
         account = None
+        url = None
         if not event["args"]:
             account = event["user"].get_setting("fediverse", None)
+        elif utils.http.REGEX_URL.match(event["args_split"][0]):
+            url = event["args_split"][0]
         elif not "@" in event["args"]:
             target = event["args_split"][0]
             if event["server"].has_user_id(target):
@@ -63,14 +66,40 @@ class Module(ModuleManager.BaseModule):
         else:
             account = event["args_split"][0]
 
-        username = None
-        instance = None
-        if account:
-            username, instance = ap_utils.split_username(account)
+        note = None
+        type = "Create"
+        if not url == None:
+            note_page = ap_utils.activity_request(url)
+            if not note_page.content_type == ap_utils.ACTIVITY_TYPE:
+                raise utils.EventError("That's not a fediverse URL")
 
-        if not username or not instance:
-            raise utils.EventError("Please provide @<user>@<instance>")
+            note = note_page.data
+            actor = ap_actor.Actor(note["attributedTo"])
+            actor.load()
+        else:
+            username = None
+            instance = None
+            if account:
+                username, instance = ap_utils.split_username(account)
 
+            if not username or not instance:
+                raise utils.EventError("Please provide @<user>@<instance>")
+            actor, note = self._get_from_outbox(username, instance)
+            type = note["type"]
+            note = note["object"]
+
+        cw, out, url = ap_utils.format_note(actor, note, type)
+        shorturl = self.exports.get_one("shorturl")(event["server"], url,
+            context=event["target"])
+
+        if cw:
+            out = "CW: %s - %s" % (cw, shorturl)
+        else:
+            out = "%s - %s" % (out, shorturl)
+        event["stdout"].write(out)
+
+
+    def _get_from_outbox(self, username, instance):
         actor_url = ap_utils.find_actor(username, instance)
 
         if not actor_url:
@@ -89,12 +118,4 @@ class Module(ModuleManager.BaseModule):
         if not first_item:
             raise utils.EventError("No toots found")
 
-        cw, out, url = ap_utils.format_note(actor, first_item)
-        shorturl = self.exports.get_one("shorturl")(event["server"], url,
-            context=event["target"])
-
-        if cw:
-            out = "CW: %s - %s" % (cw, shorturl)
-        else:
-            out = "%s - %s" % (out, shorturl)
-        event["stdout"].write(out)
+        return actor, first_item

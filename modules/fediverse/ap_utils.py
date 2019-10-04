@@ -56,9 +56,9 @@ def find_actor(username, instance):
         if link["type"] == ACTIVITY_TYPE:
             return link["href"]
 
-def format_note(actor, note):
-    if note["type"] == "Announce":
-        retoot_url = note["object"]
+def format_note(actor, note, type="Create"):
+    if type == "Announce":
+        retoot_url = note
         retoot_instance = urllib.parse.urlparse(retoot_url).hostname
         retoot = activity_request(retoot_url)
 
@@ -70,11 +70,11 @@ def format_note(actor, note):
         return (retoot.data.get("summary", None),  "%s (boost %s): %s - %s" % (
             actor.username, retooted_user, retoot_content), retoot_url)
 
-    elif note["type"] == "Create":
-        content = utils.http.strip_html(note["object"]["content"])
-        url = note["object"]["id"]
+    elif type == "Create":
+        content = utils.http.strip_html(note["content"])
+        url = note["id"]
 
-        return (note["object"].get("summary", None),
+        return (note.get("summary", None),
             "%s: %s" % (actor.username, content), url)
 
     return None, None, None
