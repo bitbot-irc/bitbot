@@ -121,11 +121,11 @@ class Request(object):
 
 class Response(object):
     def __init__(self, code: int, data: typing.Any,
-            content_type: str, headers: typing.Dict[str, str], encoding: str):
+            headers: typing.Dict[str, str], encoding: str):
         self.code = code
         self.data = data
-        self.content_type = content_type
         self.headers = headers
+        self.content_type = headers.get("Content-Type", "").split(";", 1)[0]
         self.encoding = encoding
 
 def _meta_content(s: str) -> typing.Dict[str, str]:
@@ -177,10 +177,8 @@ def _request(request_obj: Request) -> Response:
             raise ValueError("Response too large")
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
-        content_type = headers.get("Content-Type", "").split(";", 1)[0]
         our_response = Response(response.status_code, response_content,
-            content_type=content_type, headers=headers,
-            encoding=response.encoding)
+            headers=headers, encoding=response.encoding)
         return our_response
 
     try:
