@@ -121,7 +121,7 @@ if len(server_configs):
 
     bot._events.on("boot.done").call()
 
-    timers.setup(bot.find_settings_prefix("timer-"))
+    timers.setup(bot.find_settings(prefix="timer-"))
 
     for server in servers:
         if not bot.connect(server):
