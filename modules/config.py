@@ -114,14 +114,16 @@ class Module(ModuleManager.BaseModule):
 
     def _config(self, export_settings, target, setting, value=None):
         if not value == None:
+            setting_object = export_settings[setting]
             try:
-                validated_value = export_settings[setting].parse(value)
+                validated_value = setting_object.parse(value)
             except utils.SettingParseException as e:
                 raise ConfigInvalidValue(str(e))
 
             if not validated_value == None:
                 target.set_setting(setting, validated_value)
-                return ConfigResult(ConfigResults.Changed, validated_value)
+                formatted_value = setting_object.format(validated_value)
+                return ConfigResult(ConfigResults.Changed, formatted_value)
             else:
                 raise ConfigInvalidValue()
         else:
