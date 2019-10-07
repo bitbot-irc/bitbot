@@ -89,7 +89,7 @@ class Module(ModuleManager.BaseModule):
     def relay_group(self, event):
         subcommand = event["args_split"][0].lower()
 
-        group_settings = self.bot.find_settings_prefix("relay-group-")
+        group_settings = self.bot.find_settings(prefix="relay-group-")
         groups = {}
         for setting, value in group_settings:
             name = setting.replace("relay-group-", "", 1)

@@ -203,7 +203,7 @@ class Module(ModuleManager.BaseModule):
             alias_lower = alias.lower()
 
         api_keys = {}
-        for key, value in self.bot.find_settings_prefix("api-key-"):
+        for key, value in self.bot.find_settings(prefix="api-key-"):
             api_keys[key] = value
             if alias and value["comment"].lower() == alias_lower:
                 alias = value["comment"]

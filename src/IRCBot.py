@@ -238,13 +238,15 @@ class Bot(object):
         self.database.bot_settings.set(setting, value)
     def get_setting(self, setting: str, default: typing.Any=None) -> typing.Any:
         return self.database.bot_settings.get(setting, default)
-    def find_settings(self, pattern: str, default: typing.Any=[]
-            ) -> typing.List[typing.Any]:
-        return self.database.bot_settings.find(pattern, default)
-    def find_settings_prefix(self, prefix: str, default: typing.Any=[]
-            ) -> typing.List[typing.Any]:
-        return self.database.bot_settings.find_prefix(
-            prefix, default)
+    def find_settings(self, pattern: str=None, prefix: str=None,
+            default: typing.Any=[]) -> typing.List[typing.Any]:
+        if not pattern == None:
+            return self.database.bot_settings.find(pattern, default)
+        elif not prefix == None:
+            return self.database.bot_settings.find_prefix(prefix, default)
+        else:
+            raise ValueError("Please provide 'pattern' or 'prefix'")
+
     def del_setting(self, setting: str):
         self.database.bot_settings.delete(setting)
 

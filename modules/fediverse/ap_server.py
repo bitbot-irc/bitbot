@@ -46,8 +46,8 @@ class Server(object):
 
     def _get_activities(self):
         activities = []
-        for setting, (content, timestamp) in self.bot.find_settings_prefix(
-                ACTIVITY_SETTING_PREFIX):
+        for setting, (content, timestamp) in self.bot.find_settings(
+                prefix=ACTIVITY_SETTING_PREFIX):
             activity_id = setting.replace(ACTIVITY_SETTING_PREFIX, "", 1)
             activities.append([activity_id, content, timestamp])
         return activities

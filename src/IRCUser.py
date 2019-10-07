@@ -57,14 +57,18 @@ class User(IRCObject.Object):
     def get_setting(self, setting: str, default: typing.Any=None) -> typing.Any:
         return self.bot.database.user_settings.get(self.get_id(), setting,
             default)
-    def find_settings(self, pattern: str, default: typing.Any=[]
-            ) -> typing.List[typing.Any]:
-        return self.bot.database.user_settings.find(self.get_id(), pattern,
-            default)
-    def find_settings_prefix(self, prefix: str, default: typing.Any=[]
-            ) -> typing.List[typing.Any]:
-        return self.bot.database.user_settings.find_prefix(self.get_id(),
-            prefix, default)
+
+    def find_setting(self, pattern: str=None, prefix: str=None,
+            default: typing.Any=[]) -> typing.List[typing.Any]:
+        if not pattern == None:
+            return self.bot.database.user_settings.find(self.get_id(), pattern,
+                default)
+        elif not prefix == None:
+            return self.bot.database.user_settings.find_prefix(self.get_id(),
+                prefix, default)
+        else:
+            raise ValueError("Please provide 'pattern' or 'prefix'")
+
     def del_setting(self, setting):
         self.bot.database.user_settings.delete(self.get_id(), setting)
     def get_channel_settings_per_setting(self, setting: str,
