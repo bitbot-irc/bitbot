@@ -6,7 +6,7 @@ def _timestamp(dt):
     since, unit = utils.time_unit(seconds_since)
     return "%s %s ago" % (since, unit)
 
-def _tweet(exports, server, tweet):
+def _tweet(exports, server, tweet, from_url):
     linked_id = tweet.id
     username = tweet.user.screen_name
 
@@ -17,8 +17,10 @@ def _tweet(exports, server, tweet):
     tweet_link = "https://twitter.com/%s/status/%s" % (username,
         linked_id)
 
-    short_url = exports.get_one("shorturl")(server, tweet_link)
-    short_url = " - %s" % short_url if short_url else ""
+    short_url = ""
+    if not from_url:
+        short_url = exports.get_one("shorturl")(server, tweet_link)
+        short_url = " - %s" % short_url if short_url else ""
     created_at = _timestamp(tweet.created_at)
 
     # having to use hasattr here is nasty.
