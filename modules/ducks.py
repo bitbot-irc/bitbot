@@ -52,7 +52,11 @@ class Module(ModuleManager.BaseModule):
     def _trigger_duck(self, channel):
         channel.duck_lines = 0
         channel.duck_active = time.time()
-        channel.send_message(DUCK)
+        delay = random.SystemRandom().randint(5, 20)
+        self.timers.add("duck", self._send_duck, delay, channel=channel)
+
+    def _send_duck(self, timer):
+        timer.kwargs["channel"].send_message(DUCK)
 
     def _duck_action(self, channel, user, action, setting):
         duck_timestamp = channel.duck_active
