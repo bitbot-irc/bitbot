@@ -53,8 +53,8 @@ class Module(ModuleManager.BaseModule):
 
     def _trigger_duck(self, channel):
         channel.duck_lines = 0
-        channel.duck_active = time.time()
         delay = random.SystemRandom().randint(5, 20)
+        channel.duck_active = time.time()+delay
         self.timers.add("duck", self._send_duck, delay, channel=channel)
 
     def _send_duck(self, timer):
