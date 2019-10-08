@@ -25,4 +25,4 @@ class Module(ModuleManager.BaseModule):
         backup_file = "%s.%s" % (location, suffix)
         shutil.copy2(location, backup_file)
 
-        timer.repo()
+        timer.redo()
