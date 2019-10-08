@@ -61,6 +61,7 @@ def format_note(actor, note, type="Create"):
         retoot_url = note
         retoot_instance = urllib.parse.urlparse(retoot_url).hostname
         retoot = activity_request(retoot_url)
+        retoot_url = retoot.data.get("url", retoot.data["id"])
 
         original_tooter = ap_actor.Actor(retoot.data["attributedTo"])
         original_tooter.load()
@@ -72,7 +73,7 @@ def format_note(actor, note, type="Create"):
 
     elif type == "Create":
         content = utils.http.strip_html(note["content"])
-        url = note["id"]
+        url = note.get("url", note["id"])
 
         return (note.get("summary", None),
             "%s: %s" % (actor.username, content), url)
