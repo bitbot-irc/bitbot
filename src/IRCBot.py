@@ -1,7 +1,7 @@
 import enum, queue, os, queue, select, socket, sys, threading, time, traceback
 import typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
-from src import Socket, utils
+from src import PollHook, Socket, utils
 
 VERSION = "v1.11.1"
 SOURCE = "https://git.io/bitbot"
@@ -22,6 +22,17 @@ class TriggerEvent(object):
 
 class BitBotPanic(Exception):
     pass
+
+class ListLambdaPollHook(PollHook.PollHook):
+    def __init__(self,
+            collection: typing.Callable[[], typing.Iterable[typing.Any]],
+            func: typing.Callable[[typing.Any], None]):
+        self._collection = collection
+        self._func = func
+    def next(self):
+        timeouts = [self._func(i) for i in self._collection()]
+        timeouts = [t for t in timeouts if t is not None]
+        return min(timeouts or [None])
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
@@ -57,7 +68,27 @@ class Bot(object):
         self._read_thread = None
         self._write_thread = None
 
+        self._poll_timeouts = [] # typing.List[PollHook]
+        self._poll_timeouts.append(self._timers)
+        self._poll_timeouts.append(self.cache)
+
+        self._poll_timeouts.append(ListLambdaPollHook(
+            lambda: self.servers.values(),
+            lambda server: server.until_read_timeout()))
+
+        self._poll_timeouts.append(ListLambdaPollHook(
+            lambda: self.servers.values(),
+            lambda server: server.until_next_ping()))
+
+        self._poll_timeouts.append(ListLambdaPollHook(
+            lambda: self.servers.values(), self._throttle_timeout))
+
         self._events.on("timer.reconnect").hook(self._timed_reconnect)
+
+    def _throttle_timeout(self, server: IRCServer.Server):
+        if server.socket.waiting_throttled_send():
+            return server.socket.send_throttle_timeout()
+        return None
 
     def _trigger_both(self):
         self.trigger_read()
@@ -173,40 +204,11 @@ class Bot(object):
         self._read_poll.register(server.fileno(), select.POLLIN)
         return True
 
-    def next_send(self) -> typing.Optional[float]:
-        next = None
-        for server in self.servers.values():
-            timeout = server.socket.send_throttle_timeout()
-            if (server.socket.waiting_throttled_send() and
-                    (next == None or timeout < next)):
-                next = timeout
-        return next
-
-    def next_ping(self) -> typing.Optional[float]:
-        timeouts = []
-        for server in self.servers.values():
-            timeout = server.until_next_ping()
-            if not timeout == None:
-                timeouts.append(timeout)
-        if not timeouts:
-            return None
-        return min(timeouts)
-
-    def next_read_timeout(self) -> typing.Optional[float]:
-        timeouts = []
-        for server in self.servers.values():
-            timeouts.append(server.until_read_timeout())
-        if not timeouts:
-            return None
-        return min(timeouts)
-
     def get_poll_timeout(self) -> float:
         timeouts = []
-        timeouts.append(self._timers.next())
-        timeouts.append(self.next_send())
-        timeouts.append(self.next_ping())
-        timeouts.append(self.next_read_timeout())
-        timeouts.append(self.cache.next_expiration())
+        for poll_timeout in self._poll_timeouts:
+            timeouts.append(poll_timeout.next())
+
         min_secs = min([timeout for timeout in timeouts if not timeout == None])
         return max([min_secs, 0])
 
@@ -374,8 +376,8 @@ class Bot(object):
                         server.disconnect()
 
     def _check(self):
-        self._timers.call()
-        self.cache.expire()
+        for poll_timeout in self._poll_timeouts:
+            poll_timeout.call()
 
         throttle_filled = False
         for server in list(self.servers.values()):

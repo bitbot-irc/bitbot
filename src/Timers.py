@@ -1,5 +1,5 @@
 import time, typing, uuid
-from src import Database, EventManager, Logging
+from src import Database, EventManager, Logging, PollHook
 
 class Timer(object):
     def __init__(self, id: str, context: typing.Optional[str], name: str,
@@ -32,7 +32,7 @@ class Timer(object):
     def done(self) -> bool:
         return self._done
 
-class Timers(object):
+class Timers(PollHook.PollHook):
     def __init__(self, database: Database.Database,
             events: EventManager.Events,
             log: Logging.Log):

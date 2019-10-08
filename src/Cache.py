@@ -1,6 +1,7 @@
 import hashlib, time, typing, uuid
+from src import PollHook
 
-class Cache(object):
+class Cache(PollHook.PollHook):
     def __init__(self):
         self._items = {}
 
@@ -21,7 +22,7 @@ class Cache(object):
         self._items[id] = [key, value, expiration]
         return id
 
-    def next_expiration(self) -> typing.Optional[float]:
+    def next(self) -> typing.Optional[float]:
         if not self._cached_expiration == None:
             return self._cached_expiration
 
@@ -36,7 +37,7 @@ class Cache(object):
         self._cached_expiration = expiration
         return expiration
 
-    def expire(self):
+    def call(self):
         now = time.monotonic()
         expired = []
         for id in self._items.keys():
