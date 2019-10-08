@@ -61,9 +61,11 @@ class Module(ModuleManager.BaseModule):
                 ) if match.group(2) else "00:"
             video_duration += "%s" % match.group(3)[:-1].zfill(2
                 ) if match.group(3) else "00"
-            return "%s (%s) uploaded by %s, %s views%s %s" % (
+            url = URL_YOUTUBESHORT % video_id
+            return "%s (%s) uploaded by %s, %s views%s" % (
                 video_title, video_duration, video_uploader, "{:,}".format(
-                int(video_views)), video_opinions, URL_YOUTUBESHORT % video_id)
+                int(video_views)), video_opinions), url
+        return None
 
     def get_playlist_page(self, playlist_id, part):
          return utils.http.request(URL_YOUTUBEPLAYLIST, get_params={
@@ -128,6 +130,8 @@ class Module(ModuleManager.BaseModule):
             url = event["target"].buffer.find(REGEX_YOUTUBE)
             url = utils.http.url_sanitise(url.match) if url else None
 
+        from_url = not url == None
+
         if not url:
             safe_setting = event["target"].get_setting("youtube-safesearch", True)
             safe = "moderate" if safe_setting else "none"
@@ -147,6 +151,9 @@ class Module(ModuleManager.BaseModule):
         if url:
             out = self._from_url(url)
             if not out == None:
+                out, short_url = out
+                if not from_url:
+                    out = "%s %s" % (out, short_url)
                 event["stdout"].write(out)
             else:
                 raise utils.EventsResultsError()
@@ -162,5 +169,6 @@ class Module(ModuleManager.BaseModule):
             url = utils.http.url_sanitise(event["match"].group(0))
             out = self._from_url(url)
             if not out == None:
+                out, short_url = out
                 event.eat()
                 event["stdout"].write(out)
