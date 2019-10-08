@@ -113,7 +113,7 @@ class Module(ModuleManager.BaseModule):
         :usage: [channel]
         """
         stats = self._top_duck_stats(event["server"], "ducks-befriended",
-            "friends", event["args_split"][0] if event["args"] else None)
+            "friends", event["target"].name if event["is_channel"] else None)
         event["stdout"].write(stats)
     @utils.hook("received.command.enemies")
     def enemies(self, event):
@@ -122,7 +122,7 @@ class Module(ModuleManager.BaseModule):
         :usage: [channel]
         """
         stats = self._top_duck_stats(event["server"], "ducks-shot", "enemies",
-            event["args_split"][0] if event["args"] else None)
+            event["target"].name if event["is_channel"] else None)
         event["stdout"].write(stats)
 
     def _top_duck_stats(self, server, setting, description, channel_query):
