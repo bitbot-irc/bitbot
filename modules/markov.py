@@ -97,12 +97,14 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.markovfor")
     @utils.kwarg("min_args", 1)
-    @utils.kwarg("permission", "markovfor")
     @utils.kwarg("help", "Generate a markov chain for a given channel")
     @utils.kwarg("usage", "<channel> [first-word]")
     def markov_for(self, event):
         if event["args_split"][0] in event["server"].channels:
             channel = event["server"].channels.get(event["args_split"][0])
+            if not channel.has_user(event["user"]):
+                event["check_assert"](utils.Check("permission", "markovfor"))
+
             self._markov_for(channel, event["stdout"], event["stderr"],
                 first_words=event["args_split"][1:])
         else:
