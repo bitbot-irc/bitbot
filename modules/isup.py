@@ -28,11 +28,11 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("%s looks up to me (HTTP %d)" %
             (url, response.code))
 
-    @utils.hook("received.command.isupraw")
+    @utils.hook("received.command.tcpup")
     @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Check if a given hostname:port is up or not")
     @utils.kwarg("usage", "<hostname>[:port]")
-    def isupraw(self, event):
+    def tcpup(self, event):
         hostname, _, port = event["args_split"][0].partition(":")
         port = utils.parse.try_int(port or "80")
         if port == None:
