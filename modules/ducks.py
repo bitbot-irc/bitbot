@@ -15,6 +15,8 @@ DEFAULT_MIN_MESSAGES = 100
     "Minimum messages between ducks spawning"))
 @utils.export("channelset", utils.BoolSetting("ducks-kick",
     "Whether or not to kick someone talking to non-existent ducks"))
+@utils.export("channelset", utils.BoolSetting("ducks-prevent-highlight",
+    "Whether or not to prevent highlighting users with !friends/!enemies"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.channel")
     def new_channel(self, event):
@@ -112,8 +114,15 @@ class Module(ModuleManager.BaseModule):
         :help: Show top 10 duck friends
         :usage: [channel]
         """
-        stats = self._top_duck_stats(event["server"], "ducks-befriended",
-            "friends", event["target"].name if event["is_channel"] else None)
+        query = None
+        if event["args"]:
+            if not event["args_split"][0] == "*":
+                query = event["args_split"][0]
+        elif event["is_channel"]:
+            query = event["target"].name
+
+        stats = self._top_duck_stats(event["server"], event["target"],
+            "ducks-befriended", "friends", query)
         event["stdout"].write(stats)
     @utils.hook("received.command.enemies")
     def enemies(self, event):
@@ -121,11 +130,19 @@ class Module(ModuleManager.BaseModule):
         :help: Show top 10 duck enemies
         :usage: [channel]
         """
-        stats = self._top_duck_stats(event["server"], "ducks-shot", "enemies",
-            event["target"].name if event["is_channel"] else None)
+        query = None
+        if event["args"]:
+            if not event["args_split"][0] == "*":
+                query = event["args_split"][0]
+        elif event["is_channel"]:
+            query = event["target"].name
+
+        stats = self._top_duck_stats(event["server"], event["target"],
+            "ducks-shot", "enemies", query)
         event["stdout"].write(stats)
 
-    def _top_duck_stats(self, server, setting, description, channel_query):
+    def _top_duck_stats(self, server, target, setting, description,
+            channel_query):
         channel_query_str = ""
         if not channel_query == None:
             channel_query = server.irc_lower(channel_query)
@@ -141,9 +158,15 @@ class Module(ModuleManager.BaseModule):
                 user_stats[nickname] += value
 
         top_10 = utils.top_10(user_stats,
-            convert_key=lambda nickname: server.get_user(nickname).nickname)
+            convert_key=lambda n: self._get_nickname(server, target, n))
         return "Top duck %s%s: %s" % (description, channel_query_str,
             ", ".join(top_10))
+
+    def _get_nickname(self, server, target, nickname):
+        nickname = server.get_user(nickname).nickname
+        if target.get_setting("ducks-prevent-highlight", True):
+            nickname = utils.prevent_highlight(nickname)
+        return nickname
 
     @utils.hook("received.command.duckstats")
     def duckstats(self, event):
