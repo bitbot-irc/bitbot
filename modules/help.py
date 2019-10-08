@@ -84,3 +84,19 @@ class Module(ModuleManager.BaseModule):
 
         event["stdout"].write("Commands for %s module: %s" % (
             module.name, ", ".join(commands)))
+
+    @utils.hook("received.command.apropos")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("help", "Show commands with a given string in them")
+    @utils.kwarg("usage", "<query>")
+    def apropos(self, event):
+        query = event["args_split"][0]
+        query_lower = query.lower()
+
+        commands = []
+        for command, hook in self._all_command_hooks().items():
+            if query_lower in command.lower():
+                commands.append("%s%s" % (event["command_prefix"], command))
+        if commands:
+            event["stdout"].write("Apropos of '%s': %s" %
+                (query, ", ".join(commands)))
