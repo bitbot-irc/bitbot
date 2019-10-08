@@ -5,11 +5,19 @@ class Module(ModuleManager.BaseModule):
     _name = "isup"
 
     @utils.hook("received.command.isup")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Check if a given URL is up or not")
     @utils.kwarg("usage", "<url>")
     def isup(self, event):
-        url = event["args_split"][0]
+        url = None
+        if event["args"]:
+            url = event["args_split"][0]
+        else:
+            match = event["target"].buffer.find(utils.http.REGEX_URL)
+            if match:
+                url = match.match
+
+        if not url:
+            raise utils.EventError("No URL provided/found.")
 
         response = None
         try:
