@@ -10,11 +10,10 @@ class Module(ModuleManager.BaseModule):
         until_next_hour = 60-now.second
         until_next_hour += ((60-(now.minute+1))*60)
 
-        self.timers.add("database-backup", BACKUP_INTERVAL,
+        self.timers.add("database-backup", self._backup, BACKUP_INTERVAL,
             time.time()+until_next_hour)
 
-    @utils.hook("timer.database-backup")
-    def backup(self, event):
+    def _backup(self, timer):
         location =  self.bot.database.location
         files = glob.glob("%s.*" % location)
         files = sorted(files)
@@ -26,4 +25,4 @@ class Module(ModuleManager.BaseModule):
         backup_file = "%s.%s" % (location, suffix)
         shutil.copy2(location, backup_file)
 
-        event["timer"].redo()
+        timer.repo()

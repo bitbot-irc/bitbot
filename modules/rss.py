@@ -14,8 +14,8 @@ RSS_INTERVAL = 60 # 1 minute
 class Module(ModuleManager.BaseModule):
     _name = "RSS"
     def on_load(self):
-        self.timers.add("rss", self.bot.get_setting("rss-interval",
-            RSS_INTERVAL))
+        self.timers.add("rss-feeds", self._timer,
+            self.bot.get_setting("rss-interval", RSS_INTERVAL))
 
     def _format_entry(self, server, feed_title, entry, shorten):
         title = entry["title"]
@@ -32,13 +32,11 @@ class Module(ModuleManager.BaseModule):
 
         return "%s%s%s%s" % (feed_title_str, title, author, link)
 
-
-    @utils.hook("timer.rss")
-    def timer(self, event):
+    def _timer(self, timer):
         start_time = time.monotonic()
         self.log.trace("Polling RSS feeds")
 
-        event["timer"].redo()
+        timer.redo()
         hook_settings = self.bot.database.channel_settings.find_by_setting(
             "rss-hooks")
         hooks = {}

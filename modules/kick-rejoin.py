@@ -28,12 +28,12 @@ class Module(ModuleManager.BaseModule):
             if delay == 0:
                 self._rejoin(event["server"], event["channel"].name)
             else:
-                self.timers.add("kick-rejoin", delay, server=event["server"],
-                    channel_name=event["channel"].name)
+                self.timers.add("kick-rejoin",
+                    self._timer(event["server"], event["channel"].name),
+                    delay)
 
-    @utils.hook("timer.kick-rejoin")
-    def timer(self, event):
-        self._rejoin(event["server"], event["channel_name"])
+    def _timer(self, server, channel_name):
+        return lambda timer: self._rejoin(server, channel_name)
 
     def _rejoin(self, server, channel_name):
         server.send_join(channel_name)

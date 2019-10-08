@@ -41,9 +41,9 @@ class CoinParseException(Exception):
 
 class Module(ModuleManager.BaseModule):
     def on_load(self):
-        self.timers.add("coin-interest", INTEREST_INTERVAL,
+        self.timers.add("coin-interest", self._interest, INTEREST_INTERVAL,
             time.time()+self._until_next_hour())
-        self.timers.add("coin-lottery", LOTTERY_INTERVAL,
+        self.timers.add("coin-lottery", self._lottery, LOTTERY_INTERVAL,
             time.time()+self._until_next_6_hour())
 
     def _until_next_hour(self, now=None):
@@ -440,8 +440,7 @@ class Module(ModuleManager.BaseModule):
                 "%s loses %s" % (choice, event["user"].nickname,
                 str(coin_losses)))
 
-    @utils.hook("timer.coin-interest")
-    def interest(self, event):
+    def _interest(self, timer):
         for server in self.bot.servers.values():
             if not server.get_setting("coin-interest", False):
                 continue
@@ -456,7 +455,7 @@ class Module(ModuleManager.BaseModule):
                     interest = round(coins*interest_rate, 2)
                     server.set_user_setting(nickname, "coins",
                         self._coin_str(coins+interest))
-        event["timer"].redo()
+        timer.redo()
 
     @utils.hook("received.command.lotterybuy", authenticated=True)
     def lottery_buy(self, event):
@@ -539,8 +538,7 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("There have been no lottery winners!")
 
-    @utils.hook("timer.coin-lottery")
-    def lottery(self, event):
+    def _lottery(self, timer):
         for server in self.bot.servers.values():
             lottery = server.get_setting("lottery", {})
             if lottery:
@@ -561,4 +559,4 @@ class Module(ModuleManager.BaseModule):
             server.set_setting("lottery-winner", user.nickname)
             user.send_notice("You won %s in the lottery! you now have %s coins"
                 % (self._coin_str(winnings), self._coin_str(new_coins)))
-        event["timer"].redo()
+        timer.redo()

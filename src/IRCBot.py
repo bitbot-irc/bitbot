@@ -1,7 +1,7 @@
 import enum, queue, os, queue, select, socket, sys, threading, time, traceback
 import typing, uuid
 from src import EventManager, Exports, IRCServer, Logging, ModuleManager
-from src import PollHook, Socket, utils
+from src import PollHook, Socket, Timers, utils
 
 VERSION = "v1.11.1"
 SOURCE = "https://git.io/bitbot"
@@ -82,8 +82,6 @@ class Bot(object):
 
         self._poll_timeouts.append(ListLambdaPollHook(
             lambda: self.servers.values(), self._throttle_timeout))
-
-        self._events.on("timer.reconnect").hook(self._timed_reconnect)
 
     def _throttle_timeout(self, server: IRCServer.Server):
         if server.socket.waiting_throttled_send():
@@ -216,12 +214,13 @@ class Bot(object):
         del self.servers[server.fileno()]
         self._trigger_both()
 
-    def _timed_reconnect(self, event: EventManager.Event):
-        if not self.reconnect(event["server_id"],
-                event.get("connection_params", None)):
-            event["timer"].redo()
+    def _timed_reconnect(self, timer: Timers.Timer):
+        server_id = timer.kwargs["server_id"]
+        params = timer.kwargs.get("connection_params", None)
+        if not self.reconnect(server_id, params):
+            timer.redo()
         else:
-            del self.reconnections[event["server_id"]]
+            del self.reconnections[server_id]
     def reconnect(self, server_id: int, connection_params: typing.Optional[
             utils.irc.IRCConnectionParameters]=None) -> bool:
         args = {} # type: typing.Dict[str, str]
@@ -395,8 +394,8 @@ class Bot(object):
                 if not self.get_server_by_id(server.id):
                     reconnect_delay = self.config.get("reconnect-delay", 10)
 
-                    timer = self._timers.add("reconnect", reconnect_delay,
-                        server_id=server.id)
+                    self.timers.add("timed-reconnect", self._timed_reconnect,
+                        reconnect_delay, server_id=server.id)
                     self.reconnections[server.id] = timer
 
                     self.log.warn(

@@ -7,7 +7,8 @@ class Module(ModuleManager.BaseModule):
             if "MONITOR" in server.isupport:
                 server.send_raw("MONITOR + %s" % target_nick)
             else:
-                self.timers.add("ison-check", 30, server=server)
+                self.timers.add("ison-check", self._ison_check, 30,
+                    server=server)
 
     @utils.hook("received.376")
     def end_of_motd(self, event):
@@ -31,13 +32,12 @@ class Module(ModuleManager.BaseModule):
         if event["server"].irc_lower(target_nick) in nicks:
             event["server"].send_nick(target_nick)
 
-    @utils.hook("timer.ison-check")
-    def ison_check(self, event):
-        target_nick = event["server"].connection_params.nickname
-        if not event["server"].irc_equals(
-                event["server"].nickname, target_nick):
-            event["server"].send_raw("ISON %s" % target_nick)
-            event["timer"].redo()
+    def _ison_check(self, timer):
+        server = timer.kwargs["server"]
+        target_nick = server.connection_params.nickname
+        if not server.irc_equals(server.nickname, target_nick):
+            server.send_raw("ISON %s" % target_nick)
+            timer.redo()
 
     @utils.hook("received.303")
     def ison_response(self, event):
