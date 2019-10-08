@@ -14,7 +14,7 @@ class Channel(IRCObject.Object):
         self.server = server
         self.bot = bot
         self.topic = ""
-        self.topic_setter = None # type: typing.Optional[str]
+        self.topic_setter = None # type: typing.Optional[IRCLine.Hostmask]
         self.topic_time = 0
         self.users = set([]) # type: typing.Set[IRCUser.User]
         self.modes = {} # type: typing.Dict[str, typing.Set]
