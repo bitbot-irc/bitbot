@@ -356,16 +356,21 @@ class OptionsSetting(Setting):
 
 class FunctionSetting(Setting):
     def __init__(self, func: typing.Callable[[str], bool], name: str,
-            help: str=None, example: str=None):
+            help: str=None, example: str=None, format=None):
         self._func = func
         Setting.__init__(self, name, help, example)
+        if not format == None:
+            self.format = format
 
     def parse(self, value: str) -> typing.Any:
         return self._func(value)
 
+def sensitive_format(value: typing.Any):
+    return "*"*16
+
 class SensitiveSetting(Setting):
     def format(self, value: typing.Any):
-        return "*"*16
+        return sensitive_format(value)
 
 class DeadlineExceededException(Exception):
     pass
