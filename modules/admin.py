@@ -168,8 +168,8 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("permission", "editserver")
     def edit_server(self, event):
         alias = event["args_split"][0]
-        server = self.bot.get_server_by_alias(alias)
-        if server == None:
+        server_id = self._id_from_alias(alias)
+        if server_id == None:
             raise utils.EventError("Unknown server '%s'" % alias)
 
         option = event["args_split"][1].lower()
@@ -196,5 +196,5 @@ class Module(ModuleManager.BaseModule):
         else:
             raise utils.EventError("Unknown option '%s'" % option)
 
-        self.bot.database.servers.edit(server.id, option, value_parsed)
+        self.bot.database.servers.edit(server_id, option, value_parsed)
         event["stdout"].write("Set %s for %s" % (option, alias))
