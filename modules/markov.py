@@ -167,4 +167,7 @@ class Module(ModuleManager.BaseModule):
                 break
             words.append(third_word)
 
+        if words == first_words:
+            return None
+
         return " ".join(words)
