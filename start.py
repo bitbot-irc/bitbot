@@ -58,7 +58,7 @@ if args.version:
 
 log_level = args.log_level
 if not log_level:
-    log_level = "debug" if args.verbose else "info"
+    log_level = "debug" if args.verbose else "warn"
 
 log = Logging.Log(not args.no_logging, log_level, args.log_dir)
 

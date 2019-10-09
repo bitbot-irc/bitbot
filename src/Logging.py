@@ -29,7 +29,7 @@ class Log(object):
         formatter = BitBotFormatter("%(asctime)s [%(levelname)s] %(message)s")
 
         stdout_handler = logging.StreamHandler(sys.stdout)
-        stdout_handler.setLevel(LEVELS["warn"])
+        stdout_handler.setLevel(stdout_level)
         stdout_handler.setFormatter(formatter)
         self.logger.addHandler(stdout_handler)
 
