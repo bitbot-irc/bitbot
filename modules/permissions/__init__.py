@@ -191,7 +191,7 @@ class Module(ModuleManager.BaseModule):
                 target.nickname)
 
     def _check_command(self, event, permission, authenticated):
-        if event["user"].admin_master:
+        if event["user"].admin_master and (permission or authenticated):
             return utils.consts.PERMISSION_FORCE_SUCCESS, None
 
         identity_mechanism = event["server"].get_setting("identity-mechanism",
