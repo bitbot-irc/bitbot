@@ -6,6 +6,13 @@ def _timestamp(dt):
     since, unit = utils.time_unit(seconds_since)
     return "%s %s ago" % (since, unit)
 
+def _normalise(tweet):
+    while "  " in tweet:
+        tweet = tweet.replace("  ", " ")
+    lines = [line.strip() for line in tweet.split("\n")]
+    lines = list(filter(None, lines))
+    return html.unescape("  ".join(lines))
+
 def _tweet(exports, server, tweet, from_url):
     linked_id = tweet.id
     username = tweet.user.screen_name
@@ -30,8 +37,8 @@ def _tweet(exports, server, tweet, from_url):
         original_timestamp = _timestamp(tweet.retweeted_status.created_at)
         return "(@%s%s (%s) retweeted @%s (%s)) %s%s" % (username, verified,
             created_at, original_username, original_timestamp,
-            html.unescape(original_text), short_url)
+            _normalise(original_text), short_url)
     else:
         return "(@%s%s, %s) %s%s" % (username, verified, created_at,
-            html.unescape(tweet.full_text), short_url)
+            _normalise(tweet.full_text), short_url)
 
