@@ -1,3 +1,88 @@
+# 2019-10-09 - BitBot v1.12.0-rc1
+
+Added:
+- `external_modules` - an arbitrary directory in which to look for modules
+- `channel_blacklist.py` - rewrite `JOIN`s and send instant `PART`s to avoid the bot being in certain channels
+- Ability to specify different `channel_op.py` `ban-mask` for users with accounts
+- `!invite` in `channel_op.py`
+- `check_certificate.py` - warn when a client certificate is close to expiration (or already expired)
+- Support `$-` format for alias arg replacement - means "none or all args"
+- Support `!config <nickname>`, `!config <#channel>` and `!config *`
+- Support dice roll modifiers (e.g. `!roll 2d20+1-2`) in `dice.py`
+- Opt-out highlight prevention for `!friends`/`!enemies` in `ducks.py`
+- Use a random delay after a duck is triggered before showing the duck (`ducks.py`)
+- `!friends`/`!enemies` now defaults to the current channel (`ducks.py`)
+- `!action` and `!msg` in `echo.py`
+- `git-show-private` channel setting to enable showing private github/gitea webhooks
+- `!ghcommit` and support `auto-github` for `@commit`
+- `!which` - show what module provides a command
+- `!apropos` - show commands that contain a given string
+- `!tcpup` - check if a given `host:port` can receive a TCP connection
+- `markov.py`
+- `mumble.py` - show stats for a given mumble server
+- `!grab` as an alias of `!quotegrab`
+- `!crate` in `rust.py` - show information on a given crate name
+- Support sed `&` syntax
+- Support `"<nickname>: s/"` sed syntax (search only for messages by `<nickname>`)
+- `!silence` now takes an optional duration parameter
+- `!unsilence`
+- `!stats` not takes an optional network parameter - to show stats only for a given server
+- `!channels` - list the bot's current channels on the current network
+- `strip_otr.py` - remove trail whitespace used for automated OTR handshakes
+- Support disabling `words.py` word tracking for a while channel
+- `utils.deadline_process` - like `@utils.deadline` but uses a subprocess
+
+Changed:
+- REST API only listens on localhost now, for security reasons
+- `!changenickname` -> `!nick`
+- `!reconnect` can take an `<alias>` param to tell it which server to reconnect to
+- `!disconnect` can now cancel reconnections
+- `auto_mode.py` was replaced by `!flags` in `channel_op.py`
+- `!mute` masks should also take in to consideration the configured `ban-mask`
+- Obscure output of `!config server sasl`
+- `channel.get_user_status()` -> `channel.get_user_modes()`
+- `!gh`/`!ghissue`/`!ghpull` can now see private repos through API keys
+- Allow preventing user-specified nameservers with `!dns`
+- Update `ircv3_multiline.py` to `draft/multiline`
+- Prevent invalid SASL mechanisms
+- `sasl-hard-fail` now defaults to False
+- Multi-word karma now needs parentheses, along with a few other tweaks to prevent false positives
+- `channel.topic_setter` is now a `Hostmask` object
+- Obscure output of `!config server nickserv-password`
+- `!quotegrab` can take a number of lines to grab
+- `relay-extras` defaults to `False`
+- `rest_api` responses now use a `Response` object for complex data and headers
+- `!apikey` now has the subcommands `list`, `add`, `remove` and `info`
+- `eval_rust.py` -> `rust.py`
+- `!silence` now affects command usage errors and command suggestions
+- Only do `auto-title` if the `<title>` and URL are significantly similar
+- Use `"#<number>"` to denote `!ud` definition index
+- Don't use an API for `user_time.py` - use `pytz`
+- Support showing `!time` and `!weather` for a location, not just a user
+- `Cache.py` is now more of a `key:value` store
+- Temporarily cache IRCChannel settings in memory
+- `utils.http.request()` now supports a complex request object
+- `utils.http.request()` now uses more factors to detect a HTML page's encoding
+- `utils.http.is_localhost()` -> `utils.http.host_permitted()` and reject more IP ranges
+
+Fixed:
+- `badges.py` now forces UTC
+- `!op`/`!voice` in `channel_op.py` tried to use `send_mode()` without array arguments
+- `!cignore` was not working for non-bot-admin users
+- `!tw` should be asking for `tweet_mode="extended"`
+- Fix `server.send_invite()` arg order
+
+Removed:
+- `books.py`
+- `botsnack.py`
+- `check_urls.py`
+- `mixed_unicode.py`
+- `!qget` - functionality moved to `!quote`
+- `shakespeare.py`
+- `slowvoice.py`
+- `strax.py`
+- `timer.py`
+
 # 2019-08-30 - BitBot v1.11.1
 
 Added:
