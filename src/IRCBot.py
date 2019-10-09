@@ -394,8 +394,9 @@ class Bot(object):
                 if not self.get_server_by_id(server.id):
                     reconnect_delay = self.config.get("reconnect-delay", 10)
 
-                    self._timers.add("timed-reconnect", self._timed_reconnect,
-                        reconnect_delay, server_id=server.id)
+                    timer = self._timers.add("timed-reconnect",
+                        self._timed_reconnect, reconnect_delay,
+                        server_id=server.id)
                     self.reconnections[server.id] = timer
 
                     self.log.warn(
