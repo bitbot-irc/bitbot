@@ -1,3 +1,8 @@
+# TBD - BitBot v1.12.0-rc2
+
+Fixed:
+- Wasn't catching `timers.add()` output as `timer` var in reconnection logic
+
 # 2019-10-09 - BitBot v1.12.0-rc1
 
 Added:
