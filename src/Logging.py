@@ -29,7 +29,7 @@ class Log(object):
         formatter = BitBotFormatter("%(asctime)s [%(levelname)s] %(message)s")
 
         stdout_handler = logging.StreamHandler(sys.stdout)
-        stdout_handler.setLevel(stdout_level)
+        stdout_handler.setLevel(LEVELS["warn"])
         stdout_handler.setFormatter(formatter)
         self.logger.addHandler(stdout_handler)
 
@@ -40,6 +40,13 @@ class Log(object):
             trace_handler.setLevel(LEVELS["trace"])
             trace_handler.setFormatter(formatter)
             self.logger.addHandler(trace_handler)
+
+            info_path = os.path.join(location, "info.log")
+            info_handler = logging.handlers.TimedRotatingFileHandler(
+                info_path, when="midnight", backupCount=0)
+            info_handler.setLevel(LEVELS["info"])
+            info_handler.setFormatter(formatter)
+            self.logger.addHandler(info_handler)
 
             warn_path = os.path.join(location, "warn.log")
             warn_handler = logging.FileHandler(warn_path)
