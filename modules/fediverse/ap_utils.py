@@ -1,4 +1,5 @@
 import urllib.parse
+import bs4
 from src import IRCBot, utils
 
 LD_TYPE = ("application/ld+json; "
@@ -56,6 +57,27 @@ def find_actor(username, instance):
         if link["type"] == ACTIVITY_TYPE:
             return link["href"]
 
+def _normalise_note(content):
+    soup = bs4.BeautifulSoup(content, "html.parser")
+    lines = []
+    for element in soup.find_all():
+        out = ""
+        if element.text.strip() == "":
+            continue
+        elif element.name == "p":
+            for subitem in element.contents:
+                if type(subitem) == bs4.element.Tag:
+                    if subitem.name == "br":
+                        lines.append(out)
+                        out = ""
+                else:
+                    out += subitem
+        else:
+            continue
+
+        lines.append(out.replace("  ", " "))
+    return "  ".join(lines)
+
 def format_note(actor, note, type="Create"):
     if type == "Announce":
         retoot_url = note
@@ -66,13 +88,13 @@ def format_note(actor, note, type="Create"):
         original_tooter = ap_actor.Actor(retoot.data["attributedTo"])
         original_tooter.load()
         retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
-        retoot_content = utils.http.strip_html(retoot.data["content"])
+        retoot_content = _normalise_note(retoot.data["content"])
 
         return (retoot.data.get("summary", None),  "%s (boost %s): %s - %s" % (
             actor.username, retooted_user, retoot_content), retoot_url)
 
     elif type == "Create":
-        content = utils.http.strip_html(note["content"])
+        content = _normalise_note(note["content"])
         url = note.get("url", note["id"])
 
         return (note.get("summary", None),
