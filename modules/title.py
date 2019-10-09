@@ -5,6 +5,8 @@
 import hashlib, re, urllib.parse
 from src import EventManager, ModuleManager, utils
 
+RE_WORDSPLIT = re.compile("[\s/]")
+
 @utils.export("channelset", utils.BoolSetting("auto-title",
     "Disable/Enable automatically getting info titles from URLs"))
 @utils.export("channelset", utils.BoolSetting("title-shorten",
@@ -22,7 +24,7 @@ class Module(ModuleManager.BaseModule):
     def _different(self, url, title):
         url = url.lower()
         title_words = []
-        for title_word in title.split():
+        for title_word in RE_WORDSPLIT.split(title):
             if len(title_word) > 1 or title_word.isalpha():
                 title_words.append(title_word.lower())
 
