@@ -7,11 +7,7 @@ def _timestamp(dt):
     return "%s %s ago" % (since, unit)
 
 def _normalise(tweet):
-    while "  " in tweet:
-        tweet = tweet.replace("  ", " ")
-    lines = [line.strip() for line in tweet.split("\n")]
-    lines = list(filter(None, lines))
-    return html.unescape("  ".join(lines))
+    return html.unescape(utils.parse.line_normalise(tweet))
 
 def _tweet(exports, server, tweet, from_url):
     linked_id = tweet.id

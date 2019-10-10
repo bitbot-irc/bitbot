@@ -1,4 +1,5 @@
 import io, typing
+from src import utils
 
 COMMENT_TYPES = ["#", "//"]
 def hashflags(filename: str
@@ -79,3 +80,7 @@ def try_int(s: str) -> typing.Optional[int]:
         return int(s)
     except ValueError:
         return None
+
+def line_normalise(s: str) -> str:
+    lines = list(filter(None, [line.strip() for line in s.split("\n")]))
+    return "  ".join(line.replace("  ", " ") for line in lines)
