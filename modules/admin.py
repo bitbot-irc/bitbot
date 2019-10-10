@@ -45,10 +45,13 @@ class Module(ModuleManager.BaseModule):
     def _id_from_alias(self, alias):
         return self.bot.database.servers.get_by_alias(alias)
     def _server_from_alias(self, alias):
+        id, server = self._both_from_alias(alias)
+        return server
+    def _both_from_alias(self, alias):
         id = self._id_from_alias(alias)
         if id == None:
             raise utils.EventError("Unknown server alias")
-        return self.bot.get_server_by_id(id)
+        return id, self.bot.get_server_by_id(id)
 
     @utils.hook("received.command.reconnect")
     def reconnect(self, event):
@@ -95,10 +98,11 @@ class Module(ModuleManager.BaseModule):
         :permission: disconnect
         """
         server = event["server"]
+        id = -1
         alias = str(event["server"])
         if event["args"]:
             alias = event["args_split"][0]
-            server = self._server_from_alias(alias)
+            id, server = self._both_from_alias(alias)
 
         if not server == None:
             alias = str(server)
