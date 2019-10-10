@@ -53,7 +53,7 @@ class Module(ModuleManager.BaseModule):
 
         cast_type = VoteCastResult.Cast
 
-        for option, nicks in vote["options"].values():
+        for option, nicks in vote["options"].items():
             if user.name in nicks:
                 if option == chosen_option:
                     return VoteCastResult.Unchanged
