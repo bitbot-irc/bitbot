@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
             self.bot.get_setting("rss-interval", RSS_INTERVAL))
 
     def _format_entry(self, server, feed_title, entry, shorten):
-        title = entry["title"]
+        title = utils.http.strip_html(entry["title"])
 
         author = entry.get("author", None)
         author = " by %s" % author if author else ""
