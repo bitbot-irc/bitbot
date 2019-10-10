@@ -376,7 +376,8 @@ class Bot(object):
 
     def _check(self):
         for poll_timeout in self._poll_timeouts:
-            poll_timeout.call()
+            if poll_timeout.next() == 0:
+                poll_timeout.call()
 
         throttle_filled = False
         for server in list(self.servers.values()):

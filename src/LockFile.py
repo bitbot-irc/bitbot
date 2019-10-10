@@ -32,8 +32,7 @@ class LockFile(PollHook.PollHook):
     def next(self):
         return max(0, (self._next_lock-utils.datetime_utcnow()).total_seconds())
     def call(self):
-        if self.next() == 0:
-            self.lock()
+        self.lock()
 
     def unlock(self):
         if os.path.isfile(self._lock_location):
