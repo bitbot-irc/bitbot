@@ -36,7 +36,7 @@ class ListLambdaPollHook(PollHook.PollHook):
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
-            exports, log, modules, timers, lock_file):
+            exports, log, modules, timers):
         self.directory = directory
         self.args = args
         self.cache = cache
@@ -68,11 +68,7 @@ class Bot(object):
         self._read_thread = None
         self._write_thread = None
 
-        self._poll_timeouts = [] # typing.List[PollHook]
-        self._poll_timeouts.append(self._timers)
-        self._poll_timeouts.append(self.cache)
-        self._poll_timeouts.append(lock_file)
-
+        self._poll_timeouts = [] # typing.List[PollHook.PollHook]
         self._poll_timeouts.append(ListLambdaPollHook(
             lambda: self.servers.values(),
             lambda server: server.until_read_timeout()))
@@ -83,6 +79,9 @@ class Bot(object):
 
         self._poll_timeouts.append(ListLambdaPollHook(
             lambda: self.servers.values(), self._throttle_timeout))
+
+    def add_poll_hook(self, hook: PollHook.PollHook):
+        self._poll_timeouts.append(hook)
 
     def _throttle_timeout(self, server: IRCServer.Server):
         if server.socket.waiting_throttled_send():

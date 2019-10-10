@@ -106,7 +106,10 @@ modules = ModuleManager.ModuleManager(events, exports, timers, config, log,
     module_directories)
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
-    exports, log, modules, timers, lock_file)
+    exports, log, modules, timers)
+bot.add_poll_hook(cache)
+bot.add_poll_hook(lock_file)
+bot.add_poll_hook(timers)
 
 if args.module:
     definition = modules.find_module(args.module)
