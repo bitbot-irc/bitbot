@@ -73,8 +73,7 @@ class Module(ModuleManager.BaseModule):
             "port": server.connection_params.port,
             "tls": server.connection_params.tls,
             "alias": server.connection_params.alias,
-            "hostmask": "%s!%s@%s" % (
-                server.nickname, server.username, server.hostname),
+            "hostmask": server.hostmask(),
             "users": len(server.users),
             "bytes-written": server.socket.bytes_written,
             "bytes-read": server.socket.bytes_read,
