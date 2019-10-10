@@ -10,6 +10,7 @@ STR_NOVOTE = "Unknown vote '%s'"
 class VoteCastResult(enum.Enum):
     Cast = 1
     Changed = 2
+    Unchanged = 3
 
 @utils.export("channelset", utils.BoolSetting("votes-start-restricted",
     "Whether starting a vote should be restricted to ops"))
@@ -46,19 +47,22 @@ class Module(ModuleManager.BaseModule):
     def _format_options(self, vote):
         return ", ".join("'%s'" % o for o in vote["options"])
 
-    def _cast_vote(self, channel, vote_id, user, option):
+    def _cast_vote(self, channel, vote_id, user, chosen_option):
         vote = self._get_vote(channel, vote_id)
-        option = vote["options"][option]
+        option_nicks = vote["options"][chosen_option]
 
         cast_type = VoteCastResult.Cast
 
-        for nicks in vote["options"].values():
+        for option, nicks in vote["options"].values():
             if user.name in nicks:
-                nicks.remove(user.name)
-                cast_type = VoteCastResult.Changed
-                break
+                if option == chosen_option:
+                    return VoteCastResult.Unchanged
+                else:
+                    nicks.remove(user.name)
+                    cast_type = VoteCastResult.Changed
+                    break
 
-        option.append(user.name)
+        option_nicks.append(user.name)
         self._set_vote(channel, vote_id, vote)
         return cast_type
 
@@ -132,11 +136,13 @@ class Module(ModuleManager.BaseModule):
             cast_result = self._cast_vote(event["target"], vote_id,
                 event["user"], choice)
 
-            cast_desc = "cast"
+            cast_desc = "has been cast"
             if cast_result == VoteCastResult.Changed:
-                cast_desc = "changed"
+                cast_desc = "has been changed"
+            elif cast_result == VoteCastResult.Unchanged:
+                cast_desc = "is unchanged"
 
-            event["stdout"].write("%s: your vote has been %s." %
+            event["stdout"].write("%s: your vote %s." %
                 (event["user"].nickname, cast_desc))
 
     @utils.hook("received.command.votes", channel_only=True)
