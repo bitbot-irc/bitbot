@@ -9,12 +9,9 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 DATE_FORMAT = "%Y-%m-%d"
 
 class Module(ModuleManager.BaseModule):
-    def _now(self):
-        return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-
     def _parse_date(self, dt: str):
         if dt.lower() == "today":
-            return self._now()
+            return utils.datetime_utcnow()
         else:
             match = RE_HUMAN_FORMAT.match(dt)
             if not match:
@@ -57,7 +54,7 @@ class Module(ModuleManager.BaseModule):
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
 
-        now = self._round_up_day(self._now())
+        now = self._round_up_day(utils.datetime_utcnow())
 
         found_badge = self._find_badge(badges, badge)
 
@@ -79,7 +76,7 @@ class Module(ModuleManager.BaseModule):
         if event["args"]:
             user = event["server"].get_user(event["args_split"][0])
 
-        now = self._round_up_day(self._now())
+        now = self._round_up_day(utils.datetime_utcnow())
         badges = []
         for badge, date in self._get_badges(user).items():
             days_since = self._days_since(now, utils.iso8601_parse(date))
