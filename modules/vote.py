@@ -64,7 +64,7 @@ class Module(ModuleManager.BaseModule):
 
     def _open_votes(self, channel):
         open = []
-        for setting, vote in channel.find_setting(prefix="vote-"):
+        for setting, vote in channel.find_settings(prefix="vote-"):
             if vote["open"]:
                 open.append(vote)
         return open
