@@ -1,7 +1,20 @@
-# TBD - BitBot v1.12.0-rc2
+# 2019-10-10 - BitBot v1.12.0-rc2
+
+Added:
+- Basic lock file mechanics (`src/LockFile.py`)
+- Single-line normalisation of fediverse Notes by vaguely parsing HTML
+- Single-line normalisation of RSS titles
+- Single-line normalisation of tweets
+
+Changed:
+- `!editserver` should work for currently-disconnected servers
+- Also count `"/"` as a word split for checking how different a `<title>` is from a URL (`title.py`)
+- `INFO` logging should go to a file - stdout should only be `WARN`
 
 Fixed:
 - Wasn't catching `timers.add()` output as `timer` var in reconnection logic
+- Multi-word markov seeds should have failed if no new data was found
+- `masterlogin` should only allow you to bypass `permission` checks, not e.g. `require_access` or `require_mode`
 
 # 2019-10-09 - BitBot v1.12.0-rc1
 
