@@ -44,7 +44,7 @@ class Socket(IRCObject.Object):
         self.last_send = None # type: typing.Optional[float]
 
         self.connected_ip = None # type: typing.Optional[str]
-        self.conncect_time: float = -1
+        self.connect_time: float = -1
 
     def fileno(self) -> int:
         return self.cached_fileno or self._socket.fileno()
