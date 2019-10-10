@@ -6,9 +6,9 @@ if sys.version_info < (3, 6):
     sys.stderr.write("BitBot requires python 3.6.0 or later\n")
     sys.exit(1)
 
-import argparse, faulthandler, os, platform, time
+import atexit, argparse, faulthandler, os, platform, time
 from src import Cache, Config, Database, EventManager, Exports, IRCBot
-from src import Logging, ModuleManager, Timers, utils
+from src import LockFile, Logging, ModuleManager, Timers, utils
 
 faulthandler.enable()
 
@@ -65,6 +65,14 @@ log = Logging.Log(not args.no_logging, log_level, args.log_dir)
 log.info("Starting BitBot %s (Python v%s)",
     [IRCBot.VERSION, platform.python_version()])
 
+lock_file = LockFile.LockFile(args.database)
+if not lock_file.available():
+    log.critical("Database is locked. Is BitBot already running?")
+    sys.exit(1)
+
+atexit.register(lock_file.unlock)
+lock_file.lock()
+
 database = Database.Database(log, args.database)
 
 if args.remove_server:
@@ -98,7 +106,7 @@ modules = ModuleManager.ModuleManager(events, exports, timers, config, log,
     module_directories)
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
-    exports, log, modules, timers)
+    exports, log, modules, timers, lock_file)
 
 if args.module:
     definition = modules.find_module(args.module)

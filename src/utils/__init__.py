@@ -15,6 +15,9 @@ ISO8601_FORMAT_TZ = "%z"
 
 DATETIME_HUMAN = "%Y/%m/%d %H:%M:%S"
 
+def datetime_utcnow() -> datetime.datetime:
+    return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+
 def iso8601_format(dt: datetime.datetime, milliseconds: bool=False) -> str:
     dt_format = dt.strftime(ISO8601_FORMAT_DT)
     tz_format = dt.strftime(ISO8601_FORMAT_TZ)
@@ -25,8 +28,7 @@ def iso8601_format(dt: datetime.datetime, milliseconds: bool=False) -> str:
 
     return "%s%s%s" % (dt_format, ms_format, tz_format)
 def iso8601_format_now(milliseconds: bool=False) -> str:
-    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-    return iso8601_format(now, milliseconds=milliseconds)
+    return iso8601_format(datetime_utcnow(), milliseconds=milliseconds)
 def iso8601_parse(s: str, microseconds: bool=False) -> datetime.datetime:
     fmt = ISO8601_PARSE_MICROSECONDS if microseconds else ISO8601_PARSE
     return datetime.datetime.strptime(s, fmt)

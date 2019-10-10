@@ -36,7 +36,7 @@ class ListLambdaPollHook(PollHook.PollHook):
 
 class Bot(object):
     def __init__(self, directory, args, cache, config, database, events,
-            exports, log, modules, timers):
+            exports, log, modules, timers, lock_file):
         self.directory = directory
         self.args = args
         self.cache = cache
@@ -71,6 +71,7 @@ class Bot(object):
         self._poll_timeouts = [] # typing.List[PollHook]
         self._poll_timeouts.append(self._timers)
         self._poll_timeouts.append(self.cache)
+        self._poll_timeouts.append(lock_file)
 
         self._poll_timeouts.append(ListLambdaPollHook(
             lambda: self.servers.values(),
