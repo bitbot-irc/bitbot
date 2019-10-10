@@ -46,7 +46,7 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Failed to load log (%d)" % page.code)
 
     def _load_loop(self, channel_id, data):
-        for line in data.decode("utf8").split("\n"):
+        for line in data.decode("utf8", errors="ignore").split("\n"):
             self.bot.trigger(self._create_factory(channel_id, line.strip()))
         self._load_thread = None
     def _create_factory(self, channel_id, line):
