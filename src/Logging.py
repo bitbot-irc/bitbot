@@ -43,10 +43,10 @@ class Log(object):
         stdout_handler.setFormatter(formatter)
         self.logger.addHandler(stdout_handler)
 
-        test_handler = HookedHandler(self._on_log)
-        test_handler.setLevel(LEVELS["debug"])
-        test_handler.setFormatter(formatter)
-        self.logger.addHandler(test_handler)
+        hook_handler = HookedHandler(self._on_log)
+        hook_handler.setLevel(LEVELS["debug"])
+        hook_handler.setFormatter(formatter)
+        self.logger.addHandler(hook_handler)
 
         if to_file:
             trace_path = os.path.join(location, "trace.log")
