@@ -10,29 +10,6 @@ class Module(ModuleManager.BaseModule):
 
     def SIGINT(self, signum, frame):
         print()
-        self.bot.trigger(lambda: self._kill(signum))
-
-    def _kill(self, signum):
-        if self._exited:
-            return
-        self._exited = True
-
-        self.events.on("signal.interrupt").call(signum=signum)
-
-        written = False
-        for server in list(self.bot.servers.values()):
-            if server.connected:
-                server.socket.clear_send_buffer()
-
-                line = utils.irc.protocol.quit("Shutting down")
-                sent_line = server.send(line, immediate=True)
-                sent_line.events.on("send").hook(self._make_hook(server))
-
-                server.send_enabled = False
-                written = True
-
-        if not written:
-            sys.exit()
 
     def _make_hook(self, server):
         return lambda e: self.bot.disconnect(server)
