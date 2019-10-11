@@ -12,7 +12,7 @@ arg_parser.add_argument("--database", "-d",
 
 arg_parser.add_argument("command")
 
-args = arg_parser.parse_args()
+args, unknown = arg_parser.parse_known_args()
 
 def _die(s):
     sys.stderr.write("%s\n" % s)
@@ -21,6 +21,8 @@ def _die(s):
 if args.command == "log":
     arg_parser.add_argument("--level", "-l", help="Log level",
         default="INFO")
+elif args.command == "rehash":
+    pass
 else:
     _die("Unknown command '%s'" % args.command)
 
@@ -30,7 +32,13 @@ sock_location = "%s.sock" % args.database
 if not os.path.exists(sock_location):
     _die("Failed to connect to BitBot instance")
 
-import json, socket
+import json, socket, signal
+
+def _sigint(_1, _2):
+    print("")
+    sys.exit(0)
+signal.signal(signal.SIGINT, _sigint)
+
 
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 sock.connect("%s.sock" % args.database)

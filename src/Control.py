@@ -6,8 +6,8 @@ class ControlClient(object):
         self._socket = sock
         self._read_buffer = b""
         self._write_buffer = b""
-        self.version = None
-        self.log_level = None
+        self.version = -1
+        self.log_level = None # type: typing.Optional[int]
 
     def fileno(self) -> int:
         return self._socket.fileno()
@@ -65,6 +65,7 @@ class Control(PollSource.PollSource):
         if fileno == self._socket.fileno():
             client, address = self._socket.accept()
             self._clients[client.fileno()] = ControlClient(client)
+            self._bot.log.debug("New control socket connected")
         elif fileno in self._clients:
             client = self._clients[fileno]
             lines = client.read_lines()
@@ -90,14 +91,8 @@ class Control(PollSource.PollSource):
             client.version = int(data)
         elif command == "log":
             client.log_level = Logging.LEVELS[data.lower()]
-
-        elif command == "command":
-            result = self._bot._events.on("control.command").on(
-                data["command"]).call_for_result(command=data["command"],
-                args=data["args"])
-            if not result == None:
-                response_action = "result"
-                response_data = result
+        elif command == "rehash":
+            self._bot.config.load()
 
         self._send_action(client, response_action, response_data, id)
 
