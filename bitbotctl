@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+import argparse, os
+
+directory = os.path.dirname(os.path.realpath(__file__))
+
+arg_parser = argparse.ArgumentParser(
+    description="BitBot CLI control utility")
+
+arg_parser.add_argument("--database", "-d",
+    help="Location of the sqlite3 database file",
+    default=os.path.join(directory, "databases", "bot.db"))
+
+args = arg_parser.parse_args()
+
+import json, socket
+
+sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+sock.connect("%s.sock" % args.database)
+sock.send(b"0 version 0\n")
+sock.send(b"1 log info\n")
+
+read_buffer = b""
+
+while True:
+    data = sock.recv(1024)
+    if not data:
+        break
+
+    data = read_buffer+data
+    lines = [line.strip(b"\r") for line in data.split(b"\n")]
+    read_buffer = lines.pop(-1)
+    for line in lines:
+        line = json.loads(line)
+        if line["action"] == "log":
+            print(line["data"])
