@@ -1,9 +1,9 @@
 ## Setting up BitBot
 
 * Move `bot.conf.example` to `bot.conf` and fill in the config options you care about. Ones blank or removed will disable relevant functionality.
-* Run `./start.py -a` to add a server.
-* Run `./start.py -m permissions -M master-password` to get the master admin password (needed to add regular admin accounts)
-* Run `./start.py` to start the bot.
+* Run `./bitbotd -a` to add a server.
+* Run `./bitbotd -m permissions -M master-password` to get the master admin password (needed to add regular admin accounts)
+* Run `./bitbotd` to start the bot.
 * Join `#bitbot` on a server with the bot (or invite it to another channel)
 * `/msg <bot> register <password here>` to register your nickname with the bot
 * (use `/msg <bot> identify <password>` to log in in the future)
