@@ -13,7 +13,10 @@ class ControlClient(object):
         return self._socket.fileno()
 
     def read_lines(self) -> typing.List[str]:
-        data = self._socket.recv(2048)
+        try:
+            data = self._socket.recv(2048)
+        except:
+            data = b""
         if not data:
             return None
         lines = (self._read_buffer+data).split(b"\n")
