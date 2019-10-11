@@ -87,14 +87,21 @@ class Control(PollSource.PollSource):
         response_action = "ack"
         response_data = None
 
+        keepalive = True
+
         if command == "version":
             client.version = int(data)
         elif command == "log":
             client.log_level = Logging.LEVELS[data.lower()]
         elif command == "rehash":
+            self._bot.log.info("Reloading config file")
             self._bot.config.load()
+            self._bot.log.info("Reloaded config file")
+            keepalive = False
 
         self._send_action(client, response_action, response_data, id)
+        if not keepalive:
+            client.disconnect()
 
     def _send_action(self, client: ControlClient, action: str, data: str,
             id: int=None):
