@@ -35,7 +35,11 @@ class Module(ModuleManager.BaseModule):
             sys.exit()
 
     def _make_hook(self, server):
-        return lambda e: self.bot.disconnect(server)
+        return lambda e: self._disconnect_hook(server)
+    def _disconnect_hook(self, server):
+        self.bot.disconnect(server)
+        if not self.bot.servers:
+            sys.exit()
 
     def SIGUSR1(self, signum, frame):
         self.bot.trigger(self._reload_config)
