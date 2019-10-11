@@ -96,9 +96,6 @@ events = EventManager.EventRoot(log).wrap()
 exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
 
-control = Control.Control(events, args.database)
-control.bind()
-
 module_directories = [os.path.join(directory, "modules")]
 if args.external:
     module_directories.append(os.path.abspath(args.external))
@@ -114,6 +111,8 @@ bot.add_poll_hook(cache)
 bot.add_poll_hook(lock_file)
 bot.add_poll_hook(timers)
 
+control = Control.Control(bot, args.database)
+control.bind()
 bot.add_poll_source(control)
 
 if args.module:

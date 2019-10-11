@@ -15,8 +15,18 @@ class BitBotFormatter(logging.Formatter):
         datetime_obj = datetime.datetime.fromtimestamp(record.created)
         return utils.iso8601_format(datetime_obj, milliseconds=True)
 
+class HookedHandler(logging.StreamHandler):
+    def __init__(self, func: typing.Callable[[int, str], None]):
+        logging.StreamHandler.__init__(self)
+        self._func = func
+
+    def emit(self, record):
+        self._func(record.levelno, self.format(record))
+
 class Log(object):
     def __init__(self, to_file: bool, level: str, location: str):
+        self._hooks = []
+
         logging.addLevelName(LEVELS["trace"], "TRACE")
         self.logger = logging.getLogger(__name__)
 
@@ -32,6 +42,11 @@ class Log(object):
         stdout_handler.setLevel(stdout_level)
         stdout_handler.setFormatter(formatter)
         self.logger.addHandler(stdout_handler)
+
+        test_handler = HookedHandler(self._on_log)
+        test_handler.setLevel(LEVELS["debug"])
+        test_handler.setFormatter(formatter)
+        self.logger.addHandler(test_handler)
 
         if to_file:
             trace_path = os.path.join(location, "trace.log")
@@ -53,6 +68,12 @@ class Log(object):
             warn_handler.setLevel(LEVELS["warn"])
             warn_handler.setFormatter(formatter)
             self.logger.addHandler(warn_handler)
+
+    def hook(self, func: typing.Callable[[int, str], None]):
+        self._hooks.append(func)
+    def _on_log(self, levelno, line):
+        for func in self._hooks:
+            func(levelno, line)
 
     def trace(self, message: str, params: typing.List=None, **kwargs):
         self._log(message, params, LEVELS["trace"], kwargs)
