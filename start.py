@@ -7,7 +7,7 @@ if sys.version_info < (3, 6):
     sys.exit(1)
 
 import atexit, argparse, faulthandler, os, platform, time
-from src import Cache, Config, Database, EventManager, Exports, IRCBot
+from src import Cache, Config, Control, Database, EventManager, Exports, IRCBot
 from src import LockFile, Logging, ModuleManager, Timers, utils
 
 faulthandler.enable()
@@ -96,6 +96,9 @@ events = EventManager.EventRoot(log).wrap()
 exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
 
+control = Control.Control(events, args.database)
+control.bind()
+
 module_directories = [os.path.join(directory, "modules")]
 if args.external:
     module_directories.append(os.path.abspath(args.external))
@@ -110,6 +113,8 @@ bot = IRCBot.Bot(directory, args, cache, config, database, events,
 bot.add_poll_hook(cache)
 bot.add_poll_hook(lock_file)
 bot.add_poll_hook(timers)
+
+bot.add_poll_source(control)
 
 if args.module:
     definition = modules.find_module(args.module)
