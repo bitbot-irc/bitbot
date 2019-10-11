@@ -24,5 +24,6 @@ setuptools.setup(
         "Operating System :: POSIX",
         "Topic :: Communications :: Chat :: Internet Relay Chat",
     ],
-    python_requires='>=3.6',
+    platforms=["linux"],
+    python_requires=">=3.6",
 )
