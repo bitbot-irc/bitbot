@@ -5,7 +5,6 @@ EXPIRATION = 60 # 1 minute
 
 class LockFile(PollHook.PollHook):
     def __init__(self, database_location: str):
-        self._database_location = database_location
         self._lock_location = "%s.lock" % database_location
         self._next_lock = None
 
