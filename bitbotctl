@@ -50,6 +50,8 @@ _send("0 version 0")
 
 if args.command == "log":
     _send("1 log %s" % args.level)
+elif args.command == "rehash":
+    _send("1 rehash")
 
 read_buffer = b""
 
