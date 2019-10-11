@@ -1,3 +1,17 @@
+# TBD - BitBot v1.13.0
+
+Added:
+- `setup.py`
+- `bitbotctl` - daemon control system through unix domain sockets
+
+Changed:
+- `start.py` -> `bitbotd`
+- Don't say a users vote was changed when it wasn't (`vote.py`)
+- Bot will not die when there's no connected servers
+
+Fixed:
+- Be able to `!disconnect` reconnection attempts (regression, `admin.py`)
+
 # 2019-10-10 - BitBot v1.12.0
 
 Added:
