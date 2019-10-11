@@ -4,7 +4,7 @@ from src import EventManager, Exports, IRCServer, Logging, ModuleManager
 from src import PollHook, PollSource, Socket, Timers, utils
 
 with open("VERSION", "r") as version_file:
-    VERSION = version_file.read().strip()
+    VERSION = "v%s" % version_file.read().strip()
 SOURCE = "https://git.io/bitbot"
 URL = "https://bitbot.dev"
 
