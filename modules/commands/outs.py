@@ -64,8 +64,7 @@ class Out(object):
 
             sent_line = self.server.send(line)
 
-    @staticmethod
-    def _adjust_to_word_boundaries(left, right):
+    def _adjust_to_word_boundaries(self, left, right):
         if right[0] == WORD_BOUNDARY:
             return left, right
 
