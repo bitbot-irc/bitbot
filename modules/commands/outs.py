@@ -4,6 +4,7 @@ from src import utils
 STR_MORE = " (more...)"
 STR_MORE_LEN = len(STR_MORE.encode("utf8"))
 STR_CONTINUED = "(...continued) "
+WORD_BOUNDARY = ' '
 
 class Out(object):
     def __init__(self, server, module_name, target, target_str, tags):
@@ -54,12 +55,25 @@ class Out(object):
                 margin=STR_MORE_LEN)
 
             if truncated:
+                valid, truncated = self._adjust_to_word_boundaries(valid, truncated)
+
                 line = utils.irc.parse_line(valid+STR_MORE)
                 self._text = "%s%s" % (STR_CONTINUED, truncated)
             else:
                 self._text = ""
 
             sent_line = self.server.send(line)
+
+    def _adjust_to_word_boundaries(self, left, right):
+        if right[0] == WORD_BOUNDARY:
+            return left, right
+
+        parts = left.rsplit(WORD_BOUNDARY, 1)
+
+        if len(parts) != 2:
+            return left, right
+
+        return parts[0], parts[1] + right
 
     def _default_prefix(self, s: str):
         return s
