@@ -21,7 +21,8 @@ class Module(ModuleManager.BaseModule):
             return utils.irc.color(str(karma), utils.consts.RED)
         elif karma > 0:
             return utils.irc.color(str(karma), utils.consts.LIGHTGREEN)
-        return str(karma)
+        else:
+            return utils.irc.color(str(karma), utils.consts.YELLOW)
 
     @utils.hook("new.user")
     def new_user(self, event):
