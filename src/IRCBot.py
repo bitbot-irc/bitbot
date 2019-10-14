@@ -149,22 +149,27 @@ class Bot(object):
         if throw:
             raise BitBotPanic()
 
+    def _module_lists(self):
+        db_whitelist = set(self.get_setting("module-whitelist", []))
+        db_blacklist = set(self.get_setting("module-blacklist", []))
+
+        conf_whitelist = self.config.get("module-whitelist", "").split(",")
+        conf_blacklist = self.config.get("module-blacklist", "").split(",")
+
+        conf_whitelist = set(filter(None, conf_whitelist))
+        conf_blacklist = set(filter(None, conf_blacklist))
+
+        return (db_whitelist|conf_whitelist, db_blacklist|conf_blacklist)
+
     def load_modules(self, safe: bool=False
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
-        db_blacklist = set(self.get_setting("module-blacklist", []))
-        db_whitelist = set(self.get_setting("module-whitelist", []))
-
-        conf_blacklist = self.config.get("module-blacklist", "").split(",")
-        conf_whitelist = self.config.get("module-whitelist", "").split(",")
-
-        conf_blacklist = set(filter(None, conf_blacklist))
-        conf_whitelist = set(filter(None, conf_whitelist))
-
-        blacklist = db_blacklist|conf_blacklist
-        whitelist = db_whitelist|conf_whitelist
-
+        whitelist, blacklist = self._module_lists()
         return self.modules.load_modules(self, whitelist=whitelist,
             blacklist=blacklist, safe=safe)
+    def try_reload_modules(self) -> ModuleManager.TryReloadResult:
+        whitelist, blacklist = self._module_lists()
+        return self.modules.try_reload_modules(self, whitelist=whitelist,
+            blacklist=blacklist)
 
     def add_server(self, server_id: int, connect: bool = True,
             connection_param_args: typing.Dict[str, str]={}

@@ -71,26 +71,11 @@ class Module(ModuleManager.BaseModule):
         :help: Reload all modules
         :permission: reload-all-modules
         """
-        success = []
-        fail = []
-        for name in list(self.bot.modules.modules.keys()):
-            try:
-                self.bot.modules.unload_module(name)
-            except ModuleManager.ModuleWarning:
-                continue
-            except:
-                fail.append(name)
-        load_success, load_fail = self.bot.load_modules(safe=True)
-        success.extend(load_success)
-        fail.extend(load_fail)
-
-        if success and fail:
-            event["stdout"].write("Reloaded %d modules, %d failed" % (
-                len(success), len(fail)))
-        elif fail:
-            event["stdout"].write("Failed to reload all modules")
+        result = self.bot.try_reload_modules()
+        if result.success:
+            event["stdout"].write(result.message)
         else:
-            event["stdout"].write("Reloaded %d modules" % len(success))
+            event["stderr"].write(result.message)
 
     @utils.hook("received.command.enablemodule", min_args=1)
     def enable(self, event):

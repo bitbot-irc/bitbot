@@ -36,6 +36,11 @@ class ModuleType(enum.Enum):
     FILE = 0
     DIRECTORY = 1
 
+class TryReloadResult(object):
+    def __init__(self, success: bool, message: str):
+        self.success = success
+        self.message = message
+
 class BaseModule(object):
     def __init__(self,
             bot: "IRCBot.Bot",
@@ -155,8 +160,8 @@ class ModuleManager(object):
         for directory in self.directories:
             paths.append(os.path.join(directory, name))
         return paths
-    def _import_name(self, name: str) -> str:
-        return "bitbot_%s" % name
+    def _import_name(self, name: str, context: str) -> str:
+        return "%s_%s" % (name, context)
 
     def from_context(self, context: str) -> typing.Optional[LoadedModule]:
         for module in self.modules.values():
@@ -198,7 +203,9 @@ class ModuleManager(object):
 
         self._check_hashflags(bot, definition)
 
-        import_name = self._import_name(definition.name)
+        context = str(uuid.uuid4())
+        import_name = self._import_name(definition.name, context)
+
         import_spec = importlib.util.spec_from_file_location(import_name,
             definition.filename)
         module = importlib.util.module_from_spec(import_spec)
@@ -214,7 +221,6 @@ class ModuleManager(object):
             raise ModuleLoadException("module '%s' has a 'Module' attribute "
                 "but it is not a class." % definition.name)
 
-        context = str(uuid.uuid4())
         context_events = self.events.new_context(context)
         context_exports = self.exports.new_context(context)
         context_timers = self.timers.new_context(context)
@@ -316,39 +322,27 @@ class ModuleManager(object):
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
             blacklist: typing.List[str]=[], safe: bool=False
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
-        fail = []
-        success = []
-
         loadable, nonloadable = self._list_valid_modules(bot, whitelist, blacklist)
 
         for definition in nonloadable:
             self.log.warn("Not loading module '%s'", [definition.name])
 
         for definition in loadable:
-            try:
-                self.load_module(bot, definition)
-            except ModuleWarning:
-                fail.append(definition.name)
-                continue
-            except Exception as e:
-                if safe:
-                    fail.append(definition.name)
-                    continue
-                else:
-                    raise
-            success.append(definition.name)
-        return success, fail
+            self.load_module(bot, definition)
 
     def unload_module(self, name: str):
         if not name in self.modules:
             raise ModuleNotLoadedException(name)
         loaded_module = self.modules[name]
+        self._unload_module(loaded_module)
+        del self.modules[loaded_module.name]
+
+    def _unload_module(self, loaded_module: LoadedModule):
         if hasattr(loaded_module.module, "unload"):
             try:
                 loaded_module.module.unload()
             except:
                 pass
-        del self.modules[loaded_module.name]
 
         context = loaded_module.context
         self.events.purge_context(context)
@@ -377,6 +371,37 @@ class ModuleManager(object):
             self.log.debug("References left for '%s': %s",
                 [loaded_module.name,
                 ", ".join([str(referrer) for referrer in referrers])])
+
+    def try_reload_modules(self, bot: "IRCBot.Bot",
+            whitelist: typing.List[str], blacklist: typing.List[str]):
+        loadable, nonloadable = self._list_valid_modules(
+            bot, whitelist, blacklist)
+
+        old_modules = self.modules
+        self.modules = {}
+
+        failed = None
+        for definition in loadable:
+            try:
+                self.load_module(bot, definition)
+            except Exception as e:
+                failed = (definition, e)
+                break
+
+        if not failed == None:
+            for module in self.modules.values():
+                self._unload_module(module)
+            self.modules = old_modules
+
+            definition, exception = failed
+            return TryReloadResult(False,
+                "Failed to load %s (%s), rolling back reload" %
+                (definition.name, str(exception)))
+        else:
+            for module in old_modules.values():
+                self._unload_module(module)
+            return TryReloadResult(True, "Reloaded %d modules" %
+                len(self.modules.keys()))
 
     def _list_valid_modules(self, bot: "IRCBot.Bot",
             whitelist: typing.List[str], blacklist: typing.List[str]):
