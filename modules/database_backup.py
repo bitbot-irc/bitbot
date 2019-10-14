@@ -18,8 +18,9 @@ class Module(ModuleManager.BaseModule):
         files = glob.glob("%s.*" % location)
         files = sorted(files)
 
-        if len(files) == 5:
-            os.remove(files[0])
+        while len(files) > 4:
+            os.remove(files[-1])
+            files.pop(-1)
 
         suffix = datetime.datetime.now().strftime("%y-%m-%d.%H:%M:%S")
         backup_file = "%s.%s" % (location, suffix)
