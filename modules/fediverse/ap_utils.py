@@ -57,14 +57,19 @@ def find_actor(username, instance):
         if link["type"] == ACTIVITY_TYPE:
             return link["href"]
 
+KNOWN_TAGS = ["p", "br"]
+
 def _normalise_note(content):
     soup = bs4.BeautifulSoup(content, "html.parser")
     lines = []
     for element in soup.find_all():
-        out = ""
         if element.text.strip() == "":
-            continue
-        elif element.name == "p":
+            element.decompose()
+        elif not element.name in KNOWN_TAGS:
+            element.unwrap()
+    for element in soup.find_all():
+        out = ""
+        if element.name == "p":
             for subitem in element.contents:
                 if type(subitem) == bs4.element.Tag:
                     if subitem.name == "br":
@@ -72,8 +77,6 @@ def _normalise_note(content):
                         out = ""
                 else:
                     out += subitem
-        else:
-            continue
 
         lines.append(out.replace("  ", " "))
     return "  ".join(lines)
