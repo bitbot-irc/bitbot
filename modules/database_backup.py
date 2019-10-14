@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
 
     def _backup(self, timer):
         location =  self.bot.database.location
-        files = glob.glob("%s.*" % location)
+        files = glob.glob("%s.*.back" % location)
         files = sorted(files)
 
         while len(files) > 4:
@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
             files.pop(-1)
 
         suffix = datetime.datetime.now().strftime("%y-%m-%d.%H:%M:%S")
-        backup_file = "%s.%s" % (location, suffix)
+        backup_file = "%s.%s.back" % (location, suffix)
         shutil.copy2(location, backup_file)
 
         timer.redo()
