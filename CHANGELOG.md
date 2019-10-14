@@ -8,9 +8,12 @@ Changed:
 - `start.py` -> `bitbotd`
 - Don't say a users vote was changed when it wasn't (`vote.py`)
 - Bot will not die when there's no connected servers
+- Command output will be truncated/cut at "word bounaries" (currently only space)
+- `!reloadallmodules` and `SIGUSR1` will not try to reload but rollback to currently-loaded on error
 
 Fixed:
 - Be able to `!disconnect` reconnection attempts (regression, `admin.py`)
+- Strip only unknown tags from fedi `Note` activities - not the tag content too
 
 # 2019-10-10 - BitBot v1.12.0
 
