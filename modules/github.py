@@ -105,7 +105,11 @@ class Module(ModuleManager.BaseModule):
             event.eat()
             ref = event["match"].group(0)
             if self._auto_github_cooldown(event["target"], ref):
-                out = self._parse_commit(event["target"], ref)
+                try:
+                    out = self._parse_commit(event["target"], ref)
+                except utils.EventError:
+                    return
+
                 if out:
                     event["stdout"].write(out)
 
