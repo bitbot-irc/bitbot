@@ -98,6 +98,10 @@ class Control(PollSource.PollSource):
             self._bot.config.load()
             self._bot.log.info("Reloaded config file")
             keepalive = False
+        elif command == "reload":
+            result = self._bot.try_reload_modules()
+            response_data = result.message
+            keepalive = False
 
         self._send_action(client, response_action, response_data, id)
         if not keepalive:

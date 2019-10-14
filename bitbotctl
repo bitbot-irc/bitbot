@@ -21,7 +21,7 @@ def _die(s):
 if args.command == "log":
     arg_parser.add_argument("--level", "-l", help="Log level",
         default="INFO")
-elif args.command == "rehash":
+elif args.command in ["rehash", "reload"]:
     pass
 else:
     _die("Unknown command '%s'" % args.command)
@@ -52,6 +52,8 @@ if args.command == "log":
     _send("1 log %s" % args.level)
 elif args.command == "rehash":
     _send("1 rehash")
+elif args.command == "reload":
+    _send("1 reload")
 
 read_buffer = b""
 
@@ -66,4 +68,6 @@ while True:
     for line in lines:
         line = json.loads(line)
         if line["action"] == "log":
+            print(line["data"])
+        elif line["action"] == "ack" and line["data"]:
             print(line["data"])
