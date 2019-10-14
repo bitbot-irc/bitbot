@@ -46,6 +46,7 @@ sock.connect("%s.sock" % args.database)
 def _send(s):
     sock.send(("%s\n" % s).encode("utf8"))
 
+# protocol: <msgid> <command> [arg [arg ..]]
 _send("0 version 0")
 
 if args.command == "log":
