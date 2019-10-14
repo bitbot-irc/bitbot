@@ -7,14 +7,14 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=$USER
-Group=$GROUP
-WorkingDirectory=/home/$USER/bitbot
-ExecStart=/usr/bin/env python3 start.py
+# change any of the 3 following lines as applicable
+User=bitbot
+Group=bitbot
+WorkingDirectory=/opt/bitbot/
+
+ExecStart=/usr/bin/env python3 bitbotd
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
-
-# Remember to change $USER and $GROUP with your actual shell username
