@@ -63,8 +63,8 @@ class Control(PollSource.PollSource):
 
     def is_readable(self, fileno: int):
         if fileno == self._socket.fileno():
-            client, address = self._socket.accept()
-            self._clients[client.fileno()] = ControlClient(client)
+            client_s, address = self._socket.accept()
+            self._clients[client_s.fileno()] = ControlClient(client_s)
             self._bot.log.debug("New control socket connected")
         elif fileno in self._clients:
             client = self._clients[fileno]
