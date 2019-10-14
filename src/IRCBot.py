@@ -161,11 +161,11 @@ class Bot(object):
 
         return (db_whitelist|conf_whitelist, db_blacklist|conf_blacklist)
 
-    def load_modules(self, safe: bool=False
+    def load_modules(self
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
         whitelist, blacklist = self._module_lists()
         return self.modules.load_modules(self, whitelist=whitelist,
-            blacklist=blacklist, safe=safe)
+            blacklist=blacklist)
     def try_reload_modules(self) -> ModuleManager.TryReloadResult:
         whitelist, blacklist = self._module_lists()
         return self.modules.try_reload_modules(self, whitelist=whitelist,

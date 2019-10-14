@@ -320,7 +320,7 @@ class ModuleManager(object):
         return [definition_names[name] for name in definitions_ordered]
 
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
-            blacklist: typing.List[str]=[], safe: bool=False
+            blacklist: typing.List[str]=[]
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
         loadable, nonloadable = self._list_valid_modules(bot, whitelist, blacklist)
 
