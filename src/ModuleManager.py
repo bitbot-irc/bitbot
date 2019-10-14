@@ -319,34 +319,24 @@ class ModuleManager(object):
         fail = []
         success = []
 
-        module_definitions = self.list_modules()
+        loadable, nonloadable = self._list_valid_modules(bot, whitelist, blacklist)
 
-        loadable_definitions = []
-        for definition in module_definitions:
+        for definition in nonloadable:
+            self.log.warn("Not loading module '%s'", [definition.name])
+
+        for definition in loadable:
             try:
-                self._check_hashflags(bot, definition)
-            except ModuleNotLoadableWarning:
-                self.log.warn("Could not load '%s'" % definition.name)
+                self.load_module(bot, definition)
+            except ModuleWarning:
+                fail.append(definition.name)
                 continue
-            loadable_definitions.append(definition)
-
-        loadable_definitions = self._dependency_sort(loadable_definitions)
-
-        for definition in loadable_definitions:
-            if definition.name in whitelist or (
-                    not whitelist and not definition.name in blacklist):
-                try:
-                    self.load_module(bot, definition)
-                except ModuleWarning:
+            except Exception as e:
+                if safe:
                     fail.append(definition.name)
                     continue
-                except Exception as e:
-                    if safe:
-                        fail.append(definition.name)
-                        continue
-                    else:
-                        raise
-                success.append(definition.name)
+                else:
+                    raise
+            success.append(definition.name)
         return success, fail
 
     def unload_module(self, name: str):
@@ -387,3 +377,25 @@ class ModuleManager(object):
             self.log.debug("References left for '%s': %s",
                 [loaded_module.name,
                 ", ".join([str(referrer) for referrer in referrers])])
+
+    def _list_valid_modules(self, bot: "IRCBot.Bot",
+            whitelist: typing.List[str], blacklist: typing.List[str]):
+        module_definitions = self.list_modules()
+
+        loadable_definitions = []
+        nonloadable_definitions = []
+        for definition in module_definitions:
+            if definition.name in whitelist or (
+                    not whitelist and not definition.name in blacklist):
+                try:
+                    self._check_hashflags(bot, definition)
+                except ModuleNotLoadableWarning:
+                    nonloadable_definitions.append(definition)
+                    continue
+                loadable_definitions.append(definition)
+            else:
+                nonloadable_definitions.append(definition)
+
+
+        return (self._dependency_sort(loadable_definitions),
+            nonloadable_definitions)
