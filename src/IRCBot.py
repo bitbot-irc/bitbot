@@ -358,7 +358,10 @@ class Bot(object):
                             self._post_send_factory(server, lines))
                         self._event_queue.put(event_item)
                     elif fd in poll_sources:
-                        poll_sources[fd].is_writeable(fd)
+                        def _trigger(source, fd):
+                            print("write _trigger")
+                            return lambda: source.is_writeable(fd)
+                        self.trigger(_trigger(poll_sources[fd], fd))
 
     def _read_loop(self):
         poll_sources = {}
@@ -385,8 +388,10 @@ class Bot(object):
                         self._rtrigger_server.recv(1024)
                         self._rtriggered = False
                 elif fd in poll_sources:
-                    poll_sources[fd].is_readable(fd)
-                    self.trigger_write()
+                    def _trigger(source, fd):
+                        print("read _trigger")
+                        return lambda: source.is_readable(fd)
+                    self.trigger(_trigger(poll_sources[fd], fd))
                 else:
                     if not fd in self.servers:
                         self._read_poll.unregister(fd)
