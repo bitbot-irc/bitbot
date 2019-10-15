@@ -359,7 +359,6 @@ class Bot(object):
                         self._event_queue.put(event_item)
                     elif fd in poll_sources:
                         def _trigger(source, fd):
-                            print("write _trigger")
                             return lambda: source.is_writeable(fd)
                         self.trigger(_trigger(poll_sources[fd], fd))
 
@@ -389,7 +388,6 @@ class Bot(object):
                         self._rtriggered = False
                 elif fd in poll_sources:
                     def _trigger(source, fd):
-                        print("read _trigger")
                         return lambda: source.is_readable(fd)
                     self.trigger(_trigger(poll_sources[fd], fd))
                 else:
