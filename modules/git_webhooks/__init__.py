@@ -5,7 +5,7 @@
 
 import itertools, json, re, urllib.parse
 from src import ModuleManager, utils
-from . import colors, gitea, github
+from . import colors, gitea, github, gitlab
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
@@ -27,6 +27,7 @@ class Module(ModuleManager.BaseModule):
     def on_load(self):
         self._github = github.GitHub(self.log)
         self._gitea = gitea.Gitea()
+        self._gitlab = gitlab.GitLab()
 
     @utils.hook("api.post.github")
     def _api_github_webhook(self, event):
