@@ -101,26 +101,11 @@ class Gitea(object):
         elif event == "ping":
             return self.ping(data)
 
-    def _iso8601(self, s):
-        return datetime.datetime.strptime(s, utils.ISO8601_PARSE)
-
     def ping(self, data):
         return ["Received new webhook"]
 
-    def _change_count(self, n, symbol, color):
-        return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
-    def _added(self, n):
-        return self._change_count(n, "+", colors.COLOR_POSITIVE)
-    def _removed(self, n):
-        return self._change_count(n, "-", colors.COLOR_NEGATIVE)
-    def _modified(self, n):
-        return self._change_count(n, "~", utils.consts.PURPLE)
-
     def _short_hash(self, hash):
         return hash[:8]
-
-    def _flat_unique(self, commits, key):
-        return set(itertools.chain(*(commit[key] for commit in commits)))
 
     def push(self, full_name, data):
         outputs = []
