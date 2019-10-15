@@ -16,14 +16,14 @@ EVENT_CATEGORIES = {
     ],
     "pr-all": ["pull_request"],
     "issue-minimal": [
-        "issues/opened", "issues/closed", "issues/reopened", "issues/deleted"
+        "issue/opened", "issue/closed", "issue/reopened", "issue/deleted"
     ],
     "issue": [
-        "issues/opened", "issues/closed", "issues/reopened", "issues/deleted",
-        "issues/edited", "issues/assigned", "issues/unassigned", "issue_comment"
+        "issue/opened", "issue/closed", "issue/reopened", "issue/deleted",
+        "issue/edited", "issue/assigned", "issue/unassigned", "issue_comment"
     ],
     "issue-all": [
-        "issues", "issue_comment"
+        "issue", "issue_comment"
     ],
     "issue-comment-minimal": [
         "issue_comment/created", "issue_comment/deleted"
