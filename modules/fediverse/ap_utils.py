@@ -68,16 +68,19 @@ def _normalise_note(content):
             element.decompose()
         elif not element.name in KNOWN_TAGS:
             element.unwrap()
-    for element in soup.find_all():
+    for element in soup.children:
         out = ""
-        if element.name == "p":
-            for subitem in element.contents:
-                if type(subitem) == bs4.element.Tag:
-                    if subitem.name == "br":
-                        lines.append(out)
-                        out = ""
-                else:
-                    out += subitem
+        if type(element) == bs4.element.Tag:
+            if element.name == "p":
+                for subitem in element.contents:
+                    if type(subitem) == bs4.element.Tag:
+                        if subitem.name == "br":
+                            lines.append(out)
+                            out = ""
+                    else:
+                        out += subitem
+        else:
+            out += element
 
         lines.append(out.replace("  ", " "))
     return "  ".join(lines)
