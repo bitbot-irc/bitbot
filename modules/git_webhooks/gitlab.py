@@ -77,9 +77,9 @@ class GitLab(object):
     def webhook(self, full_name, event, data, headers):
         if event == "push":
             return self.push(full_name, data)
-        elif event == "pull_request":
+        elif event == "merge_request":
             return self.pull_request(full_name, data)
-        elif event == "issues":
+        elif event == "issue":
             return self.issues(full_name, data)
         elif event == "note":
             return self.note(full_name, data)
