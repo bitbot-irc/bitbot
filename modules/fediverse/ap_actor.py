@@ -9,6 +9,7 @@ class Actor(object):
         self.username = None
         self.inbox = None
         self.outbox = None
+        self.followers = None
 
     def load(self):
         response = ap_utils.activity_request(self.url)
@@ -16,6 +17,7 @@ class Actor(object):
             self.username = response.data["preferredUsername"]
             self.inbox = Inbox(response.data["inbox"])
             self.outbox = Outbox(response.data["outbox"])
+            self.followers = response.data["followers"]
             return True
         return False
 

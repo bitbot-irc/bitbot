@@ -110,9 +110,9 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Failed to find user")
 
         items = actor.outbox.load()
+        nonreply = [actor.followers]
         for item in items:
-            if (item["type"] == "Announce" or
-                    item["object"].get("inReplyTo", None) == None):
+            if item["type"] == "Announce" or item["object"]["cc"] == nonreply:
                 first_item = item
                 break
 
