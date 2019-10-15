@@ -5,7 +5,7 @@
 import re, urllib.parse
 from src import EventManager, ModuleManager, utils
 
-REGEX_YOUTUBE = re.compile("https?://(?:www.)?(?:youtu.be/|youtube.com/)\\S+", re.I)
+REGEX_YOUTUBE = re.compile("https?://(?:www\.|m\.)?(?:youtu.be/|youtube.com/)\\S+", re.I)
 REGEX_ISO8601 = re.compile("PT(\d+H)?(\d+M)?(\d+S)?", re.I)
 
 URL_YOUTUBESEARCH = "https://www.googleapis.com/youtube/v3/search"
