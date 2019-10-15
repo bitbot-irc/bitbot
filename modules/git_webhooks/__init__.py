@@ -38,6 +38,11 @@ class Module(ModuleManager.BaseModule):
         return self._webhook("gitea", "Gitea", self._gitea,
             event["data"], event["headers"])
 
+    @utils.hook("api.post.gitlab")
+    def _api_gitlab_webhook(self, event):
+        return self._webhook("gitlab", "GitLab", self._gitlab,
+            event["data"], event["headers"])
+
     def _webhook(self, webhook_type, webhook_name, handler, payload_str,
             headers):
         payload = payload_str.decode("utf8")
