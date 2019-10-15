@@ -1,6 +1,7 @@
 import urllib.parse
 import bs4
 from src import IRCBot, utils
+from . import ap_actor
 
 LD_TYPE = ("application/ld+json; "
     "profile=\"https://www.w3.org/ns/activitystreams\"")
@@ -93,7 +94,7 @@ def format_note(actor, note, type="Create"):
         retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
         retoot_content = _normalise_note(retoot.data["content"])
 
-        return (retoot.data.get("summary", None),  "%s (boost %s): %s - %s" % (
+        return (retoot.data.get("summary", None),  "%s (boost %s): %s" % (
             actor.username, retooted_user, retoot_content), retoot_url)
 
     elif type == "Create":

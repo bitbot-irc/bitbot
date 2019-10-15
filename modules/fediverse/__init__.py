@@ -111,7 +111,8 @@ class Module(ModuleManager.BaseModule):
 
         items = actor.outbox.load()
         for item in items:
-            if item["object"].get("inReplyTo", None) == None:
+            if (item["type"] == "Announce" or
+                    item["object"].get("inReplyTo", None) == None):
                 first_item = item
                 break
 
