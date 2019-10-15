@@ -32,13 +32,15 @@ class Module(ModuleManager.BaseModule):
 
         ducks_enabled = channel.get_setting("ducks-enabled", False)
 
-        if ducks_enabled and not channel.duck_active:
+        if (ducks_enabled and
+                not channel.duck_active and
+                not channel.duck_lines == -1):
             channel.duck_lines += 1
             min_lines = channel.get_setting("ducks-min-messages",
                 DEFAULT_MIN_MESSAGES)
 
             if channel.duck_lines >= min_lines:
-                show_duck = random.SystemRandom().randint(1, 20) == 1
+                show_duck = random.SystemRandom().randint(1, 2) == 1
 
                 if show_duck:
                     self._trigger_duck(channel)
@@ -52,13 +54,15 @@ class Module(ModuleManager.BaseModule):
         self._activity(event["target"])
 
     def _trigger_duck(self, channel):
-        channel.duck_lines = 0
+        channel.duck_lines = -1
         delay = random.SystemRandom().randint(5, 20)
-        channel.duck_active = time.time()+delay
         self.timers.add("duck", self._send_duck, delay, channel=channel)
 
     def _send_duck(self, timer):
-        timer.kwargs["channel"].send_message(DUCK)
+        channel = timer.kwargs["channel"]
+        channel.duck_active = time.time()
+        channel.duck_lines = 0
+        channel.send_message(DUCK)
 
     def _duck_action(self, channel, user, action, setting):
         duck_timestamp = channel.duck_active
