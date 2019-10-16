@@ -25,15 +25,15 @@ class Module(ModuleManager.BaseModule):
         api_key = self.bot.config["openweathermap-api-key"]
 
         location = None
+        query = None
         nickname = None
         if event["args"]:
+            query = event["args"]
             if len(event["args_split"]) == 1 and event["server"].has_user_id(
                     event["args_split"][0]):
                 target_user = event["server"].get_user(event["args_split"][0])
                 location = self._user_location(target_user)
-                if location == None:
-                    location = event["args_split"][0]
-                else:
+                if not location == None:
                     nickname = target_user.nickname
         else:
             location = self._user_location(event["user"])
@@ -44,12 +44,13 @@ class Module(ModuleManager.BaseModule):
         args = {"units": "metric", "APPID": api_key}
 
 
+        if location == None and query:
+            location_info = self.exports.get_one("get-location")(query)
+            if not location_info == None:
+                location = [location_info["lat"], location_info["lon"],
+                    location_info.get("name", None)]
         if location == None:
-            location_info = self.exports.get_one("get-location")(event["args"])
-            if location_info == None:
-                raise utils.EventError("Unknown location")
-            location = [location_info["lat"], location_info["lon"],
-                location_info.get("name", None)]
+            raise utils.EventError("Unknown location")
 
         lat, lon, location_name = location
         args["lat"] = lat
