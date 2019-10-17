@@ -2,13 +2,15 @@
 import argparse, os, sys
 
 directory = os.path.dirname(os.path.realpath(__file__))
+home = os.path.expanduser("~")
+default_data = os.path.join(home, ".bitbot")
 
 arg_parser = argparse.ArgumentParser(
     description="BitBot CLI control utility")
 
-arg_parser.add_argument("--database", "-d",
-    help="Location of the sqlite3 database file",
-    default=os.path.join(directory, "databases", "bot.db"))
+arg_parser.add_argument("--socket", "-s",
+    help="Location of bitbotd's unix domain socket",
+    default=os.path.join(default_data, "bot.sock"))
 
 arg_parser.add_argument("command")
 
@@ -28,8 +30,7 @@ else:
 
 args = arg_parser.parse_args()
 
-sock_location = "%s.sock" % args.database
-if not os.path.exists(sock_location):
+if not os.path.exists(args.socket):
     _die("Failed to connect to BitBot instance")
 
 import json, socket, signal
@@ -41,7 +42,7 @@ signal.signal(signal.SIGINT, _sigint)
 
 
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-sock.connect("%s.sock" % args.database)
+sock.connect(args.socket)
 
 def _send(s):
     sock.send(("%s\n" % s).encode("utf8"))
