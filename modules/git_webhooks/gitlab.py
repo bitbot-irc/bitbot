@@ -144,7 +144,7 @@ class GitLab(object):
         number = utils.irc.color("#%s" % data["object_attributes"]["iid"],
             colors.COLOR_ID)
         action = data["object_attributes"]["action"]
-        issue_title = data["object_attributes"]["description"]
+        issue_title = data["object_attributes"]["title"]
         author = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
 
