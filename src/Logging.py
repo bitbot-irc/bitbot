@@ -44,7 +44,7 @@ class Log(object):
         self.logger.addHandler(stdout_handler)
 
         hook_handler = HookedHandler(self._on_log)
-        hook_handler.setLevel(LEVELS["debug"])
+        hook_handler.setLevel(LEVELS["trace"])
         hook_handler.setFormatter(formatter)
         self.logger.addHandler(hook_handler)
 
