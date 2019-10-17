@@ -18,7 +18,7 @@ EVENT_CATEGORIES = {
     "issue-minimal": [
         "issue/opened", "issue/closed", "issue/reopened", "issue/deleted"
     ],
-    "issue": [
+    "issues": [
         "issue/opened", "issue/closed", "issue/reopened", "issue/deleted",
         "issue/edited", "issue/assigned", "issue/unassigned", "issue_comment"
     ],
