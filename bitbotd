@@ -80,8 +80,8 @@ if not log_level:
 
 log = Logging.Log(not args.no_logging, log_level, args.log_dir)
 
-log.info("Starting BitBot %s (Python v%s)",
-    [IRCBot.VERSION, platform.python_version()])
+log.info("Starting BitBot %s (Python v%s, db %s)",
+    [IRCBot.VERSION, platform.python_version(), database_location])
 
 lock_file = LockFile.LockFile(lock_location)
 if not lock_file.available():
