@@ -20,10 +20,11 @@ def _die(s):
     sys.stderr.write("%s\n" % s)
     sys.exit(1)
 
+SIMPLE = ["rehash", "reload", "stop"]
 if args.command == "log":
     arg_parser.add_argument("--level", "-l", help="Log level",
         default="INFO")
-elif args.command in ["rehash", "reload"]:
+elif args.command in SIMPLE:
     pass
 else:
     _die("Unknown command '%s'" % args.command)
@@ -52,10 +53,8 @@ _send("0 version 0")
 
 if args.command == "log":
     _send("1 log %s" % args.level)
-elif args.command == "rehash":
-    _send("1 rehash")
-elif args.command == "reload":
-    _send("1 reload")
+elif args.command in SIMPLE:
+    _send("1 %s" % args.command)
 
 read_buffer = b""
 

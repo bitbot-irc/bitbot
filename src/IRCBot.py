@@ -50,7 +50,8 @@ class Bot(object):
         self._timers = timers
 
         self.start_time = time.time()
-        self.running = False
+        self._writing = False
+        self._reading = False
         self.servers = {}
         self.reconnections = {}
 
@@ -273,19 +274,37 @@ class Bot(object):
         except BitBotPanic:
             return
     def _run(self):
-        self.running = True
+        self._writing = True
+        self._reading = True
+
         self._read_thread = self._daemon_thread(
             lambda: self._loop_catch("read", self._read_loop))
         self._write_thread = self._daemon_thread(
             lambda: self._loop_catch("write", self._write_loop))
         self._event_loop()
 
+    def stop(self, reason: str="Stopping"):
+        self._reading = False # disable read thread
+        self.trigger_read()
+        for server in self.servers.values():
+            line = server.send_quit(reason)
+            line.events.on("send").hook(self._shutdown_hook(server))
+    def _shutdown_hook(self, server):
+        def shutdown(e):
+            server.disconnect()
+            self.disconnect(server)
+            if not self.servers:
+                self._writing = False
+        return shutdown
+
     def _kill(self):
-        self.running = False
+        self._writing = False
+        self._reading = False
         self._trigger_both()
 
     def _event_loop(self):
-        while self.running or not self._event_queue.empty():
+        while ((self._writing or self._reading) or
+                not self._event_queue.empty()):
             try:
                 item = self._event_queue.get(block=True,
                     timeout=self.get_poll_timeout())
@@ -320,7 +339,7 @@ class Bot(object):
             self.panic("Exception on '%s' thread" % name, throw=False)
 
     def _write_loop(self):
-        while self.running:
+        while self._writing:
             poll_sources = {}
             with self._write_condition:
                 fds = []
@@ -364,7 +383,7 @@ class Bot(object):
 
     def _read_loop(self):
         poll_sources = {}
-        while self.running:
+        while self._reading:
             new_poll_sources = {}
             for poll_source in self._poll_sources:
                 for fileno in poll_source.get_readables():

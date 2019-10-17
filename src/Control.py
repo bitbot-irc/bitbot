@@ -102,6 +102,9 @@ class Control(PollSource.PollSource):
             result = self._bot.try_reload_modules()
             response_data = result.message
             keepalive = False
+        elif command == "stop":
+            self._bot.stop()
+            keepalive = False
 
         self._send_action(client, response_action, response_data, id)
         if not keepalive:
