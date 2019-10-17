@@ -13,19 +13,23 @@ from src import LockFile, Logging, ModuleManager, Timers, utils
 faulthandler.enable()
 
 directory = os.path.dirname(os.path.realpath(__file__))
+home = os.path.expanduser("~")
+default_data = os.path.join(home, ".bitbot")
 
 arg_parser = argparse.ArgumentParser(
     description="Python3 event-driven modular IRC bot")
 
 arg_parser.add_argument("--version", "-v", action="store_true")
 
-arg_parser.add_argument("--config", "-c",
-    help="Location of the JSON config file",
-    default=os.path.join(directory, "bot.conf"))
+arg_parser.add_argument("--config", "-c", help="Location of config file",
+    default=os.path.join(default_data, "bot.conf"))
+
+arg_parser.add_argument("--data-dir", "-x",
+    help="Location of data files (database, lock, socket)",
+    default=default_data)
 
 arg_parser.add_argument("--database", "-d",
-    help="Location of the sqlite3 database file",
-    default=os.path.join(directory, "databases", "bot.db"))
+    help="Location of the sqlite3 database file")
 
 arg_parser.add_argument("--log-dir", "-l",
     help="Location of the log directory",
@@ -56,6 +60,20 @@ if args.version:
     print("BitBot %s" % IRCBot.VERSION)
     sys.exit(0)
 
+database_location = None
+lock_location = None
+sock_locaiton = None
+if not args.database == None:
+    database_location = args.database
+    lock_location = "%s.lock" % args.database
+    sock_location = "%s.sock" % args.database
+else:
+    if not os.path.isdir(args.data_dir):
+        os.mkdir(args.data_dir)
+    database_location = os.path.join(args.data_dir, "bot.db")
+    lock_location = os.path.join(args.data_dir, "bot.lock")
+    sock_location = os.path.join(args.data_dir, "bot.sock")
+
 log_level = args.log_level
 if not log_level:
     log_level = "debug" if args.verbose else "warn"
@@ -65,7 +83,7 @@ log = Logging.Log(not args.no_logging, log_level, args.log_dir)
 log.info("Starting BitBot %s (Python v%s)",
     [IRCBot.VERSION, platform.python_version()])
 
-lock_file = LockFile.LockFile(args.database)
+lock_file = LockFile.LockFile(lock_location)
 if not lock_file.available():
     log.critical("Database is locked. Is BitBot already running?")
     sys.exit(1)
@@ -73,7 +91,7 @@ if not lock_file.available():
 atexit.register(lock_file.unlock)
 lock_file.lock()
 
-database = Database.Database(log, args.database)
+database = Database.Database(log, database_location)
 
 if args.remove_server:
     alias = args.remove_server
@@ -111,7 +129,7 @@ bot.add_poll_hook(cache)
 bot.add_poll_hook(lock_file)
 bot.add_poll_hook(timers)
 
-control = Control.Control(bot, args.database)
+control = Control.Control(bot, sock_location)
 control.bind()
 bot.add_poll_source(control)
 
@@ -120,7 +138,6 @@ if args.module:
     module = modules.load_module(bot, definition)
     module.module.command_line(args.module_args)
     sys.exit(0)
-
 
 server_configs = bot.database.servers.get_all()
 

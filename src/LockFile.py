@@ -4,14 +4,14 @@ from src import PollHook, utils
 EXPIRATION = 60 # 1 minute
 
 class LockFile(PollHook.PollHook):
-    def __init__(self, database_location: str):
-        self._lock_location = "%s.lock" % database_location
+    def __init__(self, filename: str):
+        self._filename = filename
         self._next_lock = None
 
     def available(self):
         now = utils.datetime_utcnow()
-        if os.path.exists(self._lock_location):
-            with open(self._lock_location, "r") as lock_file:
+        if os.path.exists(self._filename):
+            with open(self._filename, "r") as lock_file:
                 timestamp_str = lock_file.read().strip().split(" ", 1)[0]
 
             timestamp = utils.iso8601_parse(timestamp_str)
@@ -22,7 +22,7 @@ class LockFile(PollHook.PollHook):
         return True
 
     def lock(self):
-        with open(self._lock_location, "w") as lock_file:
+        with open(self._filename, "w") as lock_file:
             last_lock = utils.datetime_utcnow()
             lock_file.write("%s" % utils.iso8601_format(last_lock))
             self._next_lock = last_lock+datetime.timedelta(
@@ -34,5 +34,5 @@ class LockFile(PollHook.PollHook):
         self.lock()
 
     def unlock(self):
-        if os.path.isfile(self._lock_location):
-            os.remove(self._lock_location)
+        if os.path.isfile(self._filename):
+            os.remove(self._filename)

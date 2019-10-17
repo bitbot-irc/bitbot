@@ -39,11 +39,11 @@ class ControlClient(object):
 
 
 class Control(PollSource.PollSource):
-    def __init__(self, bot: IRCBot.Bot, database_location: str):
+    def __init__(self, bot: IRCBot.Bot, filename: str):
         self._bot = bot
         self._bot.log.hook(self._on_log)
 
-        self._socket_location = "%s.sock" % database_location
+        self._filename = filename
         self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self._clients = {}
 
@@ -53,9 +53,9 @@ class Control(PollSource.PollSource):
                 self._send_action(client, "log", line)
 
     def bind(self):
-        if os.path.exists(self._socket_location):
-            os.remove(self._socket_location)
-        self._socket.bind(self._socket_location)
+        if os.path.exists(self._filename):
+            os.remove(self._filename)
+        self._socket.bind(self._filename)
         self._socket.listen(1)
 
     def get_readables(self) -> typing.List[int]:
