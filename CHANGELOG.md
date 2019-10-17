@@ -3,9 +3,13 @@
 Added:
 - `setup.py`
 - `bitbotctl` - daemon control system through unix domain sockets
+- Basic GitLab webhook support in `git_webhooks`
+- Catch `m.youtube.com` URLs in `auto-youtube`
 
 Changed:
 - `start.py` -> `bitbotd`
+- Database and config are now expected in `~/.bitbot/` (unless `--database` and `--config` are specified)
+- Database backup files are now in `bot.db.{time}.back` format
 - Don't say a users vote was changed when it wasn't (`vote.py`)
 - Bot will not die when there's no connected servers
 - Command output will be truncated/cut at "word bounaries" (currently only space)
@@ -14,6 +18,11 @@ Changed:
 Fixed:
 - Be able to `!disconnect` reconnection attempts (regression, `admin.py`)
 - Strip only unknown tags from fedi `Note` activities - not the tag content too
+- Don't allow users to `!bef`/`!trap` a triggered duck before it has quacked
+- Don't set `location` to just a string when we decide a `!weather` arg is not a nickname
+
+Removed:
+- `cve.py`
 
 # 2019-10-10 - BitBot v1.12.0
 
