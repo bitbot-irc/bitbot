@@ -1,6 +1,6 @@
 ## Setting up BitBot
 
-* Move `bot.conf.example` to `bot.conf` and fill in the config options you care about. Ones blank or removed will disable relevant functionality.
+* Move `bot.conf.example` to `~/.bitbot/bot.conf` and fill in the config options you care about. Ones blank or removed will disable relevant functionality.
 * Run `./bitbotd -a` to add a server.
 * Run `./bitbotd -m permissions -M master-password` to get the master admin password (needed to add regular admin accounts)
 * Run `./bitbotd` to start the bot.
