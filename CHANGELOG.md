@@ -5,6 +5,7 @@ Added:
 - `bitbotctl` - daemon control system through unix domain sockets
 - Basic GitLab webhook support in `git_webhooks`
 - Catch `m.youtube.com` URLs in `auto-youtube`
+- Support UTF8 domains by punycode (idna) encoding
 
 Changed:
 - `start.py` -> `bitbotd`
