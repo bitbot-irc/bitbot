@@ -7,14 +7,14 @@ EVENT_CATEGORIES = {
     ],
     "code": ["push"],
     "pr-minimal": [
-        "pull_request/opened", "pull_request/closed", "pull_request/reopened"
+        "merge_request/opened", "merge_request/closed", "merge_request/reopened"
     ],
     "pr": [
-        "pull_request/opened", "pull_request/closed", "pull_request/reopened",
-        "pull_request/edited", "pull_request/assigned",
-        "pull_request/unassigned"
+        "merge_request/opened", "merge_request/closed", "merge_request/reopened",
+        "merge_request/edited", "merge_request/assigned",
+        "merge_request/unassigned"
     ],
-    "pr-all": ["pull_request"],
+    "pr-all": ["merge_request"],
     "issue-minimal": [
         "issue/opened", "issue/closed", "issue/reopened", "issue/deleted"
     ],
@@ -78,7 +78,7 @@ class GitLab(object):
         if event == "push":
             return self.push(full_name, data)
         elif event == "merge_request":
-            return self.pull_request(full_name, data)
+            return self.merge_request(full_name, data)
         elif event == "issue":
             return self.issues(full_name, data)
         elif event == "note":
