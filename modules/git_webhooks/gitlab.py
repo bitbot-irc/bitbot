@@ -165,7 +165,7 @@ class GitLab(object):
         number = utils.irc.color("#%s" % data["object_attributes"]["iid"],
             colors.COLOR_ID)
         type = data["object_attributes"]["noteable_type"]
-        type == "issue" if type == "Issue" else "PR"
+        type == "issue" if type == "Issue" else "MR"
 
         issue_title = data["issue"]["title"]
         commenter = utils.irc.bold(data["user"]["username"])
