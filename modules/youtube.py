@@ -79,9 +79,9 @@ class Module(ModuleManager.BaseModule):
             content = self.get_playlist_page(playlist_id, "contentDetails")
             count = content.data["items"][0]["contentDetails"]["itemCount"]
 
-            return "%s - %s (%d %s) %s" % (snippet["channelTitle"],
-                snippet["title"], count, "video" if count == 1 else "videos",
-                URL_PLAYLIST % playlist_id)
+            return "%s - %s (%d %s)" % (snippet["channelTitle"],
+                snippet["title"], count, "video" if count == 1 else "videos"
+                ), URL_PLAYLIST % playlist_id
 
     def _from_url(self, url):
         parsed = urllib.parse.urlparse(url)
