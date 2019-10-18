@@ -50,21 +50,30 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.fediverse")
     @utils.hook("received.command.fedi", alias_of="fediverse")
     @utils.kwarg("help", "Get someone's latest toot")
-    @utils.kwarg("usage", "@<user>@<instance>")
+    @utils.kwarg("usage", "@<user>@<instance> [!]")
     def fedi(self, event):
         account = None
         url = None
-        if not event["args"]:
+
+        show_cw = True
+        args_split = event["args_split"][:]
+        for i, arg in enumerate(args_split):
+            if arg == "!":
+                show_cw = False
+                args_split.pop(i)
+                break
+
+        if not args_split:
             account = event["user"].get_setting("fediverse", None)
-        elif utils.http.REGEX_URL.match(event["args_split"][0]):
-            url = event["args_split"][0]
-        elif not "@" in event["args"]:
-            target = event["args_split"][0]
+        elif utils.http.REGEX_URL.match(args_split[0]):
+            url = args_split[0]
+        elif not "@" in args_split[0]:
+            target = args_split[0]
             if event["server"].has_user_id(target):
                 target_user = event["server"].get_user(target)
                 account = target_user.get_setting("fediverse", None)
         else:
-            account = event["args_split"][0]
+            account = args_split[0]
 
         note = None
         type = "Create"
@@ -92,7 +101,7 @@ class Module(ModuleManager.BaseModule):
         shorturl = self.exports.get_one("shorturl")(event["server"], url,
             context=event["target"])
 
-        if cw:
+        if cw and show_cw:
             out = "CW: %s - %s" % (cw, shorturl)
         else:
             out = "%s - %s" % (out, shorturl)
