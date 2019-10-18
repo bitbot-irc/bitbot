@@ -108,16 +108,15 @@ class GitLab(object):
                 message = commit["message"].split("\n")[0].strip()
                 url = commit["url"]
 
-                outputs.append(
-                    "%s pushed %s to %s: %s - %s"
-                    % (author, hash_colored, branch, message, url))
+                outputs.append(["%s pushed %s to %s: %s - %s"
+                    % (author, hash_colored, branch, message), url])
         else:
             first_id = data["before"]
             last_id = data["after"]
             url = data["compare_url"]
 
-            outputs.append("%s pushed %d commits to %s"
-                % (author, len(data["commits"]), branch))
+            outputs.append(["%s pushed %d commits to %s"
+                % (author, len(data["commits"]), branch), None])
 
         return outputs
 
@@ -143,8 +142,7 @@ class GitLab(object):
         pr_title = data["object_attributes"]["title"]
         author = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
-        return ["[MR] %s %s: %s - %s" % (
-            author, action_desc, pr_title, url)]
+        return [["[MR] %s %s: %s" % (author, action_desc, pr_title), url]]
 
     def issues(self, full_name, data):
         number = utils.irc.color("#%s" % data["object_attributes"]["iid"],
@@ -154,8 +152,8 @@ class GitLab(object):
         author = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
 
-        return ["[issue] %s %s %s: %s - %s" %
-            (author, action, number, issue_title, url)]
+        return [["[issue] %s %s %s: %s - %s" %
+            (author, action, number, issue_title), url]]
 
     def note(self, full_name, data):
         type = data["object_attributes"]["noteable_type"]
@@ -171,5 +169,5 @@ class GitLab(object):
         issue_title = data["issue"]["title"]
         commenter = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
-        return ["[%s] %s commented on %s: %s - %s" %
-            (type, commenter, number, issue_title, url)]
+        return [["[%s] %s commented on %s: %s" %
+            (type, commenter, number, issue_title), url]]

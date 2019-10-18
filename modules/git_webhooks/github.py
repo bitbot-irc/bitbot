@@ -120,36 +120,38 @@ class GitHub(object):
         return EVENT_CATEGORIES.get(event, [event])
 
     def webhook(self, full_name, event, data, headers):
+        out = []
         if event == "push":
-            return self.push(full_name, data)
+            out = self.push(full_name, data)
         elif event == "commit_comment":
-            return self.commit_comment(full_name, data)
+            out = self.commit_comment(full_name, data)
         elif event == "pull_request":
-            return self.pull_request(full_name, data)
+            out = self.pull_request(full_name, data)
         elif event == "pull_request_review":
-            return self.pull_request_review(full_name, data)
+            out = self.pull_request_review(full_name, data)
         elif event == "pull_request_review_comment":
-            return self.pull_request_review_comment(full_name, data)
+            out = self.pull_request_review_comment(full_name, data)
         elif event == "issue_comment":
-            return self.issue_comment(full_name, data)
+            out = self.issue_comment(full_name, data)
         elif event == "issues":
-            return self.issues(full_name, data)
+            out = self.issues(full_name, data)
         elif event == "create":
-            return self.create(full_name, data)
+            out = self.create(full_name, data)
         elif event == "delete":
-            return self.delete(full_name, data)
+            out = self.delete(full_name, data)
         elif event == "release":
-            return self.release(full_name, data)
+            out = self.release(full_name, data)
         elif event == "check_run":
-            return self.check_run(data)
+            out = self.check_run(data)
         elif event == "fork":
-            return self.fork(full_name, data)
+            out = self.fork(full_name, data)
         elif event == "ping":
-            return self.ping(data)
+            out = self.ping(data)
         elif event == "membership":
-            return self.membership(organisation, data)
+            out = self.membership(organisation, data)
         elif event == "watch":
-            return self.watch(data)
+            out = self.watch(data)
+        return list(zip(out, [None]*len(out)))
 
     def _short_url(self, url):
         self.log.debug("git.io shortening: %s" % url)

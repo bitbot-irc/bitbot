@@ -118,9 +118,14 @@ class Module(ModuleManager.BaseModule):
                 if repo_name and hide_org:
                     source = repo_name
 
-                for output in outputs:
+                for output, url in outputs:
                     output = "(%s) %s" % (
                         utils.irc.color(source, colors.COLOR_REPO), output)
+
+                    if url:
+                        shorturl = self.exports.get_one("shorturl")(server, url,
+                            context=channel) or url
+                        output = "%s - %s" % (output, shorturl)
 
                     if channel.get_setting("git-prevent-highlight", False):
                         output = self._prevent_highlight(server, channel,

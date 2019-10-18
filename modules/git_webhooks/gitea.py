@@ -102,7 +102,7 @@ class Gitea(object):
             return self.ping(data)
 
     def ping(self, data):
-        return ["Received new webhook"]
+        return [["Received new webhook", None]]
 
     def _short_hash(self, hash):
         return hash[:8]
@@ -120,16 +120,15 @@ class Gitea(object):
                 message = commit["message"].split("\n")[0].strip()
                 url = commit["url"]
 
-                outputs.append(
-                    "%s pushed %s to %s: %s - %s"
-                    % (author, hash_colored, branch, message, url))
+                outputs.append(["%s pushed %s to %s: %s"
+                    % (author, hash_colored, branch, message), url])
         else:
             first_id = data["before"]
             last_id = data["commits"][-1]["id"]
             url = data["compare_url"]
 
-            outputs.append("%s pushed %d commits to %s - %s"
-                % (author, len(data["commits"]), branch, url))
+            outputs.append(["%s pushed %d commits to %s"
+                % (author, len(data["commits"]), branch), url])
 
         return outputs
 
@@ -160,8 +159,8 @@ class Gitea(object):
         pr_title = data["pull_request"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
         url = data["pull_request"]["html_url"]
-        return ["[PR] %s %s: %s - %s" % (
-            author, action_desc, pr_title, url)]
+        return [["[PR] %s %s: %s" %
+            (author, action_desc, pr_title), url]]
 
 
     def issues(self, full_name, data):
@@ -173,37 +172,38 @@ class Gitea(object):
         url = "%s/issues/%d" % (data["repository"]["html_url"],
             data["issue"]["number"])
 
-        return ["[issue] %s %s %s: %s - %s" %
-            (author, action, number, issue_title, url)]
+        return [["[issue] %s %s %s: %s" %
+            (author, action, number, issue_title), url]]
     def issue_comment(self, full_name, data):
         if "changes" in data:
             # don't show this event when nothing has actually changed
             if data["changes"]["body"]["from"] == data["comment"]["body"]:
-                return
+                return []
 
-        number = utils.irc.color("#%s" % data["issue"]["number"], colors.COLOR_ID)
+        number = utils.irc.color("#%s" % data["issue"]["number"],
+            colors.COLOR_ID)
         action = data["action"]
         issue_title = data["issue"]["title"]
         type = "PR" if data["issue"]["pull_request"] else "issue"
         commenter = utils.irc.bold(data["sender"]["login"])
         url = data["comment"]["html_url"]
-        return ["[%s] %s %s on %s: %s - %s" %
-            (type, commenter, COMMENT_ACTIONS[action], number, issue_title,
-            url)]
+        return [["[%s] %s %s on %s: %s" %
+            (type, commenter, COMMENT_ACTIONS[action], number, issue_title),
+            url]]
 
     def create(self, full_name, data):
         ref = data["ref"]
         ref_color = utils.irc.color(ref, colors.COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        return ["%s created a %s: %s" % (sender, type, ref_color)]
+        return [["%s created a %s: %s" % (sender, type, ref_color), None]]
 
     def delete(self, full_name, data):
         ref = data["ref"]
         ref_color = utils.irc.color(ref, colors.COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        return ["%s deleted a %s: %s" % (sender, type, ref_color)]
+        return [["%s deleted a %s: %s" % (sender, type, ref_color)], None]
 
     def repository(self, full_name, data):
         return []
@@ -215,12 +215,12 @@ class Gitea(object):
         if name:
             name = ": %s" % name
         author = utils.irc.bold(data["release"]["author"]["login"])
-        return ["%s %s a release%s" % (author, action, name)]
+        return [["%s %s a release%s" % (author, action, name)], None]
 
     def fork(self, full_name, data):
         forker = utils.irc.bold(data["sender"]["login"])
         fork_full_name = utils.irc.color(data["repository"]["full_name"],
             utils.consts.LIGHTBLUE)
         url = data["repository"]["html_url"]
-        return ["%s forked into %s - %s" %
-            (forker, fork_full_name, url)]
+        return [["%s forked into %s" %
+            (forker, fork_full_name), url]]
