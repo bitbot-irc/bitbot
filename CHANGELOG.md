@@ -17,6 +17,7 @@ Changed:
 - `!reloadallmodules` and `SIGUSR1` will not try to reload but rollback to currently-loaded on error
 
 Fixed:
+- Any user was able to add an API KEY (missing `permission` kwarg)
 - Be able to `!disconnect` reconnection attempts (regression, `admin.py`)
 - Strip only unknown tags from fedi `Note` activities - not the tag content too
 - Don't allow users to `!bef`/`!trap` a triggered duck before it has quacked
