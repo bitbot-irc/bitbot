@@ -13,6 +13,7 @@ Group=bitbot
 WorkingDirectory=/opt/bitbot/
 
 ExecStart=/usr/bin/env python3 bitbotd
+ExecStop=/usr/bin/env python3 bitbotctl stop
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
 
