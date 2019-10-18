@@ -1,4 +1,4 @@
-import asyncio, ipaddress, re, signal, socket, traceback, typing
+import asyncio, codecs, ipaddress, re, signal, socket, traceback, typing
 import urllib.error, urllib.parse, uuid
 import json as _json
 import bs4, netifaces, requests
@@ -96,9 +96,17 @@ class Request(object):
                 self.get_params.update(kwargs)
 
     def set_url(self, url: str):
-        if not urllib.parse.urlparse(url).scheme:
-            url = "http://%s" % url
-        self.url = url
+        parts = urllib.parse.urlparse(url)
+        if not parts.scheme:
+            parts = urllib.parse.urlparse("http://%s" % url)
+
+        netloc = codecs.encode(parts.netloc, "idna").decode("ascii")
+        params = "" if not parts.params else (";%s" % parts.params)
+        query = "" if not parts.query else ("?%s" % parts.query)
+        fragment = "" if not parts.fragment else ("#%s" % parts.fragment)
+
+        self.url = (
+            f"{parts.scheme}://{netloc}{parts.path}{params}{query}{fragment}")
 
     def get_headers(self) -> typing.Dict[str, str]:
         headers = self.headers.copy()
