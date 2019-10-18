@@ -193,6 +193,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "add <alias> [endpoint [endpoint ...]]")
     @utils.kwarg("usage", "remove <alias>")
     @utils.kwarg("usage", "info <alias>")
+    @utils.kwarg("permission", "apikey")
     def apikey(self, event):
         subcommand = event["args_split"][0].lower()
         alias = None
