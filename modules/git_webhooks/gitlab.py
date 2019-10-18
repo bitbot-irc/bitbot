@@ -108,7 +108,7 @@ class GitLab(object):
                 message = commit["message"].split("\n")[0].strip()
                 url = commit["url"]
 
-                outputs.append(["%s pushed %s to %s: %s - %s"
+                outputs.append(["%s pushed %s to %s: %s"
                     % (author, hash_colored, branch, message), url])
         else:
             first_id = data["before"]
@@ -152,7 +152,7 @@ class GitLab(object):
         author = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
 
-        return [["[issue] %s %s %s: %s - %s" %
+        return [["[issue] %s %s %s: %s" %
             (author, action, number, issue_title), url]]
 
     def note(self, full_name, data):
