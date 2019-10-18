@@ -7,20 +7,18 @@ EVENT_CATEGORIES = {
     ],
     "code": ["push"],
     "pr-minimal": [
-        "merge_request/opened", "merge_request/closed", "merge_request/reopened"
+        "merge_request/open", "merge_request/close", "merge_request/reopen"
     ],
     "pr": [
-        "merge_request/opened", "merge_request/closed", "merge_request/reopened",
-        "merge_request/edited", "merge_request/assigned",
-        "merge_request/unassigned"
+        "merge_request/open", "merge_request/close", "merge_request/reopen",
+        "merge_request/update",
     ],
     "pr-all": ["merge_request"],
     "issue-minimal": [
-        "issue/opened", "issue/closed", "issue/reopened", "issue/deleted"
+        "issue/open", "issue/close", "issue/reopen"
     ],
-    "issues": [
-        "issue/opened", "issue/closed", "issue/reopened", "issue/deleted",
-        "issue/edited", "issue/assigned", "issue/unassigned", "issue_comment"
+    "issue": [
+        "issue/open", "issue/close", "issue/reopen", "issue/update",
     ],
     "issue-all": [
         "issue", "issue_comment"
