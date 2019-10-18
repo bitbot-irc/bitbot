@@ -32,6 +32,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Check if a given hostname:port is up or not")
     @utils.kwarg("usage", "<hostname>[:port]")
+    @utils.kwarg("permission", "tcpup")
     def tcpup(self, event):
         hostname, _, port = event["args_split"][0].partition(":")
         port = utils.parse.try_int(port or "80")
