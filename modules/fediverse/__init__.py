@@ -55,11 +55,11 @@ class Module(ModuleManager.BaseModule):
         account = None
         url = None
 
-        show_cw = True
+        strict_cw = True
         args_split = event["args_split"][:]
         for i, arg in enumerate(args_split):
             if arg == "!":
-                show_cw = False
+                strict_cw = False
                 args_split.pop(i)
                 break
 
@@ -101,8 +101,11 @@ class Module(ModuleManager.BaseModule):
         shorturl = self.exports.get_one("shorturl")(event["server"], url,
             context=event["target"])
 
-        if cw and show_cw:
-            out = "CW: %s - %s" % (cw, shorturl)
+        if cw:
+            if strict_cw:
+                out = "CW: %s - %s" % (cw, shorturl)
+            else:
+                out = "(CW %s) %s - %s" % (cw, out, shorturl)
         else:
             out = "%s - %s" % (out, shorturl)
         event["stdout"].write(out)
