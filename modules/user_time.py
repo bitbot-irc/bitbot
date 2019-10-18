@@ -16,27 +16,29 @@ class Module(ModuleManager.BaseModule):
     _name = "Time"
 
     def _find_setting(self, event):
-        target_user = event["user"]
+        query = None
 
         if event["args"]:
+            query = event["args"]
             if len(event["args_split"]) == 1 and event["server"].has_user_id(
                     event["args_split"][0]):
                 target_user = event["server"].get_user(event["args_split"][0])
-            else:
-                location = self.exports.get_one("get-location")(event["args"])
-                if location:
-                    return (LocationType.NAME, location["name"],
-                        location["timezone"])
-                else:
-                    return LocationType.NAME, event["args"], None
+        else:
+            target_user = event["user"]
 
         if target_user:
             location = target_user.get_setting("location", None)
             if location:
                 return (LocationType.USER, target_user.nickname,
                     location["timezone"])
+
+        if query:
+            location = self.exports.get_one("get-location")(query)
+            if location:
+                return (LocationType.NAME, location["name"],
+                    location["timezone"])
             else:
-                return LocationType.USER, target_user.nickname, None
+                return LocationType.NAME, event["args"], None
 
 
     @utils.hook("received.command.time")
