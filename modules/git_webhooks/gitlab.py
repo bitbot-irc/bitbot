@@ -43,6 +43,13 @@ COMMENT_ACTIONS = {
     "deleted": "deleted a comment"
 }
 
+ISSUE_ACTIONS = {
+    "open": "opened",
+    "close": "closed",
+    "reopen": "reopened",
+    "update": "updated"
+}
+
 class GitLab(object):
     def is_private(self, data, headers):
         if "project" in data:
@@ -143,7 +150,7 @@ class GitLab(object):
     def issues(self, full_name, data):
         number = utils.irc.color("#%s" % data["object_attributes"]["iid"],
             colors.COLOR_ID)
-        action = data["object_attributes"]["action"]
+        action = ISSUE_ACTIONS[data["object_attributes"]["action"]]
         issue_title = data["object_attributes"]["title"]
         author = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
