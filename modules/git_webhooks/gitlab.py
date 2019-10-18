@@ -120,9 +120,9 @@ class GitLab(object):
         return outputs
 
     def merge_request(self, full_name, data):
-        number = utils.irc.color("#%s" % data["object_attributes"]["iid"],
+        number = utils.irc.color("!%s" % data["object_attributes"]["iid"],
             colors.COLOR_ID)
-        action = data["object_attributes"]["action"]
+        action = ISSUE_ACTIONS[data["object_attributes"]["action"]]
         action_desc = "%s %s" % (action, number)
         branch = data["object_attributes"]["target_branch"]
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
@@ -142,7 +142,7 @@ class GitLab(object):
         pr_title = data["object_attributes"]["title"]
         author = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
-        return ["[PR] %s %s: %s - %s" % (
+        return ["[MR] %s %s: %s - %s" % (
             author, action_desc, pr_title, url)]
 
     def issues(self, full_name, data):
