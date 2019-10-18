@@ -124,8 +124,8 @@ class GitLab(object):
     def merge_request(self, full_name, data):
         number = utils.irc.color("!%s" % data["object_attributes"]["iid"],
             colors.COLOR_ID)
-        action = ISSUE_ACTIONS[data["object_attributes"]["action"]]
-        action_desc = "%s %s" % (action, number)
+        action = data["object_attributes"]["action"]
+        action_desc = "%s %s" % (ISSUE_ACTIONS[action], number)
         branch = data["object_attributes"]["target_branch"]
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
 
@@ -133,13 +133,12 @@ class GitLab(object):
             action_desc = "requested %s merge into %s" % (number,
                 colored_branch)
         elif action == "close":
-            if data["pull_request"]["merged"]:
-                action_desc = "%s %s into %s" % (
-                    utils.irc.color("merged", colors.COLOR_POSITIVE), number,
-                    colored_branch)
-            else:
-                action_desc = "%s %s" % (
-                    utils.irc.color("closed", colors.COLOR_NEGATIVE), number)
+            action_desc = "%s %s" % (
+                utils.irc.color("closed", colors.COLOR_NEGATIVE), number)
+        elif action == "merge":
+            action_desc = "%s %s into %s" % (
+                utils.irc.color("merged", colors.COLOR_POSITIVE), number,
+                colored_branch)
 
         pr_title = data["object_attributes"]["title"]
         author = utils.irc.bold(data["user"]["username"])
