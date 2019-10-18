@@ -7,11 +7,12 @@ EVENT_CATEGORIES = {
     ],
     "code": ["push"],
     "pr-minimal": [
-        "merge_request/open", "merge_request/close", "merge_request/reopen"
+        "merge_request/open", "merge_request/close", "merge_request/reopen",
+        "merge_request/merge"
     ],
     "pr": [
         "merge_request/open", "merge_request/close", "merge_request/reopen",
-        "merge_request/update",
+        "merge_request/update", "merge_request/merge"
     ],
     "pr-all": ["merge_request"],
     "issue-minimal": [
@@ -45,7 +46,8 @@ ISSUE_ACTIONS = {
     "open": "opened",
     "close": "closed",
     "reopen": "reopened",
-    "update": "updated"
+    "update": "updated",
+    "merge": "merged"
 }
 
 class GitLab(object):
