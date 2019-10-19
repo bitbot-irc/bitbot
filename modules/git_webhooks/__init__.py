@@ -19,6 +19,8 @@ DEFAULT_EVENT_CATEGORIES = [
     "Hide/show organisation in repository names"))
 @utils.export("channelset", utils.BoolSetting("git-hide-prefix",
     "Hide/show command-like prefix on git webhook outputs"))
+@utils.export("channelset", utils.BoolSetting("git-shorten-urls",
+    "Weather or not git webhook URLs should be shortened"))
 @utils.export("botset", utils.BoolSetting("git-show-private",
     "Whether or not to show git activity for private repositories"))
 class Module(ModuleManager.BaseModule):
@@ -122,7 +124,7 @@ class Module(ModuleManager.BaseModule):
                     output = "(%s) %s" % (
                         utils.irc.color(source, colors.COLOR_REPO), output)
 
-                    if url:
+                    if url and channel.get_setting("git-shorten-urls", False):
                         shorturl = self.exports.get_one("shorturl")(server, url,
                             context=channel) or url
                         output = "%s - %s" % (output, shorturl)
