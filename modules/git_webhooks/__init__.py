@@ -124,10 +124,11 @@ class Module(ModuleManager.BaseModule):
                     output = "(%s) %s" % (
                         utils.irc.color(source, colors.COLOR_REPO), output)
 
-                    if url and channel.get_setting("git-shorten-urls", False):
-                        shorturl = self.exports.get_one("shorturl")(server, url,
-                            context=channel) or url
-                        output = "%s - %s" % (output, shorturl)
+                    if url:
+                        if channel.get_setting("git-shorten-urls", False):
+                            url = self.exports.get_one("shorturl")(server, url,
+                                context=channel) or url
+                        output = "%s - %s" % (output, url)
 
                     if channel.get_setting("git-prevent-highlight", False):
                         output = self._prevent_highlight(server, channel,
