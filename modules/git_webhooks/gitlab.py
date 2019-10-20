@@ -91,7 +91,7 @@ class GitLab(object):
         return hash[:8]
 
     def tag_push(self, full_name, data):
-        create = data["after"].strip("0")==""
+        create = not data["after"].strip("0") == ""
         tag = utils.irc.color(data["ref"].rsplit("/", 1)[-1],
             colors.COLOR_BRANCH)
         author = utils.irc.bold(data["user_username"])
