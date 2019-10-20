@@ -97,7 +97,7 @@ class GitLab(object):
         author = utils.irc.bold(data["user_username"])
         action = "created" if create else "deleted"
 
-        return ["%s %s a tag: %s" % (author, action, tag)]
+        return [["%s %s a tag: %s" % (author, action, tag), None]
 
     def push(self, full_name, data):
         outputs = []
