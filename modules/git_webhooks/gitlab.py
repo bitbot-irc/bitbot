@@ -27,13 +27,7 @@ EVENT_CATEGORIES = {
     "issue-comment-minimal": [
         "issue_comment/created", "issue_comment/deleted"
     ],
-    "repo": [
-        "create", # a repository, branch or tag has been created
-        "delete", # same as above but deleted
-        "release",
-        "fork",
-        "repository"
-    ]
+    "repo": ["tag_push"]
 }
 
 COMMENT_ACTIONS = {
@@ -90,9 +84,20 @@ class GitLab(object):
             return self.issues(full_name, data)
         elif event == "note":
             return self.note(full_name, data)
+        elif event == "tag_push":
+            return self.tag_push(full_name, data)
 
     def _short_hash(self, hash):
         return hash[:8]
+
+    def tag_push(self, full_name, data):
+        create = data["after"].strip("0")==""
+        tag = utils.irc.color(data["ref"].rsplit("/", 1)[-1],
+            colors.COLOR_BRANCH)
+        author = utils.irc.bold(data["user_username"])
+        action = "created" if create else "deleted"
+
+        return ["%s %s a tag: %s" % (author, action, tag)]
 
     def push(self, full_name, data):
         outputs = []
