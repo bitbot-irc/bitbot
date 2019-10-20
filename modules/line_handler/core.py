@@ -137,6 +137,8 @@ def handle_354(event):
         target.realname = realname
         if not account == "0":
             target.identified_account = account
+            target.identified_account_id = event["server"].get_user(account
+                ).get_id()
         else:
             target.identified_account = None
 
