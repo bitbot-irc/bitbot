@@ -17,7 +17,7 @@ _exports = None
 _log = None
 
 REGEX_TWITTERURL = re.compile(
-    "https?://(?:www\.)?twitter.com/[^/]+/status/(\d+)", re.I)
+    "https?://(?:www\.|mobile\.)?twitter.com/[^/]+/status/(\d+)", re.I)
 
 def _get_follows():
     return _bot.database.channel_settings.find_by_setting("twitter-follow")
