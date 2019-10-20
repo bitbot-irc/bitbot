@@ -6,6 +6,8 @@ Added:
 - Basic GitLab webhook support in `git_webhooks`
 - Catch `m.youtube.com` URLs in `auto-youtube`
 - Support UTF8 domains by punycode (idna) encoding
+- `!` param in `!fedi` to denote "show content-warned content"
+- Opt-in URL shortening for Gitea and GitLab
 
 Changed:
 - `start.py` -> `bitbotd`
@@ -25,6 +27,7 @@ Fixed:
 
 Removed:
 - `cve.py`
+-`EVENTS.md`
 
 # 2019-10-10 - BitBot v1.12.0
 
