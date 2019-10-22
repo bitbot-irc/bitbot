@@ -324,6 +324,7 @@ class Bot(object):
                 self._kill()
                 if not item.callback == None:
                     item.callback()
+                break
 
     def _post_send_factory(self, server, lines):
         return lambda: server._post_send(lines)
