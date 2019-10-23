@@ -1,4 +1,4 @@
-import collections, datetime, sys, time, typing
+import collections, datetime, sys, textwrap, time, typing
 from src import EventManager, IRCBot, IRCChannel, IRCChannels, IRCLine
 from src import IRCObject, IRCSocket, IRCUser, utils
 
@@ -305,17 +305,13 @@ class Server(IRCObject.Object):
     def send_capibility_ls(self) -> typing.Optional[IRCLine.SentLine]:
         return self.send(utils.irc.protocol.capability_ls())
     def send_capability_queue(self):
-        capability_queue = list(self.capability_queue.keys())
+        # textwrap works here because in ASCII, all chars are 1 bytes:
+        capabilities = " ".join(self.capability_queue.keys())
+        capability_batches = textwrap.wrap(capabilities,
+            IRCLine.LINE_MAX-len("CAP REQ :"))
 
-        for i in range(0, len(capability_queue), 10):
-            capability_batch = capability_queue[i:i+10]
-
-            for cap_name in capability_batch:
-                cap = self.capability_queue[cap_name]
-                del self.capability_queue[cap_name]
-                self.capabilities_requested[cap_name] = cap
-
-            self.send_capability_request(" ".join(capability_batch))
+        for capability_batch in capability_batches:
+            self.send_capability_request(capability_batch)
 
     def send_capability_request(self, capability: str
             ) -> typing.Optional[IRCLine.SentLine]:
