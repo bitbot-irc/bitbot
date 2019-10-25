@@ -137,7 +137,7 @@ class Bot(object):
         elif type == TriggerResult.Return:
             return returned
 
-    def panic(self, reason=None, throw=True):
+    def panic(self, reason=None):
         callback = None
 
         if not reason == None:
@@ -326,7 +326,7 @@ class Bot(object):
         try:
             loop()
         except Exception as e:
-            self.panic("Exception on '%s' thread" % name, throw=False)
+            self.panic("Exception on '%s' thread" % name)
 
     def _write_loop(self):
         while self._writing:
