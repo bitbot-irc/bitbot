@@ -306,9 +306,15 @@ class Server(IRCObject.Object):
         return self.send(utils.irc.protocol.capability_ls())
     def send_capability_queue(self):
         # textwrap works here because in ASCII, all chars are 1 bytes:
-        capabilities = " ".join(self.capability_queue.keys())
-        capability_batches = textwrap.wrap(capabilities,
+        capabilities = list(self.capability_queue.keys())
+        capabilities_str = " ".join(capabilities)
+        capability_batches = textwrap.wrap(capabilities_str,
             IRCLine.LINE_MAX-len("CAP REQ :"))
+
+        for cap_name in capabilities:
+            cap = self.capability_queue[cap_name]
+            del self.capability_queue[cap_name]
+            self.capabilities_requested[cap_name] = cap
 
         for capability_batch in capability_batches:
             self.send_capability_request(capability_batch)
