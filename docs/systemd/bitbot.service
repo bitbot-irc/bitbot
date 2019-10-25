@@ -14,7 +14,7 @@ WorkingDirectory=/opt/bitbot/
 
 ExecStart=/usr/bin/env python3 bitbotd
 ExecStop=/usr/bin/env python3 bitbotctl stop
-ExecReload=/bin/kill -HUP $MAINPID
+ExecReload=/usr/bin/env python3 bitbotctl reload
 Restart=always
 
 [Install]
