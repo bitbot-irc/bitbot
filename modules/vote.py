@@ -14,6 +14,8 @@ class VoteCastResult(enum.Enum):
 
 @utils.export("channelset", utils.BoolSetting("votes-start-restricted",
     "Whether starting a vote should be restricted to ops"))
+@utils.export("channelset", utils.BoolSetting("votes-cast-restricted",
+    "Whether casting a vote should be restricted to voiced-and-above users"))
 class Module(ModuleManager.BaseModule):
     def _get_vote(self, channel, vote_id):
         return channel.get_setting("vote-%s" % vote_id, None)
@@ -111,9 +113,14 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.vote", channel_only=True, min_args=1)
     def vote(self, event):
         """
-        :help: Vote in the channel's current vote
+        :help: Cast choice for a given vote
         :usage: <id> [choice]
         """
+        if event["target"].get_setting("votes-scast-restricted", True):
+            event["check_assert"](utils.Check("channel-mode", "v")|
+                utils.Check("permission", "vote")|
+                utils.Check("channel-access", "vote"))
+
         vote_id = event["args_split"][0]
         vote = self._get_vote(event["target"], vote_id)
         if vote == None:
