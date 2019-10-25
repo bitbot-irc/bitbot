@@ -96,6 +96,11 @@ class Module(ModuleManager.BaseModule):
         repo_hooked = bool(unfiltered_targets)
         targets = []
         for server, channel, hook in unfiltered_targets:
+            if (branch and
+                    hook["branches"] and
+                    not branch in hook["branches"]):
+                continue
+
             events = []
             for hooked_event in hook["events"]:
                 events.append(handler.event_categories(hooked_event))
