@@ -164,7 +164,7 @@ class Module(ModuleManager.BaseModule):
                 self.log.error(message)
                 self.bot.disconnect(server)
             else:
-                self.bot.panic(reason=message)
+                self.bot.panic(message)
         else:
             self.log.warn("SASL failure for %s: %s" % (str(server), message))
             self._end_sasl(server)

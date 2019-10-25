@@ -137,12 +137,12 @@ class Bot(object):
         elif type == TriggerResult.Return:
             return returned
 
-    def panic(self, reason=None):
-        callback = None
+    def panic(self, reason):
+        exc_info = False
+        if any(sys.exc_info()):
+            exc_info = True
 
-        if not reason == None:
-            self.log.critical("panic() called: %s", [reason], exc_info=True)
-
+        self.log.critical("panic() called: %s", [reason], exc_info=exc_info)
         sys.exit(20)
 
     def _module_lists(self):
