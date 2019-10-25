@@ -32,7 +32,7 @@ Fixed:
 
 Removed:
 - `cve.py`
--`EVENTS.md`
+- `EVENTS.md`
 
 # 2019-10-10 - BitBot v1.12.0
 
