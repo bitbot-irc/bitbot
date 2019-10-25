@@ -86,7 +86,7 @@ log.info("Starting BitBot %s (Python v%s, db %s)",
 lock_file = LockFile.LockFile(lock_location)
 if not lock_file.available():
     log.critical("Database is locked. Is BitBot already running?")
-    sys.exit(1)
+    sys.exit(2)
 
 atexit.register(lock_file.unlock)
 lock_file.lock()
@@ -159,13 +159,13 @@ if len(server_configs):
         if not bot.connect(server):
             log.error("Failed to connect to '%s'" % str(server))
             if not args.startup_disconnects:
-                sys.exit(1)
+                sys.exit(3)
 
     try:
         bot.run()
     except Exception as e:
         log.critical("Unhandled exception: %s", [str(e)], exc_info=True)
-        sys.exit(1)
+        sys.exit(4)
 else:
     try:
         if utils.cli.bool_input("no servers found, add one?"):
