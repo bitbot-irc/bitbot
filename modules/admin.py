@@ -84,8 +84,7 @@ class Module(ModuleManager.BaseModule):
         alias = event["args_split"][0]
         server = self._server_from_alias(alias)
         if server:
-            raise utils.EventError("Already connected to %s" % str(
-                existing_server))
+            raise utils.EventError("Already connected to %s" % str(server))
 
         server = self.bot.add_server(self._id_from_alias(alias))
         event["stdout"].write("Connecting to %s" % str(server))
