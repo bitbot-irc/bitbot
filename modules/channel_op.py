@@ -28,7 +28,7 @@ class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 
     def _parse_time(self, args, min_args):
-        if args[0][0] == "+":
+        if args and args[0][0] == "+":
             if len(args[1:]) < min_args:
                 raise utils.EventError("Not enough arguments")
             time = utils.from_pretty_time(args[0][1:])
@@ -341,3 +341,34 @@ class Module(ModuleManager.BaseModule):
                 channel.send_mode("+%s" % "".join(chars), list(args))
             if not kick_reason == None:
                 channel.send_kick(user.nickname, kick_reason)
+
+    @utils.hook("received.command.cmute")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "cmute")
+    @utils.kwarg("usage", "[+time]")
+    @utils.kwarg("help", "Mute the current channel")
+    def cmute(self, event):
+        time, args = self._parse_time(event["args_split"], 0)
+        event["target"].send_mode("+m")
+
+        if time:
+            self.timers.add_persistent("cunmute", time,
+                server_id=event["server"].id, channel_name=event["target"].name)
+    @utils.hook("timer.cunmute")
+    def cunmute_timer(self, event):
+        server = self.bot.get_server_by_id(event["server_id"])
+        if server and event["channel_name"] in server.channels:
+            self._cunmute(server.channels.get(event["channel_name"]))
+
+    @utils.hook("received.command.cunmute")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "cmute")
+    @utils.kwarg("usage", "[+time]")
+    @utils.kwarg("help", "Mute the current channel")
+    def cunmute(self):
+        self._cunmute(event["target"])
+
+    def _cunmute(self, channel):
+        channel.send_mode("-m")
