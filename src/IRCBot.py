@@ -203,6 +203,7 @@ class Bot(object):
         except Exception as e:
             self.log.warn("Failed to connect to %s: %s",
                 [str(server), str(e)])
+            self.log.debug("Connection failure reason:", exc_info=True)
             return False
         self.servers[server.fileno()] = server
         self._read_poll.register(server.fileno(), select.POLLIN)

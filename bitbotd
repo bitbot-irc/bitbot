@@ -157,7 +157,7 @@ if len(server_configs):
 
     for server in servers:
         if not bot.connect(server):
-            log.error("Failed to connect to '%s'" % str(server))
+            log.error("Failed to connect to '%s'", [str(server)], exc_info=True)
             if not args.startup_disconnects:
                 sys.exit(3)
 
