@@ -9,5 +9,5 @@ pytz==2019.2
 requests==2.22.0
 scrypt==0.8.13
 suds-jurko==0.6
-tornado==3.2.1
+tornado==6.0.3
 tweepy==3.8.0
