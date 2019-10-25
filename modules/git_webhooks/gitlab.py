@@ -54,7 +54,12 @@ class GitLab(object):
         full_name = data["project"]["path_with_namespace"]
         repo_username, repo_name = full_name.split("/", 1)[0]
 
-        return full_name, repo_username, repo_name, None
+        organisation = None
+        if full_name.count("/") == 2:
+            organisation = repo_username
+            repo_username = full_name.rsplit("/", 1)[0]
+
+        return full_name, repo_username, repo_name, organisation
 
     def branch(self, data, headers):
         if "ref" in data:
