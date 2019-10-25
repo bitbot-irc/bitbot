@@ -31,6 +31,11 @@ class Module(ModuleManager.BaseModule):
         return utils.http.request(URL_YOUTUBEVIDEO, get_params={"part": part,
             "id": video_id, "key": self.bot.config["google-api-key"]},
             json=True)
+
+    def _number(self, n):
+        if n:
+            return "{:,}".format(int(n))
+
     def video_details(self, video_id):
         snippet = self.get_video_page(video_id, "snippet")
         if snippet.data["items"]:
@@ -41,9 +46,9 @@ class Module(ModuleManager.BaseModule):
                 "items"][0]["contentDetails"]
             video_uploader = snippet["channelTitle"]
             video_title = snippet["title"]
-            video_views = statistics["viewCount"]
-            video_likes = statistics.get("likeCount")
-            video_dislikes = statistics.get("dislikeCount")
+            video_views = self._number(statistics["viewCount"])
+            video_likes = self._number(statistics.get("likeCount"))
+            video_dislikes = self._number(statistics.get("dislikeCount"))
             video_duration = content["duration"]
             video_opinions = ""
             if video_likes and video_dislikes:
@@ -63,8 +68,8 @@ class Module(ModuleManager.BaseModule):
                 ) if match.group(3) else "00"
             url = URL_YOUTUBESHORT % video_id
             return "%s (%s) uploaded by %s, %s views%s" % (
-                video_title, video_duration, video_uploader, "{:,}".format(
-                int(video_views)), video_opinions), url
+                video_title, video_duration, video_uploader, video_views,
+                video_opinions), url
         return None
 
     def get_playlist_page(self, playlist_id, part):
@@ -79,7 +84,7 @@ class Module(ModuleManager.BaseModule):
             content = self.get_playlist_page(playlist_id, "contentDetails")
             count = content.data["items"][0]["contentDetails"]["itemCount"]
 
-            return "%s - %s (%d %s)" % (snippet["channelTitle"],
+            return "%s - %s (%s %s)" % (snippet["channelTitle"],
                 snippet["title"], count, "video" if count == 1 else "videos"
                 ), URL_PLAYLIST % playlist_id
 
