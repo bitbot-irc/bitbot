@@ -1,4 +1,4 @@
-# TBD - BitBot v1.13.0
+# 2019-10-25 - BitBot v1.13.0
 
 Added:
 - `setup.py`
