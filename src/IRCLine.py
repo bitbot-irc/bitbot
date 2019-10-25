@@ -1,5 +1,5 @@
 import datetime, typing, uuid
-from src import IRCObject, utils
+from src import EventManager, IRCObject, utils
 
 # this should be 510 (RFC1459, 512 with \r\n) but a server BitBot uses is broken
 LINE_MAX = 470
@@ -130,7 +130,7 @@ class ParsedLine(object):
 
     def _newline_truncate(self, line: str) -> typing.Tuple[str, str]:
         line, sep, overflow = line.partition("\n")
-        return [line, overflow]
+        return (line, overflow)
     def _line_max(self, hostmask: str, margin: int) -> int:
         return LINE_MAX-len((":%s " % hostmask).encode("utf8"))-margin
     def truncate(self, hostmask: str, margin: int=0) -> typing.Tuple[str, str]:

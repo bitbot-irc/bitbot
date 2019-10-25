@@ -67,7 +67,11 @@ class Buffer(object):
         return None
 
     def find_from(self, nickname: str) -> typing.Optional[BufferLine]:
-        return (self.find_many_from(nickname, 1) or [None])[0]
+        lines = self.find_many_from(nickname, 1)
+        if lines:
+            return lines[0]
+        else:
+            return None
     def find_many_from(self, nickname: str, max: int
             ) -> typing.List[BufferLine]:
         nickname_lower = self.server.irc_lower(nickname)

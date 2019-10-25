@@ -177,7 +177,7 @@ class BitBotMagic(object):
         self._kwargs.append((key, value))
 
     def get_hooks(self):
-        hooks: typing.List[typing.Tuple[str, typing.List[str, typing.Any]]] = []
+        hooks: typing.List[typing.Tuple[str, typing.List[Tuple[str, typing.Any]]]] = []
         for hook, kwargs in self._hooks:
             hooks.append((hook, self._kwargs.copy()+list(kwargs.items())))
         return hooks
@@ -254,8 +254,11 @@ class CaseInsensitiveDict(dict):
         return dict.__getitem__(self, key.lower())
     def __setitem__(self, key: str, value: typing.Any) -> typing.Any:
         return dict.__setitem__(self, key.lower(), value)
-    def __contains__(self, key: str):
-        return dict.__contains__(self, key.lower())
+    def __contains__(self, key: typing.Any) -> bool:
+        if isinstance(key, str):
+            return dict.__contains__(self, key.lower())
+        else:
+            raise TypeError('Expected string, not %r' % (key,))
     def get(self, key: str, default: typing.Any=None):
         return dict.get(self, key.lower(), default)
 
@@ -296,7 +299,7 @@ class Setting(object):
 SETTING_TRUE = ["true", "yes", "on", "y"]
 SETTING_FALSE = ["false", "no", "off", "n"]
 class BoolSetting(Setting):
-    example = "on"
+    example: typing.Optional[str] = "on"
     def parse(self, value: str) -> typing.Any:
         value_lower = value.lower()
         if value_lower in SETTING_TRUE:
@@ -306,7 +309,7 @@ class BoolSetting(Setting):
         return None
 
 class IntSetting(Setting):
-    example = "10"
+    example: typing.Optional[str] = "10"
     def parse(self, value: str) -> typing.Any:
         if value == "0":
             return 0
@@ -317,7 +320,7 @@ class IntSetting(Setting):
         return None
 
 class IntRangeSetting(IntSetting):
-    example = None
+    example: typing.Optional[str] = None
     def __init__(self, n_min: int, n_max: int, name: str, help: str=None,
             example: str=None):
         self._n_min = n_min
@@ -365,7 +368,7 @@ class FunctionSetting(Setting):
         self._func = func
         Setting.__init__(self, name, help, example)
         if not format == None:
-            self.format = format
+            self.format = format # type: ignore
 
     def parse(self, value: str) -> typing.Any:
         return self._func(value)
@@ -399,8 +402,11 @@ def deadline(seconds: int=10):
         signal.signal(signal.SIGALRM, old_handler)
         signal.setitimer(signal.ITIMER_REAL, old_seconds, 0)
 
-def deadline_process(func: typing.Callable[[], None], seconds: int=10):
-    q = multiprocessing.Queue()
+DeadlineProcessReturnType = typing.TypeVar('DeadlineProcessReturnType')
+def deadline_process(func: typing.Callable[[], DeadlineProcessReturnType],
+        seconds: int=10) -> DeadlineProcessReturnType:
+    q: multiprocessing.Queue[typing.Tuple[bool, DeadlineProcessReturnType]] = \
+        multiprocessing.Queue()
     def _wrap(func, q):
         try:
             q.put([True, func()])
@@ -414,7 +420,7 @@ def deadline_process(func: typing.Callable[[], None], seconds: int=10):
     try:
         success, out = q.get(block=True, timeout=seconds)
     except queue.Empty:
-        p.kill()
+        p.kill() # type: ignore  # to make mypy pass on Python 3.6
         deadlined = True
     finally:
         q.close()
@@ -425,4 +431,4 @@ def deadline_process(func: typing.Callable[[], None], seconds: int=10):
     if success:
         return out
     else:
-        raise out
+        raise out # type: ignore

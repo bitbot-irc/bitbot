@@ -12,7 +12,7 @@ class ControlClient(object):
     def fileno(self) -> int:
         return self._socket.fileno()
 
-    def read_lines(self) -> typing.List[str]:
+    def read_lines(self) -> typing.Optional[typing.List[str]]:
         try:
             data = self._socket.recv(2048)
         except:
@@ -45,11 +45,11 @@ class Control(PollSource.PollSource):
 
         self._filename = filename
         self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self._clients = {}
+        self._clients: typing.Dict[int, ControlClient] = {}
 
     def _on_log(self, levelno: int, line: str):
         for client in self._clients.values():
-            if not client.log_level == None and client.log_level <= levelno:
+            if client.log_level is not None and client.log_level <= levelno:
                 self._send_action(client, "log", line)
 
     def bind(self):
@@ -69,7 +69,7 @@ class Control(PollSource.PollSource):
         elif fileno in self._clients:
             client = self._clients[fileno]
             lines = client.read_lines()
-            if lines == None:
+            if lines is None:
                 client.disconnect()
                 del self._clients[fileno]
             else:
@@ -109,7 +109,7 @@ class Control(PollSource.PollSource):
         if not keepalive:
             client.disconnect()
 
-    def _send_action(self, client: ControlClient, action: str, data: str,
-            id: int=None):
+    def _send_action(self, client: ControlClient, action: str,
+            data: typing.Optional[str], id: typing.Optional[str]=None):
         client.write_line(
             json.dumps({"action": action, "data": data, "id": id}))
