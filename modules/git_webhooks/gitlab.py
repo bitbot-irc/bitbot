@@ -52,8 +52,7 @@ class GitLab(object):
 
     def names(self, data, headers):
         full_name = data["project"]["path_with_namespace"]
-        repo_username = data["project"]["namespace"]
-        repo_name = data["project"]["name"]
+        repo_username, repo_name = full_name.split("/", 1)[0]
 
         return full_name, repo_username, repo_name, None
 
