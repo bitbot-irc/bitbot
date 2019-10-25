@@ -21,9 +21,6 @@ class TriggerEvent(object):
         self.type = type
         self.callback = callback
 
-class BitBotPanic(Exception):
-    pass
-
 class ListLambdaPollHook(PollHook.PollHook):
     def __init__(self,
             collection: typing.Callable[[], typing.Iterable[typing.Any]],
@@ -146,9 +143,7 @@ class Bot(object):
         if not reason == None:
             self.log.critical("panic() called: %s", [reason], exc_info=True)
 
-        self._event_queue.put(TriggerEvent(TriggerEventType.Kill))
-        if throw:
-            raise BitBotPanic()
+        sys.exit(20)
 
     def _module_lists(self):
         db_whitelist = set(self.get_setting("module-whitelist", []))
@@ -269,11 +264,6 @@ class Bot(object):
         return thread
 
     def run(self):
-        try:
-            self._run()
-        except BitBotPanic:
-            return
-    def _run(self):
         self._writing = True
         self._reading = True
 
@@ -334,8 +324,6 @@ class Bot(object):
     def _loop_catch(self, name: str, loop: typing.Callable[[], None]):
         try:
             loop()
-        except BitBotPanic:
-            return
         except Exception as e:
             self.panic("Exception on '%s' thread" % name, throw=False)
 
