@@ -8,6 +8,8 @@ Added:
 - Support UTF8 domains by punycode (idna) encoding
 - `!` param in `!fedi` to denote "show content-warned content"
 - Opt-in URL shortening for Gitea and GitLab
+- `?channels=` GET param for git_webhooks to denote what channels should show activity
+- `votes-cast-restricted` to restrict voting to voiced-or-above users
 
 Changed:
 - `start.py` -> `bitbotd`
@@ -17,6 +19,7 @@ Changed:
 - Bot will not die when there's no connected servers
 - Command output will be truncated/cut at "word bounaries" (currently only space)
 - `!reloadallmodules` and `SIGUSR1` will not try to reload but rollback to currently-loaded on error
+- `IRCBot.panic()` now just calls `sys.exit(20)` instead of trying to kill event loop
 
 Fixed:
 - Any user was able to add an API KEY (missing `permission` kwarg)
@@ -24,6 +27,8 @@ Fixed:
 - Strip only unknown tags from fedi `Note` activities - not the tag content too
 - Don't allow users to `!bef`/`!trap` a triggered duck before it has quacked
 - Don't set `location` to just a string when we decide a `!weather` arg is not a nickname
+- We were not pulling out account ID from `WHOX` (just account name)
+- Outdated `tornado` version in `requirements.txt`
 
 Removed:
 - `cve.py`
