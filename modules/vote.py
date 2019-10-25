@@ -89,8 +89,9 @@ class Module(ModuleManager.BaseModule):
 
         vote = self._start_vote(event["target"], event["args"])
         event["stdout"].write(
-            "Vote %s started. use '%svote <option>' to vote (options: %s)" %
-            (vote["id"], event["command_prefix"], self._format_options(vote)))
+            "Vote %s started. use '%svote %s <option>' to vote (options: %s)" %
+            (vote["id"], event["command_prefix"], vote["id"],
+            self._format_options(vote)))
 
     @utils.hook("received.command.endvote", channel_only=True, min_args=1)
     def end_vote(self, event):
