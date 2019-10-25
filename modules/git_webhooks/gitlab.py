@@ -52,7 +52,7 @@ class GitLab(object):
 
     def names(self, data, headers):
         full_name = data["project"]["path_with_namespace"]
-        repo_username, repo_name = full_name.split("/", 1)[0]
+        repo_username, repo_name = full_name.split("/", 1)
 
         organisation = None
         if full_name.count("/") == 2:
