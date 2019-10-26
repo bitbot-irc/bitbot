@@ -28,7 +28,7 @@ def activity_request(url, data=None, method="GET", type=ACTIVITY_TYPE,
 
     request = utils.http.Request(url, headers=headers, useragent=USERAGENT,
         content_type=content_type, post_data=data, method=method, json=True,
-        json_body=True)
+        json_body=True, fallback_encoding="utf8")
     return utils.http.request(request)
 
 HOSTMETA_TEMPLATE = "https://%s/.well-known/host-meta"
