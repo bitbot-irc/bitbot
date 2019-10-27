@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
 
                 target = event["line"].args[0]
                 lines = event["line"].args[1].split("\n")
-                batch = utils.irc.IRCSendBatch("draft/multiline",
+                batch = IRCLine.IRCSendBatch("draft/multiline",
                     [target])
                 for line in lines:
                     batch.add_line(utils.irc.protocol.privmsg(target, line))

@@ -1,7 +1,7 @@
 #--depends-on commands
 #--depends-on permissions
 
-from src import ModuleManager, utils
+from src import IRCLine, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.nick", min_args=1)
@@ -148,7 +148,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Please provide <hostname>:[+]<port>")
         port = int(port)
 
-        hostmask = utils.irc.parse_hostmask(event["args_split"][2])
+        hostmask = IRCLine.parse_hostmask(event["args_split"][2])
         nickname = hostmask.nickname
         username = hostmask.username or nickname
         realname = nickname

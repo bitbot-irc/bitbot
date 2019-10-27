@@ -1,4 +1,4 @@
-from src import utils
+from src import IRCLine, utils
 
 def handle_332(events, event):
     channel = event["server"].channels.get(event["line"].args[1])
@@ -18,7 +18,7 @@ def topic(events, event):
 def handle_333(events, event):
     channel = event["server"].channels.get(event["line"].args[1])
 
-    topic_setter = utils.irc.parse_hostmask(event["line"].args[2])
+    topic_setter = IRCLine.parse_hostmask(event["line"].args[2])
     topic_time = int(event["line"].args[3])
 
     channel.set_topic_setter(topic_setter)
@@ -42,7 +42,7 @@ def handle_353(event):
             nickname = nickname[1:]
 
         if event["server"].has_capability_str("userhost-in-names"):
-            hostmask = utils.irc.parse_hostmask(nickname)
+            hostmask = IRCLine.parse_hostmask(nickname)
             nickname = hostmask.nickname
             user = event["server"].get_user(hostmask.nickname,
                 username=hostmask.username, hostname=hostmask.hostname)

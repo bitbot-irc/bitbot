@@ -1,5 +1,5 @@
 import enum
-from src import EventManager, ModuleManager, utils
+from src import EventManager, IRCLine, ModuleManager, utils
 from . import channel, core, ircv3, message, user
 
 class Module(ModuleManager.BaseModule):
@@ -178,7 +178,7 @@ class Module(ModuleManager.BaseModule):
             batch_type = event["line"].args[1]
             args = event["line"].args[2:]
 
-            batch = utils.irc.IRCBatch(identifier, batch_type, args,
+            batch = IRCLine.IRCBatch(identifier, batch_type, args,
                 event["line"].tags, source=event["line"].source)
             event["server"].batches[identifier] = batch
 

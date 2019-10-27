@@ -229,7 +229,7 @@ class Server(IRCObject.Object):
         for line in lines:
             self.bot.log.debug("%s (raw recv) | %s", [str(self), line])
             self.events.on("raw.received").call_unsafe(server=self,
-                line=utils.irc.parse_line(line))
+                line=IRCLine.parse_line(line))
             self.check_users()
     def check_users(self):
         for user in self.new_users:
@@ -294,7 +294,7 @@ class Server(IRCObject.Object):
             return line_obj
         return None
     def send_raw(self, line: str):
-        return self.send(utils.irc.parse_line(line))
+        return self.send(IRCLine.parse_line(line))
 
     def send_user(self, username: str, realname: str
             ) -> typing.Optional[IRCLine.SentLine]:

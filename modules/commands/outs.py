@@ -1,5 +1,5 @@
 import re
-from src import utils
+from src import IRCLine, utils
 
 STR_MORE = " (more...)"
 STR_MORE_LEN = len(STR_MORE.encode("utf8"))
@@ -57,7 +57,7 @@ class Out(object):
             if truncated:
                 valid, truncated = self._adjust_to_word_boundaries(valid, truncated)
 
-                line = utils.irc.parse_line(valid+STR_MORE)
+                line = IRCLine.parse_line(valid+STR_MORE)
                 self._text = "%s%s" % (STR_CONTINUED, truncated)
             else:
                 self._text = ""
