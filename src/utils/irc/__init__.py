@@ -1,5 +1,6 @@
 import json, string, re, typing, uuid
 from src import utils
+from . import protocol
 
 ASCII_UPPER = string.ascii_uppercase
 ASCII_LOWER = string.ascii_lowercase
