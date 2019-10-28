@@ -12,9 +12,12 @@ EVENT_CATEGORIES = {
     ],
     "pr": [
         "merge_request/open", "merge_request/close", "merge_request/reopen",
-        "merge_request/update", "merge_request/merge"
+        "merge_request/update", "merge_request/merge", "note+mergerequest",
+        "confidential_note+mergerequest"
     ],
-    "pr-all": ["merge_request"],
+    "pr-all": [
+        "merge_request", "note+mergerequest", "confidential_note+mergerequest"
+    ],
     "issue-minimal": [
         "issue/open", "issue/close", "issue/reopen", "confidential_issue/open",
         "confidential_issue/close", "confidential_issue/reopen"
@@ -22,13 +25,11 @@ EVENT_CATEGORIES = {
     "issue": [
         "issue/open", "issue/close", "issue/reopen", "issue/update",
         "confidential_issue/open", "confidential_issue/close",
-        "confidential_issue/reopen", "confidential_issue/update",
+        "confidential_issue/reopen", "confidential_issue/update", "note+issue",
+        "confidential_note+issue"
     ],
     "issue-all": [
-        "issue", "issue_comment", "confidential_issue"
-    ],
-    "issue-comment-minimal": [
-        "issue_comment/created", "issue_comment/deleted"
+        "issue", "confidential_issue", "note+issue", "confidential_note+issue"
     ],
     "repo": ["tag_push"]
 }
