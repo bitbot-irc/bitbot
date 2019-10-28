@@ -85,7 +85,7 @@ class GitLab(object):
             if "noteable_type" in data["object_attributes"]:
                 category = data["object_attributes"]["noteable_type"].lower()
                 category = "%s+%s" % (event, category)
-                category_action = "%s/%s" % (category, action)
+                category_action = "%s/%s" % (category, event_action)
 
         return list(filter([event, event_action, category, category_action]))
 
