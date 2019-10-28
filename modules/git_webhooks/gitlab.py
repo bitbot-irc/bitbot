@@ -87,7 +87,8 @@ class GitLab(object):
                 category = "%s+%s" % (event, category)
                 category_action = "%s/%s" % (category, event_action)
 
-        return list(filter([event, event_action, category, category_action]))
+        return [event]+list(filter(None,
+            [event_action, category, category_action]))
 
     def event_categories(self, event):
         return EVENT_CATEGORIES.get(event, [event])
