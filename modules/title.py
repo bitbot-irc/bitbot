@@ -26,7 +26,8 @@ class Module(ModuleManager.BaseModule):
         title_words = []
         for title_word in RE_WORDSPLIT.split(title):
             if len(title_word) > 1 or title_word.isalpha():
-                title_words.append(title_word.lower())
+                title_word = title_word.lower()
+                title_words.append(title_word.strip("'\"<>()"))
 
         present = 0
         for title_word in title_words:
