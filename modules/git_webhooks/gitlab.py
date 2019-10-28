@@ -87,7 +87,7 @@ class GitLab(object):
             return self.push(full_name, data)
         elif event == "merge_request":
             return self.merge_request(full_name, data)
-        elif event == "issue":
+        elif event in ["issue", "confidential_issue"]:
             return self.issues(full_name, data)
         elif event == "note":
             return self.note(full_name, data)
