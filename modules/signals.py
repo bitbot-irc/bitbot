@@ -1,5 +1,5 @@
 import signal, sys
-from src import Config, ModuleManager, utils
+from src import Config, IRCLine, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def on_load(self):
@@ -24,7 +24,7 @@ class Module(ModuleManager.BaseModule):
             if server.connected:
                 server.socket.clear_send_buffer()
 
-                line = utils.irc.protocol.quit("Shutting down")
+                line = IRCLine.ParsedLine("QUIT", ["Shutting down"])
                 sent_line = server.send(line, immediate=True)
                 sent_line.events.on("send").hook(self._make_hook(server))
 

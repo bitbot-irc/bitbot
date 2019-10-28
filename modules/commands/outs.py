@@ -6,6 +6,14 @@ STR_MORE_LEN = len(STR_MORE.encode("utf8"))
 STR_CONTINUED = "(...continued) "
 WORD_BOUNDARY = ' '
 
+def _mesage_factory(command):
+    if not command in ["PRIVMSG", "NOTICE"]:
+        raise ValueError("Unknown command method '%s'" % method)
+
+    def _(target, message):
+        return IRCLine.ParsedLine(command, [target, message])
+    return _
+
 class Out(object):
     def __init__(self, server, module_name, target, target_str, tags):
         self.server = server
@@ -39,15 +47,9 @@ class Out(object):
                 text = text.replace("\n\n", "\n")
 
             full_text = "%s%s" % (prefix, text)
-            line_factory = None
-            if method == "PRIVMSG":
-                line_factory = utils.irc.protocol.privmsg
-            elif method == "NOTICE":
-                line_factory = utils.irc.protocol.notice
-            else:
-                raise ValueError("Unknown command method '%s'" % method)
+            message_factory = _mess_factory(method)
 
-            line = line_factory(self._target_str, full_text, tags=self._tags)
+            line = message_factory(self._target_str, full_text, tags=self._tags)
             if self._assured:
                 line.assure()
 

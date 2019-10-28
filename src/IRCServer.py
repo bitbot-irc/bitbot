@@ -296,14 +296,18 @@ class Server(IRCObject.Object):
     def send_raw(self, line: str):
         return self.send(IRCLine.parse_line(line))
 
+    def _line(self, command, args, tags={}):
+        return IRCLine.ParsedLine(command,
+            [arg for arg in args if not arg == None], tags=tags)
+
     def send_user(self, username: str, realname: str
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.user(username, realname))
+        return self.send(self._line("USER",[username, "0", "*", realname]))
     def send_nick(self, nickname: str) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.nick(nickname))
+        return self.send(self._line("NICK", [nickname]))
 
     def send_capibility_ls(self) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.capability_ls())
+        return self.send(self._line("CAP", ["LS", "302"]))
     def send_capability_queue(self):
         # textwrap works here because in ASCII, all chars are 1 bytes:
         capabilities = list(self.capability_queue.keys())
@@ -319,13 +323,13 @@ class Server(IRCObject.Object):
         for capability_batch in capability_batches:
             self.send_capability_request(capability_batch)
 
-    def send_capability_request(self, capability: str
+    def send_capability_request(self, capabilities: str
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.capability_request(capability))
+        return self.send(self._line("CAP", ["REQ", capabilities]))
     def send_capability_end(self) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.capability_end())
+        return self.send(self._line("CAP", ["END"]))
     def send_authenticate(self, text: str) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.authenticate(text))
+        return self.send(self._line("AUTHENTICATE", [text]))
     def has_capability(self, capability: utils.irc.Capability) -> bool:
         return bool(self.available_capability(capability))
     def has_capability_str(self, capability: str) -> bool:
@@ -347,65 +351,67 @@ class Server(IRCObject.Object):
         self._capabilities_waiting.clear()
 
     def send_pass(self, password: str) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.password(password))
+        return self.send(self._line("PASS", [password]))
 
-    def send_ping(self, nonce: str="hello"
+    def send_ping(self, token: str="hello"
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.ping(nonce), immediate=True)
-    def send_pong(self, nonce: str) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.pong(nonce), immediate=True)
+        return self.send(self._line("PING", [token]))
+    def send_pong(self, token: str) -> typing.Optional[IRCLine.SentLine]:
+        return self.send(self._line("PONG", [token]))
 
-    def send_join(self, channel_name: str, keys: typing.List[str]=None
+    def send_join(self, channel_name: str, key: typing.List[str]=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.join(channel_name, keys))
+        return self.send(self._line("JOIN", [channel_name, key]))
     def send_joins(self, channel_names: typing.List[str],
             keys: typing.List[str]=None):
-        return self.send(utils.irc.protocol.join(",".join(channel_names),
-            keys))
+        return self.send(self._line("JOIN",
+            [",".join(channel_names)]+(keys or [])))
     def send_part(self, channel_name: str, reason: str=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.part(channel_name, reason))
+        return self.send(self._line("PART", [channel_name, reason]))
     def send_quit(self, reason: str="Leaving"
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.quit(reason))
+        return self.send(self._line("QUIT", [reason]))
 
     def send_message(self, target: str, message: str, tags: dict={}
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.privmsg(target, message, tags))
+        return self.send(self._line("PRIVMSG", [target, message], tags=tags))
 
     def send_notice(self, target: str, message: str, tags: dict={}
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.notice(target, message, tags))
+        return self.send(self._line("NOTICE", [target, message], tags=tags))
 
     def send_tagmsg(self, target: str, tags: dict):
-        return self.send(utils.irc.protocol.tagmsg(target, tags))
+        return self.send(self._line("TARGMSG", [], tags=tags))
 
     def send_mode(self, target: str, mode: str=None, args: typing.List[str]=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.mode(target, mode, args))
+        return self.send(self._line("MODE", [target, mode, args]))
 
     def send_topic(self, channel_name: str, topic: str
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.topic(channel_name, topic))
+        return self.send(self._line("TOPIC", [channel_name, topic]))
     def send_kick(self, channel_name: str, target: str, reason: str=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.kick(channel_name, target, reason))
+        return self.send(self._line("KICK", [channel_name, target, reason]))
     def send_names(self, channel_name: str) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.names(channel_name))
+        return self.send(self._line("NAMES", [channel_name]))
     def send_list(self, search_for: str=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.list(search_for))
+        return self.send(self._line("LIST", [search_for]))
     def send_invite(self, channel_name: str, target: str
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.invite(channel_name, target))
+        return self.send(self._line("INVITE", [target, channel_name]))
 
     def send_whois(self, target: str) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.whois(target))
+        return self.send(self._line("WHOIS", [target]))
     def send_whowas(self, target: str, amount: int=None, server: str=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.whowas(target, amount, server))
+        amount_str = str(amount) if not amount == None else None
+        return self.send(self._line("WHOWAS", [target, amount_str, server]))
     def send_who(self, filter: str=None) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.who(filter))
+        return self.send(self._line("WHO", [filter]))
     def send_whox(self, mask: str, filter: str, fields: str, label: str=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(utils.irc.protocol.whox(mask, filter, fields, label))
+        flags = "%s%%%s%s" % (filter, fields, ","+label if label else "")
+        return self.send(self._line("WHO", [mask, flags]))

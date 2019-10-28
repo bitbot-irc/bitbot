@@ -18,7 +18,8 @@ class Module(ModuleManager.BaseModule):
                 batch = IRCLine.IRCSendBatch("draft/multiline",
                     [target])
                 for line in lines:
-                    batch.add_line(utils.irc.protocol.privmsg(target, line))
+                    line = IRCLine.ParsedLine("PRIVMSG", [target, line])
+                    batch.add_line(line)
                 for line in batch.get_lines():
                     event["server"].send(line)
 

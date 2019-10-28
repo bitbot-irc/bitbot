@@ -46,13 +46,14 @@ class Module(ModuleManager.BaseModule):
                 relay_message = "[%s%s] %s" % (server_name,
                     relay_prefix_channel, event["line"])
 
-                message = utils.irc.protocol.privmsg(relay_channel.name,
-                    relay_message)
-                server._relay_ignore.append(message.id)
-                self.bot.trigger(self._send_factory(server, message))
+                self.bot.trigger(self._send_factory(server, relay_channel.name,
+                    relay_message))
 
-    def _send_factory(self, server, message):
-        return lambda: server.send(message)
+    def _send_factory(self, server, channel_name, message):
+        def _():
+            message = server.send_message(channel_name, message)
+            server._relay_ignore.append(message.parsed_line.id)
+        return _
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")

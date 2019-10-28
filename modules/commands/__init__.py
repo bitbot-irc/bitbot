@@ -2,7 +2,7 @@
 #--depends-on permissions
 
 import re, string, traceback, typing
-from src import EventManager, ModuleManager, utils
+from src import EventManager, IRCLine, ModuleManager, utils
 from . import outs
 
 COMMAND_METHOD = "command-method"
@@ -172,6 +172,9 @@ class Module(ModuleManager.BaseModule):
         if not is_success:
             raise utils.EventError(message)
 
+    def _tagmsg(self, target, tags):
+        return IRCLine.ParsedLine("TAGMSG", [target], tags=tags)
+
     def command(self, server, target, target_str, is_channel, user, command,
             args_split, tags, hook, **kwargs):
         message_tags = server.has_capability(MESSAGE_TAGS_CAP)
@@ -188,8 +191,8 @@ class Module(ModuleManager.BaseModule):
                 send_tags["+draft/reply"] = msgid
 
             if expect_output:
-                server.send(utils.irc.protocol.tagmsg(target_str,
-                    {"+draft/typing": "active"}), immediate=True)
+                line = self._tagmsg(target_str, {"+draft/typing": "active"})
+                server.send(line, immediate=True)
 
         stdout = outs.StdOut(server, module_name, target, target_str, send_tags)
         stderr = outs.StdErr(server, module_name, target, target_str, send_tags)
@@ -238,8 +241,8 @@ class Module(ModuleManager.BaseModule):
         ret = new_event.eaten
 
         if expect_output and message_tags and not has_out:
-            server.send(utils.irc.protocol.tagmsg(target_str,
-                {"+draft/typing": "done"}), immediate=True)
+            line = self._tagmsg(target_str, {"+draft/typing": "done"})
+            server.send(line, immediate=True)
 
         return ret
 
