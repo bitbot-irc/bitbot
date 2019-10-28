@@ -27,8 +27,7 @@ class Module(ModuleManager.BaseModule):
                 server = self.bot.get_server_by_id(server_id)
                 if server and channel_name in server.channels:
                     relay_channel = server.channels.get(channel_name)
-                    if (not server.id == event["server"].id and
-                            not channel.id == relay_channel.id):
+                    if not channel.id == relay_channel.id:
                         if not server in relays:
                             relays[server] = []
                         if not relay_channel in relays[server]:
