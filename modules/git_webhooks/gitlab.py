@@ -173,7 +173,7 @@ class GitLab(object):
             return self.issue_note(full_name, data)
 
     def issue_note(self, full_name, data):
-        number = utils.irc.color("#%s" % data["issue"]["id"],
+        number = utils.irc.color("#%s" % data["issue"]["iid"],
             colors.COLOR_ID)
         type = data["object_attributes"]["noteable_type"]
         type == "issue" if type == "Issue" else "MR"
