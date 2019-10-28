@@ -115,7 +115,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 return {"state": "success", "deliveries": 0}
 
-        outputs = handler.webhook(full_name, current_event, data, headers)
+        outputs = handler.webhook(full_name, current_events[0], data, headers)
 
         if outputs:
             for server, channel in targets:
