@@ -67,7 +67,7 @@ class Module(ModuleManager.BaseModule):
         organisation_lower = (organisation or "").lower()
 
         branch = handler.branch(data, headers)
-        current_event, event_action = handler.event(data, headers)
+        current_events = handler.event(data, headers)
 
         unfiltered_targets = []
         if "channels" in params:
@@ -101,13 +101,12 @@ class Module(ModuleManager.BaseModule):
                     not branch in hook["branches"]):
                 continue
 
-            events = []
+            hooked_events = []
             for hooked_event in hook["events"]:
-                events.append(handler.event_categories(hooked_event))
-            events = list(itertools.chain(*events))
+                hooked_events.append(handler.event_categories(hooked_event))
+            hooked_events = set(itertools.chain(*hooked_events))
 
-            if (current_event in events or
-                    (event_action and event_action in events)):
+            if bool(set(current_events)&set(hooked_events)):
                 targets.append([server, channel])
 
         if not targets:

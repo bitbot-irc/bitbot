@@ -72,7 +72,7 @@ class Gitea(object):
         event_action = None
         if "action" in data:
             event_action = "%s/%s" % (event, data["action"])
-        return event, event_action
+        return [event]+([event_action] if event_action else [])
 
     def event_categories(self, event):
         return EVENT_CATEGORIES.get(event, [event])
