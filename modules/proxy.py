@@ -32,8 +32,7 @@ class Module(ModuleManager.BaseModule):
                 type, proxy_parsed.hostname, proxy_parsed.port)
 
     def _socket_factory(self, ptype, phost, pport):
-        return lambda host, port, bind, timeout: self._make_socket(
-            ptype, phost, pport, host, port, bind, timeout)
-    def _make_socket(self, ptype, phost, pport, host, port, bind, timeout):
-        return socks.create_connection((host, port), timeout, bind,
-            ptype, phost, pport)
+        def _(host, port, bind, timeout):
+            return socks.create_connection((host, port), timeout, bind,
+                ptype, phost, pport)
+        return _
