@@ -50,8 +50,8 @@ class Module(ModuleManager.BaseModule):
 
     def _send_factory(self, server, channel_name, message):
         def _():
-            message = server.send_message(channel_name, message)
-            server._relay_ignore.append(message.parsed_line.id)
+            line = server.send_message(channel_name, message)
+            server._relay_ignore.append(line.parsed_line.id)
         return _
 
     @utils.hook("formatted.message.channel")
