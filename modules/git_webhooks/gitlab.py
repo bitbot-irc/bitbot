@@ -170,10 +170,10 @@ class GitLab(object):
     def note(self, full_name, data):
         type = data["object_attributes"]["noteable_type"]
         if type in ["Issue", "MergeRequest"]:
-            return self.issue_comment(full_name, data)
+            return self.issue_note(full_name, data)
 
     def issue_note(self, full_name, data):
-        number = utils.irc.color("#%s" % data["object_attributes"]["iid"],
+        number = utils.irc.color("#%s" % data["issue"]["id"],
             colors.COLOR_ID)
         type = data["object_attributes"]["noteable_type"]
         type == "issue" if type == "Issue" else "MR"
