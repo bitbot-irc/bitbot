@@ -47,7 +47,7 @@ class Out(object):
                 text = text.replace("\n\n", "\n")
 
             full_text = "%s%s" % (prefix, text)
-            message_factory = _mess_factory(method)
+            message_factory = _message_factory(method)
 
             line = message_factory(self._target_str, full_text, tags=self._tags)
             if self._assured:
