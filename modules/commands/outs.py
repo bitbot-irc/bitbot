@@ -10,8 +10,8 @@ def _message_factory(command):
     if not command in ["PRIVMSG", "NOTICE"]:
         raise ValueError("Unknown command method '%s'" % method)
 
-    def _(target, message):
-        return IRCLine.ParsedLine(command, [target, message])
+    def _(target, message, tags):
+        return IRCLine.ParsedLine(command, [target, message], tags=tags)
     return _
 
 class Out(object):
