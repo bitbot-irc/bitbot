@@ -6,7 +6,7 @@ STR_MORE_LEN = len(STR_MORE.encode("utf8"))
 STR_CONTINUED = "(...continued) "
 WORD_BOUNDARY = ' '
 
-def _mesage_factory(command):
+def _message_factory(command):
     if not command in ["PRIVMSG", "NOTICE"]:
         raise ValueError("Unknown command method '%s'" % method)
 
