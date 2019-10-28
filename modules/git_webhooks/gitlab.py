@@ -16,13 +16,16 @@ EVENT_CATEGORIES = {
     ],
     "pr-all": ["merge_request"],
     "issue-minimal": [
-        "issue/open", "issue/close", "issue/reopen"
+        "issue/open", "issue/close", "issue/reopen", "confidential_issue/open",
+        "confidential_issue/close", "confidential_issue/reopen"
     ],
     "issue": [
         "issue/open", "issue/close", "issue/reopen", "issue/update",
+        "confidential_issue/open", "confidential_issue/close",
+        "confidential_issue/reopen", "confidential_issue/update",
     ],
     "issue-all": [
-        "issue", "issue_comment"
+        "issue", "issue_comment", "confidential_issue"
     ],
     "issue-comment-minimal": [
         "issue_comment/created", "issue_comment/deleted"
