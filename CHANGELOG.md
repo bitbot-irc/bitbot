@@ -1,3 +1,18 @@
+# TBD - BitBot v1.14.0
+
+Added:
+- `!cmute`/`!cunmute` to mute/unmute a channel (`+m`) (`admin.py`)
+- Support GitLab notes and confidential issues (`git_webhooks`)
+- Strip `"'<>()` from words in titles when checking difference between a `<title>` and URL (`title.py`)
+- Show how long ago a video was uploaded (`youtube.py`)
+
+Changed:
+- `/me` lines are no longer added to markov chains
+
+Fixed:
+- Rectified `src/utils/` circular dependency mess
+- Decode fediverse data as utf8
+
 # 2019-10-25 - BitBot v1.13.0
 
 Added:
