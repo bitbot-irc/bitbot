@@ -1,5 +1,5 @@
 import json, string, re, typing, uuid
-from src import utils
+from . import consts
 
 ASCII_UPPER = string.ascii_uppercase
 ASCII_LOWER = string.ascii_lowercase
@@ -29,35 +29,35 @@ def lower(case_mapping: str, s: str) -> str:
 def equals(case_mapping: str, s1: str, s2: str) -> bool:
     return lower(case_mapping, s1) == lower(case_mapping, s2)
 
-REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % utils.consts.COLOR)
+REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % consts.COLOR)
 
-def color(s: str, foreground: utils.consts.IRCColor,
-        background: utils.consts.IRCColor=None) -> str:
+def color(s: str, foreground: consts.IRCColor,
+        background: consts.IRCColor=None) -> str:
     foreground_s = str(foreground.irc).zfill(2)
     background_s = ""
     if background:
         background_s = ",%s" % str(background.irc).zfill(2)
 
-    return "%s%s%s%s%s" % (utils.consts.COLOR, foreground_s, background_s, s,
-        utils.consts.COLOR)
+    return "%s%s%s%s%s" % (consts.COLOR, foreground_s, background_s, s,
+        consts.COLOR)
 
 def bold(s: str) -> str:
-    return "%s%s%s" % (utils.consts.BOLD, s, utils.consts.BOLD)
+    return "%s%s%s" % (consts.BOLD, s, consts.BOLD)
 
 def underline(s: str) -> str:
-    return "%s%s%s" % (utils.consts.UNDERLINE, s, utils.consts.UNDERLINE)
+    return "%s%s%s" % (consts.UNDERLINE, s, consts.UNDERLINE)
 
 def strip_font(s: str) -> str:
-    s = s.replace(utils.consts.BOLD, "")
-    s = s.replace(utils.consts.ITALIC, "")
+    s = s.replace(consts.BOLD, "")
+    s = s.replace(consts.ITALIC, "")
     s = REGEX_COLOR.sub("", s)
-    s = s.replace(utils.consts.COLOR, "")
+    s = s.replace(consts.COLOR, "")
     return s
 
 FORMAT_TOKENS = [
-    utils.consts.BOLD,
-    utils.consts.RESET,
-    utils.consts.UNDERLINE
+    consts.BOLD,
+    consts.RESET,
+    consts.UNDERLINE
 ]
 FORMAT_STRIP = [
     "\x08" # backspace
@@ -95,7 +95,7 @@ def _format_tokens(s: str) -> typing.List[str]:
                 background = ""
                 is_background = False
 
-        if char == utils.consts.COLOR:
+        if char == consts.COLOR:
             if is_color:
                 matches.append(char)
             else:
@@ -109,7 +109,7 @@ def _format_tokens(s: str) -> typing.List[str]:
 def _color_match(code: typing.Optional[str], foreground: bool) -> str:
     if not code:
         return ""
-    color = utils.consts.COLOR_CODES[int(code)]
+    color = consts.COLOR_CODES[int(code)]
     return color.to_ansi(not foreground)
 
 def parse_format(s: str) -> str:
@@ -122,7 +122,7 @@ def parse_format(s: str) -> str:
         replace = ""
         type = token[0]
 
-        if type == utils.consts.COLOR:
+        if type == consts.COLOR:
             match = REGEX_COLOR.match(token)
 
             if match and (match.group(1) or match.group(2)):
@@ -138,23 +138,23 @@ def parse_format(s: str) -> str:
             else:
                 if has_foreground:
                     has_foreground = False
-                    replace += utils.consts.ANSI_FOREGROUND_RESET
+                    replace += consts.ANSI_FOREGROUND_RESET
                 if has_background:
                     has_background = False
-                    replace += utils.consts.ANSI_BACKGROUND_RESET
-        elif type == utils.consts.BOLD:
+                    replace += consts.ANSI_BACKGROUND_RESET
+        elif type == consts.BOLD:
             if bold:
-                replace += utils.consts.ANSI_BOLD_RESET
+                replace += consts.ANSI_BOLD_RESET
             else:
-                replace += utils.consts.ANSI_BOLD
+                replace += consts.ANSI_BOLD
             bold = not bold
-        elif type == utils.consts.RESET:
-            replace += utils.consts.ANSI_RESET
-        elif type == utils.consts.UNDERLINE:
+        elif type == consts.RESET:
+            replace += consts.ANSI_RESET
+        elif type == consts.UNDERLINE:
             if underline:
-                replace += utils.consts.ANSI_UNDERLINE_RESET
+                replace += consts.ANSI_UNDERLINE_RESET
             else:
-                replace += utils.consts.ANSI_UNDERLINE
+                replace += consts.ANSI_UNDERLINE
             underline = not underline
         elif type in FORMAT_STRIP:
             replace = ""
@@ -162,13 +162,13 @@ def parse_format(s: str) -> str:
         s = s.replace(token, replace, 1)
 
     if has_foreground:
-        s += utils.consts.ANSI_FOREGROUND_RESET
+        s += consts.ANSI_FOREGROUND_RESET
     if has_background:
-        s += utils.consts.ANSI_BACKGROUND_RESET
+        s += consts.ANSI_BACKGROUND_RESET
     if bold:
-        s += utils.consts.ANSI_BOLD_RESET
+        s += consts.ANSI_BOLD_RESET
     if underline:
-        s += utils.consts.ANSI_UNDERLINE_RESET
+        s += consts.ANSI_UNDERLINE_RESET
 
     return s
 
