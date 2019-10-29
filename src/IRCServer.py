@@ -386,7 +386,7 @@ class Server(IRCObject.Object):
 
     def send_mode(self, target: str, mode: str=None, args: typing.List[str]=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(self._line("MODE", [target, mode, args]))
+        return self.send(self._line("MODE", [target, mode]+(args or [])))
 
     def send_topic(self, channel_name: str, topic: str
             ) -> typing.Optional[IRCLine.SentLine]:
