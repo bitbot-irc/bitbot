@@ -1,6 +1,6 @@
 import contextlib, datetime, decimal, enum, io, ipaddress, multiprocessing
 import queue, re, signal, threading, typing
-from src.utils import cli, consts, irc, http, parse, security
+from . import cli, consts, irc, http, parse, security
 
 class Direction(enum.Enum):
     Send = 0
