@@ -1,5 +1,4 @@
 import io, typing
-from src import utils
 
 COMMENT_TYPES = ["#", "//"]
 def hashflags(filename: str
