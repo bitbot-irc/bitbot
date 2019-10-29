@@ -103,9 +103,15 @@ if args.remove_server:
         sys.stderr.write("Unknown server '%s'\n" % alias)
     sys.exit(0)
 
+def _add_server():
+    details = utils.cli.add_server()
+
+    database.servers.add(details.alias, details.hostname, details.port,
+        details.password, details.tls, details.bindhost, details.nickname,
+        details.username, details.realname)
 if args.add_server:
     print("Adding a new server")
-    utils.cli.add_server(database)
+    _add_server()
     sys.exit(0)
 
 cache = Cache.Cache()
@@ -169,7 +175,7 @@ if len(server_configs):
 else:
     try:
         if utils.cli.bool_input("no servers found, add one?"):
-            utils.cli.add_server(database)
+            _add_server()
     except KeyboardInterrupt:
         print()
         pass
