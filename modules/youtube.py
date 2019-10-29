@@ -51,7 +51,7 @@ class Module(ModuleManager.BaseModule):
                 (utils.datetime_utcnow()-video_uploaded_at).total_seconds(),
                 max_units=2)
             video_uploader = snippet["channelTitle"]
-            video_title = snippet["title"]
+            video_title = utils.irc.bold(snippet["title"])
             video_views = self._number(statistics["viewCount"])
             video_likes = self._number(statistics.get("likeCount"))
             video_dislikes = self._number(statistics.get("dislikeCount"))
