@@ -2,7 +2,7 @@
 #--depends-on config
 #--require-config google-api-key
 
-import re, urllib.parse
+import datetime, re, urllib.parse
 from src import EventManager, ModuleManager, utils
 
 REGEX_YOUTUBE = re.compile("https?://(?:www\.|m\.)?(?:youtu.be/|youtube.com/)\\S+", re.I)
@@ -44,6 +44,12 @@ class Module(ModuleManager.BaseModule):
                 "items"][0]["statistics"]
             content = self.get_video_page(video_id, "contentDetails").data[
                 "items"][0]["contentDetails"]
+
+            video_uploaded_at = utils.iso8601_parse(snippet["publishedAt"],
+                microseconds=True)
+            video_uploaded_at = utils.to_pretty_time(
+                (utils.datetime_utcnow()-video_uploaded_at).total_seconds(),
+                max_units=2)
             video_uploader = snippet["channelTitle"]
             video_title = snippet["title"]
             video_views = self._number(statistics["viewCount"])
@@ -67,9 +73,9 @@ class Module(ModuleManager.BaseModule):
             video_duration += "%s" % match.group(3)[:-1].zfill(2
                 ) if match.group(3) else "00"
             url = URL_YOUTUBESHORT % video_id
-            return "%s (%s) uploaded by %s, %s views%s" % (
-                video_title, video_duration, video_uploader, video_views,
-                video_opinions), url
+            return "%s (%s) uploaded by %s (%s ago), %s views%s" % (
+                video_title, video_duration, video_uploader, video_uploaded_at,
+                video_views, video_opinions), url
         return None
 
     def get_playlist_page(self, playlist_id, part):
