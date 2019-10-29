@@ -11,8 +11,6 @@ DEFAULT_PRIORITY = PRIORITY_MEDIUM
 DEFAULT_EVENT_DELIMITER = "."
 DEFAULT_MULTI_DELIMITER = "|"
 
-CALLBACK_TYPE = typing.Callable[["Event"], typing.Any]
-
 class Event(object):
     def __init__(self, name: str, kwargs):
         self.name = name
@@ -26,6 +24,8 @@ class Event(object):
         return key in self.kwargs
     def eat(self):
         self.eaten = True
+
+CALLBACK_TYPE = typing.Callable[[Event], typing.Any]
 
 class EventHook(object):
     def __init__(self, event_name: str, func: CALLBACK_TYPE,
