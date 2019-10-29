@@ -16,7 +16,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("command.regex")
     @utils.kwarg("expect_output", False)
-    @utils.kwarg("ignore_action", False)
+    @utils.kwarg("ignore_action", True)
     @utils.kwarg("command", "markov-trigger")
     @utils.kwarg("pattern", re.compile(".+"))
     def channel_message(self, event):
