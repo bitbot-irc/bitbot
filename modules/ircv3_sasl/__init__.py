@@ -160,11 +160,8 @@ class Module(ModuleManager.BaseModule):
         if server.get_setting("sasl-hard-fail",
                 self.bot.get_setting("sasl-hard-fail", False)):
             message = "SASL panic for %s: %s" % (str(server), message)
-            if not server.from_init:
-                self.log.error(message)
-                self.bot.disconnect(server)
-            else:
-                self.bot.panic(message)
+            self.log.error(message)
+            self.bot.disconnect(server)
         else:
             self.log.warn("SASL failure for %s: %s" % (str(server), message))
             self._end_sasl(server)
