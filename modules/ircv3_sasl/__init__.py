@@ -79,6 +79,8 @@ class Module(ModuleManager.BaseModule):
         server.send_authenticate(mechanism)
         timer = self.timers.add("sasl-timeout", self._sasl_timeout,
             SASL_TIMEOUT, server=server)
+        server._sasl_timeout = timer
+
         server.sasl_mechanism = mechanism
         server.wait_for_capability("sasl")
 
