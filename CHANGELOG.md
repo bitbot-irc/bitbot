@@ -4,10 +4,13 @@ Added:
 - `!cmute`/`!cunmute` to mute/unmute a channel (`+m`) (`admin.py`)
 - Support GitLab notes and confidential issues (`git_webhooks`)
 - Strip `"'<>()` from words in titles when checking difference between a `<title>` and URL (`title.py`)
-- Show how long ago a video was uploaded (`youtube.py`)
+- Show when a youtube video was uploaded (`youtube.py`)
+- 15 second SASL handshake timeout (`ircv3_sasl`)
+- Ability to disable command suggestions (`command_suggestions.py`)
 
 Changed:
 - `/me` lines are no longer added to markov chains
+- `!seen` last action (`seen-info`) is now per-channel, not per-network (`seen.py`)
 
 Fixed:
 - Rectified `src/utils/` circular dependency mess
