@@ -24,6 +24,8 @@ def _parse(value):
         raise utils.SettingParseException("Unknown SASL mechanism '%s'"
             % mechanism)
 
+SASL_TIMEOUT = 15 # 15 seconds
+
 HARDFAIL = utils.BoolSetting("sasl-hard-fail",
     "Set whether a SASL failure should cause a disconnect")
 
@@ -33,6 +35,10 @@ HARDFAIL = utils.BoolSetting("sasl-hard-fail",
 @utils.export("serverset", HARDFAIL)
 @utils.export("botset", HARDFAIL)
 class Module(ModuleManager.BaseModule):
+    @utils.hook("new.server")
+    def new_server(self, event):
+        event["server"]._sasl_timeout = None
+
     def _best_userpass_mechanism(self, mechanisms):
         for potential_mechanism in USERPASS_MECHANISMS:
             if potential_mechanism in mechanisms:
@@ -71,8 +77,14 @@ class Module(ModuleManager.BaseModule):
             mechanism = self._best_userpass_mechanism(server_mechanisms)
 
         server.send_authenticate(mechanism)
+        timer = self.timers.add("sasl-timeout", self._sasl_timeout,
+            SASL_TIMEOUT, server=server)
         server.sasl_mechanism = mechanism
         server.wait_for_capability("sasl")
+
+    def _sasl_timeout(self, timer):
+        server = timer.kwargs["server"]
+        self._panic(server, "SASL handshake timed out")
 
     @utils.hook("received.authenticate")
     def on_authenticate(self, event):
@@ -136,6 +148,9 @@ class Module(ModuleManager.BaseModule):
 
     def _end_sasl(self, server):
         server.capability_done("sasl")
+        if not server._sasl_timeout == None:
+            server._sasl_timeout.cancel()
+            server._sasl_timeout = None
 
     @utils.hook("received.908")
     def sasl_mechanisms(self, event):
