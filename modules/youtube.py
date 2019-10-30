@@ -47,9 +47,7 @@ class Module(ModuleManager.BaseModule):
 
             video_uploaded_at = utils.iso8601_parse(snippet["publishedAt"],
                 microseconds=True)
-            video_uploaded_at = utils.to_pretty_time(
-                (utils.datetime_utcnow()-video_uploaded_at).total_seconds(),
-                max_units=2)
+            video_uploaded_at = utils.date_human(video_uploaded_at)
             video_uploader = snippet["channelTitle"]
             video_title = utils.irc.bold(snippet["title"])
             video_views = self._number(statistics["viewCount"])
@@ -73,7 +71,7 @@ class Module(ModuleManager.BaseModule):
             video_duration += "%s" % match.group(3)[:-1].zfill(2
                 ) if match.group(3) else "00"
             url = URL_YOUTUBESHORT % video_id
-            return "%s (%s) uploaded by %s (%s ago), %s views%s" % (
+            return "%s (%s) uploaded by %s on %s, %s views%s" % (
                 video_title, video_duration, video_uploader, video_uploaded_at,
                 video_views, video_opinions), url
         return None
