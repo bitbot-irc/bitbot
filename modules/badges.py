@@ -6,7 +6,6 @@ from src import ModuleManager, utils
 RE_HUMAN_FORMAT = re.compile(r"(\d\d\d\d)-(\d?\d)-(\d?\d)")
 HUMAN_FORMAT_HELP = "year-month-day (e.g. 2018-12-29)"
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-DATE_FORMAT = "%Y-%m-%d"
 
 class Module(ModuleManager.BaseModule):
     def _parse_date(self, dt: str):
@@ -24,7 +23,7 @@ class Module(ModuleManager.BaseModule):
             ).replace(tzinfo=datetime.timezone.utc)
 
     def _date_str(self, dt: datetime.datetime):
-        return datetime.datetime.strftime(dt, DATE_FORMAT)
+        return utils.date_human(dt)
 
     def _round_up_day(self, dt: datetime.datetime):
         return dt.date()+datetime.timedelta(days=1)

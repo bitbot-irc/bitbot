@@ -14,6 +14,7 @@ ISO8601_FORMAT_TZ = "%z"
 
 
 DATETIME_HUMAN = "%Y/%m/%d %H:%M:%S"
+DATE_HUMAN = "%Y-%m-%d"
 
 def datetime_utcnow() -> datetime.datetime:
     return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
@@ -35,6 +36,8 @@ def iso8601_parse(s: str, microseconds: bool=False) -> datetime.datetime:
 
 def datetime_human(dt: datetime.datetime):
     return datetime.datetime.strftime(dt, DATETIME_HUMAN)
+def date_human(dt: datetime.datetime):
+    return datetime.datetime.strftime(dt, DATE_HUMAN)
 
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60
