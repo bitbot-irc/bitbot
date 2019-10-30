@@ -37,7 +37,7 @@ class Server(IRCObject.Object):
         self._capabilities_waiting = set([]) # type: typing.Set[str]
         self.agreed_capabilities = set([]) # type: typing.Set[str]
         self.server_capabilities = {} # type: typing.Dict[str, str]
-        self.batches = {} # type: typing.Dict[str, utils.irc.IRCBatch]
+        self.batches = {} # type: typing.Dict[str, IRCLine.IRCBatch]
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
         self.new_users = set([]) #type: typing.Set[IRCUser.User]
@@ -296,9 +296,10 @@ class Server(IRCObject.Object):
     def send_raw(self, line: str):
         return self.send(IRCLine.parse_line(line))
 
-    def _line(self, command, args, tags={}):
-        return IRCLine.ParsedLine(command,
-            [arg for arg in args if not arg == None], tags=tags)
+    def _line(self, command: str,
+            unfiltered_args: typing.Sequence[typing.Optional[str]], tags={}):
+        args: typing.List[str] = [a for a in unfiltered_args if not a is None]
+        return IRCLine.ParsedLine(command, args, tags=tags)
 
     def send_user(self, username: str, realname: str
             ) -> typing.Optional[IRCLine.SentLine]:
@@ -359,9 +360,9 @@ class Server(IRCObject.Object):
     def send_pong(self, token: str) -> typing.Optional[IRCLine.SentLine]:
         return self.send(self._line("PONG", [token]))
 
-    def send_join(self, channel_name: str, key: typing.List[str]=None
+    def send_join(self, channel_name: str, keys: typing.List[str]=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(self._line("JOIN", [channel_name, key]))
+        return self.send(self._line("JOIN", [channel_name]+(keys or [])))
     def send_joins(self, channel_names: typing.List[str],
             keys: typing.List[str]=None):
         return self.send(self._line("JOIN",
@@ -386,7 +387,10 @@ class Server(IRCObject.Object):
 
     def send_mode(self, target: str, mode: str=None, args: typing.List[str]=None
             ) -> typing.Optional[IRCLine.SentLine]:
-        return self.send(self._line("MODE", [target, mode]+(args or [])))
+        line_args = [target, mode]
+        if args:
+            line_args.extend(args)
+        return self.send(self._line("MODE", line_args))
 
     def send_topic(self, channel_name: str, topic: str
             ) -> typing.Optional[IRCLine.SentLine]:
