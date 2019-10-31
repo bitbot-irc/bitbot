@@ -31,6 +31,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.kick")
     @utils.hook("formatted.quit")
     @utils.hook("formatted.rename")
+    @utils.hook("formatted.chghost")
     def on_formatted(self, event):
         if event["channel"]:
             self._log(event, event["channel"])
