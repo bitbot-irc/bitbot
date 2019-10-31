@@ -86,7 +86,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.chghost")
     def _on_chghost(self, event):
-        line_minimal = "%s changed host (%s@%s)" % (event["user"].nickname,
+        line_minimal = "%s changed host to %s@%s" % (event["user"].nickname,
             event["username"], event["hostname"])
         line = "- %s" % line_minimal
         self._event("chghost", event["server"], line, None, user=event["user"],
