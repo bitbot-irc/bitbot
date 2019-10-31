@@ -58,8 +58,7 @@ class Module(ModuleManager.BaseModule):
             return -1, None
 
         if page.data.title:
-            title = page.data.title.text.replace("\n", " ").replace(
-                "\r", "").replace("  ", " ").strip()
+            title = utils.parse.line_normalise(page.data.title.text)
             if not title:
                 return -3, None
 
