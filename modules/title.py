@@ -56,17 +56,20 @@ class Module(ModuleManager.BaseModule):
         except Exception as e:
             self.log.error("failed to get URL title: %s", [url], exc_info=True)
             return -1, None
+
         if page.data.title:
             title = page.data.title.text.replace("\n", " ").replace(
                 "\r", "").replace("  ", " ").strip()
-            if (channel.get_setting("auto-title-difference", True) and
-                    not self._different(url, title)):
-                return -2, title
 
-            if channel.get_setting("title-shorten", False):
-                short_url = self.exports.get_one("shorturl")(server, url,
-                    context=channel)
-                return page.code, "%s - %s" % (title, short_url)
+            if channel:
+                if (channel.get_setting("auto-title-difference", True) and
+                        not self._different(url, title)):
+                    return -2, title
+
+                if channel.get_setting("title-shorten", False):
+                    short_url = self.exports.get_one("shorturl")(server, url,
+                        context=channel)
+                    return page.code, "%s - %s" % (title, short_url)
             return page.code, title
         else:
             return -1, None
@@ -119,7 +122,10 @@ class Module(ModuleManager.BaseModule):
         if not url:
             raise utils.EventError("No URL provided/found.")
 
-        code, title = self._get_title(event["server"], event["target"], url)
+        channel = None
+        if event["is_channel"]:
+            channel = event["target"]
+        code, title = self._get_title(event["server"], channel, url)
 
         if title:
             event["stdout"].write(title)
