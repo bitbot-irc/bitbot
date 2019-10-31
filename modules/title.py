@@ -60,6 +60,8 @@ class Module(ModuleManager.BaseModule):
         if page.data.title:
             title = page.data.title.text.replace("\n", " ").replace(
                 "\r", "").replace("  ", " ").strip()
+            if not title:
+                return -3, None
 
             if channel:
                 if (channel.get_setting("auto-title-difference", True) and
