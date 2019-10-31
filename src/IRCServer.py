@@ -166,7 +166,7 @@ class Server(IRCObject.Object):
 
     def has_user(self, nickname: str) -> bool:
         return self.irc_lower(nickname) in self.users
-    def get_user(self, nickname: str, username: str=None, hostname: str=None,
+    def get_user(self, nickname: str, username: typing.Optional[str]=None, hostname: str=None,
             create: bool=True) -> typing.Optional[IRCUser.User]:
         new = False
         if not self.has_user(nickname) and create:
@@ -178,9 +178,9 @@ class Server(IRCObject.Object):
 
         user = self.users.get(self.irc_lower(nickname), None)
         if user:
-            if not username == None:
+            if username is not None:
                 user.username = username
-            if not hostname == None:
+            if hostname is not None:
                 user.hostname = hostname
         if new:
             self.events.on("new.user").call(user=new_user, server=self)

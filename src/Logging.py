@@ -24,6 +24,8 @@ class HookedHandler(logging.StreamHandler):
         self._func(record.levelno, self.format(record))
 
 class Log(object):
+    _hooks: typing.List[typing.Callable[[int, str], None]]
+
     def __init__(self, to_file: bool, level: str, location: str):
         self._hooks = []
 

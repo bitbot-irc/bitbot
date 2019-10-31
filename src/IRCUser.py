@@ -11,11 +11,11 @@ class User(IRCObject.Object):
         self.server = server
         self.set_nickname(nickname)
         self._id = id
-        self.username = None
-        self.hostname = None
-        self.realname = None
+        self.username: typing.Optional[str] = None
+        self.hostname: typing.Optional[str] = None
+        self.realname: typing.Optional[str] = None
         self.bot = bot
-        self.channels = set([]) # type: typing.Set[IRCChannel.Channel]
+        self.channels: typing.Set[IRCChannel.Channel] = set([])
 
         self.identified_account = None
         self.identified_account_override = None
@@ -23,7 +23,7 @@ class User(IRCObject.Object):
         self.identified_account_id = None
         self.identified_account_id_override = None
         self.away = False
-        self.away_message = None # type: typing.Optional[str]
+        self.away_message: typing.Optional[str] = None
 
         self.buffer = IRCBuffer.Buffer(bot, server)
 
@@ -32,7 +32,7 @@ class User(IRCObject.Object):
     def __str__(self) -> str:
         return self.nickname
 
-    def hostmask(self) -> str:
+    def hostmask(self) -> typing.Optional[str]:
         if self.nickname and self.username and self.hostname:
             return "%s!%s@%s" % (self.nickname, self.username, self.hostname)
         return None

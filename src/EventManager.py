@@ -37,8 +37,8 @@ class EventHook(object):
         self.priority = priority
         self.docstring = utils.parse.docstring(func.__doc__ or "")
 
-        self._kwargs = {}
-        self._multi_kwargs = {}
+        self._kwargs: typing.Dict[str, typing.Any] = {}
+        self._multi_kwargs: typing.Dict[str, typing.List[typing.Any]] = {}
         for key, value in kwargs:
             if key in self._multi_kwargs:
                 self._multi_kwargs[key].append(value)

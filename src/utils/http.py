@@ -162,13 +162,13 @@ def _find_encoding(soup: bs4.BeautifulSoup) -> typing.Optional[str]:
     return None
 
 def request(request_obj: typing.Union[str, Request], **kwargs) -> Response:
-    if type(request_obj) == str:
+    if isinstance(request_obj, str):
         request_obj = Request(request_obj, **kwargs)
     return _request(request_obj)
 
 def _request(request_obj: Request) -> Response:
 
-    def _wrap():
+    def _wrap() -> Response:
         headers = request_obj.get_headers()
         response = requests.request(
             request_obj.method,

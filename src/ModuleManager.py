@@ -1,4 +1,5 @@
-import enum, gc, glob, importlib, io, inspect, os, sys, typing, uuid
+import enum, gc, glob, importlib, importlib.util, io, inspect, os, sys
+import typing, uuid
 from src import Config, EventManager, Exports, IRCBot, Logging, Timers, utils
 
 class ModuleException(Exception):
@@ -155,7 +156,7 @@ class ModuleManager(object):
 
     def _module_name(self, path: str) -> str:
         return os.path.basename(path).rsplit(".py", 1)[0].lower()
-    def _module_paths(self, name: str) -> str:
+    def _module_paths(self, name: str) -> typing.List[str]:
         paths = []
         for directory in self.directories:
             paths.append(os.path.join(directory, name))
@@ -180,7 +181,7 @@ class ModuleManager(object):
         return getattr(obj, magic) if hasattr(obj, magic) else default
 
     def _check_hashflags(self, bot: "IRCBot.Bot", definition: ModuleDefinition
-            ) -> bool:
+            ) -> None:
         for hashflag, value in definition.hashflags:
             if hashflag == "ignore":
                # nope, ignore this module.
@@ -321,7 +322,7 @@ class ModuleManager(object):
 
     def load_modules(self, bot: "IRCBot.Bot", whitelist: typing.List[str]=[],
             blacklist: typing.List[str]=[]
-            ) -> typing.Tuple[typing.List[str], typing.List[str]]:
+            ) -> None:
         loadable, nonloadable = self._list_valid_modules(bot, whitelist, blacklist)
 
         for definition in nonloadable:
@@ -388,7 +389,7 @@ class ModuleManager(object):
                 failed = (definition, e)
                 break
 
-        if not failed == None:
+        if failed is not None:
             for module in self.modules.values():
                 self._unload_module(module)
             self.modules = old_modules
