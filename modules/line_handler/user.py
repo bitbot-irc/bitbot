@@ -64,7 +64,7 @@ def away(events, event):
         user.away_message = None
         events.on("received.away.off").call(user=user, server=event["server"])
 
-def chghost(event):
+def chghost(events, event):
     nickname = event["line"].source.nickname
     username = event["line"].args[0]
     hostname = event["line"].args[1]
@@ -74,6 +74,9 @@ def chghost(event):
         event["server"].hostname = hostname
 
     target = event["server"].get_user(nickname)
+    events.on("received.chghost").call(user=target, server=event["server"],
+        username=username, hostname=hostname)
+
     target.username = username
     target.hostname = hostname
 

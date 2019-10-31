@@ -84,6 +84,14 @@ class Module(ModuleManager.BaseModule):
     def self_join(self, event):
         self._on_join(event, event["server"].get_user(event["server"].nickname))
 
+    @utils.hook("received.chghost")
+    def _on_chghost(self, event):
+        line_minimal = "%s changed host (%s@%s)" % (event["user"].nickname,
+            event["username"], event["hostname"])
+        line = "- %s" % line_minimal
+        self._event("chghost", event["server"], line, None, user=event["user"],
+            minimal=line_minimal)
+
     def _on_part(self, event, user):
         reason = event["reason"]
         reason = "" if not reason else " (%s)" % reason

@@ -204,7 +204,7 @@ class Module(ModuleManager.BaseModule):
     # IRCv3 CHGHOST, a user's username and/or hostname has changed
     @utils.hook("raw.received.chghost")
     def chghost(self, event):
-        user.chghost(event)
+        user.chghost(self.events, event)
 
     # IRCv3 SETNAME, to change a user's realname
     @utils.hook("raw.received.setname")
