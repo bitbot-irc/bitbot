@@ -72,7 +72,7 @@ def _normalise_note(content):
         out = ""
         if type(element) == bs4.element.Tag:
             if element.name == "p":
-                for subitem in element.contents:
+                for subitem in element.children:
                     if type(subitem) == bs4.element.Tag:
                         if subitem.name == "br":
                             lines.append(out)
