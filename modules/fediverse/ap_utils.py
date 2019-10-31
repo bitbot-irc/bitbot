@@ -61,7 +61,7 @@ def find_actor(username, instance):
 KNOWN_TAGS = ["p", "br"]
 
 def _normalise_note(content):
-    soup = bs4.BeautifulSoup(content, "html.parser")
+    soup = bs4.BeautifulSoup(content, "lxml").body
     lines = []
     for element in soup.find_all():
         if element.text.strip() == "":
