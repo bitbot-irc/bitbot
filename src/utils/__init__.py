@@ -258,7 +258,7 @@ class CaseInsensitiveDict(dict):
         if isinstance(key, str):
             return dict.__contains__(self, key.lower())
         else:
-            raise TypeError('Expected string, not %r' % (key,))
+            raise TypeError("Expected string, not %r" % key)
     def get(self, key: str, default: typing.Any=None):
         return dict.get(self, key.lower(), default)
 
@@ -402,11 +402,11 @@ def deadline(seconds: int=10):
         signal.signal(signal.SIGALRM, old_handler)
         signal.setitimer(signal.ITIMER_REAL, old_seconds, 0)
 
-DeadlineProcessReturnType = typing.TypeVar('DeadlineProcessReturnType')
+DeadlineProcessReturnType = typing.TypeVar("DeadlineProcessReturnType")
 def deadline_process(func: typing.Callable[[], DeadlineProcessReturnType],
         seconds: int=10) -> DeadlineProcessReturnType:
-    q: multiprocessing.Queue[typing.Tuple[bool, DeadlineProcessReturnType]] = \
-        multiprocessing.Queue()
+    q: multiprocessing.Queue[
+        typing.Tuple[bool, DeadlineProcessReturnType]] = multiprocessing.Queue()
     def _wrap(func, q):
         try:
             q.put([True, func()])
