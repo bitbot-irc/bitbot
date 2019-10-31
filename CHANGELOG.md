@@ -7,6 +7,7 @@ Added:
 - Show when a youtube video was uploaded (`youtube.py`)
 - 15 second SASL handshake timeout (`ircv3_sasl`)
 - Ability to disable command suggestions (`command_suggestions.py`)
+- Format/print/log `CHGHOST` events
 
 Changed:
 - `/me` lines are no longer added to markov chains
@@ -15,6 +16,8 @@ Changed:
 Fixed:
 - Rectified `src/utils/` circular dependency mess
 - Decode fediverse data as utf8
+- A bunch of typehinting errors across `src/`
+- Switch to `lxml` for fediverse note parsing. `html.parser` was buggy and unpredictable (`fediverse`)
 
 # 2019-10-25 - BitBot v1.13.0
 
