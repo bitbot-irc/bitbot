@@ -6,7 +6,7 @@ if sys.version_info < (3, 6):
     sys.stderr.write("BitBot requires python 3.6.0 or later\n")
     sys.exit(1)
 
-import atexit, argparse, faulthandler, os, platform, time
+import atexit, argparse, faulthandler, os, platform, time, typing
 from src import Cache, Config, Control, Database, EventManager, Exports, IRCBot
 from src import LockFile, Logging, ModuleManager, Timers, utils
 
@@ -97,7 +97,7 @@ if args.remove_server:
     alias = args.remove_server
     id = database.servers.by_alias(alias)
     if not id == None:
-        database.servers.delete(id)
+        database.servers.delete(typing.cast(int, id))
         print("Deleted server '%s'" % alias)
     else:
         sys.stderr.write("Unknown server '%s'\n" % alias)
