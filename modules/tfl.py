@@ -1,6 +1,6 @@
 #--depends-on commands
 
-import collections, datetime, re
+import collections, datetime, re, typing
 from src import ModuleManager, utils
 
 URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
@@ -22,7 +22,7 @@ PLATFORM_TYPES = ["Northbound", "Southbound", "Eastbound", "Westbound", "Inner R
 
 class Module(ModuleManager.BaseModule):
     _name = "TFL"
-    result_map = {}
+    result_map: typing.Dict[int, typing.Dict[int, typing.Dict[str, typing.Any]]] = {}
 
     def vehicle_span(self, arrival_time, human=True):
         vehicle_due_iso8601 = arrival_time
