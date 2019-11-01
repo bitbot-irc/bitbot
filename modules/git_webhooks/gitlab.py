@@ -74,6 +74,7 @@ class GitLab(object):
         event = headers["X-GitLab-Event"].rsplit(" ", 1)[0].lower()
 
         event = event.replace(" ", "_")
+        action = None
         event_action = None
 
         category = None
@@ -81,12 +82,15 @@ class GitLab(object):
 
         if "object_attributes" in data:
             if "action" in data["object_attributes"]:
-                event_action = "%s/%s" % (
-                    event, data["object_attributes"]["action"])
+                action = data["object_attributes"]["action"]
             if "noteable_type" in data["object_attributes"]:
                 category = data["object_attributes"]["noteable_type"].lower()
                 category = "%s+%s" % (event, category)
-                category_action = "%s/%s" % (category, event_action)
+
+        if action:
+            if category:
+                category_action = "%s/%s" % (category, action)
+            event_action = "%s/%s" % (event, action)
 
         return [event]+list(filter(None,
             [event_action, category, category_action]))

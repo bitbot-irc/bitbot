@@ -111,10 +111,23 @@ class GitHub(object):
 
     def event(self, data, headers):
         event = headers["X-GitHub-Event"]
+        action = None
         event_action = None
         if "action" in data:
-            event_action = "%s/%s" % (event, data["action"])
-        return [event]+([event_action] if event_action else [])
+            action = data["action"]
+
+        category = None
+        category_action = None
+        if "review" in data and "state" in data["review"]:
+            category = "%s+%s" % (event, data["review"]["state"])
+
+        if action:
+            if category:
+                category_action = "%s/%s" % (category, action)
+            event_action = "%s/%s" % (event, action)
+
+        return [event]+list(filter(None,
+            [event_action, category, category_action]))
 
     def event_categories(self, event):
         return EVENT_CATEGORIES.get(event, [event])
