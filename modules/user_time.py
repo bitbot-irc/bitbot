@@ -51,13 +51,19 @@ class Module(ModuleManager.BaseModule):
 
         if not timezone == None:
             dt = datetime.datetime.now(tz=pytz.timezone(timezone))
+            gmt_offset = (dt.utcoffset().total_seconds()/60)/60
+            tz = "GMT"
+            if not gmt_offset == 0.0:
+                if gmt_offset > 0:
+                    tz += "+"
+                tz += "%g" % gmt_offset
             human = utils.datetime_human(dt)
 
             out = None
             if type == LocationType.USER:
-                out = "Time for %s: %s" % (name, human)
+                out = "Time for %s: %s %s" % (name, human, tz)
             else:
-                out = "It is %s in %s" % (human, name)
+                out = "It is %s in %s %s" % (human, name, tz)
             event["stdout"].write(out)
         else:
             out = None
