@@ -42,6 +42,11 @@ COMMENT_ACTIONS = {
     "edited":  "edited a comment",
     "deleted": "deleted a comment"
 }
+RELEASE_ACTIONS = {
+    "updated": "published", # there seems to be a bug that causes `updated` instead of `published`
+    "published": "published",
+    "deleted": "deleted"
+}
 
 class Gitea(object):
     def is_private(self, data, headers):
@@ -209,7 +214,7 @@ class Gitea(object):
         return []
 
     def release(self, full_name, data):
-        action = data["action"]
+        action = RELEASE_ACTIONS[data["action"]]
         tag = data["release"]["tag_name"]
         name = data["release"]["name"] or ""
         if name:
