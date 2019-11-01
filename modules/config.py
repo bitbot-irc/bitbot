@@ -16,6 +16,8 @@ class ConfigResults(enum.Enum):
     Changed = 1
     Retrieved = 2
     Removed = 3
+    Unchanged = 4
+
 class ConfigResult(object):
     def __init__(self, result, data=None):
         self.result = result
@@ -121,9 +123,13 @@ class Module(ModuleManager.BaseModule):
                 raise ConfigInvalidValue(str(e))
 
             if not validated_value == None:
-                target.set_setting(setting, validated_value)
-                formatted_value = setting_object.format(validated_value)
-                return ConfigResult(ConfigResults.Changed, formatted_value)
+                existing_value = target.get_setting(setting, None)
+                if existing_value == validated_value:
+                    return ConfigResult(ConfigResults.Unchanged)
+                else:
+                    target.set_setting(setting, validated_value)
+                    formatted_value = setting_object.format(validated_value)
+                    return ConfigResult(ConfigResults.Changed, formatted_value)
             else:
                 raise ConfigInvalidValue()
         else:
@@ -231,6 +237,9 @@ class Module(ModuleManager.BaseModule):
             elif result.result == ConfigResults.Removed:
                 event["stdout"].write("Unset setting '%s'%s" %
                     (setting.lstrip("-"), for_str))
+            elif result.result == ConfigResults.Unchanged:
+                event["stdout"].write("Config '%s'%s unchanged" %
+                    (setting, for_str))
         else:
             event["stdout"].write("Available config: %s" %
                 ", ".join(export_settings.keys()))
