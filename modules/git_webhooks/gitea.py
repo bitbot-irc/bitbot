@@ -215,7 +215,7 @@ class Gitea(object):
         if name:
             name = ": %s" % name
         author = utils.irc.bold(data["release"]["author"]["login"])
-        return [["%s %s a release%s" % (author, action, name)], None]
+        return [["%s %s a release%s" % (author, action, name), None]]
 
     def fork(self, full_name, data):
         forker = utils.irc.bold(data["sender"]["login"])
