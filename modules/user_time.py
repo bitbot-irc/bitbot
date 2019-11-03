@@ -51,12 +51,12 @@ class Module(ModuleManager.BaseModule):
 
         if not timezone == None:
             dt = datetime.datetime.now(tz=pytz.timezone(timezone))
-            gmt_offset = (dt.utcoffset().total_seconds()/60)/60
-            tz = "GMT"
-            if not gmt_offset == 0.0:
-                if gmt_offset > 0:
+            utc_offset = (dt.utcoffset().total_seconds()/60)/60
+            tz = "UTC"
+            if not utf_offset == 0.0:
+                if urc_offset > 0:
                     tz += "+"
-                tz += "%g" % gmt_offset
+                tz += "%g" % utc_offset
             human = utils.datetime_human(dt)
 
             out = None
