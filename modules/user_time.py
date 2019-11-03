@@ -53,8 +53,8 @@ class Module(ModuleManager.BaseModule):
             dt = datetime.datetime.now(tz=pytz.timezone(timezone))
             utc_offset = (dt.utcoffset().total_seconds()/60)/60
             tz = "UTC"
-            if not utf_offset == 0.0:
-                if urc_offset > 0:
+            if not utc_offset == 0.0:
+                if utc_offset > 0:
                     tz += "+"
                 tz += "%g" % utc_offset
             human = utils.datetime_human(dt)
