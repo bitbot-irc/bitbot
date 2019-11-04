@@ -1,4 +1,4 @@
-import urllib.parse
+import os.path, urllib.parse
 import bs4
 from src import IRCBot, utils
 from . import ap_actor
@@ -88,6 +88,29 @@ def _normalise_note(content):
 
     return utils.parse.line_normalise(out)
 
+def _content(note):
+    content = note.get("content", None)
+    attachment = note.get("attachment", [])
+
+    if note.get("content", None):
+        return _normalise_note(content)
+    elif attachment:
+        type = attachment[0]["mediaType"].split("/", 1)[0]
+        filename = os.path.basename(attachment[0]["url"])
+
+        extension = None
+        if "." in filename:
+            filename, extension = filename.rsplit(".", 1)
+        if len(filename) > 20:
+            filename = "%s[...]" % filename[:20]
+
+        if extension:
+            filename = "%s.%s" % (filename, extension)
+        else:
+            filename = "%s: %s" % (type, filename)
+
+        return "<%s>" % filename
+
 def format_note(actor, note, type="Create"):
     if type == "Announce":
         retoot_url = note
@@ -98,13 +121,13 @@ def format_note(actor, note, type="Create"):
         original_tooter = ap_actor.Actor(retoot.data["attributedTo"])
         original_tooter.load()
         retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
-        retoot_content = _normalise_note(retoot.data["content"])
+        retoot_content = _content(retoot.data)
 
         return (retoot.data.get("summary", None),  "%s (boost %s): %s" % (
             actor.username, retooted_user, retoot_content), retoot_url)
 
     elif type == "Create":
-        content = _normalise_note(note["content"])
+        content = _content(note)
         url = note.get("url", note["id"])
 
         return (note.get("summary", None),
