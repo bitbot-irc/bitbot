@@ -77,9 +77,10 @@ def _normalise_note(content):
     lines = []
     for element in soup.find_all():
         if not element.name in KNOWN_TAGS:
-            element.unwrap()
-        elif element.text.strip() == "":
-            element.decompose()
+            if element.text.strip() == "":
+                element.decompose()
+            else:
+                element.unwrap()
 
     out = ""
     for element in soup.children:
