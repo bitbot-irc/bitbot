@@ -11,6 +11,7 @@ class Module(ModuleManager.BaseModule):
             ref = None
             with open(head_filepath, "r") as head_file:
                 ref = head_file.readline().split(" ", 1)[1].strip()
+            branch = ref.rsplit("/", 1)[1]
 
             ref_filepath = os.path.join(git_dir, ref)
             if os.path.isfile(ref_filepath):
@@ -19,7 +20,7 @@ class Module(ModuleManager.BaseModule):
 
         out = "Version: BitBot %s" % IRCBot.VERSION
         if not commit_hash == None:
-            out = "%s (%s)" % (out, commit_hash[:8])
+            out = "%s (%s@%s)" % (out, branch, commit_hash[:8])
         event["stdout"].write(out)
 
     @utils.hook("received.command.source")
