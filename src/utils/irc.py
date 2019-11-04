@@ -84,7 +84,7 @@ def _format_tokens(s: str) -> typing.List[str]:
                 is_background = True
                 color_finished = False
 
-            if not char.isdigit() or last_char or color_finished:
+            if color_finished or last_char:
                 color = foreground
                 if background:
                     color += ","+background
