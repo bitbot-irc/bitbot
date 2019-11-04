@@ -60,30 +60,32 @@ def find_actor(username, instance):
 
 KNOWN_TAGS = ["p", "br"]
 
+def _line(item):
+    if type(item) == bs4.element.Tag:
+        if item.name == "p":
+            out = ""
+            for subitem in item.children:
+                out += _line(subitem)
+            return "\n%s\n" % out
+        elif item.name == "br":
+            return "\n"
+    else:
+        return str(item)
+
 def _normalise_note(content):
     soup = bs4.BeautifulSoup(content, "lxml").body
     lines = []
     for element in soup.find_all():
-        if element.text.strip() == "":
-            element.decompose()
-        elif not element.name in KNOWN_TAGS:
+        if not element.name in KNOWN_TAGS:
             element.unwrap()
-    for element in soup.children:
-        out = ""
-        if type(element) == bs4.element.Tag:
-            if element.name == "p":
-                for subitem in element.children:
-                    if type(subitem) == bs4.element.Tag:
-                        if subitem.name == "br":
-                            lines.append(out)
-                            out = ""
-                    else:
-                        out += subitem
-        else:
-            out += element
+        elif element.text.strip() == "":
+            element.decompose()
 
-        lines.append(out.replace("  ", " "))
-    return "  ".join(lines)
+    out = ""
+    for element in soup.children:
+        out += _line(element)
+
+    return utils.parse.line_normalise(out)
 
 def format_note(actor, note, type="Create"):
     if type == "Announce":
