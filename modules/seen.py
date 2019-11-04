@@ -33,7 +33,7 @@ class Module(ModuleManager.BaseModule):
             seen_info = None
             if event["is_channel"]:
                 seen_info = event["target"].get_user_setting(
-                    event["user"].get_id(), "seen-info", None)
+                    user.get_id(), "seen-info", None)
                 if seen_info:
                     seen_info = " (%s%s)" % (seen_info["action"],
                         utils.consts.RESET)
