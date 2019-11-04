@@ -1,4 +1,4 @@
-# TBD - BitBot v1.14.0
+# 2019-11-04 - BitBot v1.14.0
 
 Added:
 - Add Travis config to run `mypy`
@@ -21,6 +21,9 @@ Fixed:
 - Decode fediverse data as utf8
 - A bunch of typehinting errors across `src/`
 - Switch to `lxml` for fediverse note parsing. `html.parser` was buggy and unpredictable (`fediverse`)
+
+Removed:
+- `!timezone`
 
 # 2019-10-25 - BitBot v1.13.0
 
