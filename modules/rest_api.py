@@ -175,16 +175,26 @@ class Module(ModuleManager.BaseModule):
 
         self.httpd = None
         if self.bot.get_setting("rest-api", False):
-            port = int(self.bot.config.get("api-port", str(DEFAULT_PORT)))
-            self.httpd = BitBotIPv6HTTPd(("::1", port), Handler)
+            self._start_httpd()
 
-            self.thread = threading.Thread(target=self.httpd.serve_forever)
-            self.thread.daemon = True
-            self.thread.start()
+    def _start_httpd(self):
+        port = int(self.bot.config.get("api-port", str(DEFAULT_PORT)))
+        self.httpd = BitBotIPv6HTTPd(("::1", port), Handler)
 
-    def unload(self):
+        self.thread = threading.Thread(target=self.httpd.serve_forever)
+        self.thread.daemon = True
+        self.thread.start()
+    def _stop_httpd(self):
         if self.httpd:
             self.httpd.shutdown()
+
+    def on_resume(self):
+        self._start_httpd()
+
+    def unload(self):
+        self._stop_httpd()
+    def on_pause(self):
+        self._stop_httpd()
 
     @utils.hook("received.command.apikey")
     @utils.kwarg("private_only", True)

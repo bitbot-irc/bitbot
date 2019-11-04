@@ -60,6 +60,11 @@ class BaseModule(object):
     def unload(self):
         pass
 
+    def on_pause(self):
+        pass
+    def on_resume(self):
+        pass
+
     def command_line(self, args: str):
         pass
 
@@ -381,6 +386,9 @@ class ModuleManager(object):
         old_modules = self.modules
         self.modules = {}
 
+        for module in old_modules.values():
+            module.module.on_pause()
+
         failed = None
         for definition in loadable:
             try:
@@ -393,6 +401,8 @@ class ModuleManager(object):
             for module in self.modules.values():
                 self._unload_module(module)
             self.modules = old_modules
+            for module in old_modules.values():
+                module.module.on_resume()
 
             definition, exception = failed
             return TryReloadResult(False,
