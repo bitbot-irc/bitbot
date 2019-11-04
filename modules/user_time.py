@@ -73,20 +73,3 @@ class Module(ModuleManager.BaseModule):
                 out = NOLOCATION_NAME
 
             event["stderr"].write(out % name)
-
-    @utils.hook("received.command.timezone")
-    @utils.kwarg("help", "Get the timezone for you or someone else")
-    @utils.kwarg("usage", "[nickname]")
-    @utils.kwarg("require_setting", "location")
-    @utils.kwarg("require_setting_unless", "1")
-    def timezone(self, event):
-        type, name, timezone = self._find_setting(event)
-        if not timezone == None:
-            event["stdout"].write("%s is in %s" % (name, timezone))
-        else:
-            out = None
-            if type == LocationType.USER:
-                out = NOLOCATION_USER
-            else:
-                out = NOLOCATION_NAME
-            event["stderr"].write(out % name)
