@@ -149,6 +149,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 raise ConfigSettingInexistent()
 
+    @utils.hook("received.command.c", alias_of="config")
     @utils.hook("received.command.config", min_args=1)
     def config(self, event):
         """
