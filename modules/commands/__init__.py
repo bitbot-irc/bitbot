@@ -283,10 +283,9 @@ class Module(ModuleManager.BaseModule):
             command = event["message_split"][1].lower()
             args_split = event["message_split"][2:]
 
-        if command:
-            if event["action"]:
-                return
 
+        hook = None
+        if command:
             try:
                 hook, command, args_split = self._find_command_hook(
                     event["server"], command, True, args_split)
@@ -294,6 +293,10 @@ class Module(ModuleManager.BaseModule):
                 event["channel"].send_message(
                     "%s: That command is not valid in a channel" %
                     event["user"].nickname)
+                return
+
+        if hook:
+            if event["action"]:
                 return
 
             if hook:
