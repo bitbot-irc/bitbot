@@ -15,7 +15,13 @@ class Module(ModuleManager.BaseModule):
     def preprocess_send_join(self, event):
         if event["line"].args:
             channels = event["line"].args[0].split(",")
-            keys = event["line"].args[1:]
+
+            init_keys = False
+            if len(event["line"].args) > 1:
+                init_keys = True
+                keys = event["line"].args[1].split(",")
+            else:
+                keys = []
 
             with_keys = {}
             for channel in channels:
@@ -33,7 +39,10 @@ class Module(ModuleManager.BaseModule):
                 channels_out.append(channel_name)
                 if key:
                     keys_out.append(key)
+
             event["line"].args[0] = ",".join(channels_out)
+            if not init_keys:
+                event["line"].args.append(None)
             event["line"].args[1] = ",".join(keys_out)
 
     @utils.hook("received.324")
