@@ -111,5 +111,8 @@ class Control(PollSource.PollSource):
 
     def _send_action(self, client: ControlClient, action: str,
             data: typing.Optional[str], id: typing.Optional[str]=None):
-        client.write_line(
-            json.dumps({"action": action, "data": data, "id": id}))
+        try:
+            client.write_line(
+                json.dumps({"action": action, "data": data, "id": id}))
+        except:
+            pass
