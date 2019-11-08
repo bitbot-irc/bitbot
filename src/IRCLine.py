@@ -25,6 +25,9 @@ class IRCArgs(object):
     def __setitem__(self, index: int, value: str):
         self._args[index] = value
 
+    def append(self, value: str):
+        self._args.append(value)
+
 class Hostmask(object):
     def __init__(self, nickname: str, username: str, hostname: str,
             hostmask: str):
