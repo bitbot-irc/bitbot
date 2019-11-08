@@ -34,7 +34,7 @@ class Module(ModuleManager.BaseModule):
                 if key:
                     keys_out.append(key)
             event["line"].args[0] = ",".join(channels_out)
-            event["line"].args[1:] = keys_out
+            event["line"].args[1] = ",".join(keys_out)
 
     @utils.hook("received.324")
     @utils.hook("received.mode.channel")
