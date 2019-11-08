@@ -47,6 +47,9 @@ class Module(ModuleManager.BaseModule):
 
     def _mech_match(self, server, server_mechanisms):
         our_sasl = server.get_setting("sasl", None)
+        if not our_sasl:
+            return None
+
         our_mechanism = our_sasl["mechanism"].upper()
 
         if not server_mechanisms and our_mechanism in ALL_MECHANISMS:
