@@ -1,274 +1,105 @@
 #--depends-on commands
 
-import collections, datetime, re, typing
+import collections, datetime, re, typing, urllib.parse
 from src import ModuleManager, utils
 
-URL_BUS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
-URL_BUS_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
-
-URL_LINE_ARRIVALS = "https://api.tfl.gov.uk/Line/%s/Arrivals"
-
 URL_LINE = "https://api.tfl.gov.uk/Line/Mode/tube/Status"
-LINE_NAMES = ["bakerloo", "central", "circle", "district", "hammersmith and city", "jubilee", "metropolitan", "piccadilly", "victoria", "waterloo and city"]
 
-URL_STOP = "https://api.tfl.gov.uk/StopPoint/%s"
 URL_STOP_SEARCH = "https://api.tfl.gov.uk/StopPoint/Search/%s"
+URL_STOP_ARRIVALS = "https://api.tfl.gov.uk/StopPoint/%s/Arrivals"
 
-URL_VEHICLE = "https://api.tfl.gov.uk/Vehicle/%s/Arrivals"
+LINES = {
+    "waterloo and city": "waterloo-city",
+    "waterloo & city": "waterloo-city",
+    "hammersmith and city": "hammersmith-city",
+    "hammersmith & city": "hammersmith-city"
+}
 
-URL_ROUTE = "https://api.tfl.gov.uk/Line/%s/Route/Sequence/all?excludeCrowding=True"
-
-PLATFORM_TYPES = ["Northbound", "Southbound", "Eastbound", "Westbound", "Inner Rail", "Outer Rail"]
+GOOD_COLOR = utils.irc.color("Good service", utils.consts.GREEN)
+BAD_COLOR = utils.irc.color("Issues", utils.consts.ORANGE)
 
 class Module(ModuleManager.BaseModule):
     _name = "TFL"
-    result_map: typing.Dict[int, typing.Dict[int, typing.Dict[str, typing.Any]]] = {}
 
-    def vehicle_span(self, arrival_time, human=True):
-        vehicle_due_iso8601 = arrival_time
-        if "." in vehicle_due_iso8601:
-            vehicle_due_iso8601 = vehicle_due_iso8601.split(".")[0]+"Z"
-        vehicle_due = datetime.datetime.strptime(vehicle_due_iso8601,
-            "%Y-%m-%dT%H:%M:%SZ")
-        time_until = vehicle_due-datetime.datetime.utcnow()
-        time_until = int(time_until.total_seconds()/60)
 
-        if time_until == 0: human_time = "due"
-        else: human_time = "in %s min" % time_until
-
-        if human: return human_time
-        else: return time_until
-
-    def platform(self, platform, short=False):
-        p = re.compile("(?:(.*) - Platform (\\d+)|(.*bound) Platform (\\d+))")
-        m = p.match(platform)
-        if m:
-            platform = "platform %s (%s)" % (m.group(2), m.group(1))
-            if short and m.group(1) in PLATFORM_TYPES:
-                platform = m.group(2)
-        return platform
-
-    @utils.hook("received.command.tflbus", min_args=1)
-    def bus(self, event):
-        """
-        :help: Get bus due times for a TfL bus stop
-        :usage: <stop_id>
-        """
-        app_id = self.bot.config["tfl-api-id"]
-        app_key = self.bot.config["tfl-api-key"]
-        stop_id = event["args_split"][0]
-        target_bus_route = None
-        if len(event["args_split"]) > 1:
-            target_bus_route = event["args_split"][1].lower()
-
-        bus_stop = None
-        real_stop_id = ""
-        stop_name = ""
-        if stop_id.isdigit():
-            bus_search = utils.http.request(URL_BUS_SEARCH % stop_id,
-                get_params={"app_id": app_id, "app_key": app_key},
-                json=True)
-            bus_stop = bus_search.data["matches"][0]
-            real_stop_id = bus_stop["id"]
-            stop_name = bus_stop["name"]
-        else:
-            bus_stop = utils.http.request(URL_STOP % stop_id,
-                get_params={"app_id": app_id, "app_key": app_key},
-                json=True)
-            if bus_stop:
-                real_stop_id = stop_id
-                stop_name = bus_stop.data["commonName"]
-
-        if real_stop_id:
-            bus_stop = utils.http.request(URL_BUS % real_stop_id,
-                get_params={"app_id": app_id, "app_key": app_key},
-                json=True)
-            busses = []
-            for bus in bus_stop.data:
-                bus_number = bus["lineName"]
-                human_time = self.vehicle_span(bus["expectedArrival"])
-                time_until = self.vehicle_span(bus["expectedArrival"], human=False)
-
-                # If the mode is "tube", "Underground Station" is redundant
-                destination = bus.get("destinationName", "?")
-                if (bus["modeName"] == "tube"): destination = destination.replace(" Underground Station", "")
-
-                busses.append({"route": bus_number, "time": time_until, "id": bus["vehicleId"],
-                    "destination": destination, "human_time": human_time, "mode": bus["modeName"],
-                    "platform": bus["platformName"],
-                    "platform_short" : self.platform(bus["platformName"], short=True)})
-            if busses:
-                busses = sorted(busses, key=lambda b: b["time"])
-                busses_filtered = []
-                bus_route_dest = []
-                bus_route_plat = []
-
-                # dedup if target route isn't "*", filter if target route isn't None or "*"
-                for b in busses:
-                    if target_bus_route != "*":
-                        if (b["route"], b["destination"]) in bus_route_dest: continue
-                        if bus_route_plat.count((b["route"], b["platform"])) >= 2: continue
-                        bus_route_plat.append((b["route"], b["platform"]))
-                        bus_route_dest.append((b["route"], b["destination"]))
-                        if b["route"] == target_bus_route or not target_bus_route:
-                            busses_filtered.append(b)
-                    else:
-                        busses_filtered.append(b)
-
-                self.result_map[event["target"].id] = busses_filtered
-
-                # do the magic formatty things!
-                busses_string = ", ".join(["%s (%s, %s)" % (b["destination"], b["route"], b["human_time"],
-                    ) for b in busses_filtered])
-
-                event["stdout"].write("%s (%s): %s" % (stop_name, stop_id,
-                    busses_string))
-            else:
-                event["stderr"].write("%s: No busses due" % stop_id)
-        else:
-           event["stderr"].write("Bus ID '%s' unknown" % stop_id)
-
-    @utils.hook("received.command.tflline")
+    @utils.hook("received.command.tubeline")
+    @utils.kwarg("help", "Show status of Tube lines")
+    @utils.kwarg("usage", "[line]")
     def line(self, event):
-        """
-        :help: Get line status for TfL underground lines
-        :usage: <line_name>
-        """
-        app_id = self.bot.config["tfl-api-id"]
-        app_key = self.bot.config["tfl-api-key"]
+        lines = utils.http.request(URL_LINE, json=True)
 
-        lines = utils.http.request(URL_LINE, get_params={
-                "app_id": app_id, "app_key": app_key}, json=True)
-        statuses = []
-        for line in lines.data:
-            for status in line["lineStatuses"]:
-                entry = {
-                        "id": line["id"],
-                        "name": line["name"],
-                        "severity": status["statusSeverity"],
-                        "description": status["statusSeverityDescription"],
-                        "reason": status.get("reason")
-                        }
-                statuses.append(entry)
-        statuses = sorted(statuses, key=lambda line: line["severity"])
-        combined = collections.OrderedDict()
-        for status in statuses:
-            if not status["description"] in combined:
-                combined[status["description"]] = []
-            combined[status["description"]].append(status)
-        result = ""
-        for k, v in combined.items():
-            result += k + ": "
-            result += ", ".join(status["name"] for status in v)
-            result += "; "
-        if event["args"]:
-            result = ""
-            for status in statuses:
-                for arg in event["args_split"]:
-                    if arg.lower() in status["name"].lower():
-                        result += "%s: %s (%d) '%s'; " % (status["name"], status["description"], status["severity"], status["reason"])
-        if result:
-            event["stdout"].write(result[:-2])
+        if event["args_split"]:
+            line_query = event["args"].strip().lower()
+            line_query = LINES.get(line_query, line_query)
+
+            found = None
+            for line in lines.data:
+                if line["id"] == line_query:
+                    found = line
+                    break
+            if found:
+                status = found["lineStatuses"][0]
+                reason = None
+                if "reason" in status:
+                    reason = " (%s)" % status["reason"].strip()
+
+                event["stdout"].write("%s status: %s%s" % (
+                    found["name"], status["statusSeverityDescription"], reason))
+            else:
+                event["stderr"].write("Unknown line '%s'" % line_query)
         else:
-            event["stderr"].write("No results")
+            good = []
+            bad = []
+            for line in lines.data:
+                status = line["lineStatuses"][0]
+                if status["statusSeverity"] == 10:
+                    good.append(line["name"])
+                else:
+                    bad.append(line["name"])
 
-    @utils.hook("received.command.tflsearch", min_args=1)
-    def search(self, event):
-        """
-        :help: Get a list of TfL stop IDs for a given name
-        :usage: <name>
-        """
-        app_id = self.bot.config["tfl-api-id"]
-        app_key = self.bot.config["tfl-api-key"]
+            good_str = ", ".join(good)
+            bad_str = ", ".join(bad)
+            if good and bad:
+                event["stdout"].write("%s: %s | %s: %s" %
+                    (GOOD_COLOR, good_str, BAD_COLOR, bad_str))
+            elif good:
+                event["stdout"].write("%s on all lines" % GOOD_COLOR)
+            else:
+                event["stdout"].write("%s reported on all lines" % BAD_COLOR)
 
-        #As awful as this is, it also makes it ~work~.
-        stop_name = event["args"].replace(" ", "%20")
-
-        stop_search = utils.http.request(URL_STOP_SEARCH % stop_name, get_params={
-            "app_id": app_id, "app_key": app_key, "maxResults": "6", "faresOnly": "False"}, json=True)
-        if stop_search:
-            for stop in stop_search.data["matches"]:
-                pass
-            results = ["%s (%s): %s" % (stop["name"], ", ".join(stop["modes"]), stop["id"]) for stop in stop_search.data["matches"]]
-            event["stdout"].write("[%s results] %s" % (stop_search.data["total"], "; ".join(results)))
-        else:
-            event["stderr"].write("No results")
-
-    @utils.hook("received.command.tflvehicle", min_args=1)
-    def vehicle(self, event):
-        """
-        :help: Get information for a given vehicle
-        :usage: <ID>
-        """
-        app_id = self.bot.config["tfl-api-id"]
-        app_key = self.bot.config["tfl-api-key"]
-
-        vehicle_id = event["args_split"][0]
-
-        vehicle = utils.http.request(URL_VEHICLE % vehicle_id, get_params={
-                "app_id": app_id, "app_key": app_key}, json=True)[0]
-
-        arrival_time = self.vehicle_span(vehicle.data["expectedArrival"], human=False)
-        platform = self.platform(vehicle.data["platformName"])
-
-        event["stdout"].write("%s (%s) to %s. %s. Arrival at %s (%s) in %s minutes on %s" % (
-            vehicle.data["vehicleId"], vehicle.data["lineName"], vehicle.data["destinationName"], vehicle.data["currentLocation"],
-                vehicle.data["stationName"], vehicle.data["naptanId"], arrival_time, platform))
-
-    @utils.hook("received.command.tflservice", min_args=1)
-    def service(self, event):
-        """
-        :help: Get service information and arrival estimates
-        :usage: <service index>
-        """
-        app_id = self.bot.config["tfl-api-id"]
-        app_key = self.bot.config["tfl-api-key"]
-
-        service_id = event["args_split"][0]
-
-        if service_id.isdigit():
-            if not event["target"].id in self.result_map:
-                event["stdout"].write("No history")
-                return
-            results = self.result_map[event["target"].id]
-            if int(service_id) >= len(results):
-                event["stdout"].write("%s is too high. Remember that the first arrival is 0" % service_id)
-                return
-            service = results[int(service_id)]
-        arrivals = utils.http.request(URL_LINE_ARRIVALS % service["route"],
-            get_params={"app_id": app_id, "app_key": app_key}, json=True)
-
-        arrivals = [a for a in arrivals.data if a["vehicleId"] == service["id"]]
-        arrivals = sorted(arrivals, key=lambda b: b["timeToStation"])
-
-        event["stdout"].write(
-            "%s (%s) to %s: " % (arrivals[0]["vehicleId"], arrivals[0]["lineName"], arrivals[0]["destinationName"]) +
-            ", ".join(["%s (%s, %s)" %
-            (a["stationName"], self.platform(a.get("platformName", "?"), True),
-            a["expectedArrival"][11:16]
-            ) for a in arrivals]))
-
-    @utils.hook("received.command.tflstop", min_args=1)
+    @utils.hook("received.command.tubestop")
+    @utils.kwarg("help", "Show arrivals for a given Tube station")
+    @utils.kwarg("usage", "<station>")
     def stop(self, event):
-        """
-        :help: Get information for a given stop
-        :usage: <stop_id>
-        """
-        app_id = self.bot.config["tfl-api-id"]
-        app_key = self.bot.config["tfl-api-key"]
+        query = event["args"].strip()
+        station = utils.http.request(
+            URL_STOP_SEARCH % urllib.parse.quote(query), json=True)
 
-        stop_id = event["args_split"][0]
+        if station.data["matches"]:
+            station = station.data["matches"][0]
+            arrivals = utils.http.request(URL_STOP_ARRIVALS % station["id"],
+                json=True)
+            destinations = collections.OrderedDict()
+            now = utils.datetime_utcnow().replace(second=0, microsecond=0)
+            print(now.isoformat())
 
-        stop = utils.http.requesst(URL_STOP % stop_id, get_params={
-            "app_id": app_id, "app_key": app_key}, json=True)
+            arrivals = sorted(arrivals.data, key=lambda a: a["expectedArrival"])
+            for train in arrivals:
+                destination = train["destinationNaptanId"]
+                if not destination in destinations:
+                    arrival = utils.iso8601_parse(train["expectedArrival"])
+                    if now >= arrival:
+                        arrival = "Due"
+                    else:
+                        arrival = "In %s" % utils.to_pretty_time(
+                            (arrival-now).total_seconds(), max_units=1,
+                            minimum_unit=utils.UNIT_MINUTE)
 
-    def route(self, event):
-        app_id = self.bot.config["tfl-api-id"]
-        app_key = self.bot.config["tfl-api-key"]
+                    destinations[destination] = "%s (%s)" % (
+                        train["towards"], arrival)
 
-        route_id = event["args_split"][0]
-
-        route = utils.http.request(URL_ROUTE % route_id, get_params={
-            "app_id": app_id, "app_key": app_key}, json=True)
-
-        event["stdout"].write("")
+            if destinations:
+                event["stdout"].write("%s: %s" % (
+                    station["name"], ", ".join(destinations.values())))
+        else:
+            event["stdout"].write("Unknown station '%s'" % query)
