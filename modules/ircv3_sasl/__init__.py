@@ -157,7 +157,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.908")
     def sasl_mechanisms(self, event):
         server_mechanisms = event["line"].args[1].split(",")
-        mechanism = self._best_userpass_mechanism(server_mechanimsms)
+        mechanism = self._best_userpass_mechanism(server_mechanisms)
         event["server"].sasl_mechanism = mechanism
         event["server"].send_authenticate(mechanism)
 
