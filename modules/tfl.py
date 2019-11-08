@@ -1,6 +1,6 @@
 #--depends-on commands
 
-import collections, datetime, re, typing, urllib.parse
+import collections, urllib.parse
 from src import ModuleManager, utils
 
 URL_LINE = "https://api.tfl.gov.uk/Line/Mode/tube/Status"
