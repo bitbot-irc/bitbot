@@ -178,9 +178,13 @@ class Module(ModuleManager.BaseModule):
         :help: Get yours, or someone else's, duck stats
         :usage: [nickname]
         """
-        befs = event["user"].get_channel_settings_per_setting(
+        target_user = event["user"]
+        if event["args"]:
+            target_user = event["server"].get_user(event["args_split"][0])
+
+        befs = target_user.get_channel_settings_per_setting(
             "ducks-befriended")
-        traps = event["user"].get_channel_settings_per_setting("ducks-shot")
+        traps = target_user.get_channel_settings_per_setting("ducks-shot")
 
         all = [(chan, val, "bef") for chan, val in befs]
         all += [(chan, val, "trap") for chan, val in traps]
@@ -206,5 +210,5 @@ class Module(ModuleManager.BaseModule):
 
         event["stdout"].write(
             "%s has befriended %d and trapped %d ducks%s" %
-            (event["user"].nickname, overall["bef"], overall["trap"],
+            (target_user.nickname, overall["bef"], overall["trap"],
             current_str))
