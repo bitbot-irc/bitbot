@@ -164,13 +164,13 @@ class Module(ModuleManager.BaseModule):
             return True, None
 
 
-    def _check_assert(self, check_kwargs,
+    def _check_assert(self, check_kwargs, user,
             check: typing.Union[utils.Check, utils.MultiCheck]):
         checks = check.to_multi() # both Check and MultiCheck has this func
         is_success, message = self._check("check", check_kwargs,
             checks.requests())
         if not is_success:
-            raise utils.EventError(message)
+            raise utils.EventError("%s: %s" % (user.nickname, message))
 
     def _tagmsg(self, target, tags):
         return IRCLine.ParsedLine("TAGMSG", [target], tags=tags)
@@ -211,13 +211,15 @@ class Module(ModuleManager.BaseModule):
             "stderr": stderr}
         event_kwargs.update(kwargs)
 
-        check_assert = lambda check: self._check_assert(event_kwargs, check)
+        check_assert = lambda check: self._check_assert(event_kwargs, user,
+            check)
         event_kwargs["check_assert"] = check_assert
 
         check_success, check_message = self._check("preprocess", event_kwargs)
         if not check_success:
             if check_message:
-                stderr.write(check_message).send(command_method)
+                stderr.write("%s: %s" % (user.nickname, check_message)
+                    ).send(command_method)
             return True
 
         new_event = self.events.on(hook.event_name).make_event(**event_kwargs)
