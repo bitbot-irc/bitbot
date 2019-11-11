@@ -16,9 +16,9 @@ arg_parser.add_argument("command")
 
 args, unknown = arg_parser.parse_known_args()
 
-def _die(s):
+def _die(code: int, s: str):
     sys.stderr.write("%s\n" % s)
-    sys.exit(1)
+    sys.exit(code)
 
 SIMPLE = ["rehash", "reload", "stop"]
 if args.command == "log":
@@ -27,12 +27,9 @@ if args.command == "log":
 elif args.command in SIMPLE:
     pass
 else:
-    _die("Unknown command '%s'" % args.command)
+    _die(1, "Unknown command '%s'" % args.command)
 
 args = arg_parser.parse_args()
-
-if not os.path.exists(args.socket):
-    _die("Failed to connect to BitBot instance")
 
 import json, socket, signal
 
@@ -41,9 +38,12 @@ def _sigint(_1, _2):
     sys.exit(0)
 signal.signal(signal.SIGINT, _sigint)
 
-
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-sock.connect(args.socket)
+
+try:
+    sock.connect(args.socket)
+except ConnectionRefusedError:
+    _die(2, "Failed to connect to BitBot instance. Is bitbotd running?")
 
 def _send(s):
     sock.send(("%s\n" % s).encode("utf8"))
