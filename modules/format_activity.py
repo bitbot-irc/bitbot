@@ -98,16 +98,18 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.chghost")
     def _on_chghost(self, event):
-        line_minimal = "%s changed host to %s@%s" % (event["user"].nickname,
+        nickname = self._colorize(event["user"].nickname)
+        line_minimal = "%s changed host to %s@%s" % (nickname,
             event["username"], event["hostname"])
         line = "- %s" % line_minimal
         self._event("chghost", event["server"], line, None, user=event["user"],
             minimal=line_minimal)
 
     def _on_part(self, event, user):
+        nickname = self._colorize(user.nickname)
         reason = event["reason"]
         reason = "" if not reason else " (%s)" % reason
-        line_minimal = "%s left %s%s" % (user.nickname, event["channel"].name,
+        line_minimal = "%s left %s%s" % (nickname, event["channel"].name,
             reason)
         line = "- %s" % line_minimal
 
@@ -121,8 +123,10 @@ class Module(ModuleManager.BaseModule):
         self._on_part(event, event["server"].get_user(event["server"].nickname))
 
     def _on_nick(self, event, user):
-        line_minimal = "%s changed nickname to %s" % (
-            event["old_nickname"], event["new_nickname"])
+        old_nickname = self._colorize(event["old_nickname"])
+        new_nickname = self._colorize(event["new_nickname"])
+        line_minimal = "%s changed nickname to %s" % (old_nickname,
+            new_nickname)
         line = "- %s" % line_minimal
 
         self._event("nick", event["server"], line, None, user=user,
@@ -141,8 +145,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.invite")
     def invite(self, event):
-        line = "%s invited %s to %s" % (
-            event["user"].nickname, event["target_user"].nickname,
+        sender_nickname = self._colorize(event["user"].nickname)
+        target_nickname = self._colorize(event["target_user"].nickname)
+        line = "%s invited %s to %s" % (sender_nickname, target_nickname,
             event["target_channel"])
         self._event("invite", event["server"], line, event["target_channel"])
 
@@ -152,16 +157,18 @@ class Module(ModuleManager.BaseModule):
         if args:
             args = " %s" % args
 
-        line_minimal = "%s set mode %s%s" % (
-            event["user"].nickname, "".join(event["modes_str"]), args)
+        nickname = self._colorize(event["user"].nickname)
+        line_minimal = "%s set mode %s%s" % (nickname,
+            "".join(event["modes_str"]), args)
         line = "- %s" % line_minimal
 
         self._event("mode.channel", event["server"], line,
             event["channel"].name, channel=event["channel"], user=event["user"],
             minimal=line_minimal)
 
-    def _on_topic(self, event, setter, action, topic):
-        line = "topic %s by %s: %s" % (action, setter, topic)
+    def _on_topic(self, event, nickname, action, topic):
+        nickname = self._colorize(nickname)
+        line = "topic %s by %s: %s" % (action, nickname, topic)
         self._event("topic", event["server"], line, event["channel"].name,
             channel=event["channel"], user=event.get("user", None))
     @utils.hook("received.topic")
@@ -180,11 +187,14 @@ class Module(ModuleManager.BaseModule):
             event["channel"].name, channel=event["channel"])
 
     def _on_kick(self, event, nickname):
+        sender_nickname = self._colorize(event["user"].nickname)
+        kicked_nickname = self._colorize(nickname)
+
         reason = ""
         if event["reason"]:
             reason = " (%s)" % event["reason"]
         line_minimal = "%s kicked %s from %s%s" % (
-            event["user"].nickname, nickname, event["channel"].name, reason)
+            sender_nickname, kicked_nickname, event["channel"].name, reason)
         line = "- %s" % line_minimal
 
         self._event("kick", event["server"], line, event["channel"].name,
@@ -198,8 +208,9 @@ class Module(ModuleManager.BaseModule):
         self._on_kick(event, event["server"].nickname)
 
     def _quit(self, event, user, reason):
+        nickname = self._colorize(user.nickname)
         reason = "" if not reason else " (%s)" % reason
-        line_minimal = "%s quit%s" % (user.nickname, reason)
+        line_minimal = "%s quit%s" % (nickname, reason)
         line = "- %s" % line_minimal
 
         self._event("quit", event["server"], line, None, user=user,
