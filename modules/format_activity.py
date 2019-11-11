@@ -1,7 +1,14 @@
 import datetime
 from src import EventManager, ModuleManager, utils
 
+@utils.export("botset", utils.BoolSetting("colorize-nicknames",
+    "Whether or not to format nicknames with calculated colors"))
 class Module(ModuleManager.BaseModule):
+    def _colorize(self, nickname):
+        if self.bot.get_setting("colorize-nicknames", False):
+            return utils.irc.hash_colorize(nickname)
+        return nickname
+
     def _event(self, type, server, line, context, minimal=None,
             channel=None, user=None, **kwargs):
         self.events.on("formatted").on(type).call(server=server,
@@ -20,6 +27,8 @@ class Module(ModuleManager.BaseModule):
         symbols = ""
         if channel:
             symbols = self._mode_symbols(user, channel, event["server"])
+
+        nickname = self._colorize(nickname)
 
         if event["action"]:
             return "* %s%s %s" % (symbols, nickname, event["message"])
@@ -43,16 +52,17 @@ class Module(ModuleManager.BaseModule):
             event["channel"].name, channel=event["channel"], user=user,
             parsed_line=event["line"])
 
-    def _on_notice(self, event, sender):
-        return "(notice) <%s> %s" % (sender, event["message"])
-    def _channel_notice(self, event, sender, channel):
-        line = self._on_notice(event, sender)
+    def _on_notice(self, event, nickname):
+        nickname = self._colorize(nickname)
+        return "(notice) <%s> %s" % (nickname, event["message"])
+    def _channel_notice(self, event, nickname, channel):
+        line = self._on_notice(event, nickname)
         self._event("notice.channel", event["server"], line,
             event["channel"].name, parsed_line=event["line"], channel=channel,
             user=event["user"])
 
-    def _private_notice(self, event, sender, target):
-        line = self._on_notice(event, sender)
+    def _private_notice(self, event, nickname, target):
+        line = self._on_notice(event, nickname)
         self._event("notice.private", event["server"], line, None,
             parsed_line=event["line"], user=event["user"])
 
