@@ -36,6 +36,10 @@ class User(IRCObject.Object):
         if self.nickname and self.username and self.hostname:
             return "%s!%s@%s" % (self.nickname, self.username, self.hostname)
         return None
+    def userhost(self) -> typing.Optional[str]:
+        if self.username and self.hostname:
+            return "%s@%s" % (self.username, self.hostname)
+        return None
 
     def get_id(self)-> int:
         return (self.identified_account_id_override or
