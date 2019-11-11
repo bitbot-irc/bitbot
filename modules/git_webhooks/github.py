@@ -193,7 +193,7 @@ class GitHub(object):
         return self._change_count(n, "~", utils.consts.PURPLE)
 
     def _short_hash(self, hash):
-        return hash[:8]
+        return hash[:7]
 
     def _flat_unique(self, commits, key):
         return set(itertools.chain(*(commit[key] for commit in commits)))

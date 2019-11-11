@@ -111,7 +111,7 @@ class GitLab(object):
             return self.tag_push(full_name, data)
 
     def _short_hash(self, hash):
-        return hash[:8]
+        return hash[:7]
 
     def tag_push(self, full_name, data):
         create = not data["after"].strip("0") == ""

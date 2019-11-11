@@ -110,7 +110,7 @@ class Gitea(object):
         return [["Received new webhook", None]]
 
     def _short_hash(self, hash):
-        return hash[:8]
+        return hash[:7]
 
     def push(self, full_name, data):
         outputs = []
