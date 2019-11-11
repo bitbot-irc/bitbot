@@ -43,8 +43,8 @@ def color(s: str, foreground: consts.IRCColor,
 
 HASH_COLORS = list(range(2, 16))
 def hash_colorize(s: str):
-    code = sum(ord(c) for c in s.lower())%len(HASH_COLORS)
-    return color(s, consts.COLOR_CODES[code])
+    hash_code = sum(ord(c) for c in s.lower())%len(HASH_COLORS)
+    return color(s, consts.COLOR_CODES[HASH_COLORS[hash_code]])
 
 def bold(s: str) -> str:
     return "%s%s%s" % (consts.BOLD, s, consts.BOLD)
