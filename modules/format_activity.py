@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
 
     def _on_notice(self, event, nickname):
         nickname = self._colorize(nickname)
-        return "(notice) <%s> %s" % (nickname, event["message"])
+        return "-%s- %s" % (nickname, event["message"])
     def _channel_notice(self, event, nickname, channel):
         line = self._on_notice(event, nickname)
         self._event("notice.channel", event["server"], line,
