@@ -84,7 +84,9 @@ class Module(ModuleManager.BaseModule):
     def _on_join(self, event, user):
         nickname = self._colorize(user.nickname)
         hostmask = "%s!%s" % (nickname, user.userhost())
-        line = "- %s joined %s" % (hostmask, event["channel"].name)
+
+        line = "- %s (%s) joined %s" % (nickname, user.userhost(),
+            event["channel"].name)
         minimal_line = "%s joined %s" % (nickname, event["channel"].name)
 
         self._event("join", event["server"], line, event["channel"].name,
