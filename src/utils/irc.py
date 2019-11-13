@@ -69,8 +69,8 @@ FORMAT_STRIP = [
 ]
 def _format_tokens(s: str) -> typing.List[str]:
     is_color = False
-    foreground = []
-    background = []
+    foreground: typing.List[str] = []
+    background: typing.List[str] = []
     is_background = False
     matches = [] # type: typing.List[str]
 
