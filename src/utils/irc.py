@@ -69,8 +69,8 @@ FORMAT_STRIP = [
 ]
 def _format_tokens(s: str) -> typing.List[str]:
     is_color = False
-    foreground = ""
-    background = ""
+    foreground = []
+    background = []
     is_background = False
     matches = [] # type: typing.List[str]
 
@@ -79,25 +79,24 @@ def _format_tokens(s: str) -> typing.List[str]:
         if is_color:
             current_color = background if is_background else foreground
             color_finished = True
-            if char.isdigit() and len(current_color) < 2:
-                if is_background:
-                    background += char
-                else:
-                    foreground += char
-                color_finished = (len(current_color)+1) == 2
-            elif char == "," and not is_background:
+
+            if char == "," and not is_background:
                 is_background = True
                 color_finished = False
 
+            elif char.isdigit() and len(current_color) < 2:
+                current_color.append(char)
+                color_finished = len(current_color) == 2 and is_background
+
             if color_finished or last_char:
-                color = foreground
+                color = "".join(foreground)
                 if background:
-                    color += ","+background
+                    color += "".join([","]+background)
 
                 matches.append("\x03%s" % color)
                 is_color = False
-                foreground = ""
-                background = ""
+                foreground = []
+                background = []
                 is_background = False
 
         if char == consts.COLOR:
