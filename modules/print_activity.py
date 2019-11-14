@@ -11,8 +11,7 @@ from src import EventManager, ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     def _print(self, event):
         line = event["line"]
-        if ("pretty" in event and
-                self.bot.get_setting("pretty-activity", False)):
+        if event["pretty"] and self.bot.get_setting("pretty-activity", False):
             line = event["pretty"]
 
         self.bot.log.info("%s%s | %s", [
