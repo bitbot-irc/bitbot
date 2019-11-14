@@ -220,9 +220,12 @@ class Module(ModuleManager.BaseModule):
 
         unix_dt = datetime.datetime.utcfromtimestamp(event["set_at"])
         dt = datetime.datetime.strftime(unix_dt, utils.ISO8601_PARSE)
-        line = "topic set at %s" % dt
-        self._event("topic-timestamp", event["server"], line,
-            event["channel"].name, channel=event["channel"])
+
+        minimal = "topic set at %s" % dt
+        normal = "- %s" % minimal
+
+        self._event("topic-timestamp", event["server"], normal,
+            event["channel"].name, channel=event["channel"], minimal=minimal)
 
     def _on_kick(self, event, kicked_nickname):
         sender_nickname = event["user"].nickname
