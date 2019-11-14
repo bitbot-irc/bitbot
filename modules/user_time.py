@@ -17,6 +17,7 @@ class Module(ModuleManager.BaseModule):
 
     def _find_setting(self, event):
         query = None
+        target_user = None
 
         if event["args"]:
             query = event["args"]
