@@ -4,8 +4,10 @@ Added:
 - Optionally colourise nicknames when printed to log (`format_activity.py` and `print_activity.py`)
 - Show git branch in `!version` output (`info.py`)
 - Stop/start REST API HTTPd when trying to reload all modules (`ModuleManager` and `rest_api.py`)
+- Individual channels can opt out of printing to INFO log (`!config c print off`, `print_activity.py`)
 
 Changed:
+- Logging moved to `~/.bitbot/logs/` by default
 - Better eval API for `eval_python.py` (now py3 only)
 - Better single-line normalisation for ActivityPub Activities (`fediverse`)
 - Better error messages shown to user when a fediverse Actor can't be found (`fediverse`)
