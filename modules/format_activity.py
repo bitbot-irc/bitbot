@@ -186,7 +186,7 @@ class Module(ModuleManager.BaseModule):
         if args:
             args = " %s" % args
 
-        format = "%s set mode %s%s" % ("%s", "".join(event["mode_str"]),
+        format = "%s set mode %s%s" % ("%s", "".join(event["modes_str"]),
             args)
         minimal = format % event["user"].nickname
 
