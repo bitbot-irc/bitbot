@@ -32,8 +32,7 @@ arg_parser.add_argument("--database", "-d",
     help="Location of the sqlite3 database file")
 
 arg_parser.add_argument("--log-dir", "-l",
-    help="Location of the log directory",
-    default=os.path.join(directory, "logs"))
+    help="Location of the log directory")
 
 arg_parser.add_argument("--add-server", "-a",
     help="Add a new server", action="store_true")
@@ -60,25 +59,31 @@ if args.version:
     print("BitBot %s" % IRCBot.VERSION)
     sys.exit(0)
 
+if not os.path.isdir(args.data_dir):
+    os.mkdir(args.data_dir)
+
 database_location = None
 lock_location = None
 sock_locaiton = None
+log_directory = None
 if not args.database == None:
     database_location = args.database
     lock_location = "%s.lock" % args.database
     sock_location = "%s.sock" % args.database
 else:
-    if not os.path.isdir(args.data_dir):
-        os.mkdir(args.data_dir)
     database_location = os.path.join(args.data_dir, "bot.db")
     lock_location = os.path.join(args.data_dir, "bot.lock")
     sock_location = os.path.join(args.data_dir, "bot.sock")
+
+log_directory = args.log_dir or os.path.join(args.data_dir, "logs")
+if not os.path.isdir(log_directory):
+    os.mkdir(log_directory)
 
 log_level = args.log_level
 if not log_level:
     log_level = "debug" if args.verbose else "warn"
 
-log = Logging.Log(not args.no_logging, log_level, args.log_dir)
+log = Logging.Log(not args.no_logging, log_level, log_directory)
 
 log.info("Starting BitBot %s (Python v%s, db %s)",
     [IRCBot.VERSION, platform.python_version(), database_location])
