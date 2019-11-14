@@ -113,11 +113,11 @@ class Module(ModuleManager.BaseModule):
     def _on_chghost(self, event):
         format = "%s changed host to %s@%s" % ("%s", event["username"],
             event["hostname"])
-        minimal = format % nickname
+        minimal = format % event["user"].nickname
 
         normal_format = "- %s" % format
-        normal = normal_format % nickname
-        pretty = normal_format % self._color(nickname)
+        normal = normal_format % event["user"].nickname
+        pretty = normal_format % self._color(event["user"].nickname)
 
         self._event("chghost", event["server"], normal, None,
             user=event["user"], minimal=minimal, pretty=pretty)
