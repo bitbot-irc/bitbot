@@ -1,19 +1,15 @@
 import datetime
 from src import EventManager, ModuleManager, utils
 
-@utils.export("botset", utils.BoolSetting("colorize-nicknames",
-    "Whether or not to format nicknames with calculated colors"))
 class Module(ModuleManager.BaseModule):
-    def _colorize(self, nickname):
-        if self.bot.get_setting("colorize-nicknames", False):
-            return utils.irc.hash_colorize(nickname)
-        return nickname
+    def _color(self, nickname):
+        return utils.irc.hash_colorize(nickname)
 
-    def _event(self, type, server, line, context, minimal=None,
+    def _event(self, type, server, line, context, minimal=None, pretty=None,
             channel=None, user=None, **kwargs):
         self.events.on("formatted").on(type).call(server=server,
             context=context, line=line, channel=channel, user=user,
-            minimal=minimal, **kwargs)
+            minimal=minimal, pretty=pretty, **kwargs)
 
     def _mode_symbols(self, user, channel, server):
         modes = list(channel.get_user_modes(user))
@@ -28,12 +24,17 @@ class Module(ModuleManager.BaseModule):
         if channel:
             symbols = self._mode_symbols(user, channel, event["server"])
 
-        nickname = self._colorize(nickname)
-
         if event["action"]:
-            return "* %s%s %s" % (symbols, nickname, event["message"])
+            format = "* %s%s %s"
         else:
-            return "<%s%s> %s" % (symbols, nickname, event["message"])
+            format = "<%s%s> %s"
+
+        minimal = format % ("", nickname, event["message"])
+        normal = format % (symbols, nickname, event["message"])
+        pretty = format % (symbols, self._color(nickname),
+            event["message"])
+
+        return minimal, normal, pretty
 
     @utils.hook("send.message.channel")
     @utils.hook("received.message.channel")
@@ -47,24 +48,31 @@ class Module(ModuleManager.BaseModule):
             nickname = event["server"].nickname
             user = event["server"].get_user(nickname)
 
-        line = self._privmsg(event, event["channel"], user, nickname)
-        self._event("message.channel", event["server"], line,
+        minimal, normal, pretty = self._privmsg(event, event["channel"], user,
+            nickname)
+
+        self._event("message.channel", event["server"], normal,
             event["channel"].name, channel=event["channel"], user=user,
-            parsed_line=event["line"])
+            parsed_line=event["line"], minimal=minimal, pretty=pretty)
 
     def _on_notice(self, event, nickname):
-        nickname = self._colorize(nickname)
-        return "-%s- %s" % (nickname, event["message"])
+        format = "-%s- %s"
+        minimal = format % (nickname, event["message"])
+        normal = minimal
+        pretty = format % (self._color(nickname), event["message"])
+
+        return minimal, normal, pretty
     def _channel_notice(self, event, nickname, channel):
-        line = self._on_notice(event, nickname)
-        self._event("notice.channel", event["server"], line,
+        minimal, normal, pretty = self._on_notice(event, nickname)
+        self._event("notice.channel", event["server"], normal,
             event["channel"].name, parsed_line=event["line"], channel=channel,
-            user=event["user"])
+            user=event["user"], minimal=minimal, pretty=prettyb)
 
     def _private_notice(self, event, nickname, target):
-        line = self._on_notice(event, nickname)
-        self._event("notice.private", event["server"], line, None,
-            parsed_line=event["line"], user=event["user"])
+        minimal, normal, pretty = self._on_notice(event, nickname)
+        self._event("notice.private", event["server"], normal, None,
+            parsed_line=event["line"], user=event["user"], minimal=minimal,
+            pretty=pretty)
 
     @utils.hook("received.notice.channel")
     def channel_notice(self, event):
@@ -82,15 +90,18 @@ class Module(ModuleManager.BaseModule):
             event["user"].nickname)
 
     def _on_join(self, event, user):
-        nickname = self._colorize(user.nickname)
-        hostmask = "%s!%s" % (nickname, user.userhost())
+        channel_name = event["channel"].name
 
-        line = "- %s (%s) joined %s" % (nickname, user.userhost(),
-            event["channel"].name)
-        minimal_line = "%s joined %s" % (nickname, event["channel"].name)
+        minimal = "%s joined %s" % (user.nickname, channel_name)
 
-        self._event("join", event["server"], line, event["channel"].name,
-            channel=event["channel"], user=user, minimal=minimal_line)
+        normal_format = "- %s (%s) joined %s"
+        normal = normal_format % (user.nickname, user.userhost(), channel_name)
+        pretty = normal_format % (self._color(user.nickname), user.userhost(),
+            channel_name)
+
+        self._event("join", event["server"], normal, event["channel"].name,
+            channel=event["channel"], user=user, minimal=minimal,
+            pretty=pretty)
     @utils.hook("received.join")
     def join(self, event):
         self._on_join(event, event["user"])
@@ -100,23 +111,30 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.chghost")
     def _on_chghost(self, event):
-        nickname = self._colorize(event["user"].nickname)
-        line_minimal = "%s changed host to %s@%s" % (nickname,
-            event["username"], event["hostname"])
-        line = "- %s" % line_minimal
-        self._event("chghost", event["server"], line, None, user=event["user"],
-            minimal=line_minimal)
+        format = "%s changed host to %s@%s" % ("%s", event["username"],
+            event["hostname"])
+        minimal = format % nickname
+
+        normal_format = "- %s" % format
+        normal = normal_format % nickname
+        pretty = normal_format % self._color(nickname)
+
+        self._event("chghost", event["server"], normal, None,
+            user=event["user"], minimal=minimal, pretty=pretty)
 
     def _on_part(self, event, user):
-        nickname = self._colorize(user.nickname)
         reason = event["reason"]
         reason = "" if not reason else " (%s)" % reason
-        line_minimal = "%s left %s%s" % (nickname, event["channel"].name,
-            reason)
-        line = "- %s" % line_minimal
 
-        self._event("part", event["server"], line, event["channel"].name,
-            channel=event["channel"], user=user, minimal=line_minimal)
+        format = "%s left %s%s" % ("%s", event["channel"].name, reason)
+        minimal = format % nickname
+
+        normal_format = "- %s" % format
+        normal = normal_format % nickname
+        pretty = normal_format % self._color(nickname)
+
+        self._event("part", event["server"], normal, event["channel"].name,
+            channel=event["channel"], user=user, minimal=minimal, pretty=pretty)
     @utils.hook("received.part")
     def part(self, event):
         self._on_part(event, event["user"])
@@ -125,14 +143,19 @@ class Module(ModuleManager.BaseModule):
         self._on_part(event, event["server"].get_user(event["server"].nickname))
 
     def _on_nick(self, event, user):
-        old_nickname = self._colorize(event["old_nickname"])
-        new_nickname = self._colorize(event["new_nickname"])
-        line_minimal = "%s changed nickname to %s" % (old_nickname,
-            new_nickname)
-        line = "- %s" % line_minimal
+        old_nickname = event["old_nickname"]
+        new_nickname = event["new_nickname"]
 
-        self._event("nick", event["server"], line, None, user=user,
-            minimal=line_minimal)
+        format = "%s changed nickname to %s"
+        minimal = format % (old_nickname, new_nickname)
+
+        normal_format = "- %s" % format
+        normal = normal_format % (old_nickname, new_nickname)
+        pretty = normal_format % (
+            self._color(old_nickname), self._color(new_nickname))
+
+        self._event("nick", event["server"], normal, None, user=user,
+            minimal=minimal, pretty=pretty)
     @utils.hook("received.nick")
     def nick(self, event):
         self._on_nick(event, event["user"])
@@ -147,11 +170,15 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.invite")
     def invite(self, event):
-        sender_nickname = self._colorize(event["user"].nickname)
-        target_nickname = self._colorize(event["target_user"].nickname)
-        line = "%s invited %s to %s" % (sender_nickname, target_nickname,
-            event["target_channel"])
-        self._event("invite", event["server"], line, event["target_channel"])
+        format = "%s invited %s to %s" % ("%s", "%s", event["target_channel"])
+        minimal = format % (event["user"].nickname,
+            event["target_user"].nickname)
+        normal = minimal
+        pretty = format % (self._color(event["user"].nickname),
+            self._color(event["user"].nickname))
+
+        self._event("invite", event["server"], normal, event["target_channel"],
+            minimal=minimal, pretty=pretty)
 
     @utils.hook("received.mode.channel")
     def mode(self, event):
@@ -159,20 +186,29 @@ class Module(ModuleManager.BaseModule):
         if args:
             args = " %s" % args
 
-        nickname = self._colorize(event["user"].nickname)
-        line_minimal = "%s set mode %s%s" % (nickname,
-            "".join(event["modes_str"]), args)
-        line = "- %s" % line_minimal
+        format = "%s set mode %s%s" % ("%s", "".join(event["mode_str"]),
+            args)
+        minimal = format % event["user"].nickname
 
-        self._event("mode.channel", event["server"], line,
+        normal_format = "- %s" % format
+        normal = normal_format % event["user"].nickname
+        pretty = normal_format % self._color(event["user"].nickname)
+
+        self._event("mode.channel", event["server"], normal,
             event["channel"].name, channel=event["channel"], user=event["user"],
-            minimal=line_minimal)
+            minimal=minimal, pretty=pretty)
 
     def _on_topic(self, event, nickname, action, topic):
-        nickname = self._colorize(nickname)
-        line = "topic %s by %s: %s" % (action, nickname, topic)
-        self._event("topic", event["server"], line, event["channel"].name,
-            channel=event["channel"], user=event.get("user", None))
+        format = "topic %s by %s: %s" % (action, "%s", topic)
+        minimal = format % nickname
+
+        normal_format = "- %s" % format
+        normal = normal_format % nickname
+        pretty = normal_format % self._color(nickname)
+
+        self._event("topic", event["server"], normal, event["channel"].name,
+            channel=event["channel"], user=event.get("user", None),
+            minimal=minimal, pretty=pretty)
     @utils.hook("received.topic")
     def on_topic(self, event):
         self._on_topic(event, event["user"].nickname, "changed",
@@ -188,20 +224,25 @@ class Module(ModuleManager.BaseModule):
         self._event("topic-timestamp", event["server"], line,
             event["channel"].name, channel=event["channel"])
 
-    def _on_kick(self, event, nickname):
-        sender_nickname = self._colorize(event["user"].nickname)
-        kicked_nickname = self._colorize(nickname)
+    def _on_kick(self, event, kicked_nickname):
+        sender_nickname = event["user"].nickname
 
         reason = ""
         if event["reason"]:
             reason = " (%s)" % event["reason"]
-        line_minimal = "%s kicked %s from %s%s" % (
-            sender_nickname, kicked_nickname, event["channel"].name, reason)
-        line = "- %s" % line_minimal
 
-        self._event("kick", event["server"], line, event["channel"].name,
+        format = "%s kicked %s from %s%s" % ("%s", "%s", event["channel"].name,
+            reason)
+        minimal = format % (sender_nickname, kicked_nickname)
+
+        normal_format = "- %s" % format
+        normal = normal_format % (sender_nickname, kicked_nickname)
+        pretty = normal_format % (self._color(sender_nickname),
+            self._color(kicked_nickname))
+
+        self._event("kick", event["server"], normal, event["channel"].name,
             channel=event["channel"], user=event.get("user", None),
-            minimal=line_minimal)
+            minimal=minimal, pretty=pretty)
     @utils.hook("received.kick")
     def kick(self, event):
         self._on_kick(event, event["target_user"].nickname)
@@ -210,13 +251,17 @@ class Module(ModuleManager.BaseModule):
         self._on_kick(event, event["server"].nickname)
 
     def _quit(self, event, user, reason):
-        nickname = self._colorize(user.nickname)
         reason = "" if not reason else " (%s)" % reason
-        line_minimal = "%s quit%s" % (nickname, reason)
-        line = "- %s" % line_minimal
 
-        self._event("quit", event["server"], line, None, user=user,
-            minimal=line_minimal)
+        format = "%s quit%s" % ("%s", reason)
+        minimal = format % user.nickname
+
+        normal_format = "- %s" % format
+        normal = normal_format % user.nickname
+        pretty = normal_format % self._color(user.nickname)
+
+        self._event("quit", event["server"], normal, None, user=user,
+            minimal=minimal, pretty=pretty)
     @utils.hook("received.quit")
     def on_quit(self, event):
         self._quit(event, event["user"], event["reason"])

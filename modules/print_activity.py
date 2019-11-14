@@ -6,11 +6,18 @@ from src import EventManager, ModuleManager, utils
 
 @utils.export("botset",
     utils.BoolSetting("print-motd", "Set whether I print /motd"))
+@utils.export("botset", utils.BoolSetting("pretty-activity",
+    "Whether or not to pretty print activity"))
 class Module(ModuleManager.BaseModule):
     def _print(self, event):
+        line = event["line"]
+        if ("pretty" in event and
+                self.bot.get_setting("pretty-activity", False)):
+            line = event["pretty"]
+
         self.bot.log.info("%s%s | %s", [
             str(event["server"]), event["context"] or "",
-            utils.irc.parse_format(event["line"])])
+            utils.irc.parse_format(line)])
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
