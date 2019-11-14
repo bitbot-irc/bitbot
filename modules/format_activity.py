@@ -66,7 +66,7 @@ class Module(ModuleManager.BaseModule):
         minimal, normal, pretty = self._on_notice(event, nickname)
         self._event("notice.channel", event["server"], normal,
             event["channel"].name, parsed_line=event["line"], channel=channel,
-            user=event["user"], minimal=minimal, pretty=prettyb)
+            user=event["user"], minimal=minimal, pretty=pretty)
 
     def _private_notice(self, event, nickname, target):
         minimal, normal, pretty = self._on_notice(event, nickname)
