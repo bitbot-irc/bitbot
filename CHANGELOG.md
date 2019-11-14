@@ -1,3 +1,25 @@
+# TBD - BitBot v1.15.0
+
+Added:
+- Optionally colourise nicknames when printed to log (`format_activity.py` and `print_activity.py`)
+- Show git branch in `!version` output (`info.py`)
+- Stop/start REST API HTTPd when trying to reload all modules (`ModuleManager` and `rest_api.py`)
+
+Changed:
+- Better eval API for `eval_python.py` (now py3 only)
+- Better single-line normalisation for ActivityPub Activities (`fediverse`)
+- Better error messages shown to user when a fediverse Actor can't be found (`fediverse`)
+- Git hashes are now truncated to 7 chars, not 8 (`git_webhooks`)
+
+Fixed:
+- Multiple channel keys should be expressed as comma-separated (`channel_keys.py`)
+- `!duckstats <nickname` was meant to show stats for another user (`ducks.py`)
+- Fix almost completely broken 908 (`RPL_SASLMECHS`) handling
+- Background colour formatting was being lost (`utils.irc`)
+
+Removed:
+- `tfl.py` moved to `bitbot-modules`
+
 # 2019-11-04 - BitBot v1.14.0
 
 Added:
