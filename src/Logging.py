@@ -60,7 +60,7 @@ class Log(object):
 
             info_path = os.path.join(location, "info.log")
             info_handler = logging.handlers.TimedRotatingFileHandler(
-                info_path, when="midnight", backupCount=0)
+                info_path, when="midnight", backupCount=1)
             info_handler.setLevel(LEVELS["info"])
             info_handler.setFormatter(formatter)
             self.logger.addHandler(info_handler)
