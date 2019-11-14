@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
         except utils.http.HTTPWrongContentTypeException:
             return -1, None
         except Exception as e:
-            self.log.error("failed to get URL title: %s", [url], exc_info=True)
+            self.log.error("failed to get URL title for %s: %s", [url, str(e)])
             return -1, None
 
         if page.data.title:
