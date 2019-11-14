@@ -26,7 +26,10 @@ class Module(ModuleManager.BaseModule):
 
         link = entry.get("link", None)
         if shorten:
-            link = self.exports.get_one("shorturl")(server, link)
+            try:
+                link = self.exports.get_one("shorturl")(server, link)
+            except:
+                pass
         link = " - %s" % link if link else ""
 
         feed_title_str = "%s: " % feed_title if feed_title else ""
