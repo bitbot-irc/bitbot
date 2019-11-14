@@ -34,29 +34,43 @@ def activity_request(url, data=None, method="GET", type=ACTIVITY_TYPE,
 HOSTMETA_TEMPLATE = "https://%s/.well-known/host-meta"
 WEBFINGER_TEMPLATE = "https://%s/.well-known/webfinger?resource={uri}"
 
+class FindActorException(Exception):
+    pass
+
 def find_actor(username, instance):
     hostmeta = HOSTMETA_TEMPLATE % instance
     hostmeta_request = utils.http.Request(HOSTMETA_TEMPLATE % instance,
         useragent=USERAGENT, parse=True, check_content_type=False)
-    hostmeta = utils.http.request(hostmeta_request)
+    try:
+        hostmeta = utils.http.request(hostmeta_request)
+    except:
+        raise FindActorException("Failed to get host-meta for %s" % instance)
 
     webfinger_url = None
-    for item in hostmeta.data.find_all("link"):
-        if item["rel"] and item["rel"][0] == "lrdd":
-            webfinger_url = item["template"]
-            break
+    if hostmeta.code == 200:
+        for item in hostmeta.data.find_all("link"):
+            if item["rel"] and item["rel"][0] == "lrdd":
+                webfinger_url = item["template"]
+                break
 
     if not webfinger_url:
         webfinger_url = WEBFINGER_TEMPLATE % instance
     webfinger_url = webfinger_url.replace("{uri}",
         "acct:%s@%s" % (username, instance), 1)
 
-    webfinger = activity_request(webfinger_url, type=JRD_TYPE)
+    try:
+        webfinger = activity_request(webfinger_url, type=JRD_TYPE)
+    except:
+        raise FindActorException("Failed to get webfinger for %s" % instance)
 
     actor_url = None
-    for link in webfinger.data["links"]:
-        if link["type"] == ACTIVITY_TYPE:
-            return link["href"]
+    if webfinger.code == 200:
+        for link in webfinger.data["links"]:
+            if link["type"] == ACTIVITY_TYPE:
+                return link["href"]
+    else:
+        raise FindActorException("Could not find user @%s@%s" %
+            (username, instance))
 
 KNOWN_TAGS = ["p", "br"]
 

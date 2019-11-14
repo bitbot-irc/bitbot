@@ -112,14 +112,15 @@ class Module(ModuleManager.BaseModule):
 
 
     def _get_from_outbox(self, username, instance):
-        actor_url = ap_utils.find_actor(username, instance)
+        try:
+            actor_url = ap_utils.find_actor(username, instance)
+        except ap_utils.FindActorException as e:
+            raise utils.EventError(str(e))
 
-        if not actor_url:
-            raise utils.EventError("Failed to find user")
 
         actor = ap_actor.Actor(actor_url)
         if not actor.load():
-            raise utils.EventError("Failed to find user")
+            raise utils.EventError("Failed to load user")
 
         items = actor.outbox.load()
         nonreply = [actor.followers]
