@@ -8,8 +8,14 @@ from src import EventManager, ModuleManager, utils
     utils.BoolSetting("print-motd", "Set whether I print /motd"))
 @utils.export("botset", utils.BoolSetting("pretty-activity",
     "Whether or not to pretty print activity"))
+@utils.export("channelset", utils.BoolSetting("print",
+    "Whether or not to print activity a channel to logs"))
 class Module(ModuleManager.BaseModule):
     def _print(self, event):
+        if (event["channel"] and
+                not event["channel"].get_setting("print", True)):
+            return
+
         line = event["line"]
         if event["pretty"] and self.bot.get_setting("pretty-activity", False):
             line = event["pretty"]
