@@ -173,9 +173,9 @@ class Module(ModuleManager.BaseModule):
         format = "%s invited %s to %s" % ("%s", "%s", event["target_channel"])
         minimal = format % (event["user"].nickname,
             event["target_user"].nickname)
-        normal = minimal
+        normal = "- %s" % minimal
         pretty = format % (self._color(event["user"].nickname),
-            self._color(event["user"].nickname))
+            self._color(event["target_user"].nickname))
 
         self._event("invite", event["server"], normal, event["target_channel"],
             minimal=minimal, pretty=pretty)
