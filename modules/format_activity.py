@@ -127,11 +127,11 @@ class Module(ModuleManager.BaseModule):
         reason = "" if not reason else " (%s)" % reason
 
         format = "%s left %s%s" % ("%s", event["channel"].name, reason)
-        minimal = format % nickname
+        minimal = format % user.nickname
 
         normal_format = "- %s" % format
-        normal = normal_format % nickname
-        pretty = normal_format % self._color(nickname)
+        normal = normal_format % user.nickname
+        pretty = normal_format % self._color(user.nickname)
 
         self._event("part", event["server"], normal, event["channel"].name,
             channel=event["channel"], user=user, minimal=minimal, pretty=pretty)
