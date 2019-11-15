@@ -111,27 +111,32 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.chghost")
     def _on_chghost(self, event):
-        format = "%s changed host to %s@%s" % ("%s", event["username"],
-            event["hostname"])
-        minimal = format % event["user"].nickname
+        username = event["username"]
+        hostname = event["hostname"]
+
+        format = "%s changed host to %s@%s"
+        minimal = format % (event["user"].nickname, username, hostname)
 
         normal_format = "- %s" % format
-        normal = normal_format % event["user"].nickname
-        pretty = normal_format % self._color(event["user"].nickname)
+        normal = normal_format % (event["user"].nickname, username, hostname)
+        pretty = normal_format % (self._color(event["user"].nickname), username,
+            hostname)
 
         self._event("chghost", event["server"], normal, None,
             user=event["user"], minimal=minimal, pretty=pretty)
 
     def _on_part(self, event, user):
+        channel_name = event["channel"].name
         reason = event["reason"]
         reason = "" if not reason else " (%s)" % reason
 
-        format = "%s left %s%s" % ("%s", event["channel"].name, reason)
-        minimal = format % user.nickname
+        format = "%s left %s%s"
+        minimal = format % (user.nickname, channel_name, reason)
 
         normal_format = "- %s" % format
-        normal = normal_format % user.nickname
-        pretty = normal_format % self._color(user.nickname)
+        normal = normal_format % (user.nickname, channel_name, reason)
+        pretty = normal_format % (self._color(user.nickname), channel_name,
+            reason)
 
         self._event("part", event["server"], normal, event["channel"].name,
             channel=event["channel"], user=user, minimal=minimal, pretty=pretty)
@@ -170,41 +175,45 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.invite")
     def invite(self, event):
-        format = "%s invited %s to %s" % ("%s", "%s", event["target_channel"])
-        minimal = format % (event["user"].nickname,
-            event["target_user"].nickname)
+        format = "%s invited %s to %s"
+
+        sender = event["user"].nickname
+        target = event["target_user"].nickname
+        channel_name = event["target_channel"]
+
+        minimal = format % (sender, target, channel_name)
         normal = "- %s" % minimal
-        pretty = format % (self._color(event["user"].nickname),
-            self._color(event["target_user"].nickname))
+        pretty = format % (self._color(sender), target, channel_name)
 
         self._event("invite", event["server"], normal, event["target_channel"],
             minimal=minimal, pretty=pretty)
 
     @utils.hook("received.mode.channel")
     def mode(self, event):
+        modes = "".join(event["modes_str"])
         args = " ".join(event["args_str"])
         if args:
             args = " %s" % args
 
-        format = "%s set mode %s%s" % ("%s", "".join(event["modes_str"]),
-            args)
-        minimal = format % event["user"].nickname
+        format = "%s set mode %s%s"
+        minimal = format % (event["user"].nickname, modes, args)
 
         normal_format = "- %s" % format
-        normal = normal_format % event["user"].nickname
-        pretty = normal_format % self._color(event["user"].nickname)
+        normal = normal_format % (event["user"].nickname, modes, args)
+        pretty = normal_format % (self._color(event["user"].nickname), modes,
+            args)
 
         self._event("mode.channel", event["server"], normal,
             event["channel"].name, channel=event["channel"], user=event["user"],
             minimal=minimal, pretty=pretty)
 
     def _on_topic(self, event, nickname, action, topic):
-        format = "topic %s by %s: %s" % (action, "%s", topic)
-        minimal = format % nickname
+        format = "topic %s by %s: %s"
+        minimal = format % (action, nickname, topic)
 
         normal_format = "- %s" % format
-        normal = normal_format % nickname
-        pretty = normal_format % self._color(nickname)
+        normal = normal_format % (action, nickname, topic)
+        pretty = normal_format % (action, self._color(nickname), topic)
 
         self._event("topic", event["server"], normal, event["channel"].name,
             channel=event["channel"], user=event.get("user", None),
@@ -218,8 +227,7 @@ class Module(ModuleManager.BaseModule):
         self._on_topic(event, event["setter"].nickname, "set",
             event["channel"].topic)
 
-        unix_dt = datetime.datetime.utcfromtimestamp(event["set_at"])
-        dt = datetime.datetime.strftime(unix_dt, utils.ISO8601_PARSE)
+        dt = utils.iso8601_format(utils.datetime_timestamp(event["set_at"]))
 
         minimal = "topic set at %s" % dt
         normal = "- %s" % minimal
@@ -229,19 +237,21 @@ class Module(ModuleManager.BaseModule):
 
     def _on_kick(self, event, kicked_nickname):
         sender_nickname = event["user"].nickname
+        channel_name = event["channel"].name
 
         reason = ""
         if event["reason"]:
             reason = " (%s)" % event["reason"]
 
-        format = "%s kicked %s from %s%s" % ("%s", "%s", event["channel"].name,
+        format = "%s kicked %s from %s%s"
+        minimal = format % (sender_nickname, kicked_nickname, channel_name,
             reason)
-        minimal = format % (sender_nickname, kicked_nickname)
 
         normal_format = "- %s" % format
-        normal = normal_format % (sender_nickname, kicked_nickname)
+        normal = normal_format % (sender_nickname, kicked_nickname,
+            channel_name, reason)
         pretty = normal_format % (self._color(sender_nickname),
-            self._color(kicked_nickname))
+            self._color(kicked_nickname), channel_name, reason)
 
         self._event("kick", event["server"], normal, event["channel"].name,
             channel=event["channel"], user=event.get("user", None),
@@ -256,12 +266,12 @@ class Module(ModuleManager.BaseModule):
     def _quit(self, event, user, reason):
         reason = "" if not reason else " (%s)" % reason
 
-        format = "%s quit%s" % ("%s", reason)
-        minimal = format % user.nickname
+        format = "%s quit%s"
+        minimal = format % (user.nickname, reason)
 
         normal_format = "- %s" % format
-        normal = normal_format % user.nickname
-        pretty = normal_format % self._color(user.nickname)
+        normal = normal_format % (user.nickname, reason)
+        pretty = normal_format % (self._color(user.nickname), reason)
 
         self._event("quit", event["server"], normal, None, user=user,
             minimal=minimal, pretty=pretty)
