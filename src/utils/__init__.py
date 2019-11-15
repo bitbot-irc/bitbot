@@ -1,8 +1,8 @@
 import contextlib, datetime, decimal, enum, io, ipaddress, multiprocessing
 import queue, re, signal, threading, typing
-from . import cli, consts, irc, http, parse, security
+from . import cli, consts, decorators, irc, http, parse, security
 
-from .decorators import export, get_magic, has_magic, hook, kwarg
+from .decorators import export, hook, kwarg
 from .settings import (BoolSetting, FunctionSetting, IntRangeSetting,
     IntSetting, OptionsSetting, sensitive_format, SensitiveSetting, Setting)
 

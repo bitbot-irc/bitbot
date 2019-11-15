@@ -239,15 +239,16 @@ class ModuleManager(object):
         # @utils.hook() magic
         for attribute_name in dir(module_object):
             attribute = getattr(module_object, attribute_name)
-            if inspect.ismethod(attribute) and utils.has_magic(attribute):
-                magic = utils.get_magic(attribute)
+            if (inspect.ismethod(attribute) and
+                    utils.decorators.has_magic(attribute)):
+                magic = utils.decorators.get_magic(attribute)
 
                 for hook, kwargs in magic.get_hooks():
                     context_events.on(hook)._hook(attribute, kwargs=kwargs)
 
         # @utils.export() magic
-        if utils.has_magic(module_object):
-            magic = utils.get_magic(module_object)
+        if utils.decorators.has_magic(module_object):
+            magic = utils.decorators.get_magic(module_object)
             for key, value in magic.get_exports():
                 context_exports.add(key, value)
 
