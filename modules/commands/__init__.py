@@ -99,6 +99,7 @@ class Module(ModuleManager.BaseModule):
                     return None, None, None
 
         hook = None
+        args_split = []
         channel_skip = False
         private_skip = False
         if self.has_command(command):
@@ -122,16 +123,17 @@ class Module(ModuleManager.BaseModule):
                     continue
 
                 hook = potential_hook
+
+                argparse = hook.get_kwarg("argparse", "plain")
+                if argparse == "shlex":
+                    args_split = shlex.split(args)
+                elif argparse == "plain":
+                    args_split = args.split(" ")
+
                 break
 
         if not hook and (private_skip or channel_skip):
             raise BadContextException("channel" if channel_skip else "private")
-
-        argparse = hook.get_kwarg("argparse", "plain")
-        if argparse == "shlex":
-            args_split = shlex.split(args)
-        elif argparse == "plain":
-            args_split = args.split(" ")
 
         return hook, command, args_split
 
