@@ -1,4 +1,4 @@
-import io, typing
+import decimal, io, typing
 
 COMMENT_TYPES = ["#", "//"]
 def hashflags(filename: str
@@ -83,3 +83,29 @@ def try_int(s: str) -> typing.Optional[int]:
 def line_normalise(s: str) -> str:
     lines = list(filter(None, [line.strip() for line in s.split("\n")]))
     return "  ".join(line.replace("  ", " ") for line in lines)
+
+def parse_number(s: str) -> str:
+    try:
+        decimal.Decimal(s)
+        return s
+    except:
+        pass
+
+    unit = s[-1].lower()
+    number_str = s[:-1]
+    try:
+        number = decimal.Decimal(number_str)
+    except:
+        raise ValueError("Invalid format '%s' passed to parse_number" %
+            number_str)
+
+    if unit == "k":
+        number *= decimal.Decimal("1_000")
+    elif unit == "m":
+        number *= decimal.Decimal("1_000_000")
+    elif unit == "b":
+        number *= decimal.Decimal("1_000_000_000")
+    else:
+        raise ValueError("Unknown unit '%s' given to parse_number" % unit)
+    return str(number)
+

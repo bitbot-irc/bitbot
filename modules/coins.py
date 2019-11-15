@@ -97,7 +97,7 @@ class Module(ModuleManager.BaseModule):
         return "{0:,.2f}".format(coins)
     def _parse_coins(self, s, minimum=None):
         try:
-            s = utils.parse_number(s)
+            s = utils.parse.parse_number(s)
         except ValueError:
             pass
 
