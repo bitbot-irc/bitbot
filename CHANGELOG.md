@@ -5,6 +5,8 @@ Added:
 - Show git branch in `!version` output (`info.py`)
 - Stop/start REST API HTTPd when trying to reload all modules (`ModuleManager` and `rest_api.py`)
 - Individual channels can opt out of printing to INFO log (`!config c print off`, `print_activity.py`)
+- Opt-in shlex argument parsing for command callbacks (`commands`)
+- Show when BitBot first saw you speak in `!words` output (`words.py`)
 
 Changed:
 - Logging moved to `~/.bitbot/logs/` by default
