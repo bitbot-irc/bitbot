@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on permissions
 
-import re, string, traceback, typing
+import re, shlex, string, traceback, typing
 from src import EventManager, IRCLine, ModuleManager, utils
 from . import outs
 
@@ -80,21 +80,21 @@ class Module(ModuleManager.BaseModule):
             else:
                 replace = args_split[index]
             s = s.replace(match.group(0), replace)
-        return s.split(" ")
+        return s
 
     def _command_method(self, target, server):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD,
             self.bot.get_setting(COMMAND_METHOD, "PRIVMSG")))
 
-    def _find_command_hook(self, server, command, is_channel, args_split):
+    def _find_command_hook(self, server, command, is_channel, args):
         if not self.has_command(command):
             aliases = self._get_aliases(server)
             if command.lower() in aliases:
                 command, _, new_args = aliases[command.lower()].partition(" ")
 
                 try:
-                    args_split = self._alias_arg_replace(new_args, args_split)
+                    args = self._alias_arg_replace(new_args, shlex.split(args))
                 except IndexError:
                     return None, None, None
 
@@ -126,6 +126,12 @@ class Module(ModuleManager.BaseModule):
 
         if not hook and (private_skip or channel_skip):
             raise BadContextException("channel" if channel_skip else "private")
+
+        argparse = hook.get_kwarg("argparse", "plain")
+        if argparse == "shlex":
+            args_split = shlex.split(args)
+        elif argparse == "plain":
+            args_split = args.split(" ")
 
         return hook, command, args_split
 
@@ -273,24 +279,26 @@ class Module(ModuleManager.BaseModule):
 
         command_prefix = self._command_prefix(event["server"], event["channel"])
         command = None
-        args_split = None
+        args = ""
         if event["message_split"][0].startswith(command_prefix):
             if not event["channel"].get_setting("prefixed-commands",True):
                 return
             command = event["message_split"][0].replace(
                 command_prefix, "", 1).lower()
-            args_split = event["message_split"][1:]
+            if " " in event["message"]:
+                args = event["message"].split(" ", 1)[1]
         elif len(event["message_split"]) > 1 and self.is_highlight(
                 event["server"], event["message_split"][0]):
             command = event["message_split"][1].lower()
-            args_split = event["message_split"][2:]
-
+            if event["message"].count(" ") > 1:
+                args = event["message"].split(" ", 2)[2]
 
         hook = None
+        args_split = []
         if command:
             try:
                 hook, command, args_split = self._find_command_hook(
-                    event["server"], command, True, args_split)
+                    event["server"], command, True, args)
             except BadContextException:
                 event["channel"].send_message(
                     "%s: That command is not valid in a channel" %
@@ -343,7 +351,9 @@ class Module(ModuleManager.BaseModule):
             # commands ('!help' rather than 'help') in PM
             command = command.lstrip("".join(NON_ALPHANUMERIC))
 
-            args_split = event["message_split"][1:]
+            args = ""
+            if " " in event["message"]:
+                args = event["message"].split(" ", 1)[1]
 
             try:
                 hook, command, args_split = self._find_command_hook(
