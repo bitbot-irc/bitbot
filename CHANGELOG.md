@@ -14,6 +14,8 @@ Changed:
 - Better single-line normalisation for ActivityPub Activities (`fediverse`)
 - Better error messages shown to user when a fediverse Actor can't be found (`fediverse`)
 - Git hashes are now truncated to 7 chars, not 8 (`git_webhooks`)
+- Split `utils/__init__.py` out in to more separate files
+- Show channel mode status symbols when formatting `NOTICE`s (`format_activity.py`)
 
 Fixed:
 - Multiple channel keys should be expressed as comma-separated (`channel_keys.py`)
