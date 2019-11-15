@@ -357,7 +357,7 @@ class Module(ModuleManager.BaseModule):
 
             try:
                 hook, command, args_split = self._find_command_hook(
-                    event["server"], command, False, args_split)
+                    event["server"], command, False, args)
             except BadContextException:
                 event["user"].send_message(
                     "That command is not valid in a PM")
