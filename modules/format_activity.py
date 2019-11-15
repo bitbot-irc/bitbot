@@ -227,7 +227,8 @@ class Module(ModuleManager.BaseModule):
         self._on_topic(event, event["setter"].nickname, "set",
             event["channel"].topic)
 
-        dt = utils.iso8601_format(utils.datetime_timestamp(event["set_at"]))
+        dt = utils.datetime.iso8601_format(
+            utils.datetime.datetime_timestamp(event["set_at"]))
 
         minimal = "topic set at %s" % dt
         normal = "- %s" % minimal

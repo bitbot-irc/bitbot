@@ -178,7 +178,7 @@ class GitHub(object):
             return url
 
     def _iso8601(self, s):
-        return datetime.datetime.strptime(s, utils.ISO8601_PARSE)
+        return utils.datetime.iso8601_parse(s)
 
     def ping(self, data):
         return ["Received new webhook"]
@@ -415,7 +415,7 @@ class GitHub(object):
             completed_at = self._iso8601(data["check_run"]["completed_at"])
             if completed_at > started_at:
                 seconds = (completed_at-started_at).total_seconds()
-                duration = " in %s" % utils.to_pretty_time(seconds)
+                duration = " in %s" % utils.datetime.to_pretty_time(seconds)
 
         status = data["check_run"]["status"]
         status_str = ""

@@ -79,8 +79,8 @@ class Module(ModuleManager.BaseModule):
         since = ""
         first_words = target.get_setting("first-words", None)
         if not first_words == None:
-            since = " since %s" % utils.date_human(
-                utils.datetime_timestamp(first_words))
+            since = " since %s" % utils.datetime.date_human(
+                utils.datetime.datetime_timestamp(first_words))
 
         event["stdout"].write("%s has used %d words (%d in %s)%s" % (
             target.nickname, total, this_channel, event["target"].name, since))

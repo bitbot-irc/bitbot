@@ -30,7 +30,8 @@ class Module(ModuleManager.BaseModule):
     def silence(self, event):
         duration = SILENCE_TIME
         if event["args"] and event["args_split"][0].startswith("+"):
-            duration = utils.from_pretty_time(event["args_split"][0][1:])
+            duration = utils.datetime.from_pretty_time(
+                event["args_split"][0][1:])
             if duration == None:
                 raise utils.EventError("Invalid duration provided")
 

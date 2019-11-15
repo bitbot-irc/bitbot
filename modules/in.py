@@ -2,7 +2,7 @@
 import time
 from src import ModuleManager, utils
 
-SECONDS_MAX = utils.SECONDS_WEEKS*8
+SECONDS_MAX = utils.datetime.SECONDS_WEEKS*8
 SECONDS_MAX_DESCRIPTION = "8 weeks"
 
 class Module(ModuleManager.BaseModule):

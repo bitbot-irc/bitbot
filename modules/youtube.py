@@ -45,9 +45,9 @@ class Module(ModuleManager.BaseModule):
             content = self.get_video_page(video_id, "contentDetails").data[
                 "items"][0]["contentDetails"]
 
-            video_uploaded_at = utils.iso8601_parse(snippet["publishedAt"],
-                microseconds=True)
-            video_uploaded_at = utils.date_human(video_uploaded_at)
+            video_uploaded_at = utils.datetime.iso8601_parse(
+                snippet["publishedAt"], microseconds=True)
+            video_uploaded_at = utils.datetime.date_human(video_uploaded_at)
             video_uploader = snippet["channelTitle"]
             video_title = utils.irc.bold(snippet["title"])
             video_views = self._number(statistics["viewCount"])

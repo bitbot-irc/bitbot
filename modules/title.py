@@ -94,14 +94,17 @@ class Module(ModuleManager.BaseModule):
 
                     if first_details:
                         first_nickname, first_timestamp, _ = first_details
-                        timestamp_parsed = utils.iso8601_parse(first_timestamp)
-                        timestamp_human = utils.datetime_human(timestamp_parsed)
+                        timestamp_parsed = utils.datetime.iso8601_parse(
+                            first_timestamp)
+                        timestamp_human = utils.datetime.datetime_human(
+                            timestamp_parsed)
+
                         message = "%s (first posted by %s at %s)" % (title,
                             first_nickname, timestamp_human)
                     else:
                         event["target"].set_setting(setting,
-                            [event["user"].nickname, utils.iso8601_format_now(),
-                            url])
+                            [event["user"].nickname,
+                            utils.datetime.iso8601_format_now(), url])
                 event["stdout"].write(message)
             if code == -2:
                 self.log.debug("Not showing title for %s, too similar", [url])

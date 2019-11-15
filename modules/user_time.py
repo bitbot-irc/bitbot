@@ -58,7 +58,7 @@ class Module(ModuleManager.BaseModule):
                 if utc_offset > 0:
                     tz += "+"
                 tz += "%g" % utc_offset
-            human = utils.datetime_human(dt)
+            human = utils.datetime.datetime_human(dt)
 
             out = None
             if type == LocationType.USER:

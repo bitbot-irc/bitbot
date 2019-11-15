@@ -5,12 +5,11 @@ from src import ModuleManager, utils
 
 RE_HUMAN_FORMAT = re.compile(r"(\d\d\d\d)-(\d?\d)-(\d?\d)")
 HUMAN_FORMAT_HELP = "year-month-day (e.g. 2018-12-29)"
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 class Module(ModuleManager.BaseModule):
     def _parse_date(self, dt: str):
         if dt.lower() == "today":
-            return utils.datetime_utcnow()
+            return utils.datetime.datetime_utcnow()
         else:
             match = RE_HUMAN_FORMAT.match(dt)
             if not match:
@@ -23,7 +22,7 @@ class Module(ModuleManager.BaseModule):
             ).replace(tzinfo=datetime.timezone.utc)
 
     def _date_str(self, dt: datetime.datetime):
-        return utils.date_human(dt)
+        return utils.datetime.date_human(dt)
 
     def _round_up_day(self, dt: datetime.datetime):
         return dt.date()+datetime.timedelta(days=1)
@@ -53,12 +52,12 @@ class Module(ModuleManager.BaseModule):
         badge_lower = badge.lower()
         badges = self._get_badges(event["user"])
 
-        now = self._round_up_day(utils.datetime_utcnow())
+        now = self._round_up_day(utils.datetime.datetime_utcnow())
 
         found_badge = self._find_badge(badges, badge)
 
         if found_badge:
-            dt = utils.iso8601_parse(badges[found_badge])
+            dt = utils.datetime.iso8601_parse(badges[found_badge])
             days_since = self._days_since(now, dt)
             event["stdout"].write("(%s) %s on day %s (%s)" % (
                 event["user"].nickname, found_badge, days_since,
@@ -75,10 +74,11 @@ class Module(ModuleManager.BaseModule):
         if event["args"]:
             user = event["server"].get_user(event["args_split"][0])
 
-        now = self._round_up_day(utils.datetime_utcnow())
+        now = self._round_up_day(utils.datetime.datetime_utcnow())
         badges = []
         for badge, date in self._get_badges(user).items():
-            days_since = self._days_since(now, utils.iso8601_parse(date))
+            days_since = self._days_since(now,
+                utils.datetime.iso8601_parse(date))
             badges.append("%s on day %s" % (
                 badge, days_since))
 
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
             if badge_name.lower() == badge_lower:
                 raise utils.EventError("You already have a '%s' badge" % badge)
 
-        badges[badge] = utils.iso8601_format_now()
+        badges[badge] = utils.datetime.iso8601_format_now()
         self._set_badges(event["user"], badges)
         event["stdout"].write("Added '%s' badge" % badge)
 
@@ -135,7 +135,7 @@ class Module(ModuleManager.BaseModule):
         found_badge = self._find_badge(badges, badge)
 
         if found_badge:
-            badges[found_badge] = utils.iso8601_format_now()
+            badges[found_badge] = utils.datetime.iso8601_format_now()
             self._set_badges(event["user"], badges)
             event["stdout"].write("Reset badge '%s'" % found_badge)
         else:
@@ -158,7 +158,7 @@ class Module(ModuleManager.BaseModule):
 
         dt = self._parse_date(event["args_split"][-1])
 
-        badges[found_badge] = utils.iso8601_format(dt)
+        badges[found_badge] = utils.datetime.iso8601_format(dt)
         self._set_badges(event["user"], badges)
         event["stdout"].write("Updated '%s' badge to %s" % (
             found_badge, self._date_str(dt)))
@@ -176,7 +176,7 @@ class Module(ModuleManager.BaseModule):
         found_badge = self._find_badge(badges, badge)
         dt = self._parse_date(event["args_split"][-1])
 
-        badges[found_badge or badge] = utils.iso8601_format(dt)
+        badges[found_badge or badge] = utils.datetime.iso8601_format(dt)
         self._set_badges(event["user"], badges)
 
         add_or_update = "Added" if not found_badge else "Updated"

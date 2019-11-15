@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
         if args and args[0][0] == "+":
             if len(args[1:]) < min_args:
                 raise utils.EventError("Not enough arguments")
-            time = utils.from_pretty_time(args[0][1:])
+            time = utils.datetime.from_pretty_time(args[0][1:])
             if time == None:
                 raise utils.EventError("Invalid timeframe")
             return time, args[1:]

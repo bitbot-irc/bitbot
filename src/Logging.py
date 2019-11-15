@@ -13,7 +13,7 @@ LEVELS = {
 class BitBotFormatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
         datetime_obj = datetime.datetime.fromtimestamp(record.created)
-        return utils.iso8601_format(datetime_obj, milliseconds=True)
+        return utils.datetime.iso8601_format(datetime_obj, milliseconds=True)
 
 class HookedHandler(logging.StreamHandler):
     def __init__(self, func: typing.Callable[[int, str], None]):

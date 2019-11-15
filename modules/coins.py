@@ -190,7 +190,7 @@ class Module(ModuleManager.BaseModule):
                 time_left = self.bot.cache.until_expiration(cache)
                 event["stderr"].write("%s: Please wait %s before redeeming" % (
                     event["user"].nickname,
-                    utils.to_pretty_time(math.ceil(time_left))))
+                    utils.datetime.to_pretty_time(math.ceil(time_left))))
         else:
             event["stderr"].write(
                 "%s: You can only redeem coins when you have none" %
@@ -525,7 +525,7 @@ class Module(ModuleManager.BaseModule):
         """
         until = self._until_next_6_hour()
         event["stdout"].write("Next lottery is in: %s" %
-            utils.to_pretty_time(until))
+            utils.datetime.to_pretty_time(until))
 
     @utils.hook("received.command.lotterywinner")
     def lottery_winner(self, event):
