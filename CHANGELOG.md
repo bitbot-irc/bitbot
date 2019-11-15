@@ -19,7 +19,7 @@ Changed:
 
 Fixed:
 - Multiple channel keys should be expressed as comma-separated (`channel_keys.py`)
-- `!duckstats <nickname` was meant to show stats for another user (`ducks.py`)
+- `!duckstats <nickname>` was meant to show stats for another user (`ducks.py`)
 - Fix almost completely broken 908 (`RPL_SASLMECHS`) handling
 - Background colour formatting was being lost (`utils.irc`)
 
