@@ -75,8 +75,15 @@ class Module(ModuleManager.BaseModule):
         total = 0
         for channel in words:
             total += words[channel]
-        event["stdout"].write("%s has used %d words (%d in %s)" % (
-            target.nickname, total, this_channel, event["target"].name))
+
+        since = ""
+        first_words = target.get_setting("first-words", None)
+        if not first_words == None:
+            since = " since %s" % utils.date_human(
+                utils.datetime_timestamp(first_words))
+
+        event["stdout"].write("%s has used %d words (%d in %s)%s" % (
+            target.nickname, total, this_channel, event["target"].name, since))
 
     @utils.hook("received.command.trackword", min_args=1)
     def track_word(self, event):

@@ -18,6 +18,9 @@ DATE_HUMAN = "%Y-%m-%d"
 
 def datetime_utcnow() -> datetime.datetime:
     return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+def datetime_timestamp(seconds: float) -> datetime.datetime:
+    return datetime.datetime.fromtimestamp(seconds).replace(
+        tzinfo=datetime.timezone.utc)
 
 def iso8601_format(dt: datetime.datetime, milliseconds: bool=False) -> str:
     dt_format = dt.strftime(ISO8601_FORMAT_DT)
