@@ -87,11 +87,10 @@ class Module(ModuleManager.BaseModule):
                     play_count = " (%d play%s)" % (play_count,
                         "s" if play_count > 1 else "")
 
-                event["stdout"].write(
-                    "%s %s: %s - %s%s%s%s" % (
-                    shown_username, time_language, artist, track_name,
-                    play_count,
-                    tags,
+                track = utils.irc.bold("%s - %s" % (artist, track_name))
+
+                event["stdout"].write("%s %s: %s%s%s%s" % (
+                    shown_username, time_language, track, play_count, tags,
                     short_url))
             else:
                 event["stderr"].write(
