@@ -1,5 +1,6 @@
 import typing
-from . import consts
+
+BITBOT_MAGIC = "__bitbot"
 
 class BitBotMagic(object):
     def __init__(self):
@@ -24,10 +25,10 @@ class BitBotMagic(object):
 
 def get_magic(obj: typing.Any):
     if not has_magic(obj):
-        setattr(obj, consts.BITBOT_MAGIC, BitBotMagic())
-    return getattr(obj, consts.BITBOT_MAGIC)
+        setattr(obj, BITBOT_MAGIC, BitBotMagic())
+    return getattr(obj, BITBOT_MAGIC)
 def has_magic(obj: typing.Any):
-    return hasattr(obj, consts.BITBOT_MAGIC)
+    return hasattr(obj, BITBOT_MAGIC)
 
 def hook(event: str, **kwargs):
     def _hook_func(func):

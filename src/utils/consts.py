@@ -1,8 +1,6 @@
 import typing
 from . import _consts_256_color
 
-BITBOT_MAGIC = "__bitbot"
-
 class IRCColor(object):
     def __init__(self, irc: int, ansi: int, is_256):
         self.irc = irc
