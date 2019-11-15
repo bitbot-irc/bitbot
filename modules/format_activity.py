@@ -19,7 +19,7 @@ class Module(ModuleManager.BaseModule):
             return server.prefix_modes[modes[0]]
         return ""
 
-    def _privmsg(self, event, channel, user, nickname):
+    def _privmsg(self, event, channel, user):
         symbols = ""
         if channel:
             symbols = self._mode_symbols(user, channel, event["server"])
@@ -29,9 +29,9 @@ class Module(ModuleManager.BaseModule):
         else:
             format = "<%s%s> %s"
 
-        minimal = format % ("", nickname, event["message"])
-        normal = format % (symbols, nickname, event["message"])
-        pretty = format % (symbols, self._color(nickname),
+        minimal = format % ("", user.nickname, event["message"])
+        normal = format % (symbols, user.nickname, event["message"])
+        pretty = format % (symbols, self._color(user.nickname),
             event["message"])
 
         return minimal, normal, pretty
@@ -39,55 +39,46 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("send.message.channel")
     @utils.hook("received.message.channel")
     def channel_message(self, event):
-        nickname = None
-        user = None
-        if "user" in event and event["user"]:
-            user = event["user"]
-            nickname = event["user"].nickname
-        else:
-            nickname = event["server"].nickname
-            user = event["server"].get_user(nickname)
-
-        minimal, normal, pretty = self._privmsg(event, event["channel"], user,
-            nickname)
+        minimal, normal, pretty = self._privmsg(event, event["channel"],
+            event["user"])
 
         self._event("message.channel", event["server"], normal,
-            event["channel"].name, channel=event["channel"], user=user,
+            event["channel"].name, channel=event["channel"], user=event["user"],
             parsed_line=event["line"], minimal=minimal, pretty=pretty)
 
-    def _on_notice(self, event, nickname):
-        format = "-%s- %s"
-        minimal = format % (nickname, event["message"])
-        normal = minimal
-        pretty = format % (self._color(nickname), event["message"])
+    def _on_notice(self, event, user, channel):
+        symbols = ""
+        if channel:
+            symbols = self._mode_symbols(user, channel, event["server"])
+
+        format = "-%s%s- %s"
+        minimal = format % ("", user.nickname, event["message"])
+        normal = format % (symbols, user.nickname, event["message"])
+        pretty = format % (symbols, self._color(user.nickname),
+            event["message"])
 
         return minimal, normal, pretty
-    def _channel_notice(self, event, nickname, channel):
-        minimal, normal, pretty = self._on_notice(event, nickname)
+    def _channel_notice(self, event, user, channel):
+        minimal, normal, pretty = self._on_notice(event, user, channel)
         self._event("notice.channel", event["server"], normal,
             event["channel"].name, parsed_line=event["line"], channel=channel,
             user=event["user"], minimal=minimal, pretty=pretty)
 
-    def _private_notice(self, event, nickname, target):
-        minimal, normal, pretty = self._on_notice(event, nickname)
+    def _private_notice(self, event, user):
+        minimal, normal, pretty = self._on_notice(event, user, None)
         self._event("notice.private", event["server"], normal, None,
             parsed_line=event["line"], user=event["user"], minimal=minimal,
             pretty=pretty)
 
     @utils.hook("received.notice.channel")
-    def channel_notice(self, event):
-        self._channel_notice(event, event["user"].nickname, event["channel"])
     @utils.hook("send.notice.channel")
-    def self_notice_channel(self, event):
-        self._channel_notice(event, event["server"].nickname, event["channel"])
+    def channel_notice(self, event):
+        self._channel_notice(event, event["user"], event["channel"])
+
     @utils.hook("received.notice.private")
-    def private_notice(self, event):
-        self._private_notice(event, event["user"].nickname,
-            event["server"].nickname)
     @utils.hook("send.notice.private")
-    def self_private_notice(self, event):
-        self._private_notice(event, event["server"].nickname,
-            event["user"].nickname)
+    def private_notice(self, event):
+        self._private_notice(event, event["user"])
 
     def _on_join(self, event, user):
         channel_name = event["channel"].name
