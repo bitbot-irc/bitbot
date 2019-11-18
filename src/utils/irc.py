@@ -50,7 +50,7 @@ def hash_colorize(s: str):
     for i, char in enumerate(s):
         if char in HASH_STOP and 0 < i < (len(s)-1):
             break
-        hash ^= (hash<<5)+(hash>>2)+ord(char)
+        hash ^= ((hash<<5)+(hash>>2)+ord(char))&0xFFFFFFFFFFFFFFFF
 
     return color(s, HASH_COLORS[hash%len(HASH_COLORS)])
 
