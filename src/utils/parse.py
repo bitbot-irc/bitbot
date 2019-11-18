@@ -1,4 +1,5 @@
 import decimal, io, typing
+from . import datetime, errors
 
 COMMENT_TYPES = ["#", "//"]
 def hashflags(filename: str
@@ -108,4 +109,14 @@ def parse_number(s: str) -> str:
     else:
         raise ValueError("Unknown unit '%s' given to parse_number" % unit)
     return str(number)
+
+def timed_args(args, min_args):
+    if args and args[0][0] == "+":
+        if len(args[1:]) < min_args:
+            raise errors.EventError("Not enough arguments")
+        time = datetime.from_pretty_time(args[0][1:])
+        if time == None:
+            raise errors.EventError("Invalid timeframe")
+        return time, args[1:]
+    return None, args
 

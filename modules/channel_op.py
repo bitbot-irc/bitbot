@@ -27,16 +27,6 @@ KICK_REASON_SETTING = utils.Setting("default-kick-reason",
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 
-    def _parse_time(self, args, min_args):
-        if args and args[0][0] == "+":
-            if len(args[1:]) < min_args:
-                raise utils.EventError("Not enough arguments")
-            time = utils.datetime.from_pretty_time(args[0][1:])
-            if time == None:
-                raise utils.EventError("Invalid timeframe")
-            return time, args[1:]
-        return None, args
-
     def _kick_reason(self, server, channel):
         return channel.get_setting("default-kick-reason",
             server.get_setting("default-kick-reason",
@@ -109,7 +99,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_access", "ban")
     @utils.kwarg("usage", "[+time] <target>")
     def ban(self, event):
-        time, args = self._parse_time(event["args_split"], 1)
+        time, args = utils.parse.timed_args(event["args_split"], 1)
         self._ban(event["server"], event["target"], args[0], True, time, True)
 
     @utils.hook("received.command.unban")
@@ -128,7 +118,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_access", "kickban")
     @utils.kwarg("usage", "[+time] <nickname> [reason]")
     def kickban(self, event):
-        time, args = self._parse_time(event["args_split"], 1)
+        time, args = utils.parse.timed_args(event["args_split"], 1)
         self._ban(event["server"], event["target"], args[0], False, time, True)
         self._kick(event["server"], event["target"], args[0], args[1:])
 
@@ -199,7 +189,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Mute a given user")
     def _mute(self, event):
         add = event["command"] == "mute"
-        time, args = self._parse_time(event["args_split"], 1)
+        time, args = utils.parse.timed_args(event["args_split"], 1)
 
         target_name = args[0]
         if not event["server"].has_user(target_name):
@@ -349,7 +339,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "[+time]")
     @utils.kwarg("help", "Mute the current channel")
     def cmute(self, event):
-        time, args = self._parse_time(event["args_split"], 0)
+        time, args = utils.parse.timed_args(event["args_split"], 0)
         event["target"].send_mode("+m")
 
         if time:
