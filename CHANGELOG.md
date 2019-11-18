@@ -1,4 +1,4 @@
-# TBD - BitBot v1.15.0
+# 2019-11-18 - BitBot v1.15.0
 
 Added:
 - Optionally colourise nicknames when printed to log (`format_activity.py` and `print_activity.py`)
