@@ -86,4 +86,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No weather information for this location")
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

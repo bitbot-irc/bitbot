@@ -96,4 +96,4 @@ class Module(ModuleManager.BaseModule):
                     "The user '%s' has never scrobbled before" % (
                     shown_username))
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

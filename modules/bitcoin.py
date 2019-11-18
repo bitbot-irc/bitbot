@@ -24,4 +24,4 @@ class Module(ModuleManager.BaseModule):
                 event["stderr"].write("Unknown currency, available "
                     "currencies: %s" % ", ".join(page.data.keys()))
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

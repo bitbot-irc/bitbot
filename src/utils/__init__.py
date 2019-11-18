@@ -5,6 +5,8 @@ from . import cli, consts, datetime, decorators, irc, http, parse, security
 from .decorators import export, hook, kwarg
 from .settings import (BoolSetting, FunctionSetting, IntRangeSetting,
     IntSetting, OptionsSetting, sensitive_format, SensitiveSetting, Setting)
+from .errors import (EventError, EventsNotEnoughArgsError, EventResultsError,
+    EventUsageError)
 
 class Direction(enum.Enum):
     Send = 0
@@ -12,18 +14,6 @@ class Direction(enum.Enum):
 
 def prevent_highlight(nickname: str) -> str:
     return nickname[0]+"\u200c"+nickname[1:]
-
-class EventError(Exception):
-    pass
-class EventsResultsError(EventError):
-    def __init__(self):
-        EventError.__init__(self, "Failed to load results")
-class EventsNotEnoughArgsError(EventError):
-    def __init__(self, n):
-        EventError.__init__(self, "Not enough arguments (minimum %d)" % n)
-class EventsUsageError(EventError):
-    def __init__(self, usage):
-        EventError.__init__(self, "Not enough arguments, usage: %s" % usage)
 
 class MultiCheck(object):
     def __init__(self,

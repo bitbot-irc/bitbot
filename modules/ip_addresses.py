@@ -102,7 +102,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No geoip data found")
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()
 
     @utils.hook("received.command.rdns")
     def rdns(self, event):

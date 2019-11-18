@@ -153,4 +153,4 @@ class Module(ModuleManager.BaseModule):
         if result:
             event["stdout"].write(result)
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

@@ -46,4 +46,4 @@ class Module(ModuleManager.BaseModule):
                 else:
                     event["stderr"].write("Category not found")
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

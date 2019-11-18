@@ -56,4 +56,4 @@ class Module(ModuleManager.BaseModule):
                 event["stderr"].write(
                     "%s is not watching anything" % username)
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

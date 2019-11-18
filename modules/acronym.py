@@ -16,4 +16,4 @@ class Module(ModuleManager.BaseModule):
                 acronyms.append(element.expan.string)
             event["stdout"].write("%s: %s" % (query, ", ".join(acronyms)))
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

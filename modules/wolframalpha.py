@@ -30,4 +30,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stdout"].write("No results")
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

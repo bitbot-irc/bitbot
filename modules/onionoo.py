@@ -14,7 +14,7 @@ def _get_relays_details(search):
         URL_ONIONOO_DETAILS, get_params={"search": search}, json=True)
     if page and "relays" in page.data:
         return page.data["relays"]
-    raise utils.EventsResultsError()
+    raise utils.EventResultsError()
 
 def _format_relay_summary_message(relays, search):
     if len(relays) > 1:

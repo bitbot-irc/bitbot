@@ -46,7 +46,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No definitions found")
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()
 
     @utils.hook("received.command.randomword")
     def random_word(self, event):
@@ -69,6 +69,6 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write("Random Word: %s - Definition: %s" % (
                     page.data["word"], text))
             else:
-                raise utils.EventsResultsError()
+                raise utils.EventResultsError()
         else:
             event["stderr"].write("Try again in a couple of seconds")

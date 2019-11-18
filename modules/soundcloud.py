@@ -62,4 +62,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No results found")
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

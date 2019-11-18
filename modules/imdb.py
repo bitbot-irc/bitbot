@@ -29,4 +29,4 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("Title not found")
         else:
-            raise utils.EventsResultsError()
+            raise utils.EventResultsError()

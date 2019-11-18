@@ -165,7 +165,7 @@ class Module(ModuleManager.BaseModule):
                 else:
                     raise utils.EventError("No videos found")
             else:
-                raise utils.EventsResultsError()
+                raise utils.EventResultsError()
 
         if url:
             out = self._from_url(url)
@@ -175,7 +175,7 @@ class Module(ModuleManager.BaseModule):
                     out = "%s %s" % (out, short_url)
                 event["stdout"].write(out)
             else:
-                raise utils.EventsResultsError()
+                raise utils.EventResultsError()
         else:
             event["stderr"].write("No search phrase provided")
 
