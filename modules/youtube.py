@@ -67,7 +67,7 @@ class Module(ModuleManager.BaseModule):
 
             video_views_str = ""
             if video_views:
-                video_views_str = ", %s views " % video_views
+                video_views_str = ", %s views" % video_views
 
             match = re.match(REGEX_ISO8601, video_duration)
             video_duration = ""
