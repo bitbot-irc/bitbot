@@ -1,5 +1,5 @@
-import contextlib, decimal, enum, io, ipaddress, multiprocessing
-import queue, re, signal, threading, typing
+import contextlib, enum, ipaddress, multiprocessing queue, signal, threading
+import typing
 from . import cli, consts, datetime, decorators, irc, http, parse, security
 
 from .decorators import export, hook, kwarg
