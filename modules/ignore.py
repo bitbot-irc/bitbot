@@ -49,14 +49,16 @@ class Module(ModuleManager.BaseModule):
         :usage: <nickname> [command]
         :permission: ignore
         """
+        time, args = utils.parse.timed_args(event["args_split"], 1)
+
         setting = "ignore"
         for_str = ""
-        if len(event["args_split"]) > 1:
-            command = event["args_split"][1].lower()
+        if len(args) > 1:
+            command = args[1].lower()
             setting = "ignore-%s" % command
             for_str = " for '%s'" % command
 
-        user = event["server"].get_user(event["args_split"][0])
+        user = event["server"].get_user(args[0])
         if user.get_setting(setting, False):
             event["stderr"].write("I'm already ignoring '%s'%s" %
                 (user.nickname, for_str))
@@ -64,6 +66,14 @@ class Module(ModuleManager.BaseModule):
             user.set_setting(setting, True)
             event["stdout"].write("Now ignoring '%s'%s" %
                 (user.nickname, for_str))
+
+        if not time == None:
+            self.timers.add_persistent("unignore", time,
+                user_id=user.get_id(), setting=setting)
+    @utils.hook("timer.unignore")
+    def _timer_unignore(self, event):
+        self.bot.database.user_settings.delete(
+            event["user_id"], event["setting"])
 
     @utils.hook("received.command.unignore", min_args=1)
     def unignore(self, event):
