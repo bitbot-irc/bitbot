@@ -48,12 +48,15 @@ class Module(ModuleManager.BaseModule):
             video_uploaded_at = utils.datetime.iso8601_parse(
                 snippet["publishedAt"], microseconds=True)
             video_uploaded_at = utils.datetime.date_human(video_uploaded_at)
+
             video_uploader = snippet["channelTitle"]
             video_title = utils.irc.bold(snippet["title"])
-            video_views = self._number(statistics["viewCount"])
+
+            video_views = self._number(statistics.get("viewCount"))
             video_likes = self._number(statistics.get("likeCount"))
             video_dislikes = self._number(statistics.get("dislikeCount"))
             video_duration = content["duration"]
+
             video_opinions = ""
             if video_likes and video_dislikes:
                 likes = utils.irc.color("%s%s" % (video_likes, ARROW_UP),
@@ -61,6 +64,10 @@ class Module(ModuleManager.BaseModule):
                 dislikes = utils.irc.color("%s%s" %
                     (ARROW_DOWN, video_dislikes), utils.consts.RED)
                 video_opinions = " (%s%s)" % (likes, dislikes)
+
+            video_views_str = ""
+            if video_views:
+                video_views_str = ", %s views " % video_views
 
             match = re.match(REGEX_ISO8601, video_duration)
             video_duration = ""
@@ -70,10 +77,12 @@ class Module(ModuleManager.BaseModule):
                 ) if match.group(2) else "00:"
             video_duration += "%s" % match.group(3)[:-1].zfill(2
                 ) if match.group(3) else "00"
+
             url = URL_YOUTUBESHORT % video_id
-            return "%s (%s) uploaded by %s on %s, %s views%s" % (
+
+            return "%s (%s) uploaded by %s on %s%s%s" % (
                 video_title, video_duration, video_uploader, video_uploaded_at,
-                video_views, video_opinions), url
+                video_views_str, video_opinions), url
         return None
 
     def get_playlist_page(self, playlist_id, part):
