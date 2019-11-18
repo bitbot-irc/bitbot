@@ -16,6 +16,7 @@ Changed:
 - Git hashes are now truncated to 7 chars, not 8 (`git_webhooks`)
 - Split `utils/__init__.py` out in to more separate files
 - Show channel mode status symbols when formatting `NOTICE`s (`format_activity.py`)
+- Conbine YouTube API requests in to 1 request, rather than 3 (`youtube.py`)
 
 Fixed:
 - Multiple channel keys should be expressed as comma-separated (`channel_keys.py`)
