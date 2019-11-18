@@ -1,11 +1,11 @@
-import contextlib, enum, ipaddress, multiprocessing queue, signal, threading
+import contextlib, enum, ipaddress, multiprocessing, queue, signal, threading
 import typing
 from . import cli, consts, datetime, decorators, irc, http, parse, security
 
 from .decorators import export, hook, kwarg
 from .settings import (BoolSetting, FunctionSetting, IntRangeSetting,
     IntSetting, OptionsSetting, sensitive_format, SensitiveSetting, Setting)
-from .errors import (EventError, EventsNotEnoughArgsError, EventResultsError,
+from .errors import (EventError, EventNotEnoughArgsError, EventResultsError,
     EventUsageError)
 
 class Direction(enum.Enum):
