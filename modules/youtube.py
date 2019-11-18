@@ -27,8 +27,9 @@ class Module(ModuleManager.BaseModule):
     def on_load(self):
         self.exports.add("search-youtube", self._search_youtube)
 
-    def get_video_page(self, video_id, part):
-        return utils.http.request(URL_YOUTUBEVIDEO, get_params={"part": part,
+    def get_video_page(self, video_id):
+        return utils.http.request(URL_YOUTUBEVIDEO, get_params={
+            "part": "contentDetails,snippet,statistics",
             "id": video_id, "key": self.bot.config["google-api-key"]},
             json=True)
 
@@ -37,13 +38,12 @@ class Module(ModuleManager.BaseModule):
             return "{:,}".format(int(n))
 
     def video_details(self, video_id):
-        snippet = self.get_video_page(video_id, "snippet")
-        if snippet.data["items"]:
-            snippet = snippet.data["items"][0]["snippet"]
-            statistics = self.get_video_page(video_id, "statistics").data[
-                "items"][0]["statistics"]
-            content = self.get_video_page(video_id, "contentDetails").data[
-                "items"][0]["contentDetails"]
+        page = self.get_video_page(video_id)
+        if page.data["items"]:
+            item = page.data["items"][0]
+            snippet = item["snippet"]
+            statistics = item["statistics"]
+            content = item["contentDetails"]
 
             video_uploaded_at = utils.datetime.iso8601_parse(
                 snippet["publishedAt"], microseconds=True)
