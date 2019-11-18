@@ -85,17 +85,18 @@ class Module(ModuleManager.BaseModule):
                 video_views_str, video_opinions), url
         return None
 
-    def get_playlist_page(self, playlist_id, part):
+    def get_playlist_page(self, playlist_id):
          return utils.http.request(URL_YOUTUBEPLAYLIST, get_params={
-            "part": part, "id": playlist_id,
+            "part": "contentDetails,snippet", "id": playlist_id,
             "key": self.bot.config["google-api-key"]}, json=True)
     def playlist_details(self, playlist_id):
-        snippet = self.get_playlist_page(playlist_id, "snippet")
-        if snippet.data["items"]:
-            snippet = snippet.data["items"][0]["snippet"]
+        page = self.get_playlist_page(playlist_id)
+        if page.data["items"]:
+            item = page.data["items"][0]
+            snippet = item["snippet"]
+            content = item["contentDetails"]
 
-            content = self.get_playlist_page(playlist_id, "contentDetails")
-            count = content.data["items"][0]["contentDetails"]["itemCount"]
+            count = content["itemCount"]
 
             return "%s - %s (%s %s)" % (snippet["channelTitle"],
                 snippet["title"], count, "video" if count == 1 else "videos"
