@@ -38,8 +38,7 @@ def color(s: str, foreground: consts.IRCColor,
     if background:
         background_s = ",%s" % str(background.irc).zfill(2)
 
-    return "%s%s%s%s%s" % (consts.COLOR, foreground_s, background_s, s,
-        consts.COLOR)
+    return f"{consts.COLOR}{foreground_s}{background_s}{s}{consts.COLOR}"
 
 HASH_STOP = ["_", "|", "["]
 HASH_COLORS = [consts.CYAN, consts.PURPLE, consts.GREEN, consts.ORANGE,
@@ -55,10 +54,10 @@ def hash_colorize(s: str):
     return color(s, HASH_COLORS[hash%len(HASH_COLORS)])
 
 def bold(s: str) -> str:
-    return "%s%s%s" % (consts.BOLD, s, consts.BOLD)
+    return f"{consts.BOLD}{s}{consts.BOLD}"
 
 def underline(s: str) -> str:
-    return "%s%s%s" % (consts.UNDERLINE, s, consts.UNDERLINE)
+    return f"{consts.UNDERLINE}{s}{consts.UNDERLINE}"
 
 def strip_font(s: str) -> str:
     s = s.replace(consts.BOLD, "")
