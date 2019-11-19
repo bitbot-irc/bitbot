@@ -71,6 +71,7 @@ COMMENT_ACTIONS = {
     "edited":  "edited a comment",
     "deleted": "deleted a comment"
 }
+COMMENT_MAX = 100
 
 CHECK_RUN_CONCLUSION = {
     "success": "passed",
@@ -243,6 +244,16 @@ class GitHub(object):
 
         return outputs
 
+    def _comment(self, s):
+        s_line = utils.parse.line_normalise(s)
+        left, right = s_line[:COMMENT_MAX], s_line[COMMENT_MAX:]
+        if not right:
+            return left
+        else:
+            if " " in left:
+                left = left.rsplit(" ", 1)[0]
+            return "%s[...]" % left
+
     def commit_comment(self, full_name, data):
         action = data["action"]
         commit = self._short_hash(data["comment"]["commit_id"])
@@ -370,9 +381,13 @@ class GitHub(object):
         type = "PR" if "pull_request" in data["issue"] else "issue"
         commenter = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
-        return ["[%s] %s %s on %s: %s - %s" %
-            (type, commenter, COMMENT_ACTIONS[action], number, issue_title,
-            url)]
+
+        body = ""
+        if not action == "deleted":
+            body = ": %s" % self._comment(event["comment"]["body"])
+
+        return ["[%s] %s %s on %s%s - %s" %
+            (type, commenter, COMMENT_ACTIONS[action], number, body, url)]
 
     def create(self, full_name, data):
         ref = data["ref"]
