@@ -64,12 +64,6 @@ class Module(ModuleManager.BaseModule):
             event["channel"].name, parsed_line=event["line"], channel=channel,
             user=event["user"], minimal=minimal, pretty=pretty)
 
-    def _private_notice(self, event, user):
-        minimal, normal, pretty = self._on_notice(event, user, None)
-        self._event("notice.private", event["server"], normal, None,
-            parsed_line=event["line"], user=event["user"], minimal=minimal,
-            pretty=pretty)
-
     @utils.hook("received.notice.channel")
     @utils.hook("send.notice.channel")
     def channel_notice(self, event):
@@ -78,7 +72,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.notice.private")
     @utils.hook("send.notice.private")
     def private_notice(self, event):
-        self._private_notice(event, event["user"])
+        minimal, normal, pretty = self._on_notice(event, event["user"], None)
+        self._event("notice.private", event["server"], normal,
+            event["target"].nickname, parsed_line=event["line"],
+            user=event["user"], minimal=minimal, pretty=pretty)
 
     def _on_join(self, event, user):
         channel_name = event["channel"].name
