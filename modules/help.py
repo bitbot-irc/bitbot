@@ -44,11 +44,17 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("No help for %s" % command)
         else:
-            event["stdout"].write("I'm %s. use '%smodules' to list modules, "
-                "'%scommands <module>' to list commands and "
-                "'%shelp <command>' to see help text for a command" %
-                (IRCBot.URL, event["command_prefix"], event["command_prefix"],
-                event["command_prefix"]))
+            modules_command = utils.irc.bold(
+                "%smodules" % event["command_prefix"])
+            commands_command = utils.irc.bold(
+                "%scommands <module>" % event["command_prefix"])
+            help_command = utils.irc.bold(
+                "%shelp <command>" % event["command_prefix"])
+
+            event["stdout"].write("I'm %s. use '%s' to list modules, "
+                "'%s' to list commands and "
+                "'%s' to see help text for a command" %
+                (IRCBot.URL, modules_command, commands_command, help_command))
 
     def _all_command_hooks(self):
         all_hooks = {}
