@@ -20,9 +20,9 @@ class Module(ModuleManager.BaseModule):
         if event["pretty"] and self.bot.get_setting("pretty-activity", False):
             line = event["pretty"]
 
+        context = (":%s" % event["context"]) if event["context"] else ""
         self.bot.log.info("%s%s | %s", [
-            str(event["server"]), event["context"] or "",
-            utils.irc.parse_format(line)])
+            str(event["server"]), context, utils.irc.parse_format(line)])
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")
