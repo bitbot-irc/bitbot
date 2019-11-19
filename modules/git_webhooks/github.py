@@ -384,7 +384,7 @@ class GitHub(object):
 
         body = ""
         if not action == "deleted":
-            body = ": %s" % self._comment(event["comment"]["body"])
+            body = ": %s" % self._comment(data["comment"]["body"])
 
         return ["[%s] %s %s on %s%s - %s" %
             (type, commenter, COMMENT_ACTIONS[action], number, body, url)]
