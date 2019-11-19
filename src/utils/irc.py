@@ -46,8 +46,11 @@ HASH_COLORS = [consts.CYAN, consts.PURPLE, consts.GREEN, consts.ORANGE,
     consts.LIGHTGREEN, consts.BLUE]
 def hash_colorize(s: str):
     hash = 5381
+    non_stop = False
     for i, char in enumerate(s):
-        if char in HASH_STOP and i > 0:
+        if not char in HASH_STOP:
+            non_stop = True
+        elif non_stop:
             break
         hash ^= ((hash<<5)+(hash>>2)+ord(char))&0xFFFFFFFFFFFFFFFF
 
