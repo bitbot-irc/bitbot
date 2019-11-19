@@ -264,13 +264,17 @@ class GitHub(object):
 
     def pull_request(self, full_name, data):
         raw_number = data["pull_request"]["number"]
-        number = utils.irc.color("#%s" % data["pull_request"]["number"],
-            colors.COLOR_ID)
-        action = data["action"]
-        action_desc = "%s %s" % (action, number)
         branch = data["pull_request"]["base"]["ref"]
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
-        author = utils.irc.bold(data["sender"]["login"])
+        sender = utils.irc.bold(data["sender"]["login"])
+
+        author = utils.irc.bold(data["pull_request"]["user"]["login"])
+        number = utils.irc.color("#%s" % data["pull_request"]["number"],
+            colors.COLOR_ID)
+        identifier = "%s by %s" % (number, author)
+
+        action = data["action"]
+        action_desc = "%s %s" % (action, identifier)
 
         if action == "opened":
             action_desc = "requested %s merge into %s" % (number,
@@ -278,11 +282,12 @@ class GitHub(object):
         elif action == "closed":
             if data["pull_request"]["merged"]:
                 action_desc = "%s %s into %s" % (
-                    utils.irc.color("merged", colors.COLOR_POSITIVE), number,
-                    colored_branch)
+                    utils.irc.color("merged", colors.COLOR_POSITIVE),
+                    identifier, colored_branch)
             else:
                 action_desc = "%s %s" % (
-                    utils.irc.color("closed", colors.COLOR_NEGATIVE), number)
+                    utils.irc.color("closed", colors.COLOR_NEGATIVE),
+                    identifier)
         elif action == "ready_for_review":
             action_desc = "marked %s ready for review" % number
         elif action == "synchronize":
@@ -310,12 +315,13 @@ class GitHub(object):
                         outputs[i] = "[PR] %s" % output
                     return outputs
         elif action == "labeled":
-            action_desc = "labled %s as '%s'" % (number, data["label"]["name"])
+            action_desc = "labled %s as '%s'" % (
+                identifier, data["label"]["name"])
 
         pr_title = data["pull_request"]["title"]
         url = self._short_url(data["pull_request"]["html_url"])
         return ["[PR] %s %s: %s - %s" % (
-            author, action_desc, pr_title, url)]
+            sender, action_desc, pr_title, url)]
 
     def pull_request_review(self, full_name, data):
         if not data["action"] == "submitted":
