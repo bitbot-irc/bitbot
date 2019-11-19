@@ -14,7 +14,7 @@ class Cache(PollHook.PollHook):
         return self._cache(key, value, None)
     def temporary_cache(self, key: str, value: typing.Any, timeout: float
             )-> str:
-        return self._cache(key, value, time.monotonic()+timeout)
+        return self._cache(key, value, time.time()+timeout)
     def _cache(self, key: str, value: typing.Any,
             expiration: typing.Optional[float]) -> str:
         id = self.cache_key(key)
@@ -30,7 +30,7 @@ class Cache(PollHook.PollHook):
         expirations = list(filter(None, expirations))
         if not expirations:
             return None
-        now = time.monotonic()
+        now = time.time()
         expirations = [e-now for e in expirations]
 
         expiration = max(min(expirations), 0)
@@ -38,7 +38,7 @@ class Cache(PollHook.PollHook):
         return expiration
 
     def call(self):
-        now = time.monotonic()
+        now = time.time()
         expired = []
         for id in self._items.keys():
             key, value, expiration = self._items[id]
@@ -63,4 +63,4 @@ class Cache(PollHook.PollHook):
         return expiration
     def until_expiration(self, key: typing.Any) -> float:
         expiration = self.get_expiration(key)
-        return expiration-time.monotonic()
+        return expiration-time.time()
