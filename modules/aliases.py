@@ -3,7 +3,7 @@ import re
 from src import EventManager, ModuleManager, utils
 
 REGEX_ARG_NUMBER = re.compile(r"\$(?:(\d+)(-?)|(-))")
-SETTING_PREFIX = "alias-"
+SETTING_PREFIX = "command-alias-"
 
 class Module(ModuleManager.BaseModule):
     def _arg_replace(self, s, args_split):

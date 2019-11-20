@@ -24,7 +24,7 @@ for server_id, value in results:
         print("[%s] Migrating '%s' ('%s')" %
             (servers[server_id], alias, command))
         cursor.execute("INSERT INTO server_settings VALUES (?, ?, ?)",
-            [server_id, "alias-%s" % alias, json.dumps(command)])
+            [server_id, "command-alias-%s" % alias, json.dumps(command)])
 database.commit()
 database.close()
 
