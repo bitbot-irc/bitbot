@@ -307,9 +307,6 @@ class Module(ModuleManager.BaseModule):
                     continue
 
                 pattern = hook.get_kwarg("pattern", None)
-                if not pattern and hook.get_kwarg("pattern-url", None) == "1":
-                    pattern = utils.http.REGEX_URL
-
                 if pattern:
                     match = re.search(pattern, event["message"])
                     if match:
