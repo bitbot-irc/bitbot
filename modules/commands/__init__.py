@@ -102,11 +102,12 @@ class Module(ModuleManager.BaseModule):
 
                 hook = potential_hook
 
-                argparse = hook.get_kwarg("argparse", "plain")
-                if argparse == "shlex":
-                    args_split = shlex.split(args)
-                elif argparse == "plain":
-                    args_split = args.split(" ")
+                if args:
+                    argparse = hook.get_kwarg("argparse", "plain")
+                    if argparse == "shlex":
+                        args_split = shlex.split(args)
+                    elif argparse == "plain":
+                        args_split = args.split(" ")
 
                 break
 
