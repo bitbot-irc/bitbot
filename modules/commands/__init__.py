@@ -8,8 +8,6 @@ from . import outs
 COMMAND_METHOD = "command-method"
 COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
-REGEX_ARG_NUMBER = re.compile(r"\$(?:(\d+)(-?)|(-))")
-
 MESSAGE_TAGS_CAP = utils.irc.Capability("message-tags",
     "draft/message-tags-0.2")
 MSGID_TAG = utils.irc.MessageTag("msgid", "draft/msgid")
@@ -20,6 +18,11 @@ class BadContextException(Exception):
     def __init__(self, required_context):
         self.required_context = required_context
         Exception.__init__(self)
+
+class CommandEvent(object):
+    def __init__(self, command, args):
+        self.command = command
+        self.args = args
 
 SETTING_COMMANDMETHOD = utils.OptionsSetting(COMMAND_METHODS, COMMAND_METHOD,
     "Set the method used to respond to commands")
@@ -59,44 +62,19 @@ class Module(ModuleManager.BaseModule):
         if s and s[-1] in [":", ","]:
             return server.is_own_nickname(s[:-1])
 
-    def _get_aliases(self, server):
-        return server.get_setting("command-aliases", {})
-    def _set_aliases(self, server, aliases):
-        server.set_setting("command-aliases", aliases)
-
-    def _alias_arg_replace(self, s, args_split):
-        for match in REGEX_ARG_NUMBER.finditer(s):
-            if match.group(1):
-                index = int(match.group(1))
-                continuous = match.group(2) == "-"
-                if index >= len(args_split):
-                    raise IndexError("Unknown alias arg index")
-            else:
-                index = 0
-                continuous = True
-
-            if continuous:
-                replace = " ".join(args_split[index:])
-            else:
-                replace = args_split[index]
-            s = s.replace(match.group(0), replace)
-        return s
-
     def _command_method(self, target, server):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD,
             self.bot.get_setting(COMMAND_METHOD, "PRIVMSG")))
 
-    def _find_command_hook(self, server, command, is_channel, args):
+    def _find_command_hook(self, server, target, is_channel, command, args):
         if not self.has_command(command):
-            aliases = self._get_aliases(server)
-            if command.lower() in aliases:
-                command, _, new_args = aliases[command.lower()].partition(" ")
+            command_event = CommandEvent(command, args)
+            self.events.on("get.command").call(command=command_event,
+                server=server, target=target, is_channel=is_channel)
 
-                try:
-                    args = self._alias_arg_replace(new_args, shlex.split(args))
-                except IndexError:
-                    return None, None, None
+            command = command_event.command
+            args = command_event.args
 
         hook = None
         args_split = []
@@ -300,7 +278,7 @@ class Module(ModuleManager.BaseModule):
         if command:
             try:
                 hook, command, args_split = self._find_command_hook(
-                    event["server"], command, True, args)
+                    event["server"], event["channel"], True, command, args)
             except BadContextException:
                 event["channel"].send_message(
                     "%s: That command is not valid in a channel" %
@@ -359,7 +337,7 @@ class Module(ModuleManager.BaseModule):
 
             try:
                 hook, command, args_split = self._find_command_hook(
-                    event["server"], command, False, args)
+                    event["server"], event["user"], False, command, args)
             except BadContextException:
                 event["user"].send_message(
                     "That command is not valid in a PM")
@@ -423,37 +401,6 @@ class Module(ModuleManager.BaseModule):
             self._command_method(event["target"], event["server"]))
         if stderr.has_text():
             event["target"].last_stderr = stderr
-
-    @utils.hook("received.command.alias", min_args=2)
-    def add_alias(self, event):
-        """
-        :help: Add a command alias
-        :usage: <alias> <command> <args...>
-        :permission: command-alias
-        """
-        alias = event["args_split"][0].lower()
-        command = " ".join(event["args_split"][1:])
-        aliases = self._get_aliases(event["server"])
-        aliases[alias] = command
-        self._set_aliases(event["server"], aliases)
-        event["stdout"].write("Added '%s' alias" % alias)
-
-    @utils.hook("received.command.removealias", min_args=1)
-    def remove_alias(self, event):
-        """
-        :help: Remove a command alias
-        :usage: <alias>
-        :permission: command-alias
-        """
-        alias = event["args_split"][0].lower()
-        aliases = self._get_aliases(event["server"])
-
-        if not alias in aliases:
-            raise utils.EventError("No '%s' alias" % alias)
-
-        del aliases[alias]
-        self._set_aliases(event["server"], aliases)
-        event["stdout"].write("Removed '%s' alias" % alias)
 
     @utils.hook("check.command.self")
     def check_command_self(self, event):
