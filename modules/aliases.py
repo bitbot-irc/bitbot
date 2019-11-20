@@ -112,3 +112,6 @@ class Module(ModuleManager.BaseModule):
 
             target.del_setting(setting)
             event["stdout"].write("Removed '%s' alias" % alias)
+
+        else:
+            raise utils.EventError("Unknown subcommand '%s'" % subcommand)
