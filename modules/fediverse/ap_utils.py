@@ -7,7 +7,6 @@ LD_TYPE = ("application/ld+json; "
     "profile=\"https://www.w3.org/ns/activitystreams\"")
 JRD_TYPE = "application/jrd+json"
 ACTIVITY_TYPE = "application/activity+json"
-USERAGENT = "BitBot (%s) Fediverse" % IRCBot.VERSION
 
 def split_username(s):
     if s[0] == "@":
@@ -26,7 +25,7 @@ def activity_request(url, data=None, method="GET", type=ACTIVITY_TYPE,
     else:
         headers = {"Accept": type}
 
-    request = utils.http.Request(url, headers=headers, useragent=USERAGENT,
+    request = utils.http.Request(url, headers=headers,
         content_type=content_type, post_data=data, method=method, json=True,
         json_body=True, fallback_encoding="utf8")
     return utils.http.request(request)
