@@ -7,22 +7,24 @@ SETTING_PREFIX = "command-alias-"
 
 class Module(ModuleManager.BaseModule):
     def _arg_replace(self, s, args_split):
-        for match in REGEX_ARG_NUMBER.finditer(s):
-            if match.group(1):
-                index = int(match.group(1))
-                continuous = match.group(2) == "-"
-                if index >= len(args_split):
-                    raise IndexError("Unknown alias arg index")
-            else:
-                index = 0
-                continuous = True
+        parts = s.split("$$")
+        for i, part in enumerate(parts):
+            for match in REGEX_ARG_NUMBER.finditer(s):
+                if match.group(1):
+                    index = int(match.group(1))
+                    continuous = match.group(2) == "-"
+                    if index >= len(args_split):
+                        raise IndexError("Unknown alias arg index")
+                else:
+                    index = 0
+                    continuous = True
 
-            if continuous:
-                replace = " ".join(args_split[index:])
-            else:
-                replace = args_split[index]
-            s = s.replace(match.group(0), replace)
-        return s
+                if continuous:
+                    replace = " ".join(args_split[index:])
+                else:
+                    replace = args_split[index]
+                parts[i] = part.replace(match.group(0), replace)
+        return "$".join(parts)
 
     def _get_alias(self, server, target, command):
         setting = "%s%s" % (SETTING_PREFIX, command)
