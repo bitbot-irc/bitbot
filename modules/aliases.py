@@ -82,7 +82,7 @@ class Module(ModuleManager.BaseModule):
             if not len(event["args_split"]) > 1:
                 raise utils.EventError("Please provide an alias to remove")
 
-            alias = event["args_split"][0].lower()
+            alias = event["args_split"][1].lower()
             setting = target.get_setting("%s%s" % (SETTING_PREFIX, alias), None)
 
             if setting == None:
