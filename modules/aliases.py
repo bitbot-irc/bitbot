@@ -26,12 +26,12 @@ class Module(ModuleManager.BaseModule):
 
     def _get_alias(self, server, target, command):
         setting = "%s%s" % (SETTING_PREFIX, command)
-        alias = self.bot.get_setting(setting,
+        command = self.bot.get_setting(setting,
             server.get_setting(setting,
             target.get_setting(setting, None)))
-        if not alias == None:
-            alias, _, args = alias.partition(" ")
-            return alias, args
+        if not command == None:
+            command, _, args = command.partition(" ")
+            return command, args
         return None
     def _get_aliases(self, targets):
         alias_list = []
@@ -39,10 +39,10 @@ class Module(ModuleManager.BaseModule):
             alias_list += target.find_settings(prefix=SETTING_PREFIX)
 
         aliases = {}
-        for alias in alias_list:
-            alias, _, args = alias.partition(" ")
+        for alias, command in alias_list:
+            alias = alias.replace(SETTING_PREFIX, "", 1)
             if not alias in aliases:
-                aliases[alias] = args or None
+                aliases[alias] = command
         return aliases
 
     @utils.hook("get.command")
