@@ -1,3 +1,16 @@
+# TBD - BitBot v1.16.0
+
+Added:
+- Show target in formatted private `NOTICE` events (`format_activity.py`)
+- Show first 100 chars of GitHub issue comments (`git_webhooks`)
+- Show who opened a GitHub pull request when approperiate (`git_webhooks`)
+- Timed user ignores (`ignore.py`)
+
+Changed:
+- Command aliases moved to their own module. Run `migration/v01.16.00-aliases.py` to migrate old aliases.
+- Unique User-Agent (`utils.http.USERAGENT`)
+- Nickname hashed colourisation now matches weechat's default (`utils.irc`)
+
 # 2019-11-18 - BitBot v1.15.0
 
 Added:
