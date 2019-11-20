@@ -135,3 +135,8 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write(title)
         else:
             event["stderr"].write("Failed to get title")
+
+    @utils.hook("received.command.notitle")
+    @utils.kwarg("expect_output", False)
+    def notitle(self, event):
+        pass
