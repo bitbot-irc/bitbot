@@ -27,3 +27,6 @@ for server_id, value in results:
             [server_id, "alias-%s" % alias, json.dumps(command)])
 database.commit()
 database.close()
+
+print()
+print("Migration successful!")
