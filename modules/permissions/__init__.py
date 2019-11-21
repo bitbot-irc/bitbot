@@ -23,12 +23,10 @@ class Module(ModuleManager.BaseModule):
             self.bot.set_setting("master-password", [hash, salt])
             return master_password
 
-    def command_line(self, args: str):
-        if args == "master-password":
-            master_password = self._master_password()
-            print("one-time master password: %s" % master_password)
-        else:
-            raise ValueError("Unknown command-line argument")
+    @utils.hook("control.master-password")
+    def command_line(self, event):
+        master_password = self._master_password()
+        return "One-time master password: %s" % master_password
     @utils.hook("received.command.masterpassword", private_only=True)
     def master_password(self, event):
         """

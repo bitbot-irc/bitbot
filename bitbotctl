@@ -24,6 +24,8 @@ SIMPLE = ["rehash", "reload", "stop"]
 if args.command == "log":
     arg_parser.add_argument("--level", "-l", help="Log level",
         default="INFO")
+elif args.command == "command":
+    arg_parser.add_argument("subcommand")
 elif args.command in SIMPLE:
     pass
 else:
@@ -53,6 +55,8 @@ _send("0 version 0")
 
 if args.command == "log":
     _send("1 log %s" % args.level)
+elif args.command == "command":
+    _send("1 command %s" % args.subcommand)
 elif args.command in SIMPLE:
     _send("1 %s" % args.command)
 

@@ -104,6 +104,13 @@ class Control(PollSource.PollSource):
             keepalive = False
         elif command == "stop":
             self._bot.stop()
+        elif command == "command" and data:
+            subcommand, _, data = data.partition(" ")
+            output = self._bot._events.on("control").on(subcommand
+                ).call_for_result(data=data)
+            if not output == None:
+                response_data = output
+            keepalive = False
 
         self._send_action(client, response_action, response_data, id)
         if not keepalive:
