@@ -288,7 +288,7 @@ class Module(ModuleManager.BaseModule):
         authenticated = event["hook"].get_kwarg("authenticated", False)
         if not permission == None:
             allowed = self._has_permission(event["user"], permission)
-        elif not authenticated == None:
+        elif authenticated:
             allowed = self._is_identified(event["user"])
 
         if not allowed == None:
