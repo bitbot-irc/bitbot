@@ -39,6 +39,8 @@ def nick(events, event):
     new_nickname = event["line"].args.get(0)
     user = event["server"].get_user(event["line"].source.nickname)
     old_nickname = user.nickname
+    user.set_nickname(new_nickname)
+    event["server"].change_user_nickname(old_nickname, new_nickname)
 
     if not event["server"].is_own_nickname(event["line"].source.nickname):
         events.on("received.nick").call(new_nickname=new_nickname,
@@ -47,9 +49,6 @@ def nick(events, event):
         events.on("self.nick").call(server=event["server"],
             new_nickname=new_nickname, old_nickname=old_nickname)
         event["server"].set_own_nickname(new_nickname)
-
-    user.set_nickname(new_nickname)
-    event["server"].change_user_nickname(old_nickname, new_nickname)
 
 def away(events, event):
     user = event["server"].get_user(event["line"].source.nickname)
@@ -94,13 +93,10 @@ def account(events, event):
     user = event["server"].get_user(event["line"].source.nickname)
 
     if not event["line"].args[0] == "*":
-        user.identified_account = event["line"].args[0]
-        user.identified_account_id = event["server"].get_user(
-            event["line"].args[0]).get_id()
+        user.account = event["line"].args[0]
         events.on("received.account.login").call(user=user,
             server=event["server"], account=event["line"].args[0])
     else:
-        user.identified_account = None
-        user.identified_account_id = None
+        user.account = None
         events.on("received.account.logout").call(user=user,
             server=event["server"])

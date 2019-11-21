@@ -305,7 +305,7 @@ class Module(ModuleManager.BaseModule):
         flags = channel.get_user_setting(user.get_id(), "flags", "")
 
         if flags:
-            identified = not user.get_identified_account() == None
+            identified = not user._id_override == None
             current_modes = channel.get_user_modes(user)
 
             modes = []

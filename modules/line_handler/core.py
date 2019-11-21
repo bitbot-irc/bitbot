@@ -105,7 +105,7 @@ def invite(events, event):
     events.on("received.invite").call(user=user, target_channel=target_channel,
         server=event["server"], target_user=target_user)
 
-def handle_352(event):
+def handle_352(events, event):
     nickname = event["line"].args[5]
     username = event["line"].args[2]
     hostname = event["line"].args[3]
@@ -117,8 +117,10 @@ def handle_352(event):
     target = event["server"].get_user(nickname)
     target.username = username
     target.hostname = hostname
+    events.on("received.who").call(server=event["server"],
+        user=target)
 
-def handle_354(event):
+def handle_354(events, event):
     if event["line"].args[1] == "111":
         nickname = event["line"].args[4]
         username = event["line"].args[2]
@@ -136,11 +138,11 @@ def handle_354(event):
         target.hostname = hostname
         target.realname = realname
         if not account == "0":
-            target.identified_account = account
-            target.identified_account_id = event["server"].get_user(account
-                ).get_id()
+            target.account = account
         else:
-            target.identified_account = None
+            target.account = None
+        events.on("received.whox").call(server=event["server"],
+            user=target)
 
 def _nick_in_use(server):
     new_nick = "%s|" % server.connection_params.nickname

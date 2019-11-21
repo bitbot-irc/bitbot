@@ -11,17 +11,15 @@ class User(IRCObject.Object):
         self.server = server
         self.set_nickname(nickname)
         self._id = id
+        self._id_override: typing.Optional[int] = None
         self.username: typing.Optional[str] = None
         self.hostname: typing.Optional[str] = None
         self.realname: typing.Optional[str] = None
         self.bot = bot
         self.channels: typing.Set[IRCChannel.Channel] = set([])
 
-        self.identified_account = None
-        self.identified_account_override = None
+        self.account = None
 
-        self.identified_account_id = None
-        self.identified_account_id_override = None
         self.away = False
         self.away_message: typing.Optional[str] = None
 
@@ -42,10 +40,7 @@ class User(IRCObject.Object):
         return None
 
     def get_id(self)-> int:
-        return (self.identified_account_id_override or
-            self.identified_account_id or self._id)
-    def get_identified_account(self) -> typing.Optional[str]:
-        return (self.identified_account_override or self.identified_account)
+        return self._id_override or self._id
 
     def set_nickname(self, nickname: str):
         self.nickname = nickname

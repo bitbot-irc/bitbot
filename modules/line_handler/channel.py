@@ -72,8 +72,7 @@ def join(events, event):
         hostname=event["line"].source.hostname)
 
     if account:
-        user.identified_account = account
-        user.identified_account_id = event["server"].get_user(account).get_id()
+        user.account = account
     if realname:
         user.realname = realname
 

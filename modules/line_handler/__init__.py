@@ -218,12 +218,12 @@ class Module(ModuleManager.BaseModule):
     # response to a WHO command for user information
     @utils.hook("raw.received.352", default_event=True)
     def handle_352(self, event):
-        core.handle_352(event)
+        core.handle_352(self.events, event)
 
     # response to a WHOX command for user information, including account name
     @utils.hook("raw.received.354", default_event=True)
     def handle_354(self, event):
-        core.handle_354(event)
+        core.handle_354(self.events, event)
 
     # response to an empty mode command
     @utils.hook("raw.received.324")
