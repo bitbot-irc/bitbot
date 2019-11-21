@@ -32,6 +32,16 @@ class Module(ModuleManager.BaseModule):
             (None, None))
         return hash, salt
 
+    def _master_password(self):
+        master_password = self._random_password()
+        hash, salt = self._make_hash(master_password)
+        self.bot.set_setting("master-password", [hash, salt])
+        return master_password
+    @utils.hook("control.master-password")
+    def command_line(self, event):
+        master_password = self._master_password()
+        return "One-time master password: %s" % master_password
+
     def _has_identified(self, server, user, account):
         user._id_override = server.get_user_id(account)
     def _is_identified(self, user):
@@ -66,6 +76,7 @@ class Module(ModuleManager.BaseModule):
     def new_user(self, event):
         event["user"]._hostmask_account = None
         event["user"]._account_override = None
+        event["user"]._master_admin = False
 
     def _set_hostmask(self, server, user):
         account = self._find_hostmask(server, user)
@@ -98,6 +109,9 @@ class Module(ModuleManager.BaseModule):
         return []
 
     def _has_permission(self, user, permission):
+        if user._master_admin:
+            return True
+
         permissions = self._get_permissions(user)
         if permission in permissions:
             return True
@@ -117,6 +131,21 @@ class Module(ModuleManager.BaseModule):
                         if last and user_last:
                             return True
         return False
+
+    @utils.hook("received.command.masterlogin")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("private_only", True)
+    def master_login(self, event):
+        saved_hash, saved_salt = self.bot.get_setting("master-password",
+            (None, None))
+        if saved_hash and saved_salt:
+            given_hash, _ = self._make_hash(event["args"], saved_salt)
+            if utils.security.constant_time_compare(given_hash, saved_hash):
+                self.bot.del_setting("master-password")
+                event["user"]._master_admin = True
+                event["stdout"].write("Master login successful")
+                return
+        event["stderr"].write("Master login failed")
 
     @utils.hook("received.command.mypermissions")
     @utils.kwarg("authenticated", True)
