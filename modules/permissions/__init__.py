@@ -168,8 +168,11 @@ class Module(ModuleManager.BaseModule):
             password = event["args"]
             hash, salt = self._make_hash(password)
             event["user"].set_setting("authentication", [hash, salt])
+
+            event["user"]._account_override = event["user"].nickname
             self._has_identified(event["server"], event["user"],
                 event["user"].nickname)
+
             event["stdout"].write("Nickname registered successfully")
         else:
             event["stderr"].write("This nickname is already registered")
