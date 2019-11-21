@@ -123,7 +123,7 @@ class Module(ModuleManager.BaseModule):
                     last = i==(len(permission_parts)-1)
                     user_last = i==(len(user_permission_parts)-1)
                     if not permission_parts[i] == user_permission_parts[i]:
-                        if user_permission_parts == "*" and user_last:
+                        if user_permission_parts[i] == "*" and user_last:
                             return True
                         else:
                             break
