@@ -5,11 +5,14 @@ Added:
 - Show first 100 chars of GitHub issue comments (`git_webhooks`)
 - Show who opened a GitHub pull request when approperiate (`git_webhooks`)
 - Timed user ignores (`ignore.py`)
+- Support `"$$"` as `"$"` in command alias argument replacement (`aliases.py`)
 
 Changed:
+- Complete refactor of `permissions` module - now with hostmask support
 - Command aliases moved to their own module. Run `migration/v01.16.00-aliases.py` to migrate old aliases.
 - Unique User-Agent (`utils.http.USERAGENT`)
 - Nickname hashed colourisation now matches weechat's default (`utils.irc`)
+- `./bitbotd -m permissions -M master-password` moved to `./bitbotctl command master-password`
 
 # 2019-11-18 - BitBot v1.15.0
 
