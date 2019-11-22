@@ -75,7 +75,7 @@ class Module(ModuleManager.BaseModule):
                 track = info_page.data.get("track", {})
 
                 tags_str = ""
-                if "toptags" in track:
+                if "toptags" in track and track["toptags"]["tag"]:
                     tags = [t["name"] for t in track["toptags"]["tag"]]
                     tags_str = " [%s]" % ", ".join(tags)
 
