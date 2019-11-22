@@ -137,8 +137,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.ghissue", min_args=1)
     def github_issue(self, event):
         if event["target"].get_setting("github-hide-prefix", False):
-            event["stdout"].hide_prefix()
-            event["stderr"].hide_prefix()
+            event["stdout"].prefix = None
+            event["stderr"].prefix = None
 
         username, repository, number = self._parse_ref(
             event["target"], event["args_split"][0], "#")
@@ -176,8 +176,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.ghpull", min_args=1)
     def github_pull(self, event):
         if event["target"].get_setting("github-hide-prefix", False):
-            event["stdout"].hide_prefix()
-            event["stderr"].hide_prefix()
+            event["stdout"].prefix = None
+            event["stderr"].prefix = None
 
         username, repository, number = self._parse_ref(
             event["target"], event["args_split"][0], "#")
@@ -210,8 +210,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.github", min_args=1)
     def github(self, event):
         if event["target"].get_setting("github-hide-prefix", False):
-            event["stdout"].hide_prefix()
-            event["stderr"].hide_prefix()
+            event["stdout"].prefix = None
+            event["stderr"].prefix = None
         result = self._get_info(event["target"], event["args_split"][0])
         if not result == None:
             event["stdout"].write(result)
@@ -248,7 +248,7 @@ class Module(ModuleManager.BaseModule):
                     return
                 if result:
                     if event["target"].get_setting("github-hide-prefix", False):
-                        event["stdout"].hide_prefix()
+                        event["stdout"].prefix = None
                     event["stdout"].write(result)
 
     @utils.hook("command.regex")
@@ -267,5 +267,5 @@ class Module(ModuleManager.BaseModule):
                     return
                 if result:
                     if event["target"].get_setting("github-hide-prefix", False):
-                       event["stdout"].hide_prefix()
+                        event["stdout"].prefix = None
                     event["stdout"].write(result)
