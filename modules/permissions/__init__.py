@@ -6,6 +6,10 @@ HOSTMASKS_SETTING = "hostmask-account"
 NO_PERMISSION = "You do not have permission to do that"
 
 class Module(ModuleManager.BaseModule):
+    def on_load(self):
+        self.exports.add("is-identified", self._is_identified)
+        self.exports.add("account-name", self._account_name)
+
     @utils.hook("new.server")
     def new_server(self, event):
         hostmasks = {}

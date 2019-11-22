@@ -56,10 +56,10 @@ class Module(ModuleManager.BaseModule):
             mask_split[i] = (mask_part.replace("$n", user.nickname)
                 .replace("$u", user.username)
                 .replace("$h", user.hostname)
-                .replace("$a", user.get_identified_account() or ""))
+                .replace("$a", user.account or ""))
         return "$".join(mask_split)
     def _get_hostmask(self, channel, user):
-        if not user.get_identified_account() == None:
+        if not user.account == None:
             account_format = channel.get_setting("ban-format-account", None)
             if not account_format == None:
                 return self._format_hostmask(user, account_format)

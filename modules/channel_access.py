@@ -1,5 +1,6 @@
 #--depends-on check_mode
 #--depends-on commands
+#--depends-on permissions
 
 from src import ModuleManager, utils
 
@@ -8,7 +9,7 @@ class Module(ModuleManager.BaseModule):
 
     def _has_channel_access(self, target, user, require_access):
         access = target.get_user_setting(user.get_id(), "access", [])
-        identified_account = user.get_identified_account()
+        identified = self.exports.get_one("is-identified")(user)
 
         return ((require_access in access or "*" in access
             ) and identified_account)
