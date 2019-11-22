@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on permissions
 
-import re, shlex, string, traceback, typing
+import enum, re, shlex, string, traceback, typing
 from src import EventManager, IRCLine, ModuleManager, utils
 from . import outs
 
@@ -14,6 +14,10 @@ STR_CONTINUED = "(...continued)"
 WORD_BOUNDARIES = [" "]
 
 NON_ALPHANUMERIC = [char for char in string.printable if not char.isalnum()]
+
+class OutType(enum.Enum):
+    OUT = 1
+    ERR = 2
 
 class BadContextException(Exception):
     def __init__(self, required_context):
@@ -204,26 +208,37 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("postprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_LOW)
     def postprocess(self, event):
-        color = None
+        type = None
         obj = None
         if event["stdout"].has_text():
-            color = utils.consts.GREEN
+            type = OutType.OUT
             obj = event["stdout"]
         elif event["stderr"].has_text():
-            color = utils.consts.RED
+            type = OutType.ERR
             obj = event["stderr"]
         else:
             return
+        self._out(event["server"], event["target"], event["target_str"], obj,
+            type)
 
-        line_str = "[%s] %s" % (utils.irc.color(obj.prefix, color), obj.pop())
-        method = self._command_method(event["server"], event["target"])
+    def _out(self, server, target, target_str, obj, type):
+        if type == OutType.OUT:
+            color = utils.consts.GREEN
+        else:
+            color = utils.consts.RED
+
+        line_str = obj.pop()
+        if obj.prefix:
+            line_str = "[%s] %s" % (
+                utils.irc.color(obj.prefix, color), line_str)
+        method = self._command_method(server, target)
 
         if not method in ["PRIVMSG", "NOTICE"]:
             raise ValueError("Unknown command-method '%s'" % method)
 
-        line = IRCLine.ParsedLine(method, [event["target_str"], line_str],
+        line = IRCLine.ParsedLine(method, [target_str, line_str],
             tags=obj.tags)
-        valid, trunc = line.truncate(event["server"].hostmask(),
+        valid, trunc = line.truncate(server.hostmask(),
             margin=STR_MORE_LEN)
 
         if trunc:
@@ -236,7 +251,7 @@ class Module(ModuleManager.BaseModule):
             obj.insert("%s %s" % (STR_CONTINUED, trunc))
             valid = valid+STR_MORE
         line = IRCLine.parse_line(valid)
-        event["server"].send(line)
+        server.send(line)
 
     @utils.hook("preprocess.command")
     def _check_min_args(self, event):
@@ -368,31 +383,22 @@ class Module(ModuleManager.BaseModule):
         return hook.get_kwarg("alias_of", None)
 
     @utils.hook("send.stdout")
-    def send_stdout(self, event):
-        target = event["target"]
-        stdout = outs.StdOut(event["server"], event["module_name"],
-            target, event.get("target_str", target.name), {})
-
-        if event.get("hide_prefix", False):
-            stdout.hide_prefix()
-
-        stdout.write(event["message"]).send(
-            self._command_method(event["target"], event["server"]))
-        if stdout.has_text():
-            event["target"].last_stdout = stdout
+    def _stdout(self, event):
+        self._send_out(event, OutType.OUT)
     @utils.hook("send.stderr")
-    def send_stderr(self, event):
+    def _stderr(self, event):
+        self._send_out(event, OutType.ERR)
+
+    def _send_out(self, event, type):
         target = event["target"]
-        stderr = outs.StdErr(event["server"], event["module_name"],
-            target, event.get("target_str", target.name), {})
-
+        stdout = outs.StdOut(event["module_name"])
+        stdout.write(event["message"])
         if event.get("hide_prefix", False):
-            stderr.hide_prefix()
+            stdout.prefix = None
 
-        stderr.write(event["message"]).send(
-            self._command_method(event["target"], event["server"]))
-        if stderr.has_text():
-            event["target"].last_stderr = stderr
+        target_str = event.get("target_str", target.name)
+        self._out(event["server"], target, target_str, stdout,
+            type)
 
     @utils.hook("check.command.self")
     def check_command_self(self, event):
