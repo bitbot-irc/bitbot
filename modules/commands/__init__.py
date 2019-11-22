@@ -8,9 +8,10 @@ from . import outs
 COMMAND_METHOD = "command-method"
 COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
-MESSAGE_TAGS_CAP = utils.irc.Capability("message-tags",
-    "draft/message-tags-0.2")
-MSGID_TAG = utils.irc.MessageTag("msgid", "draft/msgid")
+STR_MORE = " (more...)"
+STR_MORE_LEN = len(STR_MORE.encode("utf8"))
+STR_CONTINUED = "(...continued)"
+WORD_BOUNDARIES = [" "]
 
 NON_ALPHANUMERIC = [char for char in string.printable if not char.isalnum()]
 
@@ -48,8 +49,6 @@ class Module(ModuleManager.BaseModule):
             target = event["user"]
         else:
             target = event["channel"]
-        target.last_stdout = None
-        target.last_stderr = None
 
     def has_command(self, command):
         return command.lower() in self.events.on("received").on(
@@ -62,10 +61,10 @@ class Module(ModuleManager.BaseModule):
         if s and s[-1] in [":", ","]:
             return server.is_own_nickname(s[:-1])
 
-    def _command_method(self, target, server):
+    def _command_method(self, server, target):
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD,
-            self.bot.get_setting(COMMAND_METHOD, "PRIVMSG")))
+            self.bot.get_setting(COMMAND_METHOD, "PRIVMSG"))).upper()
 
     def _find_command_hook(self, server, target, is_channel, command, args):
         if not self.has_command(command):
@@ -159,31 +158,13 @@ class Module(ModuleManager.BaseModule):
         if not is_success:
             raise utils.EventError("%s: %s" % (user.nickname, message))
 
-    def _tagmsg(self, target, tags):
-        return IRCLine.ParsedLine("TAGMSG", [target], tags=tags)
-
     def command(self, server, target, target_str, is_channel, user, command,
-            args_split, tags, hook, **kwargs):
-        message_tags = server.has_capability(MESSAGE_TAGS_CAP)
-        expect_output = hook.get_kwarg("expect_output", True)
+            args_split, line, hook, **kwargs):
+        module_name = (self._get_prefix(hook) or
+            self.bot.modules.from_context(hook.context).title)
 
-        module_name = self._get_prefix(hook) or ""
-        if not module_name and hasattr(hook.function, "__self__"):
-            module_name = hook.function.__self__._name
-
-        send_tags = {}
-        if message_tags:
-            msgid = MSGID_TAG.get_value(tags)
-            if msgid:
-                send_tags["+draft/reply"] = msgid
-
-            if expect_output:
-                line = self._tagmsg(target_str, {"+draft/typing": "active"})
-                server.send(line, immediate=True)
-
-        stdout = outs.StdOut(server, module_name, target, target_str, send_tags)
-        stderr = outs.StdErr(server, module_name, target, target_str, send_tags)
-        command_method = self._command_method(target, server)
+        stdout = outs.StdOut(module_name)
+        stderr = outs.StdOut(module_name)
 
         ret = False
         has_out = False
@@ -192,9 +173,9 @@ class Module(ModuleManager.BaseModule):
             args_split = list(filter(None, args_split))
 
         event_kwargs = {"hook": hook, "user": user, "server": server,
-            "target": target, "is_channel": is_channel, "tags": tags,
-            "args_split": args_split, "command": command,
-            "args": " ".join(args_split), "stdout": stdout,
+            "target": target, "target_str": target_str,
+            "is_channel": is_channel, "line": line, "args_split": args_split,
+            "command": command, "args": " ".join(args_split), "stdout": stdout,
             "stderr": stderr}
         event_kwargs.update(kwargs)
 
@@ -203,37 +184,59 @@ class Module(ModuleManager.BaseModule):
         event_kwargs["check_assert"] = check_assert
 
         check_success, check_message = self._check("preprocess", event_kwargs)
-        if not check_success:
+        if check_success:
+            new_event = self.events.on(hook.event_name).make_event(**event_kwargs)
+            self.log.trace("calling command '%s': %s", [command, new_event.kwargs])
+
+            try:
+                hook.call(new_event)
+            except utils.EventError as e:
+                stderr.write(str(e))
+        else:
             if check_message:
-                stderr.write("%s: %s" % (user.nickname, check_message)
-                    ).send(command_method)
-            return True
+                stderr.write("%s: %s" % (user.nickname, check_message))
 
-        new_event = self.events.on(hook.event_name).make_event(**event_kwargs)
+        self._check("postprocess", event_kwargs)
+        # postprocess - send stdout/stderr and typing tag
 
-        self.log.trace("calling command '%s': %s", [command, new_event.kwargs])
+        return new_event.eaten
 
-        try:
-            hook.call(new_event)
-        except utils.EventError as e:
-            stderr.write(str(e)).send(command_method)
-            return True
+    @utils.hook("postprocess.command")
+    @utils.kwarg("priority", EventManager.PRIORITY_LOW)
+    def postprocess(self, event):
+        color = None
+        obj = None
+        if event["stdout"].has_text():
+            color = utils.consts.GREEN
+            obj = event["stdout"]
+        elif event["stderr"].has_text():
+            color = utils.consts.RED
+            obj = event["stderr"]
+        else:
+            return
 
-        if not hook.get_kwarg("skip_out", False):
-            has_out = stdout.has_text() or stderr.has_text()
-            if has_out:
-                command_method = self._command_method(target, server)
-                stdout.send(command_method)
-                stderr.send(command_method)
-                target.last_stdout = stdout
-                target.last_stderr = stderr
-        ret = new_event.eaten
+        line_str = "[%s] %s" % (utils.irc.color(obj.prefix, color), obj.pop())
+        method = self._command_method(event["server"], event["target"])
 
-        if expect_output and message_tags and not has_out:
-            line = self._tagmsg(target_str, {"+draft/typing": "done"})
-            server.send(line, immediate=True)
+        if not method in ["PRIVMSG", "NOTICE"]:
+            raise ValueError("Unknown command-method '%s'" % method)
 
-        return ret
+        line = IRCLine.ParsedLine(method, [event["target_str"], line_str],
+            tags=obj.tags)
+        valid, trunc = line.truncate(event["server"].hostmask(),
+            margin=STR_MORE_LEN)
+
+        if trunc:
+            if not trunc[0] in WORD_BOUNDARIES:
+                for boundary in WORD_BOUNDARIES:
+                    left, *right = valid.rsplit(boundary, 1)
+                    if right:
+                        valid = left
+                        trunc = right[0]+trunc
+            obj.insert("%s %s" % (STR_CONTINUED, trunc))
+            valid = valid+STR_MORE
+        line = IRCLine.parse_line(valid)
+        event["server"].send(line)
 
     @utils.hook("preprocess.command")
     def _check_min_args(self, event):
@@ -293,7 +296,7 @@ class Module(ModuleManager.BaseModule):
             if hook:
                 self.command(event["server"], event["channel"],
                     event["target_str"], True, event["user"], command,
-                    args_split, event["tags"], hook,
+                    args_split, event["line"], hook,
                     command_prefix=command_prefix)
             else:
                 self.events.on("unknown.command").call(server=event["server"],
@@ -313,7 +316,7 @@ class Module(ModuleManager.BaseModule):
                         command = hook.get_kwarg("command", "")
                         res = self.command(event["server"], event["channel"],
                             event["target_str"], True, event["user"], command,
-                            "", event["tags"], hook, match=match,
+                            "", event["line"], hook, match=match,
                             message=event["message"], command_prefix="",
                             action=event["action"])
 
@@ -344,7 +347,7 @@ class Module(ModuleManager.BaseModule):
             if hook:
                 self.command(event["server"], event["user"],
                     event["user"].nickname, False, event["user"], command,
-                    args_split, event["tags"], hook, command_prefix="")
+                    args_split, event["line"], hook, command_prefix="")
             else:
                 self.events.on("unknown.command").call(server=event["server"],
                     target=event["user"], user=event["user"], command=command,
@@ -363,15 +366,6 @@ class Module(ModuleManager.BaseModule):
         return hook.get_kwarg("prefix", None)
     def _get_alias_of(self, hook):
         return hook.get_kwarg("alias_of", None)
-
-    @utils.hook("received.command.more", skip_out=True)
-    def more(self, event):
-        """
-        :help: Show more output from the last command
-        """
-        if event["target"].last_stdout and event["target"].last_stdout.has_text():
-            event["target"].last_stdout.send(
-                self._command_method(event["target"], event["server"]))
 
     @utils.hook("send.stdout")
     def send_stdout(self, event):

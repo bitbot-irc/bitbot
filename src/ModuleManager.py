@@ -88,10 +88,12 @@ class ModuleDefinition(object):
 class LoadedModule(object):
     def __init__(self,
             name: str,
+            title: str,
             module: BaseModule,
             context: str,
             import_name: str):
         self.name = name
+        self.title = title
         self.module = module
         self.context = context
         self.import_name = import_name
@@ -233,8 +235,8 @@ class ModuleManager(object):
         module_object = module_object_pointer(bot, context_events,
             context_exports, context_timers, self.log)
 
-        if not hasattr(module_object, "_name"):
-            module_object._name = definition.name.title()
+        module_title = (getattr(module_object, "_name", None) or
+            definition.name.title())
 
         # @utils.hook() magic
         for attribute_name in dir(module_object):
@@ -256,8 +258,8 @@ class ModuleManager(object):
             raise ModuleNameCollisionException("Module name '%s' "
                 "attempted to be used twice" % definition.name)
 
-        return LoadedModule(definition.name, module_object, context,
-            import_name)
+        return LoadedModule(definition.name, module_title, module_object,
+            context, import_name)
 
     def load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition
             ) -> LoadedModule:

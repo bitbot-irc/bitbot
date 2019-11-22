@@ -22,3 +22,10 @@ class Module(ModuleManager.BaseModule):
     def ctcp(self, event):
         if event["is_channel"]:
             self._on_channel(event["target"], event["tags"])
+
+    @utils.hook("postprocess.command")
+    def postprocess_command(self, event):
+        msgid = TAG.get_value(event["line"].tags)
+        if msgid:
+            event["stdout"].tags["+draft/reply"] = msgid
+            event["stderr"].tags["+draft/reply"] = msgid
