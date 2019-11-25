@@ -39,7 +39,7 @@ class FindActorException(Exception):
 def find_actor(username, instance):
     hostmeta = HOSTMETA_TEMPLATE % instance
     hostmeta_request = utils.http.Request(HOSTMETA_TEMPLATE % instance,
-        useragent=USERAGENT, parse=True, check_content_type=False)
+        parse=True, check_content_type=False)
     try:
         hostmeta = utils.http.request(hostmeta_request)
     except:
