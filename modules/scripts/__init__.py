@@ -60,9 +60,9 @@ class Module(ModuleManager.BaseModule):
         if out:
             if proc.returncode == 0:
                 if "stdout" in event:
-                    event["stdout"].set_prefix(name)
+                    event["stdout"].prefix = name
                     event["stdout"].write(out)
             else:
                 if "stderr" in event:
-                    event["stderr"].set_prefix(name)
+                    event["stderr"].prefix = name
                     event["stderr"].write(out)
