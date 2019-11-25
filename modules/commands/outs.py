@@ -5,7 +5,6 @@ class StdOut(object):
     def __init__(self, prefix):
         self.prefix = prefix
         self._lines = []
-        self.tags = {}
         self._assured = False
 
     def assure(self):

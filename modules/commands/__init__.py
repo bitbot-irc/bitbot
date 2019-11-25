@@ -180,7 +180,7 @@ class Module(ModuleManager.BaseModule):
             "target": target, "target_str": target_str,
             "is_channel": is_channel, "line": line, "args_split": args_split,
             "command": command, "args": " ".join(args_split), "stdout": stdout,
-            "stderr": stderr}
+            "stderr": stderr, "tags": {}}
         event_kwargs.update(kwargs)
 
         check_assert = lambda check: self._check_assert(event_kwargs, user,
@@ -222,9 +222,9 @@ class Module(ModuleManager.BaseModule):
         else:
             return
         self._out(event["server"], event["target"], event["target_str"], obj,
-            type)
+            type, event["tags"])
 
-    def _out(self, server, target, target_str, obj, type):
+    def _out(self, server, target, target_str, obj, type, tags):
         if type == OutType.OUT:
             color = utils.consts.GREEN
         else:
@@ -240,7 +240,7 @@ class Module(ModuleManager.BaseModule):
             raise ValueError("Unknown command-method '%s'" % method)
 
         line = IRCLine.ParsedLine(method, [target_str, line_str],
-            tags=obj.tags)
+            tags=tags)
         valid, trunc = line.truncate(server.hostmask(),
             margin=STR_MORE_LEN)
 

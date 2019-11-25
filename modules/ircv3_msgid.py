@@ -27,5 +27,5 @@ class Module(ModuleManager.BaseModule):
     def postprocess_command(self, event):
         msgid = TAG.get_value(event["line"].tags)
         if msgid:
-            event["stdout"].tags["+draft/reply"] = msgid
-            event["stderr"].tags["+draft/reply"] = msgid
+            event["tags"]["+draft/reply"] = msgid
+            event["tags"]["+draft/reply"] = msgid
