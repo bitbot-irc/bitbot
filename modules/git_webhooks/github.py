@@ -317,6 +317,8 @@ class GitHub(object):
         elif action == "labeled":
             action_desc = "labled %s as '%s'" % (
                 identifier, data["label"]["name"])
+        elif action == "edited" and "title" in data["changes"]:
+            action_desc = "renamed %s" % identifier
 
         pr_title = data["pull_request"]["title"]
         url = self._short_url(data["pull_request"]["html_url"])
@@ -369,6 +371,8 @@ class GitHub(object):
         action_str = "%s %s" % (action, number)
         if action == "labeled":
             action_str = "labeled %s as '%s'" % (number, data["label"]["name"])
+        elif action == "edited" and "title" in data["changes"]:
+            action_str = "renamed %s" % number
 
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
