@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
                     np = True
                 else:
                     played = int(now_playing["date"]["uts"])
-                    dt = utils.datetime.datetime_utcnow()
+                    dt = utils.datetime.utcnow()
                     np = bool((dt.timestamp()-played) < 120)
 
                 time_language = "is listening to" if np else "last listened to"

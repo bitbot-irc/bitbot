@@ -9,7 +9,7 @@ class LockFile(PollHook.PollHook):
         self._next_lock = None
 
     def available(self):
-        now = utils.datetime.datetime_utcnow()
+        now = utils.datetime.utcnow()
         if os.path.exists(self._filename):
             with open(self._filename, "r") as lock_file:
                 timestamp_str = lock_file.read().strip().split(" ", 1)[0]
@@ -23,14 +23,14 @@ class LockFile(PollHook.PollHook):
 
     def lock(self):
         with open(self._filename, "w") as lock_file:
-            last_lock = utils.datetime.datetime_utcnow()
+            last_lock = utils.datetime.utcnow()
             lock_file.write("%s" % utils.datetime.iso8601_format(last_lock))
             self._next_lock = last_lock+datetime.timedelta(
                 seconds=EXPIRATION/2)
 
     def next(self):
         return max(0,
-            (self._next_lock-utils.datetime.datetime_utcnow()).total_seconds())
+            (self._next_lock-utils.datetime.utcnow()).total_seconds())
     def call(self):
         self.lock()
 
