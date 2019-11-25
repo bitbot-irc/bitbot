@@ -15,13 +15,14 @@ class Module(ModuleManager.BaseModule):
         if messages:
             event["channel"].del_user_setting(event["user"].get_id(), "to")
 
-    @utils.hook("received.command.to", min_args=2, channel_only=True)
-    def to(self, event):
-        """
-        :help: Relay a message to a user the next time they talk in this
-            channel
-        :usage: <nickname> <message>
-        """
+    @utils.hook("received.command.to", alias_of="tell")
+    @utils.hook("received.command.tell")
+    @utils.kwarg("min_args", 2)
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("help",
+        "Relay a message to a user the next time they talk in this channel")
+    @utils.kwarg("usage", "<nickname> <message>")
+    def tell(self, event):
         target_name = event["args_split"][0]
         if not event["server"].has_user_id(target_name):
             raise utils.EventError("I've never seen %s before" % target_name)
