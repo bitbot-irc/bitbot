@@ -78,10 +78,10 @@ class Module(ModuleManager.BaseModule):
                 wind_speed_m = "%sMPh" % round(0.6214*wind_speed, 1)
 
                 if not nickname == None:
-                    location_str = "%s: %s" % (nickname, location_str)
+                    location_str = "(%s) %s" % (nickname, location_str)
 
                 event["stdout"].write(
-                    "(%s) %s/%s | %s | Humidity: %s | Wind: %s/%s" % (
+                    "%s - %s/%s | %s | Humidity: %s | Wind: %s/%s" % (
                     location_str, celsius, fahrenheit, description, humidity,
                     wind_speed_k, wind_speed_m))
             else:
