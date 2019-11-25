@@ -6,9 +6,11 @@ Added:
 - Show who opened a GitHub pull request when approperiate (`git_webhooks`)
 - Timed user ignores (`ignore.py`)
 - Support `"$$"` as `"$"` in command alias argument replacement (`aliases.py`)
+- Show explicitly when only a title of an issue/PR was changed (`git_webhooks`)
 
 Changed:
 - Complete refactor of `permissions` module - now with hostmask support
+- Big refactor of commands module
 - Command aliases moved to their own module. Run `migration/v01.16.00-aliases.py` to migrate old aliases.
 - Unique User-Agent (`utils.http.USERAGENT`)
 - Nickname hashed colourisation now matches weechat's default (`utils.irc`)
