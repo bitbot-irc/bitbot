@@ -26,7 +26,7 @@ def activity_request(url, data=None, method="GET", type=ACTIVITY_TYPE,
         headers = {"Accept": type}
 
     request = utils.http.Request(url, headers=headers,
-        content_type=content_type, post_data=data, method=method, json=True,
+        content_type=content_type, post_data=data, method=method,
         json_body=True, fallback_encoding="utf8")
     return utils.http.request(request)
 
@@ -64,7 +64,7 @@ def find_actor(username, instance):
 
     actor_url = None
     if webfinger.code == 200:
-        for link in webfinger.data["links"]:
+        for link in webfinger.json()["links"]:
             if link["type"] == ACTIVITY_TYPE:
                 return link["href"]
     else:
@@ -128,15 +128,15 @@ def format_note(actor, note, type="Create"):
     if type == "Announce":
         retoot_url = note
         retoot_instance = urllib.parse.urlparse(retoot_url).hostname
-        retoot = activity_request(retoot_url)
-        retoot_url = retoot.data.get("url", retoot.data["id"])
+        retoot = activity_request(retoot_url).json()
+        retoot_url = retoot.get("url", retoot["id"])
 
-        original_tooter = ap_actor.Actor(retoot.data["attributedTo"])
+        original_tooter = ap_actor.Actor(retoot["attributedTo"])
         original_tooter.load()
         retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
-        retoot_content = _content(retoot.data)
+        retoot_content = _content(retoot)
 
-        return (retoot.data.get("summary", None),  "%s (boost %s): %s" % (
+        return (retoot.get("summary", None),  "%s (boost %s): %s" % (
             actor.username, retooted_user, retoot_content), retoot_url)
 
     elif type == "Create":

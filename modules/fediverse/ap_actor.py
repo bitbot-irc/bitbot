@@ -14,10 +14,11 @@ class Actor(object):
     def load(self):
         response = ap_utils.activity_request(self.url)
         if response.code == 200:
-            self.username = response.data["preferredUsername"]
-            self.inbox = Inbox(response.data["inbox"])
-            self.outbox = Outbox(response.data["outbox"])
-            self.followers = response.data["followers"]
+            response = response.json()
+            self.username = response["preferredUsername"]
+            self.inbox = Inbox(response["inbox"])
+            self.outbox = Outbox(response["outbox"])
+            self.followers = response["followers"]
             return True
         return False
 
@@ -26,19 +27,19 @@ class Outbox(object):
         self._url = url
 
     def load(self):
-        outbox = ap_utils.activity_request(self._url)
+        outbox = ap_utils.activity_request(self._url).json()
 
         items = None
-        if "first" in outbox.data:
-            if type(outbox.data["first"]) == dict:
+        if "first" in outbox:
+            if type(outbox["first"]) == dict:
                 # pleroma
-                items = outbox.data["first"]["orderedItems"]
+                items = outbox["first"]["orderedItems"]
             else:
                 # mastodon
-                first = ap_utils.activity_request(outbox.data["first"])
-                items = first.data["orderedItems"]
+                first = ap_utils.activity_request(outbox["first"]).json()
+                items = first["orderedItems"]
         else:
-            items = outbox.data["orderedItems"]
+            items = outbox["orderedItems"]
         return items
 
 class Inbox(object):
@@ -58,5 +59,5 @@ class Inbox(object):
         headers.append(["signature", signature])
 
         return ap_utils.activity_request(self._url, activity.format(sender),
-            method="POST", headers=dict(headers)).data
+            method="POST", headers=dict(headers)).json()
 

@@ -30,8 +30,7 @@ class Module(ModuleManager.BaseModule):
     def get_video_page(self, video_id):
         return utils.http.request(URL_YOUTUBEVIDEO, get_params={
             "part": "contentDetails,snippet,statistics",
-            "id": video_id, "key": self.bot.config["google-api-key"]},
-            json=True)
+            "id": video_id, "key": self.bot.config["google-api-key"]}).json()
 
     def _number(self, n):
         if n:
@@ -39,8 +38,8 @@ class Module(ModuleManager.BaseModule):
 
     def video_details(self, video_id):
         page = self.get_video_page(video_id)
-        if page.data["items"]:
-            item = page.data["items"][0]
+        if page["items"]:
+            item = page["items"][0]
             snippet = item["snippet"]
             statistics = item["statistics"]
             content = item["contentDetails"]
@@ -91,8 +90,8 @@ class Module(ModuleManager.BaseModule):
             "key": self.bot.config["google-api-key"]}, json=True)
     def playlist_details(self, playlist_id):
         page = self.get_playlist_page(playlist_id)
-        if page.data["items"]:
-            item = page.data["items"][0]
+        if page["items"]:
+            item = page["items"][0]
             snippet = item["snippet"]
             content = item["contentDetails"]
 
@@ -121,12 +120,11 @@ class Module(ModuleManager.BaseModule):
         search_page = utils.http.request(URL_YOUTUBESEARCH,
             get_params={"q": query, "part": "snippet",
             "maxResults": "1", "type": "video",
-            "key": self.bot.config["google-api-key"]},
-             json=True)
+            "key": self.bot.config["google-api-key"]}).json()
 
         if search_page:
-            if search_page.data["pageInfo"]["totalResults"] > 0:
-                video_id = search_page.data["items"][0]["id"]["videoId"]
+            if search_page["pageInfo"]["totalResults"] > 0:
+                video_id = search_page["items"][0]["id"]["videoId"]
                 return "https://youtu.be/%s" % video_id
 
     @utils.hook("received.command.yt", alias_of="youtube")
@@ -157,11 +155,10 @@ class Module(ModuleManager.BaseModule):
             search_page = utils.http.request(URL_YOUTUBESEARCH,
                 get_params={"q": search, "part": "snippet", "maxResults": "1",
                 "type": "video", "key": self.bot.config["google-api-key"],
-                "safeSearch": safe}, json=True)
+                "safeSearch": safe}).json()
             if search_page:
-                if search_page.data["pageInfo"]["totalResults"] > 0:
-                    url = URL_VIDEO % search_page.data[
-                        "items"][0]["id"]["videoId"]
+                if search_page["pageInfo"]["totalResults"] > 0:
+                    url = URL_VIDEO % search_page["items"][0]["id"]["videoId"]
                 else:
                     raise utils.EventError("No videos found")
             else:

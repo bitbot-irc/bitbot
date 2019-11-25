@@ -68,7 +68,7 @@ class Request(object):
         default_factory=dict)
 
     json: bool = False
-    json_body: typing.Any = None
+    json_body: bool = False
 
     allow_redirects: bool = True
     check_content_type: bool = True
@@ -118,13 +118,16 @@ class Request(object):
             return None
 
 class Response(object):
-    def __init__(self, code: int, data: typing.Any,
-            headers: typing.Dict[str, str], encoding: str):
+    def __init__(self, code: int, data: typing.Any, encoding: str,
+            headers: typing.Dict[str, str], cookies: typing.Dict[str, str]):
         self.code = code
         self.data = data
-        self.headers = headers
         self.content_type = headers.get("Content-Type", "").split(";", 1)[0]
         self.encoding = encoding
+        self.headers = headers
+        self.cookies = cookies
+    def json(self):
+        return _json.loads(self.data)
 
 def _meta_content(s: str) -> typing.Dict[str, str]:
     out = {}
@@ -167,7 +170,8 @@ def _request(request_obj: Request) -> Response:
             params=request_obj.get_params,
             data=request_obj.get_body(),
             allow_redirects=request_obj.allow_redirects,
-            stream=True
+            stream=True,
+            cookies=request_obj.cookies
         )
         response_content = response.raw.read(RESPONSE_MAX,
             decode_content=True)
@@ -176,7 +180,8 @@ def _request(request_obj: Request) -> Response:
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         our_response = Response(response.status_code, response_content,
-            headers=headers, encoding=response.encoding)
+            encoding=response.encoding, headers=headers,
+            cookies=response.cookies.get_dict())
         return our_response
 
     try:
@@ -255,7 +260,8 @@ def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         data = response.body.decode("utf8")
-        responses[request.id] = Response(response.code, data, headers, "utf8")
+        responses[request.id] = Response(response.code, data, "utf8", headers,
+            {})
 
     loop = asyncio.new_event_loop()
     awaits = []

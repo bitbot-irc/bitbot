@@ -35,14 +35,14 @@ class Module(ModuleManager.BaseModule):
         args["code"] = FN_TEMPLATE % event["args"]
         try:
             page = utils.http.request(EVAL_URL, post_data=args,
-                method="POST", json=True, content_type="application/json")
+                method="POST", content_type="application/json").json()
         except socket.timeout:
             raise utils.EventError("%s: eval timed out" %
                 event["user"].nickname)
 
-        err_or_out = "stdout" if page.data["success"] else "stderr"
+        err_or_out = "stdout" if page["success"] else "stderr"
         event[err_or_out].write("%s: %s" % (event["user"].nickname,
-            page.data[err_or_out].strip("\n")))
+            page[err_or_out].strip("\n")))
 
     @utils.hook("received.command.crate")
     @utils.kwarg("min_args", 1)
@@ -50,10 +50,10 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "<crate-name>")
     def crate(self, event):
         query = event["args_split"][0]
-        request = utils.http.Request(API_CRATE % query, json=True)
+        request = utils.http.Request(API_CRATE % query)
         response = utils.http.request(request)
         if response.code == 200:
-            crate = response.data["crate"]
+            crate = response.json()["crate"]
             name = crate["id"]
             url = URL_CRATE % name
             event["stdout"].write("%s %s: %s - %s" % (

@@ -40,11 +40,10 @@ class Module(ModuleManager.BaseModule):
         page = utils.http.request(URL_SCROBBLER, get_params={
             "method": "user.getrecenttracks", "user": lastfm_username,
             "api_key": self.bot.config["lastfm-api-key"],
-            "format": "json", "limit": "1"}, json=True)
+            "format": "json", "limit": "1"}).json()
         if page:
-            if ("recenttracks" in page.data and
-                    len(page.data["recenttracks"]["track"])):
-                now_playing = page.data["recenttracks"]["track"]
+            if "recenttracks" in page and len(page["recenttracks"]["track"]):
+                now_playing = page["recenttracks"]["track"]
                 if type(now_playing) == list:
                     now_playing = now_playing[0]
 
@@ -70,9 +69,9 @@ class Module(ModuleManager.BaseModule):
                     "method": "track.getInfo", "artist": artist,
                     "track": track_name, "autocorrect": "1",
                     "api_key": self.bot.config["lastfm-api-key"],
-                    "user": lastfm_username, "format": "json"}, json=True)
+                    "user": lastfm_username, "format": "json"}).json()
 
-                track = info_page.data.get("track", {})
+                track = info_page.get("track", {})
 
                 tags_str = ""
                 if "toptags" in track and track["toptags"]["tag"]:

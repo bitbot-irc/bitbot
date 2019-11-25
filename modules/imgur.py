@@ -48,11 +48,10 @@ class Module(ModuleManager.BaseModule):
     def _parse_gallery(self, hash):
         api_key = self.bot.config["imgur-api-key"]
         result = utils.http.request(URL_GALLERY % hash,
-            headers={"Authorization": "Client-ID %s" % api_key},
-            json=True)
+            headers={"Authorization": "Client-ID %s" % api_key}).json()
 
-        if result and result.data["success"]:
-            data = result.data["data"]
+        if result and result["success"]:
+            data = result["data"]
             text = ""
 
             nsfw = utils.irc.bold(NSFW_TEXT) + " " if data["nsfw"] else ""
@@ -75,11 +74,10 @@ class Module(ModuleManager.BaseModule):
     def _parse_image(self, hash):
         api_key = self.bot.config["imgur-api-key"]
         result = utils.http.request(URL_IMAGE % hash,
-            headers={"Authorization": "Client-ID %s" % api_key},
-            json=True)
+            headers={"Authorization": "Client-ID %s" % api_key}).json()
 
-        if result and result.data["success"]:
-            data = result.data["data"]
+        if result and result["success"]:
+            data = result["data"]
             text = ""
 
             nsfw = utils.irc.bold(NSFW_TEXT) + " " if data["nsfw"] else ""
@@ -102,11 +100,10 @@ class Module(ModuleManager.BaseModule):
     def _image_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
         result = utils.http.request(URL_IMAGE % hash,
-            headers={"Authorization": "Client-ID %s" % api_key},
-            json=True)
+            headers={"Authorization": "Client-ID %s" % api_key}).json()
 
-        if result and result.data["success"]:
-            data = result.data["data"]
+        if result and result["success"]:
+            data = result["data"]
             text = self._prefix(data)
 
             text += "(%s %dx%d, %d views)" % (data["type"], data["width"],
@@ -120,11 +117,10 @@ class Module(ModuleManager.BaseModule):
     def _gallery_info(self, hash):
         api_key = self.bot.config["imgur-api-key"]
         result = utils.http.request(URL_GALLERY % hash,
-            headers={"Authorization": "Client-ID %s" % api_key},
-            json=True)
+            headers={"Authorization": "Client-ID %s" % api_key}).json()
 
-        if result and result.data["success"]:
-            data = result.data["data"]
+        if result and result["success"]:
+            data = result["data"]
             text = self._prefix(data)
             text += "(%d views, %d▲▼%d)" % (data["views"],
                 data["ups"], data["downs"])
