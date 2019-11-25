@@ -187,6 +187,8 @@ class Module(ModuleManager.BaseModule):
             check)
         event_kwargs["check_assert"] = check_assert
 
+        eaten = False
+
         check_success, check_message = self._check("preprocess", event_kwargs)
         if check_success:
             new_event = self.events.on(hook.event_name).make_event(**event_kwargs)
@@ -196,6 +198,7 @@ class Module(ModuleManager.BaseModule):
                 hook.call(new_event)
             except utils.EventError as e:
                 stderr.write(str(e))
+            eaten = new_event.eaten
         else:
             if check_message:
                 stderr.write("%s: %s" % (user.nickname, check_message))
@@ -203,7 +206,7 @@ class Module(ModuleManager.BaseModule):
         self._check("postprocess", event_kwargs)
         # postprocess - send stdout/stderr and typing tag
 
-        return new_event.eaten
+        return eaten
 
     @utils.hook("postprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_LOW)
