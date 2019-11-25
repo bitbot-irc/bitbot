@@ -33,8 +33,11 @@ class Module(ModuleManager.BaseModule):
                 "num": 1, "gl": "gb", "safe": safe}, json=True)
             if page:
                 if "items" in page.data and len(page.data["items"]):
+                    item = page.data["items"][0]
+                    link = item["link"]
+                    title = utils.parse.line_normalise(item["title"])
                     event["stdout"].write(
-                        "(%s) %s" % (phrase, page.data["items"][0]["link"]))
+                        "(%s) %s - %s" % (phrase, title, link))
                 else:
                     event["stderr"].write("No results found")
             else:
