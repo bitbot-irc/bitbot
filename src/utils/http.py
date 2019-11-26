@@ -232,9 +232,8 @@ def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
                 "request_many failed for %s" % url)
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
-        data = response.body.decode("utf8")
-        responses[request.id] = Response(response.code, data, "utf8", headers,
-            {})
+        responses[request.id] = Response(response.code, response.body, "utf8",
+            headers, {})
 
     loop = asyncio.new_event_loop()
     awaits = []
