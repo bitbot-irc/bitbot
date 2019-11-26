@@ -60,7 +60,7 @@ class Module(ModuleManager.BaseModule):
         page = page.soup()
 
         if page.title:
-            title = utils.parse.line_normalise(page.data.title.text)
+            title = utils.parse.line_normalise(page.title.text)
             if not title:
                 return -3, None
 
