@@ -72,9 +72,7 @@ class Request(object):
 
     allow_redirects: bool = True
     check_content_type: bool = True
-    parse: bool = False
     detect_encoding: bool = True
-    parser: str = "lxml"
     fallback_encoding: typing.Optional[str] = None
     content_type: typing.Optional[str] = None
     proxy: typing.Optional[str] = None
@@ -126,8 +124,12 @@ class Response(object):
         self.encoding = encoding
         self.headers = headers
         self.cookies = cookies
-    def json(self):
+    def decode(self) -> str:
+        return self.data
+    def json(self) -> typing.Any:
         return _json.loads(self.data)
+    def soup(self, parser: str="lxml") -> bs4.BeautifulSoup:
+        return bs4.BeautifulSoup(self.decode(), parser)
 
 def _meta_content(s: str) -> typing.Dict[str, str]:
     out = {}
@@ -200,22 +202,11 @@ def _request(request_obj: Request) -> Response:
     if (request_obj.detect_encoding and
             response.content_type and
             response.content_type in SOUP_CONTENT_TYPES):
-        souped = bs4.BeautifulSoup(response.data, request_obj.parser)
+        souped = bs4.BeautifulSoup(response.data, "lxml")
         encoding = _find_encoding(souped) or encoding
 
     def _decode_data():
         return response.data.decode(encoding)
-
-    if request_obj.parse:
-        if (not request_obj.check_content_type or
-                response.content_type in SOUP_CONTENT_TYPES):
-            souped = bs4.BeautifulSoup(_decode_data(), request_obj.parser)
-            response.data = souped
-            return response
-        else:
-            raise HTTPWrongContentTypeException(
-                "Tried to soup non-html/non-xml data (%s)" %
-                response.content_type)
 
     if request_obj.json and response.data:
         data = _decode_data()

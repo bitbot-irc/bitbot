@@ -50,14 +50,16 @@ class Module(ModuleManager.BaseModule):
             return -1, None
 
         try:
-            page = utils.http.request(url, parse=True)
-        except utils.http.HTTPWrongContentTypeException:
-            return -1, None
+            page = utils.http.request(url)
         except Exception as e:
             self.log.error("failed to get URL title for %s: %s", [url, str(e)])
             return -1, None
 
-        if page.data.title:
+        if not page.content_type in utils.http.SOUP_CONTENT_TYPES:
+            return -1, None
+        page = page.soup()
+
+        if page.title:
             title = utils.parse.line_normalise(page.data.title.text)
             if not title:
                 return -3, None

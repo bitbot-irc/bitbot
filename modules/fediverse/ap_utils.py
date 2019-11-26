@@ -38,8 +38,7 @@ class FindActorException(Exception):
 
 def find_actor(username, instance):
     hostmeta = HOSTMETA_TEMPLATE % instance
-    hostmeta_request = utils.http.Request(HOSTMETA_TEMPLATE % instance,
-        parse=True, check_content_type=False)
+    hostmeta_request = utils.http.Request(HOSTMETA_TEMPLATE % instance)
     try:
         hostmeta = utils.http.request(hostmeta_request)
     except:
@@ -47,7 +46,7 @@ def find_actor(username, instance):
 
     webfinger_url = None
     if hostmeta.code == 200:
-        for item in hostmeta.data.find_all("link"):
+        for item in hostmeta.soup().find_all("link"):
             if item["rel"] and item["rel"][0] == "lrdd":
                 webfinger_url = item["template"]
                 break
