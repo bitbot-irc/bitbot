@@ -45,11 +45,11 @@ class Module(ModuleManager.BaseModule):
 
         page = utils.http.request(
             URL_SOUNDCLOUD_TRACK if has_query else URL_SOUNDCLOUD_RESOLVE,
-            get_params=get_params, json=True)
+            get_params=get_params).json()
 
         if page:
-            if len(page.data):
-                page = page.data[0] if has_query else page
+            if len(page):
+                page = page[0] if has_query else page
                 title = page["title"]
                 user = page["user"]["username"]
                 duration = time.strftime("%H:%M:%S", time.gmtime(page[

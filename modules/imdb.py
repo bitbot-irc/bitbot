@@ -17,15 +17,13 @@ class Module(ModuleManager.BaseModule):
         :usage: <movie/tv title>
         """
         page = utils.http.request(URL_OMDB, get_params={
-            "t": event["args"],
-            "apikey": self.bot.config["omdbapi-api-key"]},
-            json=True)
+            "apikey": self.bot.config["omdbapi-api-key"],
+            "t": event["args"]}).json()
         if page:
-            if "Title" in page.data:
+            if "Title" in page:
                 event["stdout"].write("%s, %s (%s) %s (%s/10.0) %s" % (
-                    page.data["Title"], page.data["Year"], page.data["Runtime"],
-                    page.data["Plot"], page.data["imdbRating"],
-                    URL_IMDBTITLE % page.data["imdbID"]))
+                    page["Title"], page["Year"], page["Runtime"], page["Plot"],
+                    page["imdbRating"], URL_IMDBTITLE % page["imdbID"]))
             else:
                 event["stderr"].write("Title not found")
         else:

@@ -56,24 +56,24 @@ class Module(ModuleManager.BaseModule):
         args["lat"] = lat
         args["lon"] = lon
 
-        page = utils.http.request(URL_WEATHER, get_params=args, json=True)
+        page = utils.http.request(URL_WEATHER, get_params=args).json()
         if page:
-            if "weather" in page.data:
+            if "weather" in page:
                 if location_name:
                     location_str = location_name
                 else:
-                    location_parts = [page.data["name"]]
-                    if "country" in page.data["sys"]:
-                        location_parts.append(page.data["sys"]["country"])
+                    location_parts = [page["name"]]
+                    if "country" in page["sys"]:
+                        location_parts.append(page["sys"]["country"])
                     location_str = ", ".join(location_parts)
 
-                celsius = "%dC" % page.data["main"]["temp"]
-                fahrenheit = "%dF" % ((page.data["main"]["temp"]*(9/5))+32)
-                description = page.data["weather"][0]["description"].title()
-                humidity = "%s%%" % page.data["main"]["humidity"]
+                celsius = "%dC" % page["main"]["temp"]
+                fahrenheit = "%dF" % ((page["main"]["temp"]*(9/5))+32)
+                description = page["weather"][0]["description"].title()
+                humidity = "%s%%" % page["main"]["humidity"]
 
                 # wind speed is in metres per second - 3.6* for KMh
-                wind_speed = 3.6*page.data["wind"]["speed"]
+                wind_speed = 3.6*page["wind"]["speed"]
                 wind_speed_k = "%sKMh" % round(wind_speed, 1)
                 wind_speed_m = "%sMPh" % round(0.6214*wind_speed, 1)
 

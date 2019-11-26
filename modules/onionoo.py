@@ -11,9 +11,9 @@ URL_RELAY_SEARCH_DETAILS = "https://metrics.torproject.org/rs.html#details/"
 
 def _get_relays_details(search):
     page = utils.http.request(
-        URL_ONIONOO_DETAILS, get_params={"search": search}, json=True)
-    if page and "relays" in page.data:
-        return page.data["relays"]
+        URL_ONIONOO_DETAILS, get_params={"search": search}).json()
+    if page and "relays" in page:
+        return page["relays"]
     raise utils.EventResultsError()
 
 def _format_relay_summary_message(relays, search):

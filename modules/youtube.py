@@ -87,7 +87,7 @@ class Module(ModuleManager.BaseModule):
     def get_playlist_page(self, playlist_id):
          return utils.http.request(URL_YOUTUBEPLAYLIST, get_params={
             "part": "contentDetails,snippet", "id": playlist_id,
-            "key": self.bot.config["google-api-key"]}, json=True)
+            "key": self.bot.config["google-api-key"]}).json()
     def playlist_details(self, playlist_id):
         page = self.get_playlist_page(playlist_id)
         if page["items"]:

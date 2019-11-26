@@ -35,11 +35,11 @@ class Module(ModuleManager.BaseModule):
             phrase = phrase.split(" ", 1)[1]
 
         page = utils.http.request(URL_TRANSLATE, get_params={
-            "client": "gtx", "sl": source_language,
-            "tl": target_language, "dt": "t", "q": phrase})
+            "client": "gtx", "dt": "t", "q": phrase,
+            "sl": source_language, "tl": target_language})
 
         if page and not page.data.startswith(b"[null,null,"):
-            data = page.data.decode("utf8")
+            data = page.decode("utf8")
             while ",," in data:
                 data = data.replace(",,", ",null,")
                 data = data.replace("[,", "[null,")

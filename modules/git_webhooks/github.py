@@ -171,7 +171,7 @@ class GitHub(object):
         self.log.debug("git.io shortening: %s" % url)
         try:
             page = utils.http.request("https://git.io", method="POST",
-                post_data={"url": url}, detect_encoding=False)
+                post_data={"url": url})
             return page.headers["Location"]
         except utils.http.HTTPTimeoutException:
             self.log.warn(
@@ -294,11 +294,11 @@ class GitHub(object):
             action_desc = "committed to %s" % number
 
             commits_url = data["pull_request"]["commits_url"]
-            commits = utils.http.request(commits_url, json=True)
+            commits = utils.http.request(commits_url).json()
             if commits:
                 seen_before = False
                 new_commits = []
-                for commit in commits.data:
+                for commit in commits:
                     if seen_before:
                         new_commits.append({"id": commit["sha"],
                             "message": commit["commit"]["message"]})

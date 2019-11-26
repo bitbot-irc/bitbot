@@ -24,11 +24,11 @@ class Module(ModuleManager.BaseModule):
         term = " ".join(term)
 
         page = utils.http.request(URL_URBANDICTIONARY,
-            get_params={"term": term}, json=True)
+            get_params={"term": term}).json()
         if page:
-            if len(page.data["list"]):
-                if number > 0 and len(page.data["list"]) > number-1:
-                    definition = page.data["list"][number-1]
+            if len(page["list"]):
+                if number > 0 and len(page["list"]) > number-1:
+                    definition = page["list"][number-1]
                     event["stdout"].write("%s: %s" % (definition["word"],
                         definition["definition"].replace("\n", " ").replace(
                         "\r", "").replace("  ", " ")))

@@ -85,19 +85,17 @@ class Module(ModuleManager.BaseModule):
         :usage: <IP>
         :prefix: GeoIP
         """
-        page = utils.http.request(URL_GEOIP % event["args_split"][0],
-            json=True)
+        page = utils.http.request(URL_GEOIP % event["args_split"][0]).json()
         if page:
-            if page.data["status"] == "success":
-                data  = page.data["query"]
-                data += " | Organisation: %s" % page.data["org"]
-                data += " | City: %s" % page.data["city"]
-                data += " | Region: %s (%s)" % (page.data["regionName"],
-                    page.data["countryCode"])
-                data += " | ISP: %s" % page.data["isp"]
-                data += " | Lon/Lat: %s/%s" % (page.data["lon"],
-                    page.data["lat"])
-                data += " | Timezone: %s" % page.data["timezone"]
+            if page["status"] == "success":
+                data  = page["query"]
+                data += " | Organisation: %s" % page["org"]
+                data += " | City: %s" % page["city"]
+                data += " | Region: %s (%s)" % (
+                    page["regionName"], page["countryCode"])
+                data += " | ISP: %s" % page["isp"]
+                data += " | Lon/Lat: %s/%s" % (page["lon"], page["lat"])
+                data += " | Timezone: %s" % page["timezone"]
                 event["stdout"].write(data)
             else:
                 event["stderr"].write("No geoip data found")

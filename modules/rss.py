@@ -67,7 +67,7 @@ class Module(ModuleManager.BaseModule):
                 # async url get failed
                 continue
 
-            feed = feedparser.parse(pages[url].data)
+            feed = feedparser.parse(pages[url].decode())
             feed_title = feed["feed"].get("title", None)
             max_ids = len(feed["entries"])*10
 
@@ -105,8 +105,7 @@ class Module(ModuleManager.BaseModule):
 
     def _get_entries(self, url, max: int=None):
         try:
-            data = utils.http.request(url)
-            feed = feedparser.parse(data.data)
+            feed = feedparser.parse(utils.http.request(url).data)
         except Exception as e:
             self.log.warn("failed to parse RSS %s", [url], exc_info=True)
             feed = None

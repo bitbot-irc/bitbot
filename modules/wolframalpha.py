@@ -20,13 +20,13 @@ class Module(ModuleManager.BaseModule):
             page = utils.http.request(URL_WA,
                 get_params={"i": event["args"],
                 "appid": self.bot.config["wolframalpha-api-key"],
-                "reinterpret": "true", "units": "metric"}, code=True)
+                "reinterpret": "true", "units": "metric"})
         except utils.http.HTTPTimeoutException:
             page = None
 
         if page:
             if page.code == 200:
-                event["stdout"].write("%s: %s" % (event["args"], page.data))
+                event["stdout"].write("%s: %s" % (event["args"], page.decode()))
             else:
                 event["stdout"].write("No results")
         else:

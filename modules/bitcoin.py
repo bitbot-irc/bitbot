@@ -12,16 +12,15 @@ class Module(ModuleManager.BaseModule):
         :usage: [currency]
         """
         currency = (event["args"] or "USD").upper()
-        page = utils.http.request("https://blockchain.info/ticker",
-            json=True)
+        page = utils.http.request("https://blockchain.info/ticker").json()
         if page:
-            if currency in page.data:
-                conversion = page.data[currency]
+            if currency in page:
+                conversion = page[currency]
                 buy, sell = conversion["buy"], conversion["sell"]
                 event["stdout"].write("1 BTC = %.2f %s (buy) %.2f %s "
                     "(sell)" % (buy, currency, sell, currency))
             else:
                 event["stderr"].write("Unknown currency, available "
-                    "currencies: %s" % ", ".join(page.data.keys()))
+                    "currencies: %s" % ", ".join(page.keys()))
         else:
             raise utils.EventResultsError()

@@ -57,10 +57,10 @@ class Module(ModuleManager.BaseModule):
         access_token = self.bot.config.get("bitly-api-key", None)
         if access_token:
             page = utils.http.request(URL_BITLYSHORTEN, get_params={
-                "access_token": access_token, "longUrl": url}, json=True)
+                "access_token": access_token, "longUrl": url}).json()
 
-            if page and page.data["data"]:
-                return page.data["data"]["url"]
+            if page["data"]:
+                return page["data"]["url"]
         return None
 
     def _find_url(self, target, args):

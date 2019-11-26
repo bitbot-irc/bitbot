@@ -24,12 +24,11 @@ class Module(ModuleManager.BaseModule):
 
             page = utils.http.request(URL_TOKEN, method="POST",
                 headers={"Authorization": "Basic %s" % bearer},
-                post_data={"grant_type": "client_credentials"},
-                json=True)
+                post_data={"grant_type": "client_credentials"}).json()
 
-            token = page.data["access_token"]
+            token = page["access_token"]
             self._token = token
-            self._token_expires = time.time()+page.data["expires_in"]
+            self._token_expires = time.time()+page["expires_in"]
             return token
 
     @utils.hook("received.command.sp", alias_of="spotify")
@@ -42,11 +41,10 @@ class Module(ModuleManager.BaseModule):
         token = self._get_token()
         page = utils.http.request(URL_SEARCH,
             get_params={"type": "track", "limit": 1, "q": event["args"]},
-            headers={"Authorization": "Bearer %s" % token},
-            json=True)
+            headers={"Authorization": "Bearer %s" % token}).json()
         if page:
-            if len(page.data["tracks"]["items"]):
-                item = page.data["tracks"]["items"][0]
+            if len(page["tracks"]["items"]):
+                item = page["tracks"]["items"][0]
                 title = item["name"]
                 artist_name = item["artists"][0]["name"]
                 url = item["external_urls"]["spotify"]

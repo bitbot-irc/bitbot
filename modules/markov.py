@@ -39,7 +39,7 @@ class Module(ModuleManager.BaseModule):
         if page.code == 200:
             event["stdout"].write("Importing...")
             self._load_thread = threading.Thread(target=self._load_loop,
-                args=[event["target"].id, page.data])
+                args=[event["target"].id, page.decode()])
             self._load_thread.daemon = True
             self._load_thread.start()
         else:

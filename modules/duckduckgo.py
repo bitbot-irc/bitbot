@@ -18,9 +18,9 @@ class Module(ModuleManager.BaseModule):
         if phrase:
             page = utils.http.request(URL_DDG, get_params={
                 "q": phrase, "format": "json", "no_html": "1",
-                "no_redirect": "1"}, json=True)
+                "no_redirect": "1"}).json()
 
-            if page and page.data["AbstractURL"]:
-                event["stdout"].write(page.data["AbstractURL"])
+            if page and page["AbstractURL"]:
+                event["stdout"].write(page["AbstractURL"])
             else:
                 event["stderr"].write("No results found")

@@ -67,12 +67,10 @@ class Request(object):
     cookies: typing.Dict[str, str] = dataclasses.field(
         default_factory=dict)
 
-    json: bool = False
     json_body: bool = False
 
     allow_redirects: bool = True
     check_content_type: bool = True
-    detect_encoding: bool = True
     fallback_encoding: typing.Optional[str] = None
     content_type: typing.Optional[str] = None
     proxy: typing.Optional[str] = None
@@ -116,7 +114,7 @@ class Request(object):
             return None
 
 class Response(object):
-    def __init__(self, code: int, data: typing.Any, encoding: str,
+    def __init__(self, code: int, data: bytes, encoding: str,
             headers: typing.Dict[str, str], cookies: typing.Dict[str, str]):
         self.code = code
         self.data = data
@@ -124,8 +122,8 @@ class Response(object):
         self.encoding = encoding
         self.headers = headers
         self.cookies = cookies
-    def decode(self) -> str:
-        return self.data
+    def decode(self, encoding="utf8") -> str:
+        return self.data.decode(encoding)
     def json(self) -> typing.Any:
         return _json.loads(self.data)
     def soup(self, parser: str="lxml") -> bs4.BeautifulSoup:
@@ -199,28 +197,12 @@ def _request(request_obj: Request) -> Response:
         else:
             encoding = "iso-8859-1"
 
-    if (request_obj.detect_encoding and
-            response.content_type and
+    if (response.content_type and
             response.content_type in SOUP_CONTENT_TYPES):
-        souped = bs4.BeautifulSoup(response.data, "lxml")
-        encoding = _find_encoding(souped) or encoding
+        encoding = _find_encoding(response.data) or encoding
+    response.encoding = encoding
 
-    def _decode_data():
-        return response.data.decode(encoding)
-
-    if request_obj.json and response.data:
-        data = _decode_data()
-        try:
-            response.data = _json.loads(data)
-            return response
-        except _json.decoder.JSONDecodeError as e:
-            raise HTTPParsingException(str(e), data)
-
-    if response.content_type in DECODE_CONTENT_TYPES:
-        response.data = _decode_data()
-        return response
-    else:
-        return response
+    return response
 
 class RequestManyException(Exception):
     pass

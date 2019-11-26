@@ -70,17 +70,18 @@ class Module(ModuleManager.BaseModule):
         headers = {}
         if not oauth2_token == None:
             headers["Authorization"] = "token %s" % oauth2_token
-        request = utils.http.Request(url, headers=headers, json=True)
+        request = utils.http.Request(url, headers=headers)
         return utils.http.request(request)
 
     def _commit(self, username, repository, commit):
         page = self._get(API_COMMIT_URL % (username, repository, commit))
         if page and page.code == 200:
+            page = page.json()
             repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
-            sha = utils.irc.color(page.data["sha"][:8], COLOR_ID)
+            sha = utils.irc.color(page["sha"][:8], COLOR_ID)
             return "(%s@%s) %s - %s %s" % (repo, sha,
-                page.data["author"]["login"], page.data["commit"]["message"],
-                self._short_url(page.data["html_url"]))
+                page["author"]["login"], page["commit"]["message"],
+                self._short_url(page["html_url"]))
     def _parse_commit(self, target, ref):
         username, repository, commit = self._parse_ref(target, ref, "@")
         return self._commit(username, repository, commit)
@@ -116,21 +117,21 @@ class Module(ModuleManager.BaseModule):
     def _parse_issue(self, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
         number = utils.irc.color("#%s" % number, COLOR_ID)
-        labels = [label["name"] for label in page.data["labels"]]
+        labels = [label["name"] for label in page["labels"]]
         labels_str = ""
         if labels:
             labels_str = "[%s] " % ", ".join(labels)
 
-        url = self._short_url(page.data["html_url"])
+        url = self._short_url(page["html_url"])
 
-        state = page.data["state"]
+        state = page["state"]
         if state == "open":
             state = utils.irc.color("open", COLOR_NEUTRAL)
         elif state == "closed":
             state = utils.irc.color("closed", COLOR_NEGATIVE)
 
         return "(%s issue%s, %s) %s %s%s" % (
-            repo, number, state, page.data["title"], labels_str, url)
+            repo, number, state, page["title"], labels_str, url)
     def _get_issue(self, username, repository, number):
         return self._get(API_ISSUE_URL % (username, repository, number))
 
@@ -147,21 +148,21 @@ class Module(ModuleManager.BaseModule):
 
         page = self._get_issue(username, repository, number)
         if page and page.code == 200:
-            self._parse_issue(page, username, repository, number)
+            self._parse_issue(page.json(), username, repository, number)
         else:
             event["stderr"].write("Could not find issue")
 
     def _parse_pull(self, page, username, repository, number):
         repo = utils.irc.color("%s/%s" % (username, repository), COLOR_REPO)
         number = utils.irc.color("#%s" % number, COLOR_ID)
-        branch_from = page.data["head"]["label"]
-        branch_to = page.data["base"]["label"]
-        added = self._added(page.data["additions"])
-        removed = self._removed(page.data["deletions"])
-        url = self._short_url(page.data["html_url"])
+        branch_from = page["head"]["label"]
+        branch_to = page["base"]["label"]
+        added = self._added(page["additions"])
+        removed = self._removed(page["deletions"])
+        url = self._short_url(page["html_url"])
 
-        state = page.data["state"]
-        if page.data["merged"]:
+        state = page["state"]
+        if page["merged"]:
             state = utils.irc.color("merged", COLOR_POSITIVE)
         elif state == "open":
             state = utils.irc.color("open", COLOR_NEUTRAL)
@@ -170,7 +171,7 @@ class Module(ModuleManager.BaseModule):
 
         return "(%s PR%s, %s) %s → %s [%s/%s] %s %s" % (
             repo, number, state, branch_from, branch_to, added, removed,
-            page.data["title"], url)
+            page["title"], url)
     def _get_pull(self, username, repository, number):
         return self._get(API_PULL_URL % (username, repository, number))
     @utils.hook("received.command.ghpull", min_args=1)
@@ -187,7 +188,7 @@ class Module(ModuleManager.BaseModule):
         page = self._get_pull(username, repository, number)
 
         if page and page.code == 200:
-            self._parse_pull(page, username, repository, number)
+            self._parse_pull(page.json(), username, repository, number)
         else:
             event["stderr"].write("Could not find pull request")
 
@@ -198,9 +199,11 @@ class Module(ModuleManager.BaseModule):
 
         page = self._get_issue(username, repository, number)
         if page and page.code == 200:
-            if "pull_request" in page.data:
+            page = page.json()
+            if "pull_request" in page:
                 pull = self._get_pull(username, repository, number)
-                return self._parse_pull(pull, username, repository, number)
+                return self._parse_pull(pull.json(), username, repository,
+                    number)
             else:
                 return self._parse_issue(page, username, repository, number)
         else:
