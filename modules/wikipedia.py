@@ -17,9 +17,9 @@ class Module(ModuleManager.BaseModule):
             "action": "query", "prop": "extracts",
             "titles": event["args"], "exintro": "",
             "explaintext": "", "exchars": "500",
-            "redirects": "", "format": "json"}, json=True)
+            "redirects": "", "format": "json"}).json()
         if page:
-            pages = page.data["query"]["pages"]
+            pages = page["query"]["pages"]
             article = list(pages.items())[0][1]
             if not "missing" in article:
                 title, info = article["title"], article["extract"]
