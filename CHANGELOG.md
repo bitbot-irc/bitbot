@@ -15,6 +15,8 @@ Changed:
 - Unique User-Agent (`utils.http.USERAGENT`)
 - Nickname hashed colourisation now matches weechat's default (`utils.irc`)
 - `./bitbotd -m permissions -M master-password` moved to `./bitbotctl command master-password`
+- `utils.http.Response.data` is now always `bytes` - use `.decode()`/`.json()`/`.soup()`
+- `to.py` -> `tell.py`; move `!to` to `!tell` but add `!to` as an alias
 
 # 2019-11-18 - BitBot v1.15.0
 
