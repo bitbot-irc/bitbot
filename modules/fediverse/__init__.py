@@ -117,13 +117,13 @@ class Module(ModuleManager.BaseModule):
         except ap_utils.FindActorException as e:
             raise utils.EventError(str(e))
 
-
         actor = ap_actor.Actor(actor_url)
         if not actor.load():
             raise utils.EventError("Failed to load user")
 
         items = actor.outbox.load()
         nonreply = [actor.followers]
+        first_item = None
         for item in items:
             if item["type"] == "Announce" or item["object"]["cc"] == nonreply:
                 first_item = item
