@@ -401,7 +401,7 @@ class Module(ModuleManager.BaseModule):
 
         target_str = event.get("target_str", target.name)
         self._out(event["server"], target, target_str, stdout,
-            type)
+            type, {})
 
     @utils.hook("check.command.self")
     def check_command_self(self, event):
