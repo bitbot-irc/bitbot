@@ -317,6 +317,12 @@ class Module(ModuleManager.BaseModule):
             else:
                 raise utils.EventError("Unknown subcommand %s" % subcommand)
 
+    def _assert(self, allowed):
+        if allowed:
+            return utils.consts.PERMISSION_FORCE_SUCCESS, None
+        else:
+            return utils.consts.PERMISSION_ERROR, NO_PERMISSION
+
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
         allowed = None
@@ -326,9 +332,15 @@ class Module(ModuleManager.BaseModule):
             allowed = self._has_permission(event["user"], permission)
         elif authenticated:
             allowed = self._is_identified(event["user"])
+        else:
+            return
 
-        if not allowed == None:
-            if allowed:
-                return utils.consts.PERMISSION_FORCE_SUCCESS, None
-            else:
-                return utils.consts.PERMISSION_ERROR, NO_PERMISSION
+        return self._assert(allowed)
+
+    @utils.hook("check.command.permission")
+    def check_permission(self, event):
+        return self._assert(
+            self._has_permission(event["user"], event["request_args"][0]))
+    @utils.hook("check.command.authenticated")
+    def check_authenticated(self, event):
+        return self._assert(self._is_identified(event["user"]))

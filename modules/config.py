@@ -150,13 +150,11 @@ class Module(ModuleManager.BaseModule):
                 raise ConfigSettingInexistent()
 
     @utils.hook("received.command.c", alias_of="config")
-    @utils.hook("received.command.config", min_args=1)
+    @utils.hook("received.command.config")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("help", "Change config options")
+    @utils.kwarg("usage", "<context>[:name] [-][setting [value]]")
     def config(self, event):
-        """
-        :help: Change config options
-        :usage: <context>[:name] [-][setting [value]]
-        """
-
         arg_count = len(event["args_split"])
         context_desc, _, name = event["args_split"][0].partition(":")
 
