@@ -14,17 +14,20 @@ class Module(ModuleManager.BaseModule):
         :usage: <term>
         """
         page = utils.http.request(URL_WIKIPEDIA, get_params={
-            "action": "query", "prop": "extracts",
-            "titles": event["args"], "exintro": "",
-            "explaintext": "", "exchars": "500",
-            "redirects": "", "format": "json"}).json()
+            "action": "query", "prop": "extracts|info", "inprop": "url",
+            "titles": event["args"], "exintro": "", "explaintext": "",
+            "exchars": "500", "redirects": "", "format": "json"}).json()
+
         if page:
             pages = page["query"]["pages"]
             article = list(pages.items())[0][1]
             if not "missing" in article:
                 title, info = article["title"], article["extract"]
-                info = info.replace("\n\n", " ").split("\n")[0]
-                event["stdout"].write("%s: %s" % (title, info))
+                title = article["title"]
+                info = utils.parse.line_normalise(article["extract"])
+                url = article["fullurl"]
+
+                event["stdout"].write("%s: %s - %s" % (title, info, url))
             else:
                 event["stderr"].write("No results found")
         else:
