@@ -136,7 +136,8 @@ def _meta_content(s: str) -> typing.Dict[str, str]:
         out[key] = value
     return out
 
-def _find_encoding(soup: bs4.BeautifulSoup) -> typing.Optional[str]:
+def _find_encoding(data: bytes) -> typing.Optional[str]:
+    soup = bs4.BeautifulSoup(data)
     if not soup.meta == None:
         meta_charset = soup.meta.get("charset")
         if not meta_charset == None:
