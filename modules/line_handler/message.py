@@ -91,17 +91,20 @@ def message(events, event):
     hook = events.on(direction).on(event_type).on(context)
 
     if is_channel:
-        hook.call(channel=target_obj, **kwargs)
+        buffer_line = None
         if message:
-            target_obj.buffer.add_message(user.nickname, message, action,
-                event["line"].tags, from_self)
+            buffer_line = target_obj.buffer.add_message(user.nickname, message,
+                action, event["line"].tags, from_self)
+        hook.call(channel=target_obj, buffer_line=buffer_line, **kwargs)
     else:
-        hook.call(**kwargs)
 
         buffer_obj = target_obj
         if not from_self:
             buffer_obj = user
 
+        buffer_line = None
         if message:
-            buffer_obj.buffer.add_message(user.nickname, message, action,
-                event["line"].tags, from_self)
+            buffer_line = buffer_obj.buffer.add_message(user.nickname, message,
+                action, event["line"].tags, from_self)
+
+        hook.call(buffer_line=buffer_line, **kwargs)

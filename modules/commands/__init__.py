@@ -315,7 +315,8 @@ class Module(ModuleManager.BaseModule):
                 self.command(event["server"], event["channel"],
                     event["target_str"], True, event["user"], command,
                     args_split, event["line"], hook,
-                    command_prefix=command_prefix)
+                    command_prefix=command_prefix,
+                    buffer_line=event["buffer_line"])
             else:
                 self.events.on("unknown.command").call(server=event["server"],
                     target=event["channel"], user=event["user"],
@@ -336,7 +337,8 @@ class Module(ModuleManager.BaseModule):
                             event["target_str"], True, event["user"], command,
                             "", event["line"], hook, match=match,
                             message=event["message"], command_prefix="",
-                            action=event["action"])
+                            action=event["action"],
+                            buffer_line=event["buffer_line"])
 
                         if res:
                             break
@@ -365,7 +367,8 @@ class Module(ModuleManager.BaseModule):
             if hook:
                 self.command(event["server"], event["user"],
                     event["user"].nickname, False, event["user"], command,
-                    args_split, event["line"], hook, command_prefix="")
+                    args_split, event["line"], hook, command_prefix="",
+                    buffer_line=event["buffer_line"])
             else:
                 self.events.on("unknown.command").call(server=event["server"],
                     target=event["user"], user=event["user"], command=command,

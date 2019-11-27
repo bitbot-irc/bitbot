@@ -24,20 +24,20 @@ class Buffer(object):
         self.server = server
         self._lines = collections.deque(maxlen=MAX_LINES
             ) # type: typing.Deque[BufferLine]
-        self._skip_next = False
 
     def _add_message(self, sender: str, message: str, action: bool, tags: dict,
-            from_self: bool, method: str):
-        if not self._skip_next:
-            line = BufferLine(sender, message, action, tags, from_self, method)
-            self._lines.appendleft(line)
-        self._skip_next = False
+            from_self: bool, method: str) -> BufferLine:
+        line = BufferLine(sender, message, action, tags, from_self, method)
+        self._lines.appendleft(line)
+        return line
     def add_message(self, sender: str, message: str, action: bool, tags: dict,
-            from_self: bool=False):
-        self._add_message(sender, message, action, tags, from_self, "PRIVMSG")
+            from_self: bool=False) -> BufferLine:
+        return self._add_message(sender, message, action, tags, from_self,
+            "PRIVMSG")
     def add_notice(self, sender: str, message: str, tags: dict,
             from_self: bool=False):
-        self._add_message(sender, message, False, tags, from_self, "NOTICE")
+        return self._add_message(sender, message, False, tags, from_self,
+            "NOTICE")
 
     def get(self, index: int=0, **kwargs) -> typing.Optional[BufferLine]:
         from_self = kwargs.get("from_self", True)
@@ -83,6 +83,3 @@ class Buffer(object):
                 if len(found_lines) == max:
                     break
         return found_lines
-
-    def skip_next(self):
-        self._skip_next = True
