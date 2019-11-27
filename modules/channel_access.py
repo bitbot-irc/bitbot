@@ -11,8 +11,7 @@ class Module(ModuleManager.BaseModule):
         access = target.get_user_setting(user.get_id(), "access", [])
         identified = self.exports.get_one("is-identified")(user)
 
-        return ((require_access in access or "*" in access
-            ) and identified_account)
+        return (require_access in access or "*" in access) and identified
 
     def _command_check(self, event, target, require_access):
         if event["is_channel"]:
