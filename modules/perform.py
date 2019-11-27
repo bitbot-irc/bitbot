@@ -1,12 +1,17 @@
 #--depends-on commands
 #--depends-on permissions
 
-from src import EventManager, ModuleManager, utils
+from src import EventManager, IRCLine, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def _execute(self, server, commands, **kwargs):
         for command in commands:
-            server.send_raw(command.format(**kwargs))
+            line = command.format(**kwargs)
+            if IRCLine.is_human(line):
+                line = IRCLine.parse_human(line)
+            else:
+                line = IRCLine.parse_line(line)
+            server.send(line)
 
     @utils.hook("received.001", priority=EventManager.PRIORITY_URGENT)
     def on_connect(self, event):
