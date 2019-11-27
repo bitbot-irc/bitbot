@@ -97,19 +97,18 @@ class Module(ModuleManager.BaseModule):
             type = note["type"]
             note = note["object"]
 
-        cw, out, url = ap_utils.format_note(actor, note, type)
+        cw, author, content, url = ap_utils.parse_note(actor, note, type)
         shorturl = self.exports.get_one("shorturl")(event["server"], url,
             context=event["target"])
 
         if cw:
             if strict_cw:
-                out = "CW: %s - %s" % (cw, shorturl)
+                out = "%s: CW %s - %s" % (author, cw, shorturl)
             else:
-                out = "(CW %s) %s - %s" % (cw, out, shorturl)
+                out = "(CW %s) %s: %s - %s" % (cw, author, content, shorturl)
         else:
-            out = "%s - %s" % (out, shorturl)
+            out = "%s: %s - %s" % (author, content, shorturl)
         event["stdout"].write(out)
-
 
     def _get_from_outbox(self, username, instance):
         try:

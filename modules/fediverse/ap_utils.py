@@ -123,7 +123,7 @@ def _content(note):
 
         return "<%s>" % filename
 
-def format_note(actor, note, type="Create"):
+def parse_note(actor, note, type="Create"):
     if type == "Announce":
         retoot_url = note
         retoot_instance = urllib.parse.urlparse(retoot_url).hostname
@@ -135,14 +135,15 @@ def format_note(actor, note, type="Create"):
         retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
         retoot_content = _content(retoot)
 
-        return (retoot.get("summary", None),  "%s (boost %s): %s" % (
-            actor.username, retooted_user, retoot_content), retoot_url)
+        author = "%s (boost %s)" % (actor.username, retooted_user)
+
+        return (retoot.get("summary", None), author, retoot_content, retoot_url)
+
 
     elif type == "Create":
         content = _content(note)
         url = note.get("url", note["id"])
 
-        return (note.get("summary", None),
-            "%s: %s" % (actor.username, content), url)
+        return note.get("summary", None), actor.username, content, url
 
-    return None, None, None
+    return None
