@@ -56,20 +56,31 @@ class Module(ModuleManager.BaseModule):
             if self._closest_setting(event, "sed-sender-only", False):
                 for_user = event["user"].nickname
 
+            match_line = None
+            match = None
+            match_message = None
             with utils.deadline():
-                match = event["target"].buffer.find(pattern, from_self=False,
-                    for_user=for_user, not_pattern=REGEX_SED)
+                for line in event["target"].buffer.get_all(for_user):
+                    if not line.from_self:
+                        message = line.notes.get("sed-line", line.message)
+                        match = pattern.search(message)
+                        if match and not REGEX_SED.match(message):
+                            match_line = line
+                            match = match.group(0)
+                            match_message = message
 
             if match:
                 replace = sed_split[2]
                 replace = replace.replace("\\/", "/")
-                replace = re.sub(SED_AMPERSAND, "\\1%s" % match.match, replace)
-                replace = utils.irc.bold(replace)
+                replace = re.sub(SED_AMPERSAND, "\\1%s" % match, replace)
+                replace_color = utils.irc.bold(replace)
 
-                new_message = re.sub(pattern, replace, match.line.message,
-                    count)
-                if match.line.action:
-                    prefix = "* %s" % match.line.sender
+                new_message = re.sub(pattern, replace, message, count)
+                new_message_color = re.sub(pattern, utils.irc.bold(replace),
+                    message, count)
+                if match_line.action:
+                    prefix = "* %s" % match_line.sender
                 else:
-                    prefix = "<%s>" % match.line.sender
-                event["stdout"].write("%s %s" % (prefix, new_message))
+                    prefix = "<%s>" % match_line.sender
+                match_line.notes["sed-line"] = new_message
+                event["stdout"].write("%s %s" % (prefix, new_message_color))
