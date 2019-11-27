@@ -1,17 +1,17 @@
-import collections, re, typing
+import collections, dataclasses, re, typing
 from src import IRCBot, IRCServer, utils
 
 MAX_LINES = 64
 
+@dataclasses.dataclass
 class BufferLine(object):
-    def __init__(self, sender: str, message: str, action: bool, tags: dict,
-            from_self: bool, method: str):
-        self.sender = sender
-        self.message = message
-        self.action = action
-        self.tags = tags
-        self.from_self = from_self
-        self.method = method
+    sender: str
+    message: str
+    action: bool
+    tags: dict
+    from_self: bool
+    method: str
+    notes: typing.Dict[str, str] = {}
 
 class BufferLineMatch(object):
     def __init__(self, line: BufferLine, match: str):
