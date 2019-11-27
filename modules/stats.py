@@ -141,17 +141,19 @@ class Module(ModuleManager.BaseModule):
             return channels
 
     @utils.hook("received.command.channels")
-    @utils.kwarg("help", "List all the channel I'm in on this network")
+    @utils.kwarg("help",
+        "List all the channel I'm in on this network (* = hidden)")
     @utils.kwarg("permission", "listchannels")
     def channels_command(self, event):
         channels = []
         for channel in event["server"].channels.values():
+            name = channel.name
             hidden = bool(HIDDEN_MODES&set(channel.modes.keys()))
-            if (hidden and
-                    event["is_channel"] and
-                    not channel == event["target"]):
-                continue
-            channels.append(channel.name)
+            if hidden:
+                if event["is_channel"] and not channel == event["target"]:
+                    continue
+                name = "*%s" % name
+            channels.append(name)
 
         event["stdout"].write("Current channels: %s" %
             " ".join(sorted(channels)))
