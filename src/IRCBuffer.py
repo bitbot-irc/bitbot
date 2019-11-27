@@ -11,7 +11,8 @@ class BufferLine(object):
     tags: dict
     from_self: bool
     method: str
-    notes: typing.Dict[str, str] = {}
+    notes: typing.Dict[str, str] = dataclasses.field(
+        default_factory=dict)
 
 class BufferLineMatch(object):
     def __init__(self, line: BufferLine, match: str):
