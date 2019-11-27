@@ -147,13 +147,25 @@ class Module(ModuleManager.BaseModule):
         channels = []
         for channel in event["server"].channels.values():
             hidden = bool(HIDDEN_MODES&set(channel.modes.keys()))
-            if hidden and (
-                    event["is_channel"] and not channel == event["target"]):
+            if (hidden and
+                    event["is_channel"] and
+                    not channel == event["target"]):
                 continue
             channels.append(channel.name)
 
         event["stdout"].write("Current channels: %s" %
             " ".join(sorted(channels)))
+
+    @utils.hook("received.command.servers")
+    @utils.kwarg("help", "List all servers (* = connected)")
+    @utils.kwarg("permission", "listservers")
+    def servers_command(self, event):
+        servers = []
+        for id, alias in self.bot.database.servers.get_all():
+            if not self.bot.get_server_by_id(id) == None:
+                alias = "*%s" % alias
+            servers.append(alias)
+        event["stdout"].write("Servers: %s" % ", ".join(sorted(servers)))
 
     @utils.hook("api.get.modules")
     def modules_api(self, event):
