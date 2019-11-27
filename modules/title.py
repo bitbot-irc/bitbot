@@ -57,10 +57,10 @@ class Module(ModuleManager.BaseModule):
 
         if not page.content_type in utils.http.SOUP_CONTENT_TYPES:
             return -1, None
-        page = page.soup()
+        soup = page.soup()
 
-        if page.title:
-            title = utils.parse.line_normalise(page.title.text)
+        if soup.title:
+            title = utils.parse.line_normalise(soup.title.text)
             if not title:
                 return -3, None
 
