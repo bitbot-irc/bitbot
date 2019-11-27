@@ -7,6 +7,7 @@ Added:
 - Timed user ignores (`ignore.py`)
 - Support `"$$"` as `"$"` in command alias argument replacement (`aliases.py`)
 - Show explicitly when only a title of an issue/PR was changed (`git_webhooks`)
+- Show URLs in `!wikipedia` output (`wikipedia.py`)
 
 Changed:
 - Complete refactor of `permissions` module - now with hostmask support
@@ -17,6 +18,7 @@ Changed:
 - `./bitbotd -m permissions -M master-password` moved to `./bitbotctl command master-password`
 - `utils.http.Response.data` is now always `bytes` - use `.decode()`/`.json()`/`.soup()`
 - `to.py` -> `tell.py`; move `!to` to `!tell` but add `!to` as an alias
+- Sed edits are now cumulative (`sed.py`)
 
 # 2019-11-18 - BitBot v1.15.0
 
