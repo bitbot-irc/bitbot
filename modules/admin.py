@@ -21,7 +21,12 @@ class Module(ModuleManager.BaseModule):
         :usage: <raw line>
         :permission: raw
         """
-        line = event["server"].send_raw(event["args"])
+        if IRCLine.is_human(event["args"]):
+            line = IRCLine.parse_human(event["args"])
+        else:
+            line = IRCLine.parse_line(event["args"])
+        line = event["server"].send(line)
+
         if not line == None:
             event["stdout"].write("Sent: %s" % line.parsed_line.format())
         else:

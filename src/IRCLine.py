@@ -197,6 +197,15 @@ def parse_line(line: str) -> ParsedLine:
         args.append(typing.cast(str, trailing))
     return ParsedLine(command, args, source, tags)
 
+def is_human(line: str):
+    return len(line) > 1 and line[0] == "/"
+def parse_human(line: str) -> typing.Optional[ParsedLine]:
+    command, _, args = line[1:].partition(" ")
+    if command == "msg":
+        target, _, message = args.partition(" ")
+        return ParsedLine("PRIVMSG", [target, message])
+    return None
+
 class SentLine(IRCObject.Object):
     def __init__(self, events: "EventManager.Events",
             send_time: datetime.datetime, hostmask: str, line: ParsedLine):
