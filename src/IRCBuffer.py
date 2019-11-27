@@ -47,6 +47,14 @@ class Buffer(object):
                 continue
             return line
         return None
+    def get_all(self, for_user: typing.Optional[str]=None):
+        if not for_user == None:
+            for line in self._lines:
+                if self.server.irc_lower(line.sender) == for_user:
+                    yield line
+        else:
+            for line in self._lines:
+                yield line
     def find(self, pattern: typing.Union[str, typing.Pattern[str]], **kwargs
             ) -> typing.Optional[BufferLineMatch]:
         from_self = kwargs.get("from_self", True)
