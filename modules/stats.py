@@ -159,6 +159,7 @@ class Module(ModuleManager.BaseModule):
             " ".join(sorted(channels)))
 
     @utils.hook("received.command.servers")
+    @utils.kwarg("private_only", True)
     @utils.kwarg("help", "List all servers (* = connected)")
     @utils.kwarg("permission", "listservers")
     def servers_command(self, event):
