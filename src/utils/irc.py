@@ -175,15 +175,7 @@ def parse_format(s: str) -> str:
 
         s = s.replace(token, replace, 1)
 
-    if has_foreground:
-        s += consts.ANSI_FOREGROUND_RESET
-    if has_background:
-        s += consts.ANSI_BACKGROUND_RESET
-    if bold:
-        s += consts.ANSI_BOLD_RESET
-    if underline:
-        s += consts.ANSI_UNDERLINE_RESET
-
+    s += consts.ANSI_RESET
     return s
 
 OPT_STR = typing.Optional[str]
