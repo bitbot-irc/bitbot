@@ -70,15 +70,16 @@ class Module(ModuleManager.BaseModule):
             if next_birthday < now:
                 next_birthday = next_birthday.replace(year=next_birthday.year+1)
             days = (next_birthday-now).days
+            days_str = "day" if days == 1 else "days"
             age = next_birthday.year-birthday_parsed.year
 
             if days > 0:
                 if years:
-                    event["stdout"].write("%s is %d in %d days" % (
-                        target_user.nickname, age, days))
+                    event["stdout"].write("%s is %d in %d %s" % (
+                        target_user.nickname, age, days, days_str))
                 else:
-                    event["stdout"].write("%s birthday is in %d days" % (
-                        _apostrophe(target_user.nickname), days))
+                    event["stdout"].write("%s birthday is in %d %s" % (
+                        _apostrophe(target_user.nickname), days, days_str))
             else:
                 if years:
                     event["stdout"].write("%s is %d today! 🎉" % (
