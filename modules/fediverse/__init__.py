@@ -82,7 +82,7 @@ class Module(ModuleManager.BaseModule):
             if not note_page.content_type == ap_utils.ACTIVITY_TYPE:
                 raise utils.EventError("That's not a fediverse URL")
 
-            note = note_page.data
+            note = note_page.json()
             actor = ap_actor.Actor(note["attributedTo"])
             actor.load()
         else:
