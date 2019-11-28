@@ -52,16 +52,8 @@ twitter-api-secret       =
 twitter-access-token     =
 twitter-access-secret    =
 
-# https://api.tfl.gov.uk/
-tfl-api-id               =
-tfl-api-key              =
-
 # http://openldbsv.nationalrail.co.uk/
 nre-api-key              =
-
-# https://github.com/EvelynSubarrow/Eagle
-eagle-api-key            =
-eagle-api-url            =
 
 # https://docs.pushbullet.com/
 pushbullet-api-key       =
@@ -69,9 +61,6 @@ pushbullet-channel-tag   =
 
 # http://www.omdbapi.com/
 omdbapi-api-key          =
-
-# https://www.virustotal.com/en/documentation/public-api/
-virustotal-api-key       =
 
 # https://apidocs.imgur.com/
 imgur-api-key            =
