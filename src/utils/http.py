@@ -122,8 +122,8 @@ class Response(object):
         self.encoding = encoding
         self.headers = headers
         self.cookies = cookies
-    def decode(self, encoding="utf8") -> str:
-        return self.data.decode(encoding)
+    def decode(self, encoding: typing.Optional[str]=None) -> str:
+        return self.data.decode(encoding or self.encoding)
     def json(self) -> typing.Any:
         return _json.loads(self.data)
     def soup(self, parser: str="lxml") -> bs4.BeautifulSoup:
