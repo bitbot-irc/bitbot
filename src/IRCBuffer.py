@@ -26,19 +26,8 @@ class Buffer(object):
         self._lines = collections.deque(maxlen=MAX_LINES
             ) # type: typing.Deque[BufferLine]
 
-    def _add_message(self, sender: str, message: str, action: bool, tags: dict,
-            from_self: bool, method: str) -> BufferLine:
-        line = BufferLine(sender, message, action, tags, from_self, method)
+    def add(self, line: BufferLine):
         self._lines.appendleft(line)
-        return line
-    def add_message(self, sender: str, message: str, action: bool, tags: dict,
-            from_self: bool=False) -> BufferLine:
-        return self._add_message(sender, message, action, tags, from_self,
-            "PRIVMSG")
-    def add_notice(self, sender: str, message: str, tags: dict,
-            from_self: bool=False):
-        return self._add_message(sender, message, False, tags, from_self,
-            "NOTICE")
 
     def get(self, index: int=0, **kwargs) -> typing.Optional[BufferLine]:
         from_self = kwargs.get("from_self", True)

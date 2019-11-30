@@ -1,4 +1,4 @@
-from src import utils
+from src import IRCBuffer, utils
 
 def _from_self(server, source):
     if source:
@@ -90,21 +90,20 @@ def message(events, event):
     context = "channel" if is_channel else "private"
     hook = events.on(direction).on(event_type).on(context)
 
+    buffer_line = None
+    if message:
+        buffer_line = IRCBuffer.BufferLine(user.nickname, message, action,
+            event["line"].tags, from_self, event["line"].command)
+
+    buffer_obj = target_obj
     if is_channel:
-        buffer_line = None
-        if message:
-            buffer_line = target_obj.buffer.add_message(user.nickname, message,
-                action, event["line"].tags, from_self)
         hook.call(channel=target_obj, buffer_line=buffer_line, **kwargs)
     else:
-
         buffer_obj = target_obj
         if not from_self:
             buffer_obj = user
 
-        buffer_line = None
-        if message:
-            buffer_line = buffer_obj.buffer.add_message(user.nickname, message,
-                action, event["line"].tags, from_self)
-
         hook.call(buffer_line=buffer_line, **kwargs)
+
+    if buffer_line:
+        buffer_obj.buffer.add(buffer_line)
