@@ -93,6 +93,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.nick")
     @utils.hook("received.who")
     @utils.hook("received.whox")
+    @utils.hook("received.message.private")
     def chghost(self, event):
         if not self._is_identified(event["user"]):
             self._set_hostmask(event["server"], event["user"])
