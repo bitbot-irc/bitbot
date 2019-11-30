@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
 
     def _add_hostmask(self, server, hostmask, account):
         server._hostmasks[hostmask] = (
-            utils.irc.parse_hostmask(hostmask), account)
+            utils.irc.hostmask_parse(hostmask), account)
     def _remove_hostmask(self, server, hostmask):
         if hostmask in server._hostmasks:
             del server._hostmasks[hostmask]
