@@ -1,4 +1,4 @@
-import json, string, re, typing, uuid
+import dataclasses, json, string, re, typing, uuid
 from . import consts
 
 ASCII_UPPER = string.ascii_uppercase
@@ -262,19 +262,28 @@ class BatchType(object):
         t = list(set([type])&self._names)
         return t[0] if t else None
 
-def hostmask_match_many(hostmasks: typing.List[str], pattern: str
-        ) -> typing.Optional[str]:
+@dataclasses.dataclass
+class HostmaskPattern(object):
+    original: str
+    pattern: typing.Pattern
+
+    def match(self, hostmask: str):
+        return bool(self.pattern.fullmatch(hostmask))
+def hostmask_parse(hostmask: str):
     part1_out = []
-    for part1 in pattern.split("?"):
+    for part1 in hostmask.split("?"):
         part2_out = []
         for part2 in part1.split("*"):
             part2_out.append(re.escape(part2))
         part1_out.append(".*".join(part2_out))
-    pattern_re = re.compile(".".join(part1_out))
+    return HostmaskPattern(hostmask, re.compile(".".join(part1_out)))
+
+def hostmask_match_many(hostmasks: typing.List[str], pattern: HostmaskPattern,
+        ) -> typing.Optional[str]:
     for hostmask in hostmasks:
-        if pattern_re.match(hostmask):
+        if pattern.match(hostmask):
             return hostmask
     return None
 
-def hostmask_match(hostmask: str, pattern: str) -> bool:
+def hostmask_match(hostmask: str, pattern: HostmaskPattern) -> bool:
     return not hostmask_match_many([hostmask], pattern) == None
