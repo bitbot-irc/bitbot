@@ -14,9 +14,7 @@ class Module(ModuleManager.BaseModule):
     def on_formatted(self, event):
         line = event["minimal"] or event["line"]
 
-        if event["channel"]:
-            self._change_seen(event["channel"], event["user"], line)
-        elif event["user"]:
+        if not event["server"].is_own_nickname(event["user"].nickname):
             for channel in event["user"].channels:
                 self._change_seen(channel, event["user"], line)
 
