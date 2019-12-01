@@ -80,10 +80,15 @@ class Users(Table):
         self.database.execute("DELETE FROM users WHERE user_id=?",
             [user_id])
     def get_id(self, server_id: int, nickname: str):
-        value = self.database.execute_fetchone("""SELECT user_id FROM
-            users WHERE server_id=? and nickname=?""",
+        value = self.database.execute_fetchone(
+            "SELECT user_id FROM users WHERE server_id=? and nickname=?",
             [server_id, nickname])
         return value if value == None else value[0]
+    def get_nickname(self, server_id: int, user_id: int):
+        value = self.database.execute_fetchone(
+            "SELECT nickname FROM users WHERe server_id=? AND user_id=?",
+            [server_id, user_id])
+        return (value or [None])[0]
 
 class BotSettings(Table):
     def set(self, setting: str, value: typing.Any):
