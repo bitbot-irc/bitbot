@@ -64,7 +64,9 @@ class Module(ModuleManager.BaseModule):
 
         self._set_throttle(sender, positive)
         karma_str = self._karma_str(karma)
-        return True, "%s now has %s karma" % (target, karma_str)
+
+        return True, "%s has given %s %s karma" % (
+            sender.nickname, target, karma_str)
 
     @utils.hook("command.regex", pattern=REGEX_WORD)
     @utils.hook("command.regex", pattern=REGEX_PARENS)
@@ -109,7 +111,6 @@ class Module(ModuleManager.BaseModule):
 
         karma = self._karma_str(sum(settings.values()))
         event["stdout"].write("%s has %s karma" % (target, karma))
-
 
     @utils.hook("received.command.resetkarma")
     @utils.kwarg("min_args", 2)
