@@ -68,6 +68,7 @@ class Module(ModuleManager.BaseModule):
                             match_line = line
                             match = match.group(0)
                             match_message = message
+                            break
 
             if match:
                 replace = sed_split[2]
