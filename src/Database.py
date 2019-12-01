@@ -211,9 +211,9 @@ class UserSettings(Table):
             return values
         return default
     def find(self, user_id: int, pattern: str, default: typing.Any=[]):
-        values = self.database.execute(
+        values = self.database.execute_fetchall(
             """SELECT setting, value FROM user_settings WHERE
-            user_id=? AND setting LIKE '?'""", [user_id, pattern.lower()])
+            user_id=? AND setting LIKE ?""", [user_id, pattern.lower()])
         if values:
             for i, value in enumerate(values):
                 values[i] = value[0], json.loads(value[1])
@@ -246,7 +246,7 @@ class UserChannelSettings(Table):
             default: typing.Any=[]):
         values = self.database.execute_fetchall(
             """SELECT setting, value FROM user_channel_settings WHERE
-            user_id=? AND channel_id=? AND setting LIKE '?'""",
+            user_id=? AND channel_id=? AND setting LIKE ?""",
             [user_id, channel_id, pattern.lower()])
         if values:
             for i, value in enumerate(values):
