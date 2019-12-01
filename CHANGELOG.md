@@ -8,11 +8,14 @@ Added:
 - Support `"$$"` as `"$"` in command alias argument replacement (`aliases.py`)
 - Show explicitly when only a title of an issue/PR was changed (`git_webhooks`)
 - Show URLs in `!wikipedia` output (`wikipedia.py`)
+- `!raw` and `!perform` now support "human" formats (e.g. `/msg user message`)
+- Listing servers with `!servers` (`stats.py`)
 
 Changed:
 - Complete refactor of `permissions` module - now with hostmask support
 - Big refactor of commands module
 - Command aliases moved to their own module. Run `migration/v01.16.00-aliases.py` to migrate old aliases.
+- Karma is now stored per-user and you can give yourself karma. Run `migration/v01.16.00-karma` to migrate old karma.
 - Unique User-Agent (`utils.http.USERAGENT`)
 - Nickname hashed colourisation now matches weechat's default (`utils.irc`)
 - `./bitbotd -m permissions -M master-password` moved to `./bitbotctl command master-password`
