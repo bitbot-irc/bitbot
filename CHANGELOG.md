@@ -1,4 +1,4 @@
-# TBD - BitBot v1.16.0
+# 2019-12-01 - BitBot v1.16.0
 
 Added:
 - Show target in formatted private `NOTICE` events (`format_activity.py`)
