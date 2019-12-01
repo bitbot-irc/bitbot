@@ -41,14 +41,17 @@ class Module(ModuleManager.BaseModule):
         else:
             user._last_negative_karma = time.time()
 
+    def _get_target(self, server, target):
+        target = target.strip()
+        if not " " in target and server.has_user(target):
+            return server.get_user_nickname(server.get_user(target).get_id())
+        return target.lower()
+
     def _change_karma(self, server, sender, target, positive):
         if not self._check_throttle(sender, positive):
             return False, "Try again in a couple of seconds"
 
-        if " " in target and server.has_user(target):
-            target = server.get_user_nickname(target.get_id())
-        else:
-            target = target.lower()
+        target = self._get_target()
 
         setting = "karma-%s" % target
         karma = sender.get_setting(setting, 0)
@@ -95,7 +98,7 @@ class Module(ModuleManager.BaseModule):
             target = event["args"]
         else:
             target = event["user"].nickname
-        target = target.strip()
+        target = self._get_target(event["server"], target)
 
         settings = dict(
             event["server"].get_all_user_settings("karma-%s" % target))
