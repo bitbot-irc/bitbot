@@ -51,7 +51,7 @@ class Module(ModuleManager.BaseModule):
         if not self._check_throttle(sender, positive):
             return False, "Try again in a couple of seconds"
 
-        target = self._get_target()
+        target = self._get_target(server, target)
 
         setting = "karma-%s" % target
         karma = sender.get_setting(setting, 0)
