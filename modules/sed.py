@@ -27,7 +27,7 @@ class Module(ModuleManager.BaseModule):
                 return
 
             regex_flags = 0
-            flags = (sed_split[3:] or [""])[0]
+            flags = (sed_split[3:] or [""])[0].split(" ", 1)[0]
             count = None
 
             last_flag = ""
