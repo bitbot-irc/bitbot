@@ -1,3 +1,11 @@
+# 2019-12-01 - BitBot v1.16.1
+
+Changed:
+- Response to giving karma now makes sense
+
+Fixed:
+- Typo preventing users giving karma
+
 # 2019-12-01 - BitBot v1.16.0
 
 Added:
