@@ -1,3 +1,5 @@
+#--depends-on commands
+
 import base64, binascii, os
 import scrypt
 from src import ModuleManager, utils
