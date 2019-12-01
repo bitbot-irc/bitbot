@@ -12,8 +12,6 @@ REGEX_PARENS = re.compile(r"\(([^)]+)\)(\+\+|--)")
 
 @utils.export("channelset", utils.BoolSetting("karma-pattern",
     "Enable/disable parsing ++/-- karma format"))
-@utils.export("serverset", utils.BoolSetting("karma-nickname-only",
-    "Enable/disable karma being for nicknames only"))
 class Module(ModuleManager.BaseModule):
     def _karma_str(self, karma):
         karma_str = str(karma)
@@ -43,36 +41,27 @@ class Module(ModuleManager.BaseModule):
         else:
             user._last_negative_karma = time.time()
 
-
-    def _karma(self, server, sender, target, positive):
-        if self._check_throttle(sender, positive):
-            nickname_only = server.get_setting("karma-nickname-only", False)
-
-            if server.irc_lower(target) == sender.name:
-                return False, "You cannot change your own karma"
-
-            setting = "karma-%s" % target
-            setting_target = server
-            if nickname_only:
-                user = server.get_user(target, create=False)
-                if user == None:
-                    return False, "No such user"
-                setting = "karma"
-                setting_target = user
-
-            karma = setting_target.get_setting(setting, 0)
-            karma += 1 if positive else -1
-
-            if not karma == 0:
-                setting_target.set_setting(setting, karma)
-            else:
-                setting_target.del_setting(setting)
-
-            karma_str = self._karma_str(karma)
-            self._set_throttle(sender, positive)
-            return True, "%s now has %s karma" % (target, karma_str)
-        else:
+    def _change_karma(self, server, sender, target, positive):
+        if not self._check_throttle(sender, positive):
             return False, "Try again in a couple of seconds"
+
+        if " " in target and server.has_user(target):
+            target = server.get_user_nickname(target.get_id())
+        else:
+            target = target.lower()
+
+        setting = "karma-%s" % target
+        karma = sender.get_setting(setting, 0)
+        karma += 1 if positive else -1
+
+        if karma == 0:
+            sender.del_setting(setting)
+        else:
+            sender.set_setting(setting, karma)
+
+        self._set_throttle(sender, positive)
+        karma_str = self._karma_str(karma)
+        return True, "%s now has %s karma" % (target, karma_str)
 
     @utils.hook("command.regex", pattern=REGEX_WORD)
     @utils.hook("command.regex", pattern=REGEX_PARENS)
@@ -81,8 +70,8 @@ class Module(ModuleManager.BaseModule):
         if event["target"].get_setting("karma-pattern", False):
             target = event["match"].group(1)
             positive = event["match"].group(2)=="++"
-            success, message = self._karma(event["server"], event["user"],
-                target, positive)
+            success, message = self._change_karma(
+                event["server"], event["user"], target, positive)
             event["stdout" if success else "stderr"].write(message)
 
 
@@ -92,8 +81,8 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "<target>")
     def changepoint(self, event):
         positive = event["command"] == "addpoint"
-        success, message = self._karma(event["server"], event["user"],
-            event["args"].strip(), positive)
+        success, message = self._change_karma(
+            event["server"], event["user"], event["args"].strip(), positive)
         event["stdout" if success else "stderr"].write(message)
 
     @utils.hook("received.command.karma")
@@ -108,26 +97,50 @@ class Module(ModuleManager.BaseModule):
             target = event["user"].nickname
         target = target.strip()
 
-        if event["server"].get_setting("karma-nickname-only", False):
-            karma = event["server"].get_user(target).get_setting("karma", 0)
-        else:
-            karma = event["server"].get_setting("karma-%s" % target, 0)
-        karma_str = self._karma_str(karma)
-        event["stdout"].write("%s has %s karma" % (target, karma_str))
+        settings = dict(
+            event["server"].get_all_user_settings("karma-%s" % target))
 
-    @utils.hook("received.command.resetkarma", min_args=1)
+        target_lower = event["server"].irc_lower(target)
+        if target_lower in settings:
+            del settings[target_lower]
+
+        karma = self._karma_str(sum(settings.values()))
+        event["stdout"].write("%s has %s karma" % (target, karma))
+
+
+    @utils.hook("received.command.resetkarma")
+    @utils.kwarg("min_args", 2)
+    @utils.kwarg("help", "Reset a specific karma to 0")
+    @utils.kwarg("usage", "by|for <target>")
+    @utils.kwarg("permission", "resetkarma")
     def reset_karma(self, event):
-        """
-        :help: Reset a specified karma to 0
-        :usage: <target>
-        :permission: resetkarma
-        """
-        setting = "karma-%s" % event["args_split"][0]
-        karma = event["server"].get_setting(setting, 0)
-        if karma == 0:
-            event["stderr"].write("%s already has 0 karma" % event[
-                "args_split"][0])
+        subcommand = event["args_split"][0].lower()
+        target = " ".join(event["args_split"][1:])
+
+        if subcommand == "by":
+            target_user = event["server"].get_user(target)
+            karma = target_user.find_setting(prefix="karma-")
+            print(target_user)
+            print(target_user.get_id())
+            for setting, _ in karma:
+                target_user.del_setting(setting)
+
+            if karma:
+                event["stdout"].write("Cleared karma by %s" %
+                    target_user.nickname)
+            else:
+                event["stderr"].write("No karma to clear by %s" %
+                    target_user.nickname)
+        elif subcommand == "for":
+            setting = "karma-%s" % target
+            karma = event["server"].get_all_user_settings(setting)
+            for nickname, value in karma:
+                user = event["server"].get_user(nickname)
+                user.del_setting(setting)
+
+            if karma:
+                event["stdout"].write("Cleared karma for %s" % target)
+            else:
+                event["stderr"].write("No karma to clearfor %s" % target)
         else:
-            event["server"].del_setting(setting)
-            event["stdout"].write("Reset karma for %s" % event[
-                "args_split"][0])
+            raise utils.EventError("Unknown subcommand '%s'" % subcommand)
