@@ -21,8 +21,8 @@ def _parse(value):
     if mechanism in ALL_MECHANISMS:
         return {"mechanism": mechanism.upper(), "args": arguments}
     else:
-        raise utils.SettingParseException("Unknown SASL mechanism '%s'"
-            % mechanism)
+        raise utils.settings.SettingParseException(
+            "Unknown SASL mechanism '%s'" % mechanism)
 
 SASL_TIMEOUT = 15 # 15 seconds
 

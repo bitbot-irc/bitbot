@@ -119,7 +119,7 @@ class Module(ModuleManager.BaseModule):
             setting_object = export_settings[setting]
             try:
                 validated_value = setting_object.parse(value)
-            except utils.SettingParseException as e:
+            except utils.settings.SettingParseException as e:
                 raise ConfigInvalidValue(str(e))
 
             if not validated_value == None:
