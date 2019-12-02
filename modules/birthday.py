@@ -7,6 +7,9 @@ from src import ModuleManager, utils
 DATE_YEAR_FORMAT = "%Y-%m-%d"
 DATE_FORMAT = "%d-%b"
 
+EXAMPLE_DATE_YEAR = "1995-09-15"
+EXAMPLE_DATE = "01-jan"
+
 def _parse(s):
     if s.count("-") == 1:
         try:
@@ -36,7 +39,10 @@ def _parse_setting(value):
     if parsed:
         years, parsed = parsed
         return _format(years, parsed)
-    return None
+    else:
+        raise utils.settings.SettingParseException(
+            "Please provide either yyyy-mm-dd or dd-mmm (e.g. %s or %s)" %
+            (EXAMPLE_DATE_YEAR, EXAMPLE_DATE))
 
 def _apostrophe(nickname):
     if nickname[-1].lower() == "s":
@@ -44,7 +50,7 @@ def _apostrophe(nickname):
     return "%s's" % nickname
 
 @utils.export("set", utils.FunctionSetting(_parse_setting, "birthday",
-    "Set your birthday", example="1995-09-15"))
+    "Set your birthday", example=EXAMPLE_DATE_YEAR))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.birthday")
     def birthday(self, event):
