@@ -205,6 +205,20 @@ def _request(request_obj: Request) -> Response:
 
     return response
 
+class Session(object):
+    def __init__(self):
+        self._cookies: typing.Dict[str, str] = {}
+    def __enter__(self):
+        pass
+    def __exit__(self):
+        self._cookies.clear()
+
+    def request(self, request: Request) -> Response:
+        request.cookies.update(self._cookies)
+        response = _request(request)
+        self._cookies.update(response.cookies)
+        return response
+
 class RequestManyException(Exception):
     pass
 def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
