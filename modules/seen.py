@@ -15,8 +15,7 @@ class Module(ModuleManager.BaseModule):
         line = event["minimal"] or event["line"]
 
         if not event["server"].is_own_nickname(event["user"].nickname):
-            for channel in event["user"].channels:
-                self._change_seen(channel, event["user"], line)
+            self._change_seen(event["channel"], event["user"], line)
 
     @utils.hook("received.command.seen", min_args=1)
     def seen(self, event):
