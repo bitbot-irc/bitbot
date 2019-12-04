@@ -131,7 +131,13 @@ class Module(ModuleManager.BaseModule):
             text = " ".join(lines_str)
 
             quotes.append([event["user"].name, int(time.time()), text])
-            self._set_quotes(target, line.sender, quotes)
+
+            quote_category = line.sender
+            if event["server"].has_user(quote_category):
+                account = event["server"].get_user_nickname(
+                    event["server"].get_user(qoute_category).get_id())
+
+            self._set_quotes(target, quote_category, quotes)
 
             event["stdout"].write("Quote added")
         else:
