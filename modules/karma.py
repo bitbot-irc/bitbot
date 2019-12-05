@@ -104,7 +104,7 @@ class Module(ModuleManager.BaseModule):
             target = event["user"].nickname
 
         target = self._get_target(event["server"], target)
-        karma = self._karma_str(self._get_karma(server, target))
+        karma = self._karma_str(self._get_karma(event["server"], target))
 
         event["stdout"].write("%s has %s karma" % (target, karma))
 
