@@ -65,8 +65,10 @@ class Module(ModuleManager.BaseModule):
         self._set_throttle(sender, positive)
         karma_str = self._karma_str(karma)
 
-        return True, "%s has given %s %s karma" % (
-            sender.nickname, target, karma_str)
+        karma_total = self._karma_str(self._get_karma(server, target))
+
+        return True, "%s has given %s %s karma (%s total)" % (
+            sender.nickname, target, karma_str, karma_total)
 
     @utils.hook("command.regex", pattern=REGEX_WORD)
     @utils.hook("command.regex", pattern=REGEX_PARENS)
@@ -100,17 +102,20 @@ class Module(ModuleManager.BaseModule):
             target = event["args"]
         else:
             target = event["user"].nickname
+
         target = self._get_target(event["server"], target)
+        karma = self._karma_str(self._get_karma(server, target))
 
-        settings = dict(
-            event["server"].get_all_user_settings("karma-%s" % target))
+        event["stdout"].write("%s has %s karma" % (target, karma))
 
-        target_lower = event["server"].irc_lower(target)
+    def _get_karma(self, server, target):
+        settings = dict(server.get_all_user_settings("karma-%s" % target))
+
+        target_lower = server.irc_lower(target)
         if target_lower in settings:
             del settings[target_lower]
 
-        karma = self._karma_str(sum(settings.values()))
-        event["stdout"].write("%s has %s karma" % (target, karma))
+        return sum(settings.values())
 
     @utils.hook("received.command.resetkarma")
     @utils.kwarg("min_args", 2)
