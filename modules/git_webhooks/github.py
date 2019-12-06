@@ -25,6 +25,7 @@ EVENT_CATEGORIES = {
         "pull_request/opened", "pull_request/closed", "pull_request/reopened",
         "pull_request/edited", "pull_request/assigned",
         "pull_request/unassigned", "pull_request_review",
+        "pull_request/locked", "pull_request/unlocked",
         "pull_request_review_comment"
     ],
     "pr-all": [
@@ -42,7 +43,8 @@ EVENT_CATEGORIES = {
     ],
     "issue": [
         "issues/opened", "issues/closed", "issues/reopened", "issues/deleted",
-        "issues/edited", "issues/assigned", "issues/unassigned", "issue_comment"
+        "issues/edited", "issues/assigned", "issues/unassigned",
+        "issues/locked", "issues/unlocked", "issue_comment"
     ],
     "issue-all": [
         "issues", "issue_comment"
