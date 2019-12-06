@@ -1,4 +1,4 @@
-import decimal, io, typing
+import decimal, io, random, typing
 from . import datetime, errors
 
 COMMENT_TYPES = ["#", "//"]
@@ -120,3 +120,47 @@ def timed_args(args, min_args):
         return time, args[1:]
     return None, args
 
+SHORTENCODE_CHARS = list(
+    "abcdefghijklmnopqrstuvwxyz"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "0123456789")
+
+SHORTENCODE_SALT = "bitbot"
+def _shortencode_salt(salt: str):
+    chars = SHORTENCODE_CHARS.copy()
+    random.Random(salt).shuffle(chars)
+    return chars
+
+def _shortencode_tobase(n: int, base: int) -> typing.List[int]:
+    r = []
+    while n:
+        n, remainder = divmod(n, base)
+        r.append(remainder)
+    return r
+def _shortencode_frombase(ints: typing.List[int], base: int) -> int:
+    n = 0
+    for i in ints:
+        n = (n*base)+i
+    return n
+
+def shortencode_b(bytes: bytes, salt: str=SHORTENCODE_SALT):
+    chars = _shortencode_salt(salt)
+
+    ints = list(bytes)
+    n = _shortencode_frombase(ints, 256)
+    r = _shortencode_tobase(n, len(chars))
+
+    return "".join(chars[i] for i in reversed(r))
+def shortencode(s: str, salt: str=SHORTENCODE_SALT):
+    return shortencode_b(s.encode("latin-1"), salt)
+
+def shortdecode_b(s: str, salt: str=SHORTENCODE_SALT):
+    chars = _shortencode_salt(salt)
+
+    ints = [chars.index(c) for c in s]
+    n = _shortencode_frombase(ints, len(chars))
+    r = _shortencode_tobase(n, 256)
+
+    return bytes(reversed(r))
+def shortdecode(s: str, salt: str=SHORTENCODE_SALT):
+    return shortdecode_b(s, salt).decode("latin-1")
