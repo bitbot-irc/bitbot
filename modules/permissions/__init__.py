@@ -19,11 +19,11 @@ class Module(ModuleManager.BaseModule):
         for account, user_hostmasks in event["server"].get_all_user_settings(
                 HOSTMASKS_SETTING):
             for hostmask in user_hostmasks:
-                self._add_hostmask(event["server"], hostmask, account)
+                self._add_hostmask(event["server"],
+                    utils.irc.hostmask_parse(hostmask), account)
 
     def _add_hostmask(self, server, hostmask, account):
-        server._hostmasks[hostmask] = (
-            utils.irc.hostmask_parse(hostmask), account)
+        server._hostmasks[hostmask.original] = (hostmask, account)
     def _remove_hostmask(self, server, hostmask):
         if hostmask in server._hostmasks:
             del server._hostmasks[hostmask]
@@ -307,8 +307,9 @@ class Module(ModuleManager.BaseModule):
                 hostmasks.append(hostmask)
                 event["user"].set_setting(HOSTMASKS_SETTING, hostmasks)
 
-                self._specific_hostmask(event["server"], hostmask, account)
-                self._add_hostmask(event["server"], hostmask, account)
+                hostmask_obj = utils.irc.hostmask_parse(hostmaks)
+                self._specific_hostmask(event["server"], hostmask_obj, account)
+                self._add_hostmask(event["server"], hostmask_obj, account)
 
                 event["stdout"].write("Added %s to your hostmasks" % hostmask)
             elif subcommand == "remove":
