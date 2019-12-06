@@ -1,13 +1,15 @@
 # BitBot
 Python3 event-driven modular IRC bot!
 
-## Requirements
+## Setup
+
+### Requirements
 `$ pip3 install --user -r requirements.txt`
 
-## Setup
-See [docs/help/setup.md](docs/help/setup.md).
+### Config
+See [docs/help/config.md](docs/help/config.md).
 
-## Backups
+### Backups
 If you wish to create backups of your BitBot instance (which you should, [borgbackup](https://borgbackup.readthedocs.io/en/stable/) is a good option), I advise backing up the entirety of `~/.bitbot` - where BitBot by-default keeps config files, database files and rotated log files.
 
 ## Github, Gitea and GitLab web hooks
