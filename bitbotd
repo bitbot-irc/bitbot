@@ -117,6 +117,7 @@ if args.add_server:
 
 cache = Cache.Cache()
 config = Config.Config(args.config)
+config.load()
 events = EventManager.EventRoot(log).wrap()
 exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
