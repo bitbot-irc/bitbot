@@ -1,12 +1,13 @@
 import collections, configparser, os, typing
 
 class Config(object):
+
     def __init__(self, location: str):
         self.location = location
-        self._config = collections.OrderedDict()
+        self._config: typing.Dict[str, str] = collections.OrderedDict()
 
     def _parser(self) -> configparser.ConfigParser:
-        return configparser.ConfigParser(dict_type=collections.OrderedDict)
+        return configparser.ConfigParser()
 
     def load(self):
         if os.path.isfile(self.location):
