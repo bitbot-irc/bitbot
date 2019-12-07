@@ -29,9 +29,11 @@ class Config(object):
         return self._config[key]
     def __setitem__(self, key: str, value: str):
         self._config[key] = value
+    def __delitem__(self, key: str):
+        self._config.__delitem__(key)
+    def __contains__(self, key: str) -> bool:
+        return key in self._config
 
     def get(self, key: str, default: typing.Any=None) -> typing.Any:
         return self._config.get(key, default)
-    def __contains__(self, key: str) -> bool:
-        return key in self._config
 
