@@ -77,41 +77,46 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write(result.message)
 
-    @utils.hook("received.command.enablemodule", min_args=1)
+    def _get_blacklist(self):
+        return self.bot.config.get_list("module-blacklist")
+    def _save_blacklist(self, modules):
+        self.bot.config.set_list("module-blacklist", modules)
+        self.bot.config.save()
+
+    @utils.hook("received.command.enablemodule")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("help", "Remove a module from the module blacklist")
+    @utils.kwarg("usage", "<module>")
+    @utils.kwarg("permission", "enable-module")
     def enable(self, event):
-        """
-        :help: Remove a module from the module blacklist
-        :usage: <module name>
-        :permission: enable-module
-        """
         name = event["args_split"][0].lower()
-        blacklist = self.bot.get_setting("module-blacklist", [])
+
+        blacklist = self._get_blacklist()
         if not name in blacklist:
             raise utils.EventError("Module '%s' isn't disabled" % name)
 
         blacklist.remove(name)
-        self.bot.set_setting("module-blacklist", blacklist)
+        self._save_blacklist(blacklist)
         event["stdout"].write("Module '%s' has been enabled and can now "
             "be loaded" % name)
 
-    @utils.hook("received.command.disablemodule", min_args=1)
+    @utils.hook("received.command.disablemodule")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("help", "Add a module to the module blacklist")
+    @utils.kwarg("usage", "<module>")
+    @utils.kwarg("permission", "disable-module")
     def disable(self, event):
-        """
-        :help: Add a module to the module blacklist
-        :usage: <module name>
-        :permission: disable-module
-        """
         name = event["args_split"][0].lower()
         and_unloaded = ""
         if name in self.bot.modules.modules:
             self.bot.modules.unload_module(name)
             and_unloaded = " and unloaded"
 
-        blacklist = self.bot.get_setting("module-blacklist", [])
+        blacklist = self._get_blacklist()
         if name in blacklist:
             raise utils.EventError("Module '%s' is already disabled" % name)
 
         blacklist.append(name)
-        self.bot.set_setting("module-blacklist", blacklist)
+        self._save_blacklist(blacklist)
         event["stdout"].write("Module '%s' has been disabled%s" % (
             name, and_unloaded))

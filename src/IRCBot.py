@@ -147,16 +147,10 @@ class Bot(object):
         sys.exit(20)
 
     def _module_lists(self):
-        db_whitelist = set(self.get_setting("module-whitelist", []))
-        db_blacklist = set(self.get_setting("module-blacklist", []))
+        whitelist = self.config.get_list("module-whitelist")
+        blacklist = self.config.get_list("module-blacklist")
 
-        conf_whitelist = self.config.get("module-whitelist", "").split(",")
-        conf_blacklist = self.config.get("module-blacklist", "").split(",")
-
-        conf_whitelist = set(filter(None, conf_whitelist))
-        conf_blacklist = set(filter(None, conf_blacklist))
-
-        return (db_whitelist|conf_whitelist, db_blacklist|conf_blacklist)
+        return whitelist, blacklist
 
     def load_modules(self
             ) -> typing.Tuple[typing.List[str], typing.List[str]]:
