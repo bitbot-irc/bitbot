@@ -65,9 +65,6 @@ class BaseModule(object):
     def on_resume(self):
         pass
 
-    def command_line(self, args: str):
-        pass
-
 class ModuleDefinition(object):
     def __init__(self,
             name: str,

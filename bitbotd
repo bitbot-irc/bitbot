@@ -41,10 +41,6 @@ arg_parser.add_argument("--verbose", "-V", action="store_true")
 arg_parser.add_argument("--log-level", "-L")
 arg_parser.add_argument("--no-logging", "-N", action="store_true")
 
-arg_parser.add_argument("--module", "-m",
-    help="Execute an action against a specific module")
-arg_parser.add_argument("--module-args", "-M",
-    help="Arguments to give in action against a specific module")
 arg_parser.add_argument("--external", "-e", help="External modules directory")
 
 arg_parser.add_argument("--startup-disconnects", "-D",
@@ -143,12 +139,6 @@ bot.add_poll_hook(timers)
 control = Control.Control(bot, sock_location)
 control.bind()
 bot.add_poll_source(control)
-
-if args.module:
-    definition = modules.find_module(args.module)
-    module = modules.load_module(bot, definition)
-    module.module.command_line(args.module_args)
-    sys.exit(0)
 
 server_configs = bot.database.servers.get_all()
 
