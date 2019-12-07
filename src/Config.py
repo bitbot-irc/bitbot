@@ -37,3 +37,13 @@ class Config(object):
     def get(self, key: str, default: typing.Any=None) -> typing.Any:
         return self._config.get(key, default)
 
+    def get_list(self, key: str):
+        if key in self and self[key]:
+            return [item.strip() for item in self[key].split(",")]
+        return []
+    def set_list(self, key: str, list: typing.List[str]):
+        value = ",".join(item.strip() for item in list)
+        if value:
+            self[key] = value
+        elif key in self:
+            del self[key]
