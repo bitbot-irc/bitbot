@@ -8,6 +8,7 @@ from src import EventManager, ModuleManager, utils
 KARMA_DELAY_SECONDS = 3
 
 REGEX_WORD = re.compile(r"^([^(\s,:]+)(?:[:,]\s*)?(\+\+|--)\s*$")
+REGEX_WORD_START = re.compile(r"^(\+\+|--)([^(\s,:]+)\s*$")
 REGEX_PARENS = re.compile(r"\(([^)]+)\)(\+\+|--)")
 
 @utils.export("channelset", utils.BoolSetting("karma-pattern",
@@ -80,7 +81,15 @@ class Module(ModuleManager.BaseModule):
             success, message = self._change_karma(
                 event["server"], event["user"], target, positive)
             event["stdout" if success else "stderr"].write(message)
-
+    @utils.hook("command.regex", pattern=REGEX_WORD_START)
+    @utils.kwarg("command", "karma")
+    def regex_word_start(self, event):
+        if event["target"].get_setting("karma-pattern", False):
+            target = event["match"].group(2)
+            positive = event["match"].group(1)=="++"
+            success, message = self._change_karma(
+                event["server"], event["user"], target, positive)
+            event["stdout" if success else "stderr"].write(message)
 
     @utils.hook("received.command.addpoint")
     @utils.hook("received.command.rmpoint")
