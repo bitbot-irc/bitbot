@@ -7,6 +7,7 @@ class Actor(object):
         self.url = url
 
         self.username = None
+        self.display_name = None
         self.inbox = None
         self.outbox = None
         self.followers = None
@@ -16,6 +17,7 @@ class Actor(object):
         if response.code == 200:
             response = response.json()
             self.username = response["preferredUsername"]
+            self.display_name = response.get("name", self.username)
             self.inbox = Inbox(response["inbox"])
             self.outbox = Outbox(response["outbox"])
             self.followers = response["followers"]

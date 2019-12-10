@@ -132,10 +132,11 @@ def parse_note(actor, note, type="Create"):
 
         original_tooter = ap_actor.Actor(retoot["attributedTo"])
         original_tooter.load()
-        retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
+        retooted_user = "@%s@%s" % (original_tooter.display_name,
+            retoot_instance)
         retoot_content = _content(retoot)
 
-        author = "%s (boost %s)" % (actor.username, retooted_user)
+        author = "%s (boost %s)" % (actor.display_name, retooted_user)
 
         return (retoot.get("summary", None), author, retoot_content, retoot_url)
 
@@ -144,6 +145,6 @@ def parse_note(actor, note, type="Create"):
         content = _content(note)
         url = note.get("url", note["id"])
 
-        return note.get("summary", None), actor.username, content, url
+        return note.get("summary", None), actor.display_name, content, url
 
     return None
