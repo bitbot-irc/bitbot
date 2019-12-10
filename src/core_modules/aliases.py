@@ -59,6 +59,7 @@ class Module(ModuleManager.BaseModule):
                 event["command"].args.split(" "))
 
     @utils.hook("received.command.alias")
+    @utils.hook("received.command.balias")
     @utils.hook("received.command.calias",
         require_mode="o", require_access="alias")
     @utils.kwarg("min_args", 1)
@@ -74,6 +75,8 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("%scalias can only be used in-channel"
                     % event["command_prefix"])
             target = event["target"]
+        elif event["command"] == "balias":
+            target = self.bot
 
         subcommand = event["args_split"][0].lower()
         if subcommand == "list":
