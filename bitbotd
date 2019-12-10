@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import sys
+import src.utils.consts
 
 if sys.version_info < (3, 6):
     sys.stderr.write("BitBot requires python 3.6.0 or later\n")
-    sys.exit(1)
+    sys.exit(src.utils.consts.Exit.WRONGVERSION)
 
 import atexit, argparse, faulthandler, os, platform, time, typing
 from src import Cache, Config, Control, Database, EventManager, Exports, IRCBot
@@ -87,7 +88,7 @@ log.info("Starting BitBot %s (Python v%s, db %s)",
 lock_file = LockFile.LockFile(lock_location)
 if not lock_file.available():
     log.critical("Database is locked. Is BitBot already running?")
-    sys.exit(2)
+    sys.exit(utils.consts.Exit.LOCKED)
 
 atexit.register(lock_file.unlock)
 lock_file.lock()
@@ -161,13 +162,13 @@ if len(server_configs):
         if not bot.connect(server):
             log.error("Failed to connect to '%s'", [str(server)], exc_info=True)
             if not args.startup_disconnects:
-                sys.exit(3)
+                sys.exit(utils.consts.Exit.DISCONNECT)
 
     try:
         bot.run()
     except Exception as e:
         log.critical("Unhandled exception: %s", [str(e)], exc_info=True)
-        sys.exit(4)
+        sys.exit(utils.consts.Exit.FATAL)
 else:
     try:
         if utils.cli.bool_input("no servers found, add one?"):

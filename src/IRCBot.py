@@ -144,7 +144,7 @@ class Bot(object):
             exc_info = True
 
         self.log.critical("panic() called: %s", [reason], exc_info=exc_info)
-        sys.exit(20)
+        sys.exit(utils.consts.Exit.PANIC)
 
     def _module_lists(self):
         whitelist = self.config.get_list("module-whitelist")

@@ -1,4 +1,4 @@
-import typing
+import enum, typing
 from . import _consts_256_color
 
 class IRCColor(object):
@@ -68,3 +68,11 @@ ANSI_UNDERLINE_RESET  = "\033[24m"
 PERMISSION_HARD_FAIL = 0
 PERMISSION_FORCE_SUCCESS = 1
 PERMISSION_ERROR = 2
+
+class Exit(enum.Enum):
+    WRONGVERSION = 1
+    LOCKED = 2
+    DISCONNECT = 3
+    FATAL = 4
+
+    PANIC = 20
