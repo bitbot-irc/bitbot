@@ -123,14 +123,15 @@ events = EventManager.EventRoot(log).wrap()
 exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
 
-module_directories = [os.path.join(directory, "modules")]
+core_modules = os.path.join(directory, "src", "core_modules")
+extra_modules = [os.path.join(directory, "modules")]
 if args.external:
-    module_directories.append(os.path.abspath(args.external))
+    extra_modules.append(os.path.abspath(args.external))
 if "external-modules" in config:
-    module_directories.append(os.path.abspath(config["external-modules"]))
+    extra_modules.append(os.path.abspath(config["external-modules"]))
 
 modules = ModuleManager.ModuleManager(events, exports, timers, config, log,
-    module_directories)
+    core_modules, extra_modules)
 
 bot = IRCBot.Bot(directory, args, cache, config, database, events,
     exports, log, modules, timers)

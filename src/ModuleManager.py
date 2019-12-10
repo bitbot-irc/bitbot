@@ -102,28 +102,46 @@ class ModuleManager(object):
             timers: Timers.Timers,
             config: Config.Config,
             log: Logging.Log,
-            directories: typing.List[str]):
+            core_modules: str,
+            extra_modules: typing.List[str]):
         self.events = events
         self.exports = exports
         self.config = config
         self.timers = timers
         self.log = log
-        self.directories = directories
+        self._core_modules = core_modules
+        self._extra_modules = extra_modules
 
         self.modules = {} # type: typing.Dict[str, LoadedModule]
 
-    def list_modules(self) -> typing.List[ModuleDefinition]:
+    def _list_modules(self, directory: str
+            ) -> typing.Dict[str, ModuleDefinition]:
         modules = []
+        for file_module in glob.glob(os.path.join(directory, "*.py")):
+            modules.append(self.define_module(ModuleType.FILE, file_module))
 
-        for directory in self.directories:
-            for file_module in glob.glob(os.path.join(directory, "*.py")):
-                modules.append(self.define_module(ModuleType.FILE, file_module))
+        for directory_module in glob.glob(os.path.join(
+                directory, "*", "__init__.py")):
+            modules.append(self.define_module(ModuleType.DIRECTORY,
+                directory_module))
+        return {definition.name: definition for definition in modules}
 
-            for directory_module in glob.glob(os.path.join(
-                    directory, "*", "__init__.py")):
-                modules.append(self.define_module(ModuleType.DIRECTORY,
-                    directory_module))
-        return sorted(modules, key=lambda module: module.name)
+    def list_modules(self, whitelist: typing.List[str],
+            blacklist: typing.List[str]) -> typing.Dict[str, ModuleDefinition]:
+        core_modules = self._list_modules(self._core_modules)
+        extra_modules = {}
+
+        for directory in self._extra_modules:
+            for name, module in self._list_modules(directory).items():
+                if (not name in extra_modules and
+                        (name in whitelist or
+                        (not whitelist and not name in blacklist))):
+                    extra_modules[name] = module
+
+        modules = {}
+        modules.update(extra_modules)
+        modules.update(core_modules)
+        return modules
 
     def define_module(self, type: ModuleType, filename: str
             ) -> ModuleDefinition:
@@ -179,10 +197,6 @@ class ModuleManager(object):
             if module.name.lower() == name_lower:
                 return module
         return None
-
-    def _get_magic(self, obj: typing.Any, magic: str, default: typing.Any
-            ) -> typing.Any:
-        return getattr(obj, magic) if hasattr(obj, magic) else default
 
     def _check_hashflags(self, bot: "IRCBot.Bot", definition: ModuleDefinition
             ) -> None:
@@ -275,7 +289,8 @@ class ModuleManager(object):
         self.log.debug("Module '%s' loaded", [loaded_module.name])
         return loaded_module
 
-    def _dependency_sort(self, definitions: typing.List[ModuleDefinition]):
+    def _dependency_sort(self, definitions: typing.Dict[str, ModuleDefinition]
+            ) -> typing.List[ModuleDefinition]:
         definitions_ordered = []
 
         definition_names = {d.name: d for d in definitions}
@@ -416,22 +431,17 @@ class ModuleManager(object):
 
     def _list_valid_modules(self, bot: "IRCBot.Bot",
             whitelist: typing.List[str], blacklist: typing.List[str]):
-        module_definitions = self.list_modules()
+        module_definitions = self.list_modules(whitelist, blacklist)
 
         loadable_definitions = []
         nonloadable_definitions = []
-        for definition in module_definitions:
-            if definition.name in whitelist or (
-                    not whitelist and not definition.name in blacklist):
-                try:
-                    self._check_hashflags(bot, definition)
-                except ModuleNotLoadableWarning:
-                    nonloadable_definitions.append(definition)
-                    continue
-                loadable_definitions.append(definition)
-            else:
+        for name, definition in module_definitions.items():
+            try:
+                self._check_hashflags(bot, definition)
+            except ModuleNotLoadableWarning:
                 nonloadable_definitions.append(definition)
-
+                continue
+            loadable_definitions.append(definition)
 
         return (self._dependency_sort(loadable_definitions),
             nonloadable_definitions)
