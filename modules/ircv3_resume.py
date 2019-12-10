@@ -32,7 +32,7 @@ class Module(ModuleManager.BaseModule):
         server.wait_for_capability("resume")
 
     @utils.hook("received.resume")
-    def on_resume(self, event):
+    def _on_resume(self, event):
         cap_done = True
 
         if event["line"].args[0] == "SUCCESS":
