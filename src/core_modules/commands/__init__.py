@@ -65,10 +65,12 @@ class Module(ModuleManager.BaseModule):
         if s and s[-1] in [":", ","]:
             return server.is_own_nickname(s[:-1])
 
-    def _command_method(self, server, target):
+    def _command_method(self, server, target, is_channel):
+        default = "PRIVMSG" if is_channel else "NOTICE"
+
         return target.get_setting(COMMAND_METHOD,
             server.get_setting(COMMAND_METHOD,
-            self.bot.get_setting(COMMAND_METHOD, "PRIVMSG"))).upper()
+            self.bot.get_setting(COMMAND_METHOD, default))).upper()
 
     def _find_command_hook(self, server, target, is_channel, command, args):
         if not self.has_command(command):
@@ -221,10 +223,10 @@ class Module(ModuleManager.BaseModule):
             obj = event["stderr"]
         else:
             return
-        self._out(event["server"], event["target"], event["target_str"], obj,
-            type, event["tags"])
+        self._out(event["server"], event["target"], event["target_str"],
+            event["is_channel"], obj, type, event["tags"])
 
-    def _out(self, server, target, target_str, obj, type, tags):
+    def _out(self, server, target, target_str, is_channel, obj, type, tags):
         if type == OutType.OUT:
             color = utils.consts.GREEN
         else:
@@ -234,7 +236,7 @@ class Module(ModuleManager.BaseModule):
         if obj.prefix:
             line_str = "[%s] %s" % (
                 utils.irc.color(obj.prefix, color), line_str)
-        method = self._command_method(server, target)
+        method = self._command_method(server, target, is_channel)
 
         if not method in ["PRIVMSG", "NOTICE"]:
             raise ValueError("Unknown command-method '%s'" % method)
@@ -403,8 +405,7 @@ class Module(ModuleManager.BaseModule):
             stdout.prefix = None
 
         target_str = event.get("target_str", target.name)
-        self._out(event["server"], target, target_str, stdout,
-            type, {})
+        self._out(event["server"], target, target_str, False, stdout, type, {})
 
     @utils.hook("check.command.self")
     def check_command_self(self, event):
