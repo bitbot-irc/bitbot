@@ -129,7 +129,7 @@ class ModuleManager(object):
     def list_modules(self, whitelist: typing.List[str],
             blacklist: typing.List[str]) -> typing.Dict[str, ModuleDefinition]:
         core_modules = self._list_modules(self._core_modules)
-        extra_modules = {}
+        extra_modules: typing.Dict[str, ModuleDefinition] = {}
 
         for directory in self._extra_modules:
             for name, module in self._list_modules(directory).items():
@@ -180,7 +180,7 @@ class ModuleManager(object):
         return os.path.basename(path).rsplit(".py", 1)[0].lower()
     def _module_paths(self, name: str) -> typing.List[str]:
         paths = []
-        for directory in self.directories:
+        for directory in [self._core_modules]+self._extra_modules:
             paths.append(os.path.join(directory, name))
         return paths
     def _import_name(self, name: str, context: str) -> str:
@@ -289,7 +289,7 @@ class ModuleManager(object):
         self.log.debug("Module '%s' loaded", [loaded_module.name])
         return loaded_module
 
-    def _dependency_sort(self, definitions: typing.Dict[str, ModuleDefinition]
+    def _dependency_sort(self, definitions: typing.List[ModuleDefinition]
             ) -> typing.List[ModuleDefinition]:
         definitions_ordered = []
 
