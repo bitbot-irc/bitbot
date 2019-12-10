@@ -36,9 +36,10 @@ SETTING_COMMANDMETHOD = utils.OptionsSetting(COMMAND_METHODS, COMMAND_METHOD,
     "Set the command prefix used in this channel", example="!"))
 @utils.export("serverset", utils.Setting("command-prefix",
     "Set the command prefix used on this server", example="!"))
+@utils.export("botset", SETTING_COMMANDMETHOD)
 @utils.export("serverset", SETTING_COMMANDMETHOD)
 @utils.export("channelset", SETTING_COMMANDMETHOD)
-@utils.export("botset", SETTING_COMMANDMETHOD)
+@utils.export("set", SETTING_COMMANDMETHOD)
 @utils.export("channelset", utils.BoolSetting("hide-prefix",
     "Disable/enable hiding prefix in command reponses"))
 @utils.export("channelset", utils.BoolSetting("commands",
