@@ -159,16 +159,15 @@ class ModuleManager(object):
         paths = self._module_paths(name)
 
         path = None
-        for path in paths:
-            if os.path.isdir(path):
+        for possible_path in paths:
+            if os.path.isdir(possible_path):
                 type = ModuleType.DIRECTORY
-                path = os.path.join(path, "__init__.py")
+                possible_path = os.path.join(possible_path, "__init__.py")
             else:
-                possible_path = "%s.py" % path
-                if os.path.isfile(possible_path):
-                    path = possible_path
+                possible_path = "%s.py" % possible_path
 
-            if path:
+            if os.path.isfile(possible_path):
+                path = possible_path
                 break
 
         if not path:
