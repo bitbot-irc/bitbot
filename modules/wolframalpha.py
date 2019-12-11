@@ -4,7 +4,7 @@
 import json
 from src import ModuleManager, utils
 
-URL_WA = "https://api.wolframalpha.com/v1/result"
+URL_WA = "https://api.wolframalpha.com/v2/query"
 
 class Module(ModuleManager.BaseModule):
     _name = "Wolfram|Alpha"
@@ -16,17 +16,27 @@ class Module(ModuleManager.BaseModule):
         :help: Evaluate a given string on Wolfram|Alpha
         :usage: <query>
         """
+        query = event["args"].strip()
         try:
-            page = utils.http.request(URL_WA,
-                get_params={"i": event["args"],
-                "appid": self.bot.config["wolframalpha-api-key"],
-                "reinterpret": "true", "units": "metric"})
+            page = utils.http.request(URL_WA, timeout=10, get_params={
+                "input": query, "format": "plaintext",
+                "output": "JSON", "reinterpret": "true", "units": "metric",
+                "appid": self.bot.config["wolframalpha-api-key"]}).json()
         except utils.http.HTTPTimeoutException:
             page = None
 
         if page:
-            if page.code == 200:
-                event["stdout"].write("%s: %s" % (event["args"], page.decode()))
+            if page["queryresult"]["numpods"]:
+                input = query
+                primaries = []
+                for pod in page["queryresult"]["pods"]:
+                    text = pod["subpods"][0]["plaintext"]
+                    if pod["id"] == "Input" and text:
+                        input = text
+                    elif pod.get("primary", False):
+                        primaries.append(text)
+
+                event["stdout"].write("%s: %s" % (input, " | ".join(primaries)))
             else:
                 event["stdout"].write("No results")
         else:
