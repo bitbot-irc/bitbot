@@ -406,7 +406,7 @@ class Module(ModuleManager.BaseModule):
             stdout.prefix = None
 
         target_str = event.get("target_str", target.name)
-        self._out(event["server"], target, target_str, False, stdout, type, {})
+        self._out(event["server"], target, target_str, True, stdout, type, {})
 
     @utils.hook("check.command.self")
     def check_command_self(self, event):
