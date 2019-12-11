@@ -76,6 +76,8 @@ class Request(object):
     proxy: typing.Optional[str] = None
     useragent: typing.Optional[str] = None
 
+    timeout: int=5
+
     def validate(self):
         self.id = self.id or str(uuid.uuid4())
         self.set_url(self.url)
@@ -186,7 +188,7 @@ def _request(request_obj: Request) -> Response:
         return our_response
 
     try:
-        response = utils.deadline_process(_wrap, seconds=5)
+        response = utils.deadline_process(_wrap, seconds=request_obj.timeout)
     except utils.DeadlineExceededException:
         raise HTTPTimeoutException()
 
