@@ -30,15 +30,15 @@ class Module(ModuleManager.BaseModule):
         return True
 
     def _schedule_match_part(self, timestamp_part, schedule_part):
-        if schedule_part.startswith("*/"):
-            schedule_step = int(schedule_part.split("*/", 1)[1])
-            if (timestamp_part%schedule_step) == 0:
-                return True
-
-        elif "," in schedule_part:
+        if "," in schedule_part:
             for schedule_part in schedule_part.split(","):
                 if self._match([timestamp_part], [schedule_part]):
                     return True
+
+        elif schedule_part.startswith("*/"):
+            schedule_step = int(schedule_part.split("*/", 1)[1])
+            if (timestamp_part%schedule_step) == 0:
+                return True
 
         elif schedule_part == "*":
             return True
