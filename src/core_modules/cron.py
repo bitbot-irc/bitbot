@@ -23,8 +23,7 @@ class Module(ModuleManager.BaseModule):
                 cron.call(event)
 
     def _schedule_match(self, timestamp, schedule):
-        for i, schedule_part in enumerate(schedule):
-            timestamp_part = timestamp[i]
+        for timestamp_part, schedule_part in zip(timestamp, schedule):
             if not self._schedule_match_part(timestamp_part, schedule_part):
                 return False
         return True
