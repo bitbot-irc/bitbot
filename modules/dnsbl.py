@@ -46,5 +46,5 @@ class Module(ModuleManager.BaseModule):
         try:
             dns.resolver.query(list_address)
         except dns.resolver.NXDOMAIN:
-            return False
-        return True
+            return True
+        return False
