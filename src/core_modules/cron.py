@@ -12,26 +12,38 @@ class Module(ModuleManager.BaseModule):
         now = datetime.datetime.utcnow().replace(second=0, microsecond=0)
         timer.redo()
 
-        current_schedule = [now.minute, now.hour]
+        timestamp = [now.minute, now.hour]
 
         events = self.events.on("cron")
+        event = events.make_event()
         for cron in events.get_hooks():
             schedule = cron.get_kwarg("schedule").split(" ")
 
-            due = True
-            for i, schedule_part in enumerate(schedule):
-                current_part = current_schedule[i]
-                if schedule_part.startswith("*/"):
-                    schedule_step = int(schedule_part.split("*/", 1)[1])
-                    if (current_part%schedule_step) == 0:
-                        continue
-                elif schedule_part == "*":
-                    continue
-                elif int(current_part) == schedule_part:
-                    continue
+            if self._schedule_match(timestamp, schedule):
+                cron.call(event)
 
-                due = False
-                break
+    def _schedule_match(self, timestamp, schedule):
+        for i, schedule_part in enumerate(schedule):
+            timestamp_part = timestamp[i]
+            if not self._schedule_match_part(timestamp_part, schedule_part):
+                return False
+        return True
 
-            if due:
-                cron.call(events.make_event())
+    def _schedule_match_part(self, timestamp_part, schedule_part):
+        if schedule_part.startswith("*/"):
+            schedule_step = int(schedule_part.split("*/", 1)[1])
+            if (timestamp_part%schedule_step) == 0:
+                return True
+
+        elif "," in schedule_part:
+            for schedule_part in schedule_part.split(","):
+                if self._match([timestamp_part], [schedule_part]):
+                    return True
+
+        elif schedule_part == "*":
+            return True
+
+        elif timestamp_part == int(schedule_part):
+            return True
+
+        return False
