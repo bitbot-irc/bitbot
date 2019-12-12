@@ -42,7 +42,8 @@ class Module(ModuleManager.BaseModule):
         for list in lists:
             record = self._check_list(list.hostname, address)
             if not record == None:
-                failed.append((list.hostname, list.process(record)))
+                reason = list.process(record) or "unknown"
+                failed.append((list.hostname, reason))
         return failed
 
     def _check_list(self, list, address):
