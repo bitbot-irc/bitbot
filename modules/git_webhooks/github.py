@@ -247,7 +247,7 @@ class GitHub(object):
         return outputs
 
     def _comment(self, s):
-        s_line = utils.parse.line_normalise(s)
+        s = s.split("\n")[0].strip()
         left, right = s_line[:COMMENT_MAX], s_line[COMMENT_MAX:]
         if not right:
             return left
