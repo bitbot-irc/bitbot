@@ -132,8 +132,7 @@ def parse_note(actor, note, type="Create"):
 
         original_tooter = ap_actor.Actor(retoot["attributedTo"])
         original_tooter.load()
-        retooted_user = "@%s@%s" % (original_tooter.display_name,
-            retoot_instance)
+        retooted_user = "@%s@%s" % (original_tooter.username, retoot_instance)
         retoot_content = _content(retoot)
 
         author = "%s (boost %s)" % (actor.display_name, retooted_user)
