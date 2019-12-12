@@ -40,12 +40,6 @@ class CoinParseException(Exception):
     pass
 
 class Module(ModuleManager.BaseModule):
-    def on_load(self):
-        self.timers.add("coin-interest", self._interest, INTEREST_INTERVAL,
-            time.time()+self._until_next_hour())
-        self.timers.add("coin-lottery", self._lottery, LOTTERY_INTERVAL,
-            time.time()+self._until_next_6_hour())
-
     def _until_next_hour(self, now=None):
         now = now or datetime.datetime.utcnow()
         until_next_hour = 60-now.second
@@ -440,6 +434,8 @@ class Module(ModuleManager.BaseModule):
                 "%s loses %s" % (choice, event["user"].nickname,
                 str(coin_losses)))
 
+    @utils.hook("cron")
+    @utils.kwarg("schedule", "0 *")
     def _interest(self, timer):
         for server in self.bot.servers.values():
             if not server.get_setting("coin-interest", False):
@@ -538,6 +534,8 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("There have been no lottery winners!")
 
+    @utils.hook("cron")
+    @utils.kwarg("schedule", "0 */6")
     def _lottery(self, timer):
         for server in self.bot.servers.values():
             lottery = server.get_setting("lottery", {})
