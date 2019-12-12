@@ -15,7 +15,7 @@ class Module(ModuleManager.BaseModule):
         lists = []
         for i, arg in reversed(list(enumerate(args))):
             if arg[0] == "@":
-                lists.insert(args.pop(i))
+                lists.insert(0, args.pop(i))
         lists = lists or DEFAULT_LISTS
 
         address = args[0]
