@@ -40,6 +40,10 @@ class Module(ModuleManager.BaseModule):
             if (timestamp_part%schedule_step) == 0:
                 return True
 
+        elif "-" in schedule_part:
+            left, right = schedule_part.split("-", 1)
+            return int(left) <= timestamp_part <= int(right)
+
         elif schedule_part == "*":
             return True
 
