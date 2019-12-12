@@ -2,6 +2,9 @@
 
 from src import ModuleManager, utils
 
+# this module was created for use with https://healthchecks.io/
+# but it can be used for any similar URL-pinging service.
+
 class Module(ModuleManager.BaseModule):
     @utils.hook("cron")
     @utils.kwarg("schedule", "*/10")
