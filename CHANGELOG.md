@@ -1,3 +1,25 @@
+# TBD - BitBot v1.17.0
+
+Added:
+- Ability to `.save()` `bot.conf` - we now use only this for module whitelist/blacklist
+- A cron system (`src/core_modules/cron.py`)
+- `healthcheck.py` - ping a URL every 10 minutes (for uptime-tracking services)
+- Support `++nickname` style karma (`karma.py`)
+- Bot-wide aliases (`!balias` in `aliases.py`)
+- Support per-user (PM) `command-method` setting (`commands`)
+
+Changed:
+- "Core" modules (modules needed for base operation of bitbot) moved to `src/core_modules` and made blacklist-immune
+- Better parsing error for `!config u birthday` (`birthday.py`)
+- Show display name, not username, when available (`fediverse.py`)
+- By default, show `locked`/`unlocked` github issue/PR events (`git_webhooks`)
+- Switch back to full wolframalpha API but use it better than we used to (`wolframalpha.py`)
+- Hostmasks are now precompiled to find users that match them (`permissions`)
+
+Removed:
+- `-m`/`-M` args to `bitbotd` - didn't work any more due to databse locking
+- `database_backup.py` - this was always a weird hack. Added a note about backups in `README.md`
+
 # 2019-12-01 - BitBot v1.16.1
 
 Changed:
