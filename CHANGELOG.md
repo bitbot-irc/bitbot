@@ -1,4 +1,10 @@
-# TBD - BitBot v1.17.0
+# 2019-12-13 - BitBot v1.17.1
+
+Fixed:
+- Crash caused by switching `coins.py` to using `cron` scheduling without removing timer-related code
+- Typo in function call name in `cron.py`
+
+# 2019-12-13 - BitBot v1.17.0
 
 Added:
 - Ability to `.save()` `bot.conf` - we now use only this for module whitelist/blacklist
