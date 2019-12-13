@@ -40,8 +40,8 @@ class Module(ModuleManager.BaseModule):
         else:
             port = DEFAULT_PORT
 
-        timestamp = datetime.datetime.utcnow().microsecond
-        ping_packet = struct.pack(">iQ", 0, timestamp)
+        timestamp = datetime.datetime.utcnow()
+        ping_packet = struct.pack(">iQ", 0, 123)
         s = socket.socket(type=socket.SOCK_DGRAM)
         s.settimeout(5)
 
@@ -61,7 +61,7 @@ class Module(ModuleManager.BaseModule):
         pong = struct.unpack(">bbbbQiii", pong_packet)
 
         version = ".".join(str(v) for v in pong[1:4])
-        ping = (datetime.datetime.utcnow().microsecond-timestamp)/1000
+        ping = (datetime.datetime.utcnow()-timestamp).total_seconds()*1000
         users = pong[5]
         max_users = pong[6]
         bandwidth = pong[7]/1000 # kbit/s
