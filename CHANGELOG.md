@@ -7,6 +7,7 @@ Added:
 - Support `++nickname` style karma (`karma.py`)
 - Bot-wide aliases (`!balias` in `aliases.py`)
 - Support per-user (PM) `command-method` setting (`commands`)
+- `dnsbl` module to loop up given IPv4 and IPv6 addresses in blacklists
 
 Changed:
 - "Core" modules (modules needed for base operation of bitbot) moved to `src/core_modules` and made blacklist-immune
