@@ -436,7 +436,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("cron")
     @utils.kwarg("schedule", "0 *")
-    def _interest(self, timer):
+    def _interest(self, event):
         for server in self.bot.servers.values():
             if not server.get_setting("coin-interest", False):
                 continue
@@ -451,7 +451,6 @@ class Module(ModuleManager.BaseModule):
                     interest = round(coins*interest_rate, 2)
                     server.set_user_setting(nickname, "coins",
                         self._coin_str(coins+interest))
-        timer.redo()
 
     @utils.hook("received.command.lotterybuy", authenticated=True)
     def lottery_buy(self, event):
@@ -536,7 +535,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("cron")
     @utils.kwarg("schedule", "0 */6")
-    def _lottery(self, timer):
+    def _lottery(self, event):
         for server in self.bot.servers.values():
             lottery = server.get_setting("lottery", {})
             if lottery:
@@ -557,4 +556,3 @@ class Module(ModuleManager.BaseModule):
             server.set_setting("lottery-winner", user.nickname)
             user.send_notice("You won %s in the lottery! you now have %s coins"
                 % (self._coin_str(winnings), self._coin_str(new_coins)))
-        timer.redo()
