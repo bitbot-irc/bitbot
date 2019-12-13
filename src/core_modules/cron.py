@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
     def _schedule_match_part(self, timestamp_part, schedule_part):
         if "," in schedule_part:
             for schedule_part in schedule_part.split(","):
-                if self._match([timestamp_part], [schedule_part]):
+                if self._schedule_match_part([timestamp_part], [schedule_part]):
                     return True
 
         elif schedule_part.startswith("*/"):
