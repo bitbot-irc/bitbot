@@ -123,13 +123,24 @@ class Module(ModuleManager.BaseModule):
         self._kick(event["server"], event["target"], args[0], args[1:])
 
     @utils.hook("received.command.op")
-    @utils.hook("received.command.deop")
+    @utils.hook("received.command.up", alias_of="op")
     @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "op")
     @utils.kwarg("usage", "[nickname]")
     def op(self, event):
-        add = event["command"] == "op"
+        self._op(True, event)
+
+    @utils.hook("received.command.deop")
+    @utils.hook("received.command.down", alias_of="deop")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "op")
+    @utils.kwarg("usage", "[nickname]")
+    def deop(self, event):
+        self._op(False, event)
+
+    def _op(self, add, event):
         target = event["args_split"][0] if event["args"] else event[
             "user"].nickname
         event["target"].send_mode("+o" if add else "-o", [target])
