@@ -56,6 +56,8 @@ class Module(ModuleManager.BaseModule):
 
     def _has_identified(self, server, user, account):
         user._id_override = server.get_user_id(account)
+        self.events.on("internal.identified").call(server=server, user=user,
+            accunt=account)
     def _is_identified(self, user):
         return not user._id_override == None
     def _signout(self, user):
@@ -219,8 +221,6 @@ class Module(ModuleManager.BaseModule):
 
                     event["stdout"].write("Correct password, you have "
                         "been identified as %s." % account)
-                    self.events.on("internal.identified").call(
-                        user=event["user"])
                 else:
                     event["stderr"].write("Incorrect password for '%s'" %
                         account)
