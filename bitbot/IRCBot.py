@@ -1,11 +1,13 @@
+import enum, queue, os, queue, select, socket, sys, threading, time, traceback
+import typing, uuid
+
+SRC_DIR = os.path.dirname(__file__)
 VERSION: str = ""
-with open("VERSION", "r") as version_file:
+with open(os.path.join(SRC_DIR, "VERSION"), "r") as version_file:
     VERSION = "v%s" % version_file.read().strip()
 SOURCE: str = "https://git.io/bitbot"
 URL: str = "https://bitbot.dev"
 
-import enum, queue, os, queue, select, socket, sys, threading, time, traceback
-import typing, uuid
 from . import EventManager, Exports, IRCServer, Logging, ModuleManager
 from . import PollHook, PollSource, Socket, Timers, utils
 

@@ -2,7 +2,7 @@ import setuptools
 
 with open("README.md", "r") as readme_file:
     long_description = readme_file.read()
-with open("VERSION", "r") as version_file:
+with open("bitbot/VERSION", "r") as version_file:
     version = version_file.read().strip()
 
 setuptools.setup(
