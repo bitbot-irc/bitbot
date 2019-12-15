@@ -81,8 +81,6 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Edit configured relay groups")
     @utils.kwarg("usage", "list")
-    @utils.kwarg("usage", "add <name>")
-    @utils.kwarg("usage", "remove <name>")
     @utils.kwarg("usage", "join <name>")
     @utils.kwarg("usage", "leave <name>")
     @utils.kwarg("permission", "relay")
