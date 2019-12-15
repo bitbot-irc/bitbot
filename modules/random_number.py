@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import random, uuid
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 COIN_SIDES = ["heads", "tails"]
 

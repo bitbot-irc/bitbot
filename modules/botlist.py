@@ -1,4 +1,4 @@
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 COMMANDS = ["!botlist", "!rollcall"]
 MESSAGE = "Hi! I'm BitBot (https://git.io/bitbot) "

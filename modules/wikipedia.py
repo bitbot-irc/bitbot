@@ -1,6 +1,6 @@
 #--depends-on commands
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 

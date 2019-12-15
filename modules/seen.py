@@ -2,7 +2,7 @@
 #--depends-on format_activity
 
 import time
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def _change_seen(self, channel, user, action):

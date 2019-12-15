@@ -1,6 +1,6 @@
 #--depends-on commands
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_URBANDICTIONARY = "http://api.urbandictionary.com/v0/define"
 

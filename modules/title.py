@@ -3,7 +3,7 @@
 #--depends-on shorturl
 
 import hashlib, re, urllib.parse
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 RE_WORDSPLIT = re.compile("[\s/]")
 

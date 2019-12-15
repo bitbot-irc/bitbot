@@ -1,4 +1,4 @@
-from src import utils
+from bitbot import utils
 
 COLOR_BRANCH = utils.consts.ORANGE
 COLOR_REPO = utils.consts.GREY

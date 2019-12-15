@@ -5,7 +5,7 @@ import collections, re, time
 from datetime import datetime, date
 from collections import Counter
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 from suds.client import Client
 from suds import WebFault

@@ -2,7 +2,7 @@
 #--depends-on config
 
 import re, traceback
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^(?:(\\S+)[:,] )?s/")

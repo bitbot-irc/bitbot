@@ -1,4 +1,4 @@
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 from . import colors
 
 EVENT_CATEGORIES = {

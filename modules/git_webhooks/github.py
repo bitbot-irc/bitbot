@@ -1,4 +1,4 @@
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 from . import colors
 
 COMMIT_URL = "https://github.com/%s/commit/%s"

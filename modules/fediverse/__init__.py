@@ -1,7 +1,7 @@
 #--depends-on rest_api
 
 import urllib.parse
-from src import IRCBot, ModuleManager, utils
+from bitbot import IRCBot, ModuleManager, utils
 from . import ap_actor, ap_security, ap_server, ap_utils
 
 def _format_username(username, instance):

@@ -1,6 +1,6 @@
 #--depends-on ircv3_server_time
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 CAP = utils.irc.Capability(None, "draft/resume-0.5", alias="resume")
 

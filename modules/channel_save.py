@@ -1,4 +1,4 @@
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 BATCH_MAX = 10
 

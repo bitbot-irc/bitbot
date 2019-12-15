@@ -2,7 +2,7 @@
 #--depends-on location
 #--require-config openweathermap-api-key
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_WEATHER = "http://api.openweathermap.org/data/2.5/weather"
 

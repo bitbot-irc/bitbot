@@ -1,5 +1,5 @@
 import socket
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     _name = "isup"

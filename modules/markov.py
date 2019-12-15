@@ -1,5 +1,5 @@
 import random, re, threading
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 NO_MARKOV = "Markov chains not enabled in this channel"
 

@@ -1,6 +1,6 @@
 #--depends-on commands
 import time
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 SECONDS_MAX = utils.datetime.SECONDS_WEEKS*8
 SECONDS_MAX_DESCRIPTION = "8 weeks"

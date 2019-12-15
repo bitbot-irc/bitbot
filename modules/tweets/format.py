@@ -1,5 +1,5 @@
 import datetime, html, time
-from src import utils
+from bitbot import utils
 
 def _timestamp(dt):
     seconds_since = time.time()-dt.timestamp()

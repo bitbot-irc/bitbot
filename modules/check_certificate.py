@@ -1,5 +1,5 @@
 import datetime
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 import cryptography.x509, cryptography.hazmat.backends
 
 class Module(ModuleManager.BaseModule):

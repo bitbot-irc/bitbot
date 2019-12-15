@@ -2,7 +2,7 @@
 #--depends-on config
 
 import datetime, math, re
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 COLOR_BRANCH = utils.consts.ORANGE
 COLOR_REPO = utils.consts.GREY

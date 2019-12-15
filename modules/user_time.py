@@ -3,7 +3,7 @@
 
 import datetime, enum
 import pytz
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 NOLOCATION_USER = "%s doesn't have a location set"
 NOLOCATION_NAME = "Unknown location '%s'"

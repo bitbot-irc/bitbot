@@ -2,7 +2,7 @@
 #--depends-on config
 
 import re
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 REGEX_SHA1_HEX = re.compile("[A-Fa-f0-9]{40}")
 URL_ONIONOO_DETAILS = "https://onionoo.torproject.org/details"

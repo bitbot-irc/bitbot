@@ -1,6 +1,6 @@
 #--depends-on config
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 @utils.export("channelset", utils.IntSetting("highlight-spam-threshold",
     "Set the number of nicknames in a message that qualifies as spam"))

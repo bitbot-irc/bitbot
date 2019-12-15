@@ -1,4 +1,4 @@
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 API = "http://acronyms.silmaril.ie/cgi-bin/xaa?%s"
 

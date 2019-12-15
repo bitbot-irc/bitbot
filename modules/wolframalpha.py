@@ -2,7 +2,7 @@
 #--require-config wolframalpha-api-key
 
 import json
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_WA = "https://api.wolframalpha.com/v2/query"
 

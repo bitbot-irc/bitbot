@@ -2,7 +2,7 @@
 #--require-config wordnik-api-key
 
 import time
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_WORDNIK = "https://api.wordnik.com/v4/word.json/%s/definitions"
 URL_WORDNIK_RANDOM = "https://api.wordnik.com/v4/words.json/randomWord"

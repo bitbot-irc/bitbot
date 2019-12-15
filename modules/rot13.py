@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import codecs
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.rot13")

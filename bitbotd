@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
 import sys
-import src.utils.consts
+import bitbot.utils.consts
 
 if sys.version_info < (3, 6):
     sys.stderr.write("BitBot requires python 3.6.0 or later\n")
-    sys.exit(src.utils.consts.Exit.WRONGVERSION)
+    sys.exit(bitbot.utils.consts.Exit.WRONGVERSION)
 
 import atexit, argparse, faulthandler, os, platform, time, typing
-from src import Cache, Config, Control, Database, EventManager, Exports, IRCBot
-from src import LockFile, Logging, ModuleManager, Timers, utils
+from bitbot import (
+    Cache, Config, Control, Database, EventManager, Exports, IRCBot,
+    LockFile, Logging, ModuleManager, Timers, utils,
+)
 
 faulthandler.enable()
 
@@ -123,7 +125,7 @@ events = EventManager.EventRoot(log).wrap()
 exports = Exports.Exports()
 timers = Timers.Timers(database, events, log)
 
-core_modules = os.path.join(directory, "src", "core_modules")
+core_modules = os.path.join(directory, "bitbot", "core_modules")
 extra_modules = [os.path.join(directory, "modules")]
 if args.external:
     extra_modules.append(os.path.abspath(args.external))

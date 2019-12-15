@@ -1,6 +1,6 @@
 #--depends-on config
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 @utils.export("channelset", utils.Setting("greeting",
     "Set a greeting to send to users when they join",

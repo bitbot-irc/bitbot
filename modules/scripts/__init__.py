@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import glob, json, os, subprocess
-from src import IRCObject, ModuleManager, utils
+from bitbot import IRCObject, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     def on_load(self):

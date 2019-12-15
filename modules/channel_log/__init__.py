@@ -2,7 +2,7 @@
 #--depends-on format_activity
 
 import datetime, os.path
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 ROOT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 LOGS_DIRECTORY = os.path.join(ROOT_DIRECTORY, "logs")

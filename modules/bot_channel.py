@@ -1,6 +1,6 @@
 #--depends-on config
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 @utils.export("serverset", utils.Setting("bot-channel",
     "Set main channel", example="#bitbot"))

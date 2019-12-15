@@ -1,7 +1,7 @@
 #--depends-on commands
 #--depends-on config
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 @utils.export("set", utils.Setting("pronouns", "Set your pronouns",
     example="she/her"))

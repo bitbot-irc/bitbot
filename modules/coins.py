@@ -2,7 +2,7 @@
 #--depends-on permissions
 
 import datetime, decimal, functools, math, random, re, time
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 SIDES = {"heads": 0, "tails": 1}
 DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes

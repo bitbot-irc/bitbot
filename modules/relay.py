@@ -2,7 +2,7 @@
 #--depends-on format_activity
 #--depends-on permissions
 
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 @utils.export("channelset", utils.BoolSetting("relay-extras",
     "Whether or not to relay joins/parts/quits/modes/etc"))

@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import re
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     _name = "Filter"

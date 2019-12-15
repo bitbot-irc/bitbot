@@ -1,4 +1,4 @@
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 @utils.export("serverset", utils.BoolSetting("ircv3-stats",
     "Whether or not to include the current server in IRCv3 statistics"))

@@ -1,5 +1,5 @@
 import ipaddress
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 import dns.resolver
 from . import lists as _lists
 

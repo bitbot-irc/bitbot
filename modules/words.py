@@ -3,7 +3,7 @@
 #--depends-on permissions
 
 import time
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 WORD_DELIM = "\"'…~*`"
 WORD_START = WORD_DELIM+"“({<"

@@ -2,7 +2,7 @@
 #--require-config omdbapi-api-key
 
 import json
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_OMDB = "http://www.omdbapi.com/"
 URL_IMDBTITLE = "http://imdb.com/title/%s"

@@ -3,7 +3,7 @@
 #--depends-on commands
 #--depends-on config
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 KICK_REASON = "your behavior is not conducive to the desired environment"
 

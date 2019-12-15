@@ -1,6 +1,6 @@
 #--depends-on commands
 
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.message.channel", priority=EventManager.PRIORITY_HIGH)

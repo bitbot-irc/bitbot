@@ -1,5 +1,5 @@
 import datetime, socket, struct
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 DEFAULT_PORT = 64738
 

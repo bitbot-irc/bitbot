@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import re, socket, typing
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 import dns.resolver
 
 URL_GEOIP = "http://ip-api.com/json/%s"

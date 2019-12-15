@@ -9,4 +9,4 @@ python:
 install:
   - pip3 install mypy -r requirements.txt
 script:
-  - mypy --ignore-missing-imports src ./bitbotd modules/
+  - mypy --ignore-missing-imports bitbot/ modules/ ./bitbotd

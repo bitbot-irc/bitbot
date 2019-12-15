@@ -1,5 +1,5 @@
 import os
-from src import IRCBot, ModuleManager, utils
+from bitbot import IRCBot, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.version")
