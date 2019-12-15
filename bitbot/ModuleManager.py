@@ -1,4 +1,6 @@
-import enum, gc, glob, importlib, importlib.util, io, inspect, os, sys
+import enum, gc, glob, importlib, importlib.util, itertools, io, inspect, os
+import sys
+from pkg_resources import iter_entry_points
 import typing, uuid
 from . import Config, EventManager, Exports, IRCBot, Logging, Timers, utils
 
@@ -117,8 +119,11 @@ class ModuleManager(object):
     def _list_modules(self, directory: str
             ) -> typing.Dict[str, ModuleDefinition]:
         modules = []
+
         for file_module in glob.glob(os.path.join(directory, "*.py")):
-            modules.append(self.define_module(ModuleType.FILE, file_module))
+            # Excluse __init__.py, etc.
+            if not file_module.rsplit(os.path.sep)[-1].startswith('_'):
+                modules.append(self.define_module(ModuleType.FILE, file_module))
 
         for directory_module in glob.glob(os.path.join(
                 directory, "*", "__init__.py")):
@@ -126,10 +131,50 @@ class ModuleManager(object):
                 directory_module))
         return {definition.name: definition for definition in modules}
 
+    def _list_installed_modules(self, entry_point_group
+            ) -> typing.Dict[str, ModuleDefinition]:
+        """Finds modules installed using a pkg_resources EntryPoint.
+
+        They are installed by `setuptools` by using:
+
+        ```
+        setup(
+            # ...
+            entry_points={
+                'bitbot.extra_modules': [
+                    'module_name = your_package_name.your_module_name:Module',
+                    # ...
+                }
+            }
+        )
+        ```
+
+        (replace only `module_name`, `your_package_name`, and
+        `your_module_name` on the example above)
+        """
+        modules = {}
+
+        for entry_point in iter_entry_points(entry_point_group):
+            module_class = entry_point.load()
+            path = sys.modules[module_class.__module__].__file__
+            if path.rsplit(os.path.sep, 1)[-1] == '__init__.py':
+                type = ModuleType.DIRECTORY
+            else:
+                type = ModuleType.FILE
+            modules[entry_point.name] = self.define_module(type, path)
+
+        return modules
+
     def list_modules(self, whitelist: typing.List[str],
             blacklist: typing.List[str]) -> typing.Dict[str, ModuleDefinition]:
-        core_modules = self._list_modules(self._core_modules)
-        extra_modules: typing.Dict[str, ModuleDefinition] = {}
+        """Discovers modules that are either installed or in one of the
+        directories listed by `[self._core_modules] + self._extra_modules`."""
+
+        core_modules = self._list_installed_modules('bitbot.core_modules')
+        extra_modules = self._list_installed_modules('bitbot.extra_modules')
+
+        for name, module in self._list_modules(self._core_modules).items():
+            core_modules[name] = module
 
         for directory in self._extra_modules:
             for name, module in self._list_modules(directory).items():
@@ -179,6 +224,15 @@ class ModuleManager(object):
         return os.path.basename(path).rsplit(".py", 1)[0].lower()
     def _module_paths(self, name: str) -> typing.List[str]:
         paths = []
+
+        entry_points = itertools.chain(
+            iter_entry_points('bitbot.core_modules', name),
+            iter_entry_points('bitbot.extra_modules', name))
+
+        for entry_point in entry_points:
+            module_class = entry_point.load()
+            paths.append(sys.modules[module_class.__module__].__path__)  # type: ignore
+
         for directory in [self._core_modules]+self._extra_modules:
             paths.append(os.path.join(directory, name))
         return paths
