@@ -1,5 +1,5 @@
 import email.utils, urllib.parse
-from src import utils
+from bitbot import utils
 from . import ap_security, ap_utils
 
 class Actor(object):

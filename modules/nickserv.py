@@ -1,7 +1,7 @@
 #--depends-on config
 
 import base64
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 @utils.export("serverset", utils.SensitiveSetting("nickserv-password",
     "Set the nickserv password for this server", example="hunter2"))

@@ -1,6 +1,6 @@
 #--depends-on config
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 @utils.export("serverset", utils.BoolSetting("accept-invites",
     "Set whether I accept invites on this server"))

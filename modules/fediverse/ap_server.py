@@ -1,5 +1,5 @@
 import base64, binascii, json, os, queue, threading, urllib.parse, uuid
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 from . import ap_activities, ap_actor, ap_security, ap_utils
 

@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import re
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 REGEX_FACTOID = re.compile("{!factoid ([^}]+)}", re.I)
 

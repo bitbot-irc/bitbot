@@ -3,7 +3,7 @@
 #--require-config imgur-api-key
 
 import re, datetime
-from src import ModuleManager, utils, EventManager
+from bitbot import ModuleManager, utils, EventManager
 
 REGEX_IMAGE = re.compile("https?://(?:i\.)?imgur.com/(\w+)")
 REGEX_GALLERY = re.compile("https?://imgur.com/gallery/(\w+)")

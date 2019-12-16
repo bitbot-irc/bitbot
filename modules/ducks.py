@@ -2,7 +2,7 @@
 #--depends-on config
 
 import random, re, time
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 DUCK = "・゜゜・。。・゜゜\_o< QUACK!"
 NO_DUCK = "There was no duck!"

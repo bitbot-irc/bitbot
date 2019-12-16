@@ -1,4 +1,4 @@
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 TAG = utils.irc.MessageTag(None, "inspircd.org/bot")
 

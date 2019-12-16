@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import random
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 CHOICES = [
     "Definitely",

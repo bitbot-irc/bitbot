@@ -4,7 +4,7 @@
 #--depends-on shorturl
 
 import itertools, json, re, urllib.parse
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 from . import colors, gitea, github, gitlab
 
 FORM_ENCODED = "application/x-www-form-urlencoded"

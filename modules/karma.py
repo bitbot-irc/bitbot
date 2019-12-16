@@ -3,7 +3,7 @@
 #--depends-on permissions
 
 import re, time
-from src import EventManager, ModuleManager, utils
+from bitbot import EventManager, ModuleManager, utils
 
 KARMA_DELAY_SECONDS = 3
 

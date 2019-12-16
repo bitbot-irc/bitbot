@@ -2,7 +2,7 @@
 #--require-config soundcloud-api-key
 
 import json, re, time
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_SOUNDCLOUD_TRACK = "http://api.soundcloud.com/tracks"
 URL_SOUNDCLOUD_RESOLVE = "http://api.soundcloud.com/resolve"

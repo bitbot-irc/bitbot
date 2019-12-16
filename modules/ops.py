@@ -1,7 +1,7 @@
 #--depends-on commands
 #--depends-on config
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 @utils.export("channelset", utils.BoolSetting("op-ping",
     "Enable/disable command that highlights all online channel ops"))

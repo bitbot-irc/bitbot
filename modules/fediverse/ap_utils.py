@@ -1,6 +1,6 @@
 import os.path, urllib.parse
 import bs4
-from src import IRCBot, utils
+from bitbot import IRCBot, utils
 from . import ap_actor
 
 LD_TYPE = ("application/ld+json; "

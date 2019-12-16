@@ -2,7 +2,7 @@
 #--depends-on config
 
 import datetime, typing
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 DATE_YEAR_FORMAT = "%Y-%m-%d"
 DATE_FORMAT = "%d-%b"

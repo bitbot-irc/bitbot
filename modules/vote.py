@@ -3,7 +3,7 @@
 #--depends-on permissions
 
 import binascii, enum, os, uuid
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 STR_NOVOTE = "Unknown vote '%s'"
 

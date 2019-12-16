@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import datetime, re
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 RE_HUMAN_FORMAT = re.compile(r"(\d\d\d\d)-(\d?\d)-(\d?\d)")
 HUMAN_FORMAT_HELP = "year-month-day (e.g. 2018-12-29)"

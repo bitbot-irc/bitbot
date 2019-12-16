@@ -7,7 +7,7 @@
 #--require-config twitter-access-secret
 
 import json, re, threading
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 from . import format
 import tweepy
 

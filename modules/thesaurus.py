@@ -1,7 +1,7 @@
 #--depends-on commands
 #--require-config bighugethesaurus-api-key
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_THESAURUS = "http://words.bighugelabs.com/api/2/%s/%s/json"
 

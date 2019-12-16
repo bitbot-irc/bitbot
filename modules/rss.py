@@ -2,7 +2,7 @@
 #--depends-on shorturl
 
 import difflib, hashlib, time
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 import feedparser
 
 RSS_INTERVAL = 60 # 1 minute

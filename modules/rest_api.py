@@ -3,7 +3,7 @@
 #--depends-on permissions
 
 import binascii, http.server, json, os, socket, ssl, threading, urllib.parse
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 DEFAULT_PORT = 5001
 DEFAULT_PUBLIC_PORT = 5000

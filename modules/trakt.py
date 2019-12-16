@@ -2,7 +2,7 @@
 #--depends-on config
 #--require-config trakt-api-key
 
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_TRAKT = "https://api-v2launch.trakt.tv/users/%s/watching"
 URL_TRAKTSLUG = "https://trakt.tv/%s/%s"

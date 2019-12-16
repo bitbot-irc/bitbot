@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import difflib
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 SETTING = utils.BoolSetting("command-suggestions",
     "Disable/enable command suggestions")

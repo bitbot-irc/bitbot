@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import json, socket
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 API_CRATE = "https://crates.io/api/v1/crates/%s"
 URL_CRATE = "https://crates.io/crates/%s"

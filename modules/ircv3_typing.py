@@ -1,4 +1,4 @@
-from src import IRCLine, ModuleManager, utils
+from bitbot import IRCLine, ModuleManager, utils
 
 CAP = utils.irc.Capability("message-tags", "draft/message-tags-0.2")
 

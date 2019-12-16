@@ -1,4 +1,4 @@
-from src import IRCLine, ModuleManager, utils
+from bitbot import IRCLine, ModuleManager, utils
 
 CAP = utils.irc.Capability(None, "draft/multiline", alias="multiline")
 BATCH = utils.irc.BatchType(None, "draft/multiline")

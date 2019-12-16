@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import random, time
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 @utils.export("channelset", utils.BoolSetting("channel-quotes",
     "Whether or not quotes added from this channel are kept in this channel"))

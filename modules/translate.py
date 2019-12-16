@@ -1,7 +1,7 @@
 #--depends-on commands
 
 import json, re
-from src import ModuleManager, utils
+from bitbot import ModuleManager, utils
 
 URL_TRANSLATE = "http://translate.googleapis.com/translate_a/single"
 URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
