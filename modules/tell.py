@@ -1,42 +1,57 @@
 #--depends-on commands
+#--depends-on permissions
 
-from src import EventManager, ModuleManager, utils
+import json, re, time
+from src import ModuleManager, utils
 
+@utils.export("set",utils.BoolSetting("receive-messages","Whether or not you want to recieve messages."))
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.message.channel", priority=EventManager.PRIORITY_HIGH)
-    def channel_message(self, event):
-        messages = event["channel"].get_user_setting(event["user"].get_id(),
-            "to", [])
-        for nickname, message, timestamp in messages:
-            timestamp_parsed = utils.datetime.iso8601_parse(timestamp)
-            timestamp_human = utils.datetime.datetime_human(timestamp_parsed)
-            event["channel"].send_message("%s: <%s> %s (at %s UTC)" % (
-                event["user"].nickname, nickname, message, timestamp_human))
-        if messages:
-            event["channel"].del_user_setting(event["user"].get_id(), "to")
+	_name="Tell"
 
-    @utils.hook("received.command.to", alias_of="tell")
-    @utils.hook("received.command.tell")
-    @utils.kwarg("min_args", 2)
-    @utils.kwarg("channel_only", True)
-    @utils.kwarg("help",
-        "Relay a message to a user the next time they talk in this channel")
-    @utils.kwarg("usage", "<nickname> <message>")
-    def tell(self, event):
-        target_name = event["args_split"][0]
-        if not event["server"].has_user_id(target_name):
-            raise utils.EventError("I've never seen %s before" % target_name)
+	def _get_user_messages(self,user):
+		return json.loads(user.get_setting("messages","[]"))
+	def _set_user_messages(self,user,messages):
+		user.set_setting("messages",json.dumps(messages))
+	def _add_user_message(self,user,msg):
+		messages = self._get_user_messages(user)
+		messages.append(msg)
+		self._set_user_messages(user,messages)
+	def _reset_user_messages(self,user):
+		self._set_user_messages(user,[])
 
-        target_user = event["server"].get_user(event["args_split"][0])
-        messages = event["target"].get_user_setting(target_user.get_id(),
-            "to", [])
+	def _check_for_messages(self,event):
+		target = event["user"]
+		stdout = event["stdout"]
+		messages = self._get_user_messages(target)
+		if len(messages)==0: return
+		elif len(messages)<5:
+			for message in messages:
+				stdout.write("%s: %s said: %s" % (target.nickname,message["sender_nickname"],message["text"]))
+		else:
+			for message in messages:
+				target.send_message("%s said: %s" % (message["sender_nickname"],message["text"]))
+			stdout.write("%s: %d messages for you" % (target.nickname,len(messages)))
+		self._reset_user_messages(target)
 
-        if len(messages) == 5:
-            raise utils.EventError("Users can only have 5 messages stored")
 
-        messages.append([event["user"].nickname,
-            " ".join(event["args_split"][1:]),
-            utils.datetime.iso8601_format_now()])
-        event["target"].set_user_setting(target_user.get_id(),
-            "to", messages)
-        event["stdout"].write("Message saved")
+	@utils.hook("command.regex")
+	@utils.kwarg("expect_output",False)
+	@utils.kwarg("ignore_action",False)
+	@utils.kwarg("command","tell-trigger")
+	@utils.kwarg("pattern",re.compile(".+"))
+	def check_message(self, event):
+		self._check_for_messages(event)
+
+	@utils.hook("received.command.tell",min_args=2)
+	@utils.kwarg("help","Leave a message")
+	@utils.kwarg("usage","<user> <message>")
+	def send_message(self,event):
+		if not events["args_split"]: return
+		user, message_parts = events["args_split"][0], events["args_split"][1:]
+		user = event["server"].get_user(user)
+		if not user.get_setting("receive-messages",True):
+			event["stderr"].write("%s: The user you are trying to reach has disabled messages.")
+			return
+		message = " ".join(message_parts)
+		self._add_user_message(user,dict(sender_nickname=event["user"].nickname,text=message,sent=time.time()))
+		event["stdout"].write("%s: Message sent!")
