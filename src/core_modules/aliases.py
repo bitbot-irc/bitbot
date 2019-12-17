@@ -3,13 +3,14 @@ import re
 from src import EventManager, ModuleManager, utils
 
 REGEX_ARG_NUMBER = re.compile(r"\$(?:(\d+)(-?)|(-))")
+REGEX_ARG_NAME = re.compile(r"\$([^\$]+)\$")
 SETTING_PREFIX = "command-alias-"
 
 class Module(ModuleManager.BaseModule):
-    def _arg_replace(self, s, args_split):
+    def _arg_replace(self, s, args_split, kwargs):
         parts = s.split("$$")
         for i, part in enumerate(parts):
-            for match in REGEX_ARG_NUMBER.finditer(s):
+            for match in REGEX_ARG_NUMBER.finditer(part):
                 if match.group(1):
                     index = int(match.group(1))
                     continuous = match.group(2) == "-"
@@ -24,6 +25,10 @@ class Module(ModuleManager.BaseModule):
                 else:
                     replace = args_split[index]
                 parts[i] = part.replace(match.group(0), replace)
+            for match in REGEX_ARG_NAME.finditer(part):
+                key = match.group(1).upper()
+                if key in kwargs:
+                    parts[i] = part.replace(match.group(0), kwargs[key])
         return "$".join(parts)
 
     def _get_alias(self, server, target, command):
@@ -56,7 +61,8 @@ class Module(ModuleManager.BaseModule):
             alias, alias_args = alias
             event["command"].command = alias
             event["command"].args = self._arg_replace(alias_args,
-                event["command"].args.split(" "))
+                event["command"].args.split(" "),
+                {"NICK": event["user"].nickname})
 
     @utils.hook("received.command.alias")
     @utils.hook("received.command.balias")
