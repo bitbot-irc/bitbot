@@ -9,4 +9,9 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("cron")
     @utils.kwarg("schedule", "*/10")
     def ten_minutes(self, event):
-        utils.http.request(self.bot.config["healthcheck-url"])
+        url = self.bot.config["healthcheck-url"]
+        try:
+            utils.http.request(url)
+        except Exception as e:
+            self.log.error("Failed to cal healthcheck-url (%s)", [url],
+                exc_info=True)
