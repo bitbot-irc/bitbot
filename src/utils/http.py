@@ -33,7 +33,6 @@ USERAGENT = "Mozilla/5.0 (compatible; BitBot/%s; +%s" % (
 
 RESPONSE_MAX = (1024*1024)*100
 SOUP_CONTENT_TYPES = ["text/html", "text/xml", "application/xml"]
-DECODE_CONTENT_TYPES = ["text/plain"]+SOUP_CONTENT_TYPES
 UTF8_CONTENT_TYPES = ["application/json"]
 
 class HTTPException(Exception):
