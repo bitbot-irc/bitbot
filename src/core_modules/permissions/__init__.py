@@ -307,7 +307,7 @@ class Module(ModuleManager.BaseModule):
                 hostmasks.append(hostmask)
                 event["user"].set_setting(HOSTMASKS_SETTING, hostmasks)
 
-                hostmask_obj = utils.irc.hostmask_parse(hostmaks)
+                hostmask_obj = utils.irc.hostmask_parse(hostmask)
                 self._specific_hostmask(event["server"], hostmask_obj, account)
                 self._add_hostmask(event["server"], hostmask_obj, account)
 
