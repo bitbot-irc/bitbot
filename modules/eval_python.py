@@ -21,6 +21,6 @@ class Module(ModuleManager.BaseModule):
 
         if page and page.data:
             event["stdout"].write("%s: %s" % (event["user"].nickname,
-                page.decode().rstrip("\n")))
+                page.decode("utf8").rstrip("\n")))
         else:
             event["stderr"].write("%s: failed to eval" % event["user"].nickname)
