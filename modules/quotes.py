@@ -14,10 +14,10 @@ class Module(ModuleManager.BaseModule):
             return category, None
         return category, quote.strip()
 
-    def _get_quotes(self, server, category):
-        return server.get_setting("quotes-%s" % category, [])
-    def _set_quotes(self, server, category, quotes):
-        server.set_setting("quotes-%s" % category, quotes)
+    def _get_quotes(self, target, category):
+        return target.get_setting("quotes-%s" % category, [])
+    def _set_quotes(self, target, category, quotes):
+        target.set_setting("quotes-%s" % category, quotes)
 
     @utils.hook("received.command.qadd", alias_of="quoteadd")
     @utils.hook("received.command.quoteadd", min_args=1)
@@ -39,6 +39,9 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("Please provide a category AND quote")
 
+    def _target_zip(self, target, quotes):
+        return [[u, t, q, target] for u, t, q in quotes]
+
     @utils.hook("received.command.qdel", alias_of="quotedel")
     @utils.hook("received.command.quotedel", min_args=1)
     @utils.kwarg("help", "Delete a given quote from a given category")
@@ -48,27 +51,34 @@ class Module(ModuleManager.BaseModule):
         category = category or event["args"].strip()
 
         message = None
-        setting = "quotes-%s" % category
-        quotes = event["server"].get_setting(setting, [])
+        quotes = self._target_zip(event["server"],
+            self._get_quotes(event["server"], category))
+        if event["is_channel"]:
+            quotes += self._target_zip(event["target"],
+                self._get_quotes(event["target"], category))
+        quotes = sorted(quotes, key=lambda q: q[1])
 
         if not quotes:
             raise utils.EventError("Quote category '%s' not found" %
                 category)
 
+        found_target = None
         if not remove_quote == None:
             remove_quote_lower = remove_quote.lower()
-            for nickname, time_added, quote in quotes[:]:
+            for nickname, time_added, quote, target in quotes[:]:
                 if quote.lower() == remove_quote_lower:
                     quotes.remove([nickname, time_added, quote])
+                    found_target = target
                     message = "Removed quote from '%s'"
                     break
         else:
             if quotes:
-                quotes.pop(-1)
+                quote = quotes.pop(-1)
+                found_target = quote[-1]
                 message = "Removed last '%s' quote"
 
         if not message == None:
-            event["server"].set_setting(setting, quotes)
+            self._set_quotes(found_target, category, quotes)
             event["stdout"].write(message % category)
         else:
             event["stderr"].write("Quote not found")
