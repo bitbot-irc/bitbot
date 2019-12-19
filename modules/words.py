@@ -137,8 +137,13 @@ class Module(ModuleManager.BaseModule):
         """
         channel_query = None
         word_prefix = ""
-        if event["args_split"]:
-            channel_query = event["args_split"][0].lower()
+        if event["args"]:
+            if not event["args_split"][0] == "*":
+                channel_query = event["args_split"][0].lower()
+        elif event["is_channel"]:
+            channel_query = event["target"].name
+
+        if channel_query:
             word_prefix = " (%s)" % channel_query
 
         words = event["server"].find_all_user_channel_settings("words")
