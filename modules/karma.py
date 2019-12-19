@@ -7,7 +7,7 @@ from src import EventManager, ModuleManager, utils
 
 KARMA_DELAY_SECONDS = 3
 
-REGEX_WORD = re.compile(r"^([^(\s,:]+)(?:[:,]\s*)?(\+\+|--)\s*$")
+REGEX_WORD = re.compile(r"^([^(\s,:]+)(?:[:,])?\s*(\+\+|--)\s*$")
 REGEX_WORD_START = re.compile(r"^(\+\+|--)(?:\s*)([^(\s,:]+)\s*$")
 REGEX_PARENS = re.compile(r"\(([^)]+)\)(\+\+|--)")
 
