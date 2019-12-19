@@ -2,6 +2,18 @@
 # will be disabled.
 
 [bot]
+
+# configuration related to where/how bitbot accesses files and databases.
+# commented out values are the default values. {DATA} is replaced with data-directory
+
+#data-directory           = ~/.bitbot
+#log-directory            = /var/log/bitbot/
+#lock-file                = {DATA}/bot.lock
+#sock-file                = {DATA}/bot.sock
+
+# database - currently only supports sqlite3
+#database                 = sqlite3:{DATA}/bot.db
+
 # client-side tls key/cert for IRC connections
 tls-key                  =
 tls-certificate          =
