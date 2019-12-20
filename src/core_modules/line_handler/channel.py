@@ -123,8 +123,9 @@ def handle_324(events, event):
             args_str=args)
 
 def handle_329(event):
-    channel = event["server"].channels.get(event["line"].args[1])
-    channel.creation_timestamp = int(event["line"].args[2])
+    if event["line"].args[1] in event["server"].channels:
+        channel = event["server"].channels.get(event["line"].args[1])
+        channel.creation_timestamp = int(event["line"].args[2])
 
 def handle_477(timers, event):
     pass
