@@ -51,13 +51,12 @@ class Module(ModuleManager.BaseModule):
             event["args_split"][1:])
 
     def _format_hostmask(self, user, s):
-        mask_split = s.split("$$")
-        for i, mask_part in enumerate(mask_split):
-            mask_split[i] = (mask_part.replace("$n", user.nickname)
-                .replace("$u", user.username)
-                .replace("$h", user.hostname)
-                .replace("$a", user.account or ""))
-        return "$".join(mask_split)
+        vars = {}
+        vars["n"] = vars["nickname"] = user.nickname
+        vars["u"] = vars["username"] = user.username
+        vars["h"] = vars["hostname"] = user.hostname
+        vars["a"] = vars["account"] = user.account or ""
+        return utils.parse.format_token_replace(s, vars)
     def _get_hostmask(self, channel, user):
         if not user.account == None:
             account_format = channel.get_setting("ban-format-account", None)
