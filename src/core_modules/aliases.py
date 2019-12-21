@@ -59,9 +59,13 @@ class Module(ModuleManager.BaseModule):
             event["command"].command)
         if not alias == None:
             alias, alias_args = alias
+
+            given_args = []
+            if event["command"].args:
+                given_args = event["command"].args.split(" ")
+
             event["command"].command = alias
-            event["command"].args = self._arg_replace(alias_args,
-                event["command"].args.split(" "),
+            event["command"].args = self._arg_replace(alias_args, given_args,
                 {"NICK": event["user"].nickname})
 
     @utils.hook("received.command.alias")
