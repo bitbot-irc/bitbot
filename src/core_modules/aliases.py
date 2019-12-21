@@ -1,35 +1,17 @@
 #--depends-on commands
-import re
 from src import EventManager, ModuleManager, utils
 
-REGEX_ARG_NUMBER = re.compile(r"\$(?:(\d+)(-?)|(-))")
-REGEX_ARG_NAME = re.compile(r"\$([^\$]+)\$")
 SETTING_PREFIX = "command-alias-"
 
 class Module(ModuleManager.BaseModule):
     def _arg_replace(self, s, args_split, kwargs):
-        parts = s.split("$$")
-        for i, part in enumerate(parts):
-            for match in REGEX_ARG_NUMBER.finditer(part):
-                if match.group(1):
-                    index = int(match.group(1))
-                    continuous = match.group(2) == "-"
-                    if index >= len(args_split):
-                        raise IndexError("Unknown alias arg index")
-                else:
-                    index = 0
-                    continuous = True
-
-                if continuous:
-                    replace = " ".join(args_split[index:])
-                else:
-                    replace = args_split[index]
-                parts[i] = part.replace(match.group(0), replace)
-            for match in REGEX_ARG_NAME.finditer(part):
-                key = match.group(1).upper()
-                if key in kwargs:
-                    parts[i] = part.replace(match.group(0), kwargs[key])
-        return "$".join(parts)
+        vars = {}
+        for i in range(len(args_split)):
+            vars[str(i)] = args_split[i]
+            vars["%d-" % i] = " ".join(args_split[i:])
+        vars["-"] = " ".join(args_split)
+        vars.update(kwargs)
+        return utils.parse.format_token_replace(s, vars)
 
     def _get_alias(self, server, target, command):
         setting = "%s%s" % (SETTING_PREFIX, command)
