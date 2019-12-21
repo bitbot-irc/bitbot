@@ -120,3 +120,34 @@ def timed_args(args, min_args):
         return time, args[1:]
     return None, args
 
+def format_tokens(s: str, names: typing.List[str], sigil: str="$"
+        ) -> typing.List[typing.Tuple[int, str]]:
+    i = 0
+    max = len(s)-1
+    sigil_found = False
+    tokens: typing.List[typing.Tuple[int, str]] = []
+
+    while i < max:
+        if s[i] == sigil:
+            if s[i+1] == sigil:
+                i += 1
+            else:
+                sigil_found = True
+        elif sigil_found:
+            sigil_found = False
+            for name in names:
+                if len(name) <= (len(s)-i) and s[i:i+len(name)] == name:
+                    tokens.append((i-1, "%s%s" % (sigil, name)))
+                    i += len(name)
+                    break
+        i += 1
+    return tokens
+
+def format_token_replace(s: str, vars: typing.Dict[str, str],
+        sigil: str="$") -> str:
+    tokens = format_tokens(s, list(vars.keys()), sigil)
+    tokens.sort(key=lambda x: x[0])
+    tokens.reverse()
+    for i, token in tokens:
+        s = s[:i] + vars[token.replace(sigil, "", 1)] + s[i+len(token):]
+    return s
