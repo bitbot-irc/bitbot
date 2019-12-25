@@ -27,7 +27,7 @@ class Module(ModuleManager.BaseModule):
         target_nick = self._target(event["server"])
         if self._regained(event["server"], target_nick):
             if "MONITOR" in event["server"].isupport:
-                event["server"].send_raw("MONITOR - %s " % target_nick)
+                event["server"].send_raw("MONITOR - %s" % target_nick)
 
     @utils.hook("received.nick")
     def nick(self, event):
