@@ -51,7 +51,7 @@ def handle_005(events, event):
         event["server"].channel_modes = list(modes[3])
     if "CHANTYPES" in isupport:
         event["server"].channel_types = list(isupport["CHANTYPES"])
-    if "CASEMAPPING" in isupport:
+    if "CASEMAPPING" in isupport and isupport["CASEMAPPING"]:
         event["server"].case_mapping = isupport["CASEMAPPING"]
     if "STATUSMSG" in isupport:
         event["server"].statusmsg = list(isupport["STATUSMSG"])
