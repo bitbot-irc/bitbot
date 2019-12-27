@@ -129,8 +129,8 @@ def format_tokens(s: str, names: typing.List[str], sigil: str="$"
 
     while i < max:
         if s[i] == sigil:
-            if not s[i+1] == sigil:
-                i += 1
+            i += 1
+            if not s[i] == sigil:
                 for name in names:
                     if len(name) <= (len(s)-i) and s[i:i+len(name)] == name:
                         tokens.append((i-1, "%s%s" % (sigil, name)))
