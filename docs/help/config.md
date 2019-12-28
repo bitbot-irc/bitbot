@@ -8,7 +8,7 @@
 * `/msg <bot> register <password here>` to register your nickname with the bot
 * (use `/msg <bot> identify <password>` to log in in the future)
 * `/msg <bot> masterlogin <master admin password>` to login as master admin
-* `/msg <bot> givepermission <your nickname> *` to give your account admin permissions
+* `/msg <bot> permission add <your nickname> *` to give your account admin permissions
 
 ### Configure client TLS certificate
 
