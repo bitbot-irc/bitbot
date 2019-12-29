@@ -36,6 +36,11 @@ class Module(ModuleManager.BaseModule):
             word = event["args"]
         else:
             word = event["target"].buffer.get(from_self=False)
+            if word:
+                word = word.message
+
+        if not word:
+            raise utils.EventError("No phrase provided")
         word = word.replace(" ", "+")
 
         success, definition = self._get_definition(word)
