@@ -28,7 +28,7 @@ def url_sanitise(url: str):
                 url = url[:-1]
     return url
 
-USERAGENT = "Mozilla/5.0 (compatible; BitBot/%s; +%s" % (
+USERAGENT = "Mozilla/5.0 (compatible; BitBot/%s; +%s)" % (
     IRCBot.VERSION, IRCBot.URL)
 
 RESPONSE_MAX = (1024*1024)*100
