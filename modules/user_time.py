@@ -63,13 +63,13 @@ class Module(ModuleManager.BaseModule):
         type, name, timezone = self._find_setting(event)
 
         if not timezone == None:
-            human = self._timezoned_now(datetime.datetime.now(), timezone)
+            human = self._timezoned(datetime.datetime.now(), timezone)
 
             out = None
             if type == LocationType.USER:
-                out = "Time for %s: %s %s" % (name, human, tz)
+                out = "Time for %s: %s" % (name, human)
             else:
-                out = "It is %s in %s %s" % (human, name, tz)
+                out = "It is %s in %s" % (human, name)
             event["stdout"].write(out)
         else:
             out = None
