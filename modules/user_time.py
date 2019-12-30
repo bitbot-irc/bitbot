@@ -15,6 +15,9 @@ class LocationType(enum.Enum):
 class Module(ModuleManager.BaseModule):
     _name = "Time"
 
+    def on_load(self):
+        self.exports.add("time-localise", self.time_localise)
+
     def _find_setting(self, event):
         query = None
         target_user = None
@@ -41,6 +44,15 @@ class Module(ModuleManager.BaseModule):
             else:
                 return LocationType.NAME, event["args"], None
 
+    def _timezoned(self, dt, timezone):
+        dt = dt.replace(tzinfo=pytz.timezone(timezone))
+        utc_offset = (dt.utcoffset().total_seconds()/60)/60
+        tz = "UTC"
+        if not utc_offset == 0.0:
+            if utc_offset > 0:
+                tz += "+"
+            tz += "%g" % utc_offset
+        return "%s %s" % (utils.datetime.datetime_human(dt), tz)
 
     @utils.hook("received.command.time")
     @utils.kwarg("help", "Get the time for you or someone else")
@@ -51,14 +63,7 @@ class Module(ModuleManager.BaseModule):
         type, name, timezone = self._find_setting(event)
 
         if not timezone == None:
-            dt = datetime.datetime.now(tz=pytz.timezone(timezone))
-            utc_offset = (dt.utcoffset().total_seconds()/60)/60
-            tz = "UTC"
-            if not utc_offset == 0.0:
-                if utc_offset > 0:
-                    tz += "+"
-                tz += "%g" % utc_offset
-            human = utils.datetime.datetime_human(dt)
+            human = self._timezoned_now(datetime.datetime.now(), timezone)
 
             out = None
             if type == LocationType.USER:
@@ -74,3 +79,10 @@ class Module(ModuleManager.BaseModule):
                 out = NOLOCATION_NAME
 
             event["stderr"].write(out % name)
+
+    def time_localise(self, user, dt):
+        location = user.get_setting("location", None)
+        timezone = "UTC"
+        if not location == None:
+            timezone = location["timezone"]
+        return self._timezoned(dt, timezone)
