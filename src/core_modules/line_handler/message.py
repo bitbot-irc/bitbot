@@ -41,7 +41,13 @@ def message(events, event):
     # strip prefix_symbols from the start of target, for when people use
     # e.g. 'PRIVMSG +#channel :hi' which would send a message to only
     # voiced-or-above users
-    target = target_str.lstrip("".join(event["server"].statusmsg))
+    statusmsg = ""
+    for char in target_str:
+        if char in event["server"].statusmsg:
+            statusmsg += char
+        else:
+            break
+    target = target_str.replace(statusmsg, "", 1)
 
     is_channel = event["server"].is_channel(target)
 
@@ -54,7 +60,8 @@ def message(events, event):
 
     kwargs = {"server": event["server"], "target": target_obj,
         "target_str": target_str, "user": user, "tags": event["line"].tags,
-        "is_channel": is_channel, "from_self": from_self, "line": event["line"]}
+        "is_channel": is_channel, "from_self": from_self, "line": event["line"],
+        "statusmsg": statusmsg}
 
     action = False
 
