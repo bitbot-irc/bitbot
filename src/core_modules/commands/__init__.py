@@ -332,6 +332,9 @@ class Module(ModuleManager.BaseModule):
             for hook in regex_hooks:
                 if event["action"] and hook.get_kwarg("ignore_action", True):
                     continue
+                if event["statusmsg"] and not hook.get_kwarg("statusmsg", False
+                        ):
+                    continue
 
                 pattern = hook.get_kwarg("pattern", None)
                 if pattern:
