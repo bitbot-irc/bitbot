@@ -45,8 +45,6 @@ class Module(ModuleManager.BaseModule):
                 return LocationType.NAME, event["args"], None
 
     def _timezoned(self, dt, timezone):
-        if not timezone in pytz.all_timezones:
-            timezone = "Etc/%s" % timezone
         dt = dt.astimezone(pytz.timezone(timezone))
         utc_offset = (dt.utcoffset().total_seconds()/60)/60
         tz = "UTC"
