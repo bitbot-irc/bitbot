@@ -68,8 +68,8 @@ class Module(ModuleManager.BaseModule):
 
         karma_total = self._karma_str(self._get_karma(server, target))
 
-        return True, "%s has given %s %s karma (%s total)" % (
-            sender.nickname, target, karma_str, karma_total)
+        return True, "%s now has %s karma (%s from %s)" % (
+            target, karma_total, karma_str, sender.nickname)
 
     @utils.hook("command.regex", pattern=REGEX_WORD)
     @utils.hook("command.regex", pattern=REGEX_PARENS)
