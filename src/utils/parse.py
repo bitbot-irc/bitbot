@@ -122,6 +122,10 @@ def timed_args(args, min_args):
 
 def format_tokens(s: str, names: typing.List[str], sigil: str="$"
         ) -> typing.List[typing.Tuple[int, str]]:
+    names = names.copy()
+    names.sort()
+    names.reverse()
+
     i = 0
     max = len(s)-1
     sigil_found = False
