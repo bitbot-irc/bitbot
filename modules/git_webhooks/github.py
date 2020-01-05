@@ -39,12 +39,14 @@ EVENT_CATEGORIES = {
         "pull_request_review_comment/deleted"
     ],
     "issue-minimal": [
-        "issues/opened", "issues/closed", "issues/reopened", "issues/deleted"
+        "issues/opened", "issues/closed", "issues/reopened", "issues/deleted",
+        "issues/transferred"
     ],
     "issue": [
         "issues/opened", "issues/closed", "issues/reopened", "issues/deleted",
         "issues/edited", "issues/assigned", "issues/unassigned",
-        "issues/locked", "issues/unlocked", "issue_comment"
+        "issues/locked", "issues/unlocked", "issues/transferred",
+        "issue_comment",
     ],
     "issue-all": [
         "issues", "issue_comment"
