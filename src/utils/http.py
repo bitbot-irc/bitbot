@@ -258,7 +258,6 @@ def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
     task = asyncio.wait(awaits, loop=loop, timeout=5)
     loop.run_until_complete(task)
     loop.close()
-    task.close()
 
     return responses
 
