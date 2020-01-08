@@ -1,3 +1,8 @@
+# 2020-01-08 - BitBot v1.17.2
+
+Fixed:
+- Incorrect format for HTTP UserAgent (missing ")")
+
 # 2019-12-13 - BitBot v1.17.1
 
 Fixed:
