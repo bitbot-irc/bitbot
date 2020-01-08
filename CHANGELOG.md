@@ -1,3 +1,19 @@
+# TBD - BitBot v1.18.0
+
+Added:
+- Show `transferred` github issues by default (`git_webhooks`)
+- `hostmask-tracking.py` - keep a history of what hostmasks each nickname has used
+- Also watch `NICK` and `QUIT` lines to see when our nickname might be freee (`nick_regain.py`)
+
+Changed:
+- Removed `--data-dir`, `--database` and `--log-dir`, these options have been moved to `bot.conf`
+- Reworded karma change output
+- `!grab` not tries to attach quote to account, not just nickname (`quotes.py`)
+- `!wordiest` not defaults to the current channel (`words.py`)
+
+Fixed:
+- cron would fail to initialise at 59 minutes past the hour (`core_modules/cron.py`)
+
 # 2020-01-08 - BitBot v1.17.2
 
 Fixed:
