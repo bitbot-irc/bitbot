@@ -129,6 +129,12 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("That word is not being tracked")
 
+    def _get_nickname(self, server, target, nickname):
+        nickname = server.get_user(nickname).nickname
+        if target.get_setting("wordiest-prevent-highlight", True):
+            nickname = utils.prevent_highlight(nickname)
+        return nickname
+
     @utils.hook("received.command.wordiest")
     def wordiest(self, event):
         """
@@ -155,7 +161,7 @@ class Module(ModuleManager.BaseModule):
                 user_words[nickname] += word_count
 
         top_10 = utils.top_10(user_words,
-            convert_key=lambda nickname:
-            event["server"].get_user(nickname).nickname)
+            convert_key=lambda nickname: self._get_nickname(
+            event["server"], event["target"], nickname))
         event["stdout"].write("wordiest%s: %s" % (
             word_prefix, ", ".join(top_10)))
