@@ -14,7 +14,6 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.maskfind")
     @utils.kwarg("min_args", 1)
-    @utils.kwarg("private_only", True)
     @utils.kwarg("help", "Find all nicknames that used a given hostmask")
     @utils.kwarg("usage", "<hostmask>")
     @utils.kwarg("permission", "maskfind")
