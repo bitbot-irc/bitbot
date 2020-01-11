@@ -98,7 +98,7 @@ class Request(object):
     def get_headers(self) -> typing.Dict[str, str]:
         headers = self.headers.copy()
         if not "Accept-Language" in headers:
-            headers["Accept-Language"] = "en-GB"
+            headers["Accept-Language"] = "en-GB,en;q=0.5"
         if not "User-Agent" in headers:
             headers["User-Agent"] = self.useragent or USERAGENT
         if not "Content-Type" in headers and self.content_type:
