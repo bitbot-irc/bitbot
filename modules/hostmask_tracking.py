@@ -24,13 +24,16 @@ class Module(ModuleManager.BaseModule):
         hostmask_str = event["args_split"][0]
         hostmask = utils.irc.hostmask_parse(hostmask_str)
 
+        searched = 0
         for nickname, userhosts in all_userhosts:
+            searched += len(userhosts)
             for userhost in userhosts:
                 if hostmask.match(userhost):
                     nicknames.add(nickname)
 
         if nicknames:
-            event["stdout"].write("%s (%d): %s" %
-                (hostmask_str, len(nicknames), ", ".join(sorted(nicknames))))
+            event["stdout"].write("%s (%d/%d): %s" %
+                (hostmask_str, len(nicknames), searched,
+                ", ".join(sorted(nicknames))))
         else:
             event["stderr"].write("Hostmask not found")
