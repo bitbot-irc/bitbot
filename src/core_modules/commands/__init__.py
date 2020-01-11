@@ -377,7 +377,7 @@ class Module(ModuleManager.BaseModule):
                 self.command(event["server"], event["user"],
                     event["user"].nickname, False, event["user"], command,
                     args_split, event["line"], hook, command_prefix="",
-                    buffer_line=event["buffer_line"])
+                    buffer_line=event["buffer_line"], expect_output=True)
             else:
                 self.events.on("unknown.command").call(server=event["server"],
                     target=event["user"], user=event["user"], command=command,
