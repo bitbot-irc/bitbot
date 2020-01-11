@@ -34,7 +34,7 @@ class Module(ModuleManager.BaseModule):
         if nicknames:
             outs = []
             for nickname, userhost in sorted(nicknames):
-                outs.append("%s (%s)" % (nickname, userhost))
+                outs.append("%s (%s)" % (utils.irc.bold(nickname), userhost))
             event["stdout"].write("%s (%d/%d): %s" %
                 (hostmask_str, len(nicknames), searched, ", ".join(outs)))
         else:
