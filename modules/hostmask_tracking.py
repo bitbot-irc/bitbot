@@ -30,7 +30,7 @@ class Module(ModuleManager.BaseModule):
                     nicknames.add(nickname)
 
         if nicknames:
-            event["stdout"].write("%s: %s" %
-                (hostmask_str, ", ".join(sorted(nicknames))))
+            event["stdout"].write("%s (%d): %s" %
+                (hostmask_str, len(nicknames), ", ".join(sorted(nicknames))))
         else:
             event["stderr"].write("Hostmask not found")
