@@ -73,7 +73,12 @@ class Module(ModuleManager.BaseModule):
             if match:
                 replace = sed_split[2]
                 replace = replace.replace("\\/", "/")
-                replace = re.sub(SED_AMPERSAND, "\\1%s" % match, replace)
+
+                with utils.deadline():
+                    for found in SED_AMPERSAND.finditer(replace):
+                        found = found.group(1)
+                        replace.replace(found, "%s%s" % (found, match))
+
                 replace_color = utils.irc.bold(replace)
 
                 new_message = re.sub(pattern, replace, message, count)
