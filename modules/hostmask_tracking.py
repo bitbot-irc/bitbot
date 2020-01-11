@@ -29,11 +29,13 @@ class Module(ModuleManager.BaseModule):
             searched += len(userhosts)
             for userhost in userhosts:
                 if hostmask.match(userhost):
-                    nicknames.add(nickname)
+                    nicknames.add((nickname, userhost))
 
         if nicknames:
+            outs = []
+            for nickname, userhost in sorted(nicknames):
+                outs.append("%s (%s)" % (nickname, userhost))
             event["stdout"].write("%s (%d/%d): %s" %
-                (hostmask_str, len(nicknames), searched,
-                ", ".join(sorted(nicknames))))
+                (hostmask_str, len(nicknames), searched, ", ".join(outs)))
         else:
             event["stderr"].write("Hostmask not found")
