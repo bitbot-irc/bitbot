@@ -33,18 +33,22 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Line was filtered")
 
     @utils.hook("received.command.part")
+    @utils.kwarg("help", "Part from the current or given channel")
+    @utils.kwarg("usage", "[channel]")
     def part(self, event):
-        """
-        :help: Part from the current or given channel
-        :usage: [channel]
-        :permission: part
-        """
+        check = utils.Check("permission", "part")
+
         if event["args"]:
             target = event["args_split"][0]
         elif event["is_channel"]:
             target = event["target"].name
+            check |= utils.Check("channel-mode", "high")
+            check |= utils.Check("channel-access", "part")
         else:
             event["stderr"].write("No channel provided")
+
+        event["check_assert"](check)
+
         event["server"].send_part(target)
 
     def _id_from_alias(self, alias):
