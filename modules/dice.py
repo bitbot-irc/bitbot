@@ -4,7 +4,8 @@ import random, re
 from src import ModuleManager, utils
 
 ERROR_FORMAT = "Incorrect format! Format must be [number]d[number], e.g. 1d20"
-RE_DICE = re.compile("^([1-9]\d*)?d([1-9]\d*)((?:[-+][1-9]\d{,2})*)$", re.I)
+RE_DICE = re.compile("^([1-9]\d*)?d([1-9]\d*)((?:\s*[-+][1-9]\d{,2})*)\s*$",
+    re.I)
 RE_MODIFIERS = re.compile("([-+]\d+)")
 
 MAX_DICE = 6
@@ -18,7 +19,7 @@ class Module(ModuleManager.BaseModule):
     def roll_dice(self, event):
         args = None
         if event["args_split"]:
-            args = event["args_split"][0]
+            args = event["args"]
         else:
             args = "1d6"
 
@@ -27,7 +28,8 @@ class Module(ModuleManager.BaseModule):
             roll = match.group(0)
             dice_count = int(match.group(1) or "1")
             side_count = int(match.group(2))
-            modifiers = RE_MODIFIERS.findall(match.group(3))
+            modifiers_str = "".join(match.group(3).split())
+            modifiers = RE_MODIFIERS.findall(modifiers_str)
 
             if dice_count > 6:
                 raise utils.EventError("Max number of dice is %s" % MAX_DICE)
