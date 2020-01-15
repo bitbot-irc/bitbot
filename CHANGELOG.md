@@ -10,9 +10,12 @@ Changed:
 - Reworded karma change output
 - `!grab` not tries to attach quote to account, not just nickname (`quotes.py`)
 - `!wordiest` not defaults to the current channel (`words.py`)
+- `!part` now works for `+o` users or users with channel_access `part` (`admin.py`)
 
 Fixed:
 - cron would fail to initialise at 59 minutes past the hour (`core_modules/cron.py`)
+- Don't send typing notications by default for pattern-based commands
+- Regex error when replacement starts with a number (`sed.py`)
 
 # 2020-01-08 - BitBot v1.17.2
 
