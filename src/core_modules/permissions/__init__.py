@@ -2,7 +2,7 @@
 
 import base64, binascii, os
 import scrypt
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 
 HOSTMASKS_SETTING = "hostmask-account"
 NO_PERMISSION = "You do not have permission to do that"
@@ -122,6 +122,7 @@ class Module(ModuleManager.BaseModule):
                 self._set_hostmask(event["server"], event["user"])
     @utils.hook("received.message.private")
     @utils.hook("received.message.channel")
+    @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
     def account_tag(self, event):
         account = ACCOUNT_TAG.get_value(event["line"].tags)
         if not account == None:
