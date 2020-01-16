@@ -6,6 +6,7 @@ from src import ModuleManager, utils
 
 HOSTMASKS_SETTING = "hostmask-account"
 NO_PERMISSION = "You do not have permission to do that"
+ACCOUNT_TAG = utils.irc.MessageTag("account")
 
 class Module(ModuleManager.BaseModule):
     def on_load(self):
@@ -119,6 +120,12 @@ class Module(ModuleManager.BaseModule):
                     event["user"].account)
             else:
                 self._set_hostmask(event["server"], event["user"])
+    @utils.hook("received.message.private")
+    @utils.hook("received.message.channel")
+    def account_tag(self, event):
+        account = ACCOUNT_TAG.get_value(event["line"].tags)
+        if not account == None:
+            self._has_identified(event["server"], event["user"], account)
 
     def _get_permissions(self, user):
         if self._is_identified(user):
