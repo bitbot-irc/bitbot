@@ -16,6 +16,7 @@ Fixed:
 - cron would fail to initialise at 59 minutes past the hour (`core_modules/cron.py`)
 - Don't send typing notications by default for pattern-based commands
 - Regex error when replacement starts with a number (`sed.py`)
+- Reimplement lost IRCv3 `account-tag` functionality (`permissions`)
 
 # 2020-01-08 - BitBot v1.17.2
 
