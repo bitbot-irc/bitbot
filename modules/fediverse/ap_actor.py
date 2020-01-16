@@ -18,6 +18,8 @@ class Actor(object):
             response = response.json()
             self.username = response["preferredUsername"]
             self.display_name = response.get("name", self.username)
+            if not self.display_name:
+                self.display_name = self.username
             self.inbox = Inbox(response["inbox"])
             self.outbox = Outbox(response["outbox"])
             self.followers = response["followers"]
