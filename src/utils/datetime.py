@@ -27,7 +27,7 @@ def iso8601_format_now(milliseconds: bool=False) -> str:
     return iso8601_format(utcnow(), milliseconds=milliseconds)
 
 def iso8601_parse(s: str) -> _datetime.datetime:
-    return dateutil.parser.isoparse(s)
+    return dateutil.parser.parse(s)
 
 def datetime_human(dt: _datetime.datetime):
     return _datetime.datetime.strftime(dt, DATETIME_HUMAN)
