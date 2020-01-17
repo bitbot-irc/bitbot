@@ -101,8 +101,9 @@ def message(events, event):
 
     buffer_line = None
     if message:
-        buffer_line = IRCBuffer.BufferLine(message_id, user.nickname, message,
-            action, event["line"].tags, from_self, event["line"].command)
+        buffer_line = IRCBuffer.BufferLine(message_id, utils.datetime.utcnow(),
+            user.nickname, message, action, event["line"].tags, from_self,
+            event["line"].command)
 
     buffer_obj = target_obj
     if is_channel:
