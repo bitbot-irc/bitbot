@@ -74,13 +74,18 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("command.regex", pattern=REGEX_WORD)
     @utils.hook("command.regex", pattern=REGEX_PARENS)
     @utils.kwarg("command", "karma")
+    @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
+    # high priority to make `++asd++` count as `++` on `++help`
     def regex_word(self, event):
         if event["target"].get_setting("karma-pattern", False):
+            event.eat()
+
             target = event["match"].group(1)
             positive = event["match"].group(2)=="++"
             success, message = self._change_karma(
                 event["server"], event["user"], target, positive)
             event["stdout" if success else "stderr"].write(message)
+
     @utils.hook("command.regex", pattern=REGEX_WORD_START)
     @utils.kwarg("command", "karma")
     def regex_word_start(self, event):
