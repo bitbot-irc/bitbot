@@ -49,12 +49,13 @@ class Buffer(object):
             for line in self._lines:
                 yield line
 
-    def find(self, pattern: typing.Union[str, typing.Pattern[str]], **kwargs
+    def find(self, pattern: typing.Union[str, typing.Pattern[str]],
+            not_pattern: typing.Union[str, typing.Pattern[str]],
+            from_self=True, for_user: str=None, deleted=False
             ) -> typing.Optional[BufferLineMatch]:
-        from_self = kwargs.get("from_self", True)
-        for_user = kwargs.get("for_user", "")
-        for_user = self.server.irc_lower(for_user) if for_user else None
-        not_pattern = kwargs.get("not_pattern", None)
+        if for_user:
+            for_user = self.server.irc_lower(for_user)
+
         for line in self._lines:
             if line.from_self and not from_self:
                 continue
@@ -65,6 +66,8 @@ class Buffer(object):
                         continue
                     if for_user and not self.server.irc_lower(line.sender
                             ) == for_user:
+                        continue
+                    if line.deleted and not deleted:
                         continue
                     return BufferLineMatch(line, match.group(0))
         return None
