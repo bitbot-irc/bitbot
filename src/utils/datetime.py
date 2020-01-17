@@ -1,8 +1,6 @@
 import re, typing
 import datetime as _datetime
-
-ISO8601_PARSE = "%Y-%m-%dT%H:%M:%S%z"
-ISO8601_PARSE_MICROSECONDS = "%Y-%m-%dT%H:%M:%S.%f%z"
+import dateutil.parser
 
 ISO8601_FORMAT_DT = "%Y-%m-%dT%H:%M:%S"
 ISO8601_FORMAT_TZ = "%z"
@@ -27,9 +25,9 @@ def iso8601_format(dt: _datetime.datetime, milliseconds: bool=False) -> str:
     return "%s%s%s" % (dt_format, ms_format, tz_format)
 def iso8601_format_now(milliseconds: bool=False) -> str:
     return iso8601_format(utcnow(), milliseconds=milliseconds)
-def iso8601_parse(s: str, microseconds: bool=False) -> _datetime.datetime:
-    fmt = ISO8601_PARSE_MICROSECONDS if microseconds else ISO8601_PARSE
-    return _datetime.datetime.strptime(s, fmt)
+
+def iso8601_parse(s: str) -> _datetime.datetime:
+    return dateutil.parser.isoparse(s)
 
 def datetime_human(dt: _datetime.datetime):
     return _datetime.datetime.strftime(dt, DATETIME_HUMAN)
