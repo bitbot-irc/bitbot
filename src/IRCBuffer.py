@@ -17,7 +17,8 @@ class BufferLine(object):
     notes: typing.Dict[str, str] = dataclasses.field(
         default_factory=dict)
 
-    id: str = dataclasses.field(default_factory=uuid.uuid4)
+    id: str = dataclasses.field(
+        default_factory=lambda: str(uuid.uuid4()))
     timestamp: datetime.datetime = dataclasses.field(
         default_factory=utils.datetime.utcnow)
 
