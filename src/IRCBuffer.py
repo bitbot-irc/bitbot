@@ -14,6 +14,7 @@ class BufferLine(object):
     method: str
     notes: typing.Dict[str, str] = dataclasses.field(
         default_factory=dict)
+    deleted: bool=False
 
 class BufferLineMatch(object):
     def __init__(self, line: BufferLine, match: str):
@@ -30,10 +31,12 @@ class Buffer(object):
     def add(self, line: BufferLine):
         self._lines.appendleft(line)
 
-    def get(self, index: int=0, **kwargs) -> typing.Optional[BufferLine]:
-        from_self = kwargs.get("from_self", True)
+    def get(self, index: int=0, from_self=True, deleted=False
+            ) -> typing.Optional[BufferLine]:
         for line in self._lines:
             if line.from_self and not from_self:
+                continue
+            if line.deleted and not deleted:
                 continue
             return line
         return None
