@@ -97,13 +97,11 @@ def message(events, event):
 
     context = "channel" if is_channel else "private"
     hook = events.on(direction).on(event_type).on(context)
-    message_id = event["line"].tags.get("id", str(uuid.uuid4()))
 
     buffer_line = None
     if message:
-        buffer_line = IRCBuffer.BufferLine(message_id, utils.datetime.utcnow(),
-            user.nickname, message, action, event["line"].tags, from_self,
-            event["line"].command)
+        buffer_line = IRCBuffer.BufferLine(user.nickname, message, action,
+            event["line"].tags, from_self, event["line"].command)
 
     buffer_obj = target_obj
     if is_channel:

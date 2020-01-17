@@ -1,12 +1,10 @@
-import collections, dataclasses, datetime, re, typing
+import collections, dataclasses, datetime, re, typing, uuid
 from src import IRCBot, IRCServer, utils
 
 MAX_LINES = 64
 
 @dataclasses.dataclass
 class BufferLine(object):
-    id: str
-    timestamp: datetime.datetime
     sender: str
     message: str
     action: bool
@@ -18,6 +16,10 @@ class BufferLine(object):
 
     notes: typing.Dict[str, str] = dataclasses.field(
         default_factory=dict)
+
+    id: str = dataclasses.field(default_factory=uuid.uuid4)
+    timestamp: datetime.datetime = dataclasses.field(
+        default_factory=utils.datetime.utcnow)
 
 class BufferLineMatch(object):
     def __init__(self, line: BufferLine, match: str):
