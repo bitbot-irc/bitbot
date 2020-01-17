@@ -177,8 +177,8 @@ class Module(ModuleManager.BaseModule):
         line = "- %s" % minimal
 
         self._event("topic", event["server"], line, event["channel"].name,
-            channel=event["channel"], user=event["user"], minimal=minimal,
-            formatting=formatting)
+            channel=event["channel"], user=event.get("user", None),
+            minimal=minimal, formatting=formatting)
     @utils.hook("received.topic")
     def on_topic(self, event):
         self._on_topic(event, event["user"].nickname, "changed",
