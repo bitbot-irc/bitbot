@@ -1,9 +1,11 @@
 # TBD - BitBot v1.18.0
 
 Added:
+- New dependency in `requirements.txt`: `dateutils`
 - Show `transferred` github issues by default (`git_webhooks`)
 - `hostmask-tracking.py` - keep a history of what hostmasks each nickname has used
 - Also watch `NICK` and `QUIT` lines to see when our nickname might be freee (`nick_regain.py`)
+- IRCv3 `draft/delete` implementation (`ircv3_editmsg.py`)
 
 Changed:
 - Removed `--data-dir`, `--database` and `--log-dir`, these options have been moved to `bot.conf`
@@ -17,6 +19,8 @@ Fixed:
 - Don't send typing notications by default for pattern-based commands
 - Regex error when replacement starts with a number (`sed.py`)
 - Reimplement lost IRCv3 `account-tag` functionality (`permissions`)
+- Show username when fediverse displayname is "" (`fediverse`)
+- `++asd++` used to give karma to both `asd++` and `++asd` (`karma.py`)
 
 # 2020-01-08 - BitBot v1.17.2
 
