@@ -5,6 +5,7 @@ MAX_LINES = 64
 
 @dataclasses.dataclass
 class BufferLine(object):
+    id: str
     sender: str
     message: str
     action: bool
@@ -44,6 +45,7 @@ class Buffer(object):
         else:
             for line in self._lines:
                 yield line
+
     def find(self, pattern: typing.Union[str, typing.Pattern[str]], **kwargs
             ) -> typing.Optional[BufferLineMatch]:
         from_self = kwargs.get("from_self", True)
@@ -62,6 +64,12 @@ class Buffer(object):
                             ) == for_user:
                         continue
                     return BufferLineMatch(line, match.group(0))
+        return None
+
+    def find_id(self, id: str) -> typing.Optional[BufferLine]:
+        for line in self._lines:
+            if line.id == id:
+                return line
         return None
 
     def find_from(self, nickname: str) -> typing.Optional[BufferLine]:
