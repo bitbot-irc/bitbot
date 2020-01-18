@@ -124,7 +124,9 @@ class Module(ModuleManager.BaseModule):
         nonreply = [actor.followers]
         first_item = None
         for item in items:
-            if item["type"] == "Announce" or item["object"]["cc"] == nonreply:
+            if (item["type"] == "Announce" or
+                    not "cc" in item["object"] or
+                    item["object"]["cc"] == nonreply):
                 first_item = item
                 break
 
