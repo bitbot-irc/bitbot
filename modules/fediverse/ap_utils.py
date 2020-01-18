@@ -8,6 +8,8 @@ LD_TYPE = ("application/ld+json; "
 JRD_TYPE = "application/jrd+json"
 ACTIVITY_TYPE = "application/activity+json"
 
+AP_TYPES = [ACTIVITY_TYPE, "application/ld+json"]
+
 def split_username(s):
     if s[0] == "@":
         s = s[1:]

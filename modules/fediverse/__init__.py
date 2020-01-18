@@ -79,7 +79,7 @@ class Module(ModuleManager.BaseModule):
         type = "Create"
         if not url == None:
             note_page = ap_utils.activity_request(url)
-            if not note_page.content_type == ap_utils.ACTIVITY_TYPE:
+            if not note_page.content_type in ap_utils.AP_TYPES:
                 raise utils.EventError("That's not a fediverse URL")
 
             note = note_page.json()
