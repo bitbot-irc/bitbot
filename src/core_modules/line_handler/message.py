@@ -28,8 +28,12 @@ def message(events, event):
         if event["line"].source:
             event["server"].name = event["line"].source.hostmask
 
+        source = (event["server"].name or
+            event["server"].connection_params.hostname)
+
         events.on("received.server-notice").call(message=message,
-            message_split=message.split(" "), server=event["server"])
+            message_split=message.split(" "), server=event["server"],
+            source=source)
         return
 
     if from_self:
