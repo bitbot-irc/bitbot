@@ -56,7 +56,7 @@ class Buffer(object):
                 yield line
 
     def find(self, pattern: typing.Union[str, typing.Pattern[str]],
-            not_pattern: typing.Union[str, typing.Pattern[str]],
+            not_pattern: typing.Union[str, typing.Pattern[str]]=None,
             from_self=True, for_user: str=None, deleted=False
             ) -> typing.Optional[BufferLineMatch]:
         if for_user:
