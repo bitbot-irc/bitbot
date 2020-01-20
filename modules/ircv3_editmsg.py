@@ -14,7 +14,7 @@ class Module(ModuleManager.BaseModule):
 
                 timestamp = utils.datetime.datetime_human(line.timestamp,
                     timespec=utils.datetime.TimeSpec.MILLISECOND)
-                minimal = "{NICK} deleted line from %s (%s)" % (
+                minimal = "{~NICK} deleted line from %s (%s)" % (
                     timestamp, line.message)
                 line = "- %s" % minimal
 
