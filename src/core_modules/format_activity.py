@@ -15,13 +15,14 @@ class Module(ModuleManager.BaseModule):
 
         if user:
             formatting["~NICK"] = user.nickname
-            line = line.format(**formatting)
-            minimal = minimal.format(**formatting)
 
-            for key, value in formatting.items():
-                if key[0] == "~":
-                    formatting[key] = self._color(value)
-            pretty = pretty.format(**formatting)
+        line = line.format(**formatting)
+        minimal = minimal.format(**formatting)
+
+        for key, value in formatting.items():
+            if key[0] == "~":
+                formatting[key] = self._color(value)
+        pretty = pretty.format(**formatting)
 
         self.events.on("formatted").on(type).call(server=server,
             context=context, line=line, channel=channel, user=user,
