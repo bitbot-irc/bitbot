@@ -188,7 +188,7 @@ class Module(ModuleManager.BaseModule):
 
     def _on_topic(self, event, nickname, action, topic):
         formatting = {"ACT": action, "TOP": topic, "~TNICK": nickname}
-        minimal = "topic {ACT} by {TNICK}: {TOP}"
+        minimal = "topic {ACT} by {~TNICK}: {TOP}"
         line = "- %s" % minimal
 
         self._event("topic", event["server"], line, event["channel"].name,
