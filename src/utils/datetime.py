@@ -38,7 +38,7 @@ def datetime_human(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL):
     date = _datetime.datetime.strftime(dt, DATE_HUMAN)
     time = _datetime.datetime.strftime(dt, TIME_HUMAN)
     if timespec == TimeSpec.MILLISECOND:
-        time += ".%s" % int(dt.microsecond/1000)
+        time += ".%s" % str(int(dt.microsecond/1000)).zfill(3)
     return "%s %s" % (date, time)
 def date_human(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL):
     return _datetime.datetime.strftime(dt, DATE_HUMAN)
