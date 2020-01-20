@@ -170,7 +170,7 @@ class Module(ModuleManager.BaseModule):
         line = "- %s" % minimal
 
         self._event("invite", event["server"], line, event["target_channel"],
-            user=user, minimal=minimal, formatting=formatting)
+            user=event["user"], minimal=minimal, formatting=formatting)
 
     @utils.hook("received.mode.channel")
     def mode(self, event):
