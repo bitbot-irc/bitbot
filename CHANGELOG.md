@@ -6,6 +6,7 @@ Added:
 - `hostmask-tracking.py` - keep a history of what hostmasks each nickname has used
 - Also watch `NICK` and `QUIT` lines to see when our nickname might be freee (`nick_regain.py`)
 - IRCv3 `draft/delete` implementation (`ircv3_editmsg.py`)
+- Show account and realname in `JOIN` formattin when available (`format_activity.py`)
 
 Changed:
 - Removed `--data-dir`, `--database` and `--log-dir`, these options have been moved to `bot.conf`
