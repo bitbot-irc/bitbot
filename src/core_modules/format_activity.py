@@ -87,12 +87,22 @@ class Module(ModuleManager.BaseModule):
     def _on_join(self, event, user):
         channel_name = event["channel"].name
 
+        account = ""
+        if event["account"]:
+            account = " [{ACC}]"
+        realname = ""
+        if event["realname"]:
+            realname = " ({REAL})"
+
         minimal = "{~NICK} joined {CHAN}"
-        line = "- {~NICK} ({UH}) joined {CHAN}"
+        line = "- {~NICK}%s%s ({UH}) joined {CHAN}" % (account, realname)
+
+        formatting = {"UH": user.userhost(), "CHAN": event["channel"].name,
+            "ACC": event["account"], "REAL": event["realname"]}
 
         self._event("join", event["server"], line, event["channel"].name,
             channel=event["channel"], user=user, minimal=minimal,
-            formatting={"UH": user.userhost(), "CHAN": channel_name})
+            formatting=formatting)
     @utils.hook("received.join")
     def join(self, event):
         self._on_join(event, event["user"])
