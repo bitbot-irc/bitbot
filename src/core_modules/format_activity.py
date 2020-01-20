@@ -14,7 +14,7 @@ class Module(ModuleManager.BaseModule):
         minimal = minimal or line
 
         if user:
-            formatting["~NICK"] = user.nickname
+            formatting["~NICK"] = formatting["NICK"] = user.nickname
 
         line = line.format(**formatting)
         minimal = minimal.format(**formatting)
