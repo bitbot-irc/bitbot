@@ -248,7 +248,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.376")
     def motd_end(self, event):
-        for line in event["server"].motd_lines:
+        for motd_line in event["server"].motd_lines:
             line = "[MOTD] {LINE}"
             self._event("motd", event["server"], line, None,
-                formatting={"LINE": line})
+                formatting={"LINE": motd_line})
