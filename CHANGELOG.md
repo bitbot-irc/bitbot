@@ -1,3 +1,13 @@
+# 2020-01-20 - BitBot v1.18.2
+
+Changed:
+- Colourise server address in `server-notice` formatting (`format_activity.py`)
+
+Fixed:
+- `user` variable doesn't exist in `INVITE` formatting code (`format_activity.py`)
+- `utils.datetime.find()`'s `not_pattern` arg should be optional
+- `utils.datetime.iso8601_parse` no longer has a `microseconds` arg (`youtube.py`)
+
 # 2020-01-20 - BitBot v1.18.1
 
 Fixed:
