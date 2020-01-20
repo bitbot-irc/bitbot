@@ -1,3 +1,8 @@
+# 2020-01-20 - BitBot v1.18.1
+
+Fixed:
+- Formatting variable typo for handling TOPIC (`format_activity.py`)
+
 # 2020-01-20 - BitBot v1.18.0
 
 Added:
