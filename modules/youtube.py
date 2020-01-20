@@ -45,7 +45,7 @@ class Module(ModuleManager.BaseModule):
             content = item["contentDetails"]
 
             video_uploaded_at = utils.datetime.iso8601_parse(
-                snippet["publishedAt"], microseconds=True)
+                snippet["publishedAt"])
             video_uploaded_at = utils.datetime.date_human(video_uploaded_at)
 
             video_uploader = snippet["channelTitle"]
