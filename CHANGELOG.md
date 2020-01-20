@@ -1,4 +1,4 @@
-# TBD - BitBot v1.18.0
+# 2020-01-20 - BitBot v1.18.0
 
 Added:
 - New dependency in `requirements.txt`: `dateutils`
