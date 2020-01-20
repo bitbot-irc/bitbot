@@ -1,12 +1,16 @@
-import re, typing
+import enum, re, typing
 import datetime as _datetime
 import dateutil.parser
 
 ISO8601_FORMAT_DT = "%Y-%m-%dT%H:%M:%S"
 ISO8601_FORMAT_TZ = "%z"
 
-DATETIME_HUMAN = "%Y/%m/%d %H:%M:%S"
+TIME_HUMAN = "%H:%M:%S"
 DATE_HUMAN = "%Y-%m-%d"
+
+class TimeSpec(enum.Enum):
+    NORMAL = 1
+    MILLISECOND = 2
 
 def utcnow() -> _datetime.datetime:
     return _datetime.datetime.utcnow().replace(tzinfo=_datetime.timezone.utc)
@@ -14,24 +18,29 @@ def datetime_timestamp(seconds: float) -> _datetime.datetime:
     return _datetime.datetime.fromtimestamp(seconds).replace(
         tzinfo=_datetime.timezone.utc)
 
-def iso8601_format(dt: _datetime.datetime, milliseconds: bool=False) -> str:
+def iso8601_format(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL
+        ) -> str:
     dt_format = dt.strftime(ISO8601_FORMAT_DT)
     tz_format = dt.strftime(ISO8601_FORMAT_TZ)
 
     ms_format = ""
-    if milliseconds:
+    if timespec == TimeSpec.MILLISECOND:
         ms_format = ".%s" % str(int(dt.microsecond/1000)).zfill(3)
 
     return "%s%s%s" % (dt_format, ms_format, tz_format)
-def iso8601_format_now(milliseconds: bool=False) -> str:
-    return iso8601_format(utcnow(), milliseconds=milliseconds)
+def iso8601_format_now(timespec: TimeSpec=TimeSpec.NORMAL) -> str:
+    return iso8601_format(utcnow(), timespec)
 
 def iso8601_parse(s: str) -> _datetime.datetime:
     return dateutil.parser.parse(s)
 
-def datetime_human(dt: _datetime.datetime):
-    return _datetime.datetime.strftime(dt, DATETIME_HUMAN)
-def date_human(dt: _datetime.datetime):
+def datetime_human(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL):
+    date = _datetime.datetime.strftime(dt, DATE_HUMAN)
+    time = _datetime.datetime.strftime(dt, TIME_HUMAN)
+    if timespec == TimeSpec.MILLISECOND:
+        time += ".%s" % int(dt.microsecond/1000)
+    return "%s %s" % (date, time)
+def date_human(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL):
     return _datetime.datetime.strftime(dt, DATE_HUMAN)
 
 TIME_SECOND = 1
