@@ -50,12 +50,13 @@ class Module(ModuleManager.BaseModule):
             event["command"].args = self._arg_replace(alias_args, given_args,
                 {"NICK": event["user"].nickname})
 
-    @utils.hook("received.command.alias")
-    @utils.hook("received.command.balias")
+    @utils.hook("received.command.alias",
+        permission="alias")
+    @utils.hook("received.command.balias",
+        permission="balias")
     @utils.hook("received.command.calias",
         require_mode="o", require_access="alias")
     @utils.kwarg("min_args", 1)
-    @utils.kwarg("permission", "alias")
     @utils.kwarg("usage", "list")
     @utils.kwarg("usage", "add <alias> <command> [arg1 [arg2 ...]]")
     @utils.kwarg("usage", "remove <alias>")
