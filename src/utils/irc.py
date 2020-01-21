@@ -32,13 +32,18 @@ def equals(case_mapping: str, s1: str, s2: str) -> bool:
 REGEX_COLOR = re.compile("%s(?:(\d{1,2})(?:,(\d{1,2}))?)?" % consts.COLOR)
 
 def color(s: str, foreground: consts.IRCColor,
-        background: consts.IRCColor=None) -> str:
+        background: consts.IRCColor=None,
+        terminate: bool=True) -> str:
     foreground_s = str(foreground.irc).zfill(2)
     background_s = ""
     if background:
         background_s = ",%s" % str(background.irc).zfill(2)
 
-    return f"{consts.COLOR}{foreground_s}{background_s}{s}{consts.COLOR}"
+    out = f"{consts.COLOR}{foreground_s}{background_s}{s}"
+    if terminate:
+        out += consts.COLOR
+
+    return out
 
 HASH_STOP = ["_", "|", "["]
 HASH_COLORS = [consts.CYAN, consts.PURPLE, consts.GREEN, consts.ORANGE,
