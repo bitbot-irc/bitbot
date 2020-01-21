@@ -173,6 +173,9 @@ class GitLab(object):
         return [["[MR] %s %s: %s" % (author, action_desc, pr_title), url]]
 
     def issues(self, full_name, data):
+        if not "action" in data["object_attributes"]:
+            return
+
         number = utils.irc.color("#%s" % data["object_attributes"]["iid"],
             colors.COLOR_ID)
         action = ISSUE_ACTIONS[data["object_attributes"]["action"]]
