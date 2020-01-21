@@ -16,11 +16,17 @@ COLORS = [
     utils.consts.PURPLE
 ]
 
+@utils.export("channelset", utils.BoolSetting("rainbow",
+    "Enable/disable allowing rainbowification of strings"))
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.rainbow")
     @utils.kwarg("help", "Rainbowify a given string or the last message")
     @utils.kwarg("usage", "[string]")
     def rainbow(self, event):
+        if event["is_channel"] and not event["target"].get_setting(
+                "rainbow", False):
+            return
+
         args = event["args"]
         if not args:
             args = event["target"].buffer.get()
