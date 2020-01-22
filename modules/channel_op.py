@@ -395,3 +395,13 @@ class Module(ModuleManager.BaseModule):
 
     def _cunmute(self, channel):
         channel.send_mode("-m")
+
+    @utils.hook("self.join")
+    def self_join(self, event):
+        list_modes = ["b"]
+
+        quiet = self._quiet_method(event["server"])
+        if quiet and not quiet[0] == "b":
+            list_modes.append(quiet[0])
+
+        event["channel"].send_mode("+%s" % "".join(list_modes))
