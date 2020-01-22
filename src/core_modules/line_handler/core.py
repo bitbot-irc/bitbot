@@ -55,6 +55,12 @@ def handle_005(events, event):
         event["server"].case_mapping = isupport["CASEMAPPING"]
     if "STATUSMSG" in isupport:
         event["server"].statusmsg = list(isupport["STATUSMSG"])
+    if "QUIET" in isupport:
+        quiet = dict(enumerate(isupport["QUIET"].split(",")))
+        prefix = quiet.get(1, "")
+        list_numeric = qiuet.get(2, "367") # RPL_BANLIST
+        end_numeric = quiet.get(3, "368")  # RPL_ENDOFBANLIST
+        event["server"].quiet = [quiet[0], prefix, list_numeric, end_numeric]
 
     events.on("received.005").call(isupport=isupport,
         server=event["server"])

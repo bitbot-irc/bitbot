@@ -57,6 +57,7 @@ class Server(IRCObject.Object):
         self.channel_modes = [
             "n", "i", "m", "t", "p", "s"
         ] # type: typing.List[str]
+        self.quiet: typing.Optional[typing.List[str]] = None
 
         self.channel_types = ["#"]
         self.case_mapping = "rfc1459"
