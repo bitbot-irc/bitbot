@@ -432,7 +432,8 @@ class Module(ModuleManager.BaseModule):
         if target in server.channels:
             channel = server.channels.get(target)
             temp_key = "~%s" % mode
-            channel.mode_lists[mode] = channel.mode_lists.pop(temp_key, [])
+            if temp_key in channel.mode_lists:
+                channel.mode_lists[mode] = channel.mode_lists.pop(temp_key)
 
     @utils.hook("received.mode.channel")
     def channel_mode_lists(self, event):
