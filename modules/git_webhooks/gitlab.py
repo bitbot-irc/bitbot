@@ -152,7 +152,7 @@ class GitLab(object):
         number = utils.irc.color("!%s" % data["object_attributes"]["iid"],
             colors.COLOR_ID)
         action = data["object_attributes"]["action"]
-        action_desc = "%s %s" % (ISSUE_ACTIONS[action], number)
+        action_desc = "%s %s" % (ISSUE_ACTIONS.get(action, action), number)
         branch = data["object_attributes"]["target_branch"]
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
 
@@ -178,7 +178,8 @@ class GitLab(object):
 
         number = utils.irc.color("#%s" % data["object_attributes"]["iid"],
             colors.COLOR_ID)
-        action = ISSUE_ACTIONS[data["object_attributes"]["action"]]
+        action = data["object_attributes"]["action"]
+        action = ISSUE_ACTIONS.get(action, action)
         issue_title = data["object_attributes"]["title"]
         author = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
