@@ -403,8 +403,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("new.channel")
     def new_channel_lists(self, event):
-        event["channel"].mode_lists = {
-            m: [] for m in event["server"].channel_list_modes}
+        event["channel"].mode_lists = {}
 
     # RPL_BANLIST
     @utils.hook("received.367")
@@ -427,10 +426,7 @@ class Module(ModuleManager.BaseModule):
     def _mode_list_mask(self, server, target, mode, mask):
         if target in server.channels:
             channel = server.channels.get(target)
-            temp_key = "~%s" % mode
-            if not temp_key in channel.mode_lists:
-                channel.mode_lists[temp_key] = set([])
-            channel.mode_lists[temp_key].add(mask)
+            self._mask_add(channel, "~%s " % mode, mask)
     def _mode_list_end(self, server, target, mode):
         if target in server.channels:
             channel = server.channels.get(target)
@@ -438,14 +434,22 @@ class Module(ModuleManager.BaseModule):
             if temp_key in channel.mode_lists:
                 channel.mode_lists[mode] = channel.mode_lists.pop(temp_key)
 
+    def _mask_add(self, channel, mode, mask):
+        if not mode in channel.mode_lists:
+            channel.mode_lists[mode] = set([])
+        channel.mode_lists[mode].add(mask)
+    def _mask_remove(self, channel, mode, mask):
+        if mode in channel.mode_lists:
+            channel.mode_lists[mode].discard(mask)
+
     @utils.hook("received.mode.channel")
     def channel_mode_lists(self, event):
         for mode, arg in event["modes"]:
             if mode[1] in event["server"].channel_list_modes:
                 if mode[0] == "+":
-                    event["channel"].mode_lists[mode[1]].add(arg)
+                    self._mask_add(event["channel"], mode[1], arg)
                 else:
-                    event["channel"].mode_lists[mode[1]].discard(arg)
+                    self._mask_remove(event["channel"], mode[1], arg)
 
     @utils.hook("self.join")
     def self_join(self, event):
