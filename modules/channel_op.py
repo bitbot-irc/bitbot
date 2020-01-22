@@ -398,10 +398,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("new.channel")
     def new_channel_lists(self, event):
-        event["channel"].mode_lists = {"b": []}
-        quiet = self._quiet_method(event["server"])
-        if quiet and not quiet[0] == "b":
-            event["channel"].mode_lists[quiet[0]] = []
+        event["channel"].mode_lists = {
+            m: [] for m in event["server"].channel_list_modes}
 
     # RPL_BANLIST
     @utils.hook("received.367")
@@ -434,12 +432,17 @@ class Module(ModuleManager.BaseModule):
             temp_key = "~%s" % mode
             channel.mode_lists[mode] = channel.mode_lists.pop(temp_key, [])
 
+    @utils.hook("received.mode.channel")
+    def channel_mode_lists(self, event):
+        for mode, arg in event["modes"]:
+            if mode[1] in event["server"].channel_list_modes:
+                if mode[0] == "+":
+                    event["channel"].mode_lists[mode[1]].add(arg)
+                else:
+                    event["channel"].mode_lists[mode[1]].discard(arg)
+
     @utils.hook("self.join")
     def self_join(self, event):
-        list_modes = ["b"]
+        event["channel"].send_mode("+%s" %
+            "".join(event["server"].channel_list_modes))
 
-        quiet = self._quiet_method(event["server"])
-        if quiet and not quiet[0] == "b":
-            list_modes.append(quiet[0])
-
-        event["channel"].send_mode("+%s" % "".join(list_modes))
