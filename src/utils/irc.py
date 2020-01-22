@@ -287,8 +287,8 @@ def hostmask_match_many(hostmasks: typing.List[str], pattern: HostmaskPattern,
         ) -> typing.Optional[str]:
     for hostmask in hostmasks:
         if pattern.match(hostmask):
-            return hostmask
+            yield hostmask
     return None
 
 def hostmask_match(hostmask: str, pattern: HostmaskPattern) -> bool:
-    return not hostmask_match_many([hostmask], pattern) == None
+    return any(hostmask_match_many([hostmask], pattern))

@@ -454,14 +454,19 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "clear")
     @utils.kwarg("help", "Clear a given channel list mode (e.g. +b)")
-    @utils.kwarg("usage", "+<mode>")
+    @utils.kwarg("usage", "+<mode> [mask]")
     def clear(self, event):
         type = event["args_split"][0]
         if type[0] == "+" and type[1:]:
             mode = type[1]
             if mode in event["target"].mode_lists:
-                chunks = self._chunk(
-                    event["server"], list(event["target"].mode_lists[mode]))
+                mode_list = event["target"].mode_lists[mode]
+                if len(event["args_split"]) > 1:
+                    hostmask = utils.irc.hostmask_parse(event["args_split"][1])
+                    mode_list = list(utils.irc.hostmask_match_many(
+                        mode_list, hostmask))
+
+                chunks = self._chunk(event["server"], list(mode_list))
                 for chunk in chunks:
                     event["target"].send_mode("-%s" % mode*len(chunk), chunk)
             else:
