@@ -42,7 +42,8 @@ class Channels(object):
         lower = self._name_lower(name)
         new_channel = IRCChannel.Channel(lower, id, self._server, self._bot)
         self._channels[lower] = new_channel
-        self._events.on("new.channel").call(channel=new_channel, server=self)
+        self._events.on("new.channel").call(channel=new_channel,
+            server=self._server)
         return new_channel
 
     def remove(self, channel: IRCChannel.Channel):
