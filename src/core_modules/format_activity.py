@@ -217,7 +217,7 @@ class Module(ModuleManager.BaseModule):
         if event["reason"]:
             reason = " (%s)" % event["reason"]
 
-        formatting = {"CHAN": event["channel"].name, "REAS": resaon,
+        formatting = {"CHAN": event["channel"].name, "REAS": reason,
             "~KNICK": kicked_nickname}
 
         minimal = "{~NICK} kicked {~KNICK} from {CHAN}{REAS}"
