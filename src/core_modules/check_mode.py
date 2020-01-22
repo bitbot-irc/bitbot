@@ -14,16 +14,19 @@ LOWHIGH = {
 class Module(ModuleManager.BaseModule):
     def _check_command(self, event, channel, require_mode):
         if event["is_channel"] and require_mode:
-            if require_mode.lower() in LOWHIGH:
+            if require_mode in LOWHIGH:
                 require_mode = event["target"].get_setting(
-                    "mode-%s" % require_mode.lower(),
-                    LOWHIGH[require_mode.lower()])
-            elif require_mode.lower() == "admin":
+                    "mode-%s" % require_mode,
+                    LOWHIGH[require_mode])
+            elif require_mode == "admin":
                 previous = None
                 for mode, _ in event["server"].prefix_modes:
                     if mode == "o":
-                        return previous or mone
+                        require_mode = previous or mone
+                        break
                     previous = mode
+            elif require_mode == "highest":
+                require_mode = event["server"].prefix_modes[0][0]
 
             if not event["target"].mode_or_above(event["user"],
                     require_mode):
