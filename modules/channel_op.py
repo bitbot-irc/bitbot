@@ -325,7 +325,10 @@ class Module(ModuleManager.BaseModule):
     def _chunk_n(self, n, l):
         return [l[i:i+n] for i in range(0, len(l), n)]
     def _chunk(self, server, l):
-        return self._chunk_n(int(server.isupport.get("MODES", "3")), l)
+        # if `MODES` is not present - default to 3
+        # if `MODES` is present without an arg, default to 6
+        n = int(server.isupport.get("MODES", "3") or "6")
+        return self._chunk_n(n, l)
 
     @utils.hook("received.join")
     def on_join(self, event):
