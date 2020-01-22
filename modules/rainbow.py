@@ -32,6 +32,7 @@ class Module(ModuleManager.BaseModule):
             args = event["target"].buffer.get()
             if not args:
                 raise utils.EventError("No line found to rainbowify")
+        args = utils.irc.strip_font(args)
 
         offset = random.randint(0, len(COLORS))
         out = ""
