@@ -67,13 +67,6 @@ def bold(s: str) -> str:
 def underline(s: str) -> str:
     return f"{consts.UNDERLINE}{s}{consts.UNDERLINE}"
 
-def strip_font(s: str) -> str:
-    s = s.replace(consts.BOLD, "")
-    s = s.replace(consts.ITALIC, "")
-    s = REGEX_COLOR.sub("", s)
-    s = s.replace(consts.COLOR, "")
-    return s
-
 FORMAT_TOKENS = [
     consts.BOLD,
     consts.RESET,
@@ -181,6 +174,11 @@ def parse_format(s: str) -> str:
         s = s.replace(token, replace, 1)
 
     s += consts.ANSI_RESET
+    return s
+
+def strip_font(s: str) -> str:
+    for token in _format_tokens(s):
+        s = s.replace(token, "", 1)
     return s
 
 OPT_STR = typing.Optional[str]
