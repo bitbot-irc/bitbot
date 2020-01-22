@@ -5,6 +5,12 @@
 
 from src import ModuleManager, utils
 
+QUIET_METHODS = {
+    "qmode": ["q", "", "728", "729"],
+    "insp":  ["b", "m:", "367", "368"],
+    "insp":  ["b", "~q:", "367", "368"]
+}
+
 KICK_REASON = "your behavior is not conducive to the desired environment"
 
 KICK_REASON_SETTING = utils.Setting("default-kick-reason",
@@ -19,7 +25,7 @@ KICK_REASON_SETTING = utils.Setting("default-kick-reason",
     "($n = nick, $u = username, $h = hostname, $a = account)", example="~a:$a"))
 
 @utils.export("serverset", utils.OptionsSetting(
-    ["qmode", "insp", "unreal", "none"], "mute-method",
+    ["qmode", "insp", "unreal", "none"], "quiet-method",
     "Set this server's method of muting users"))
 @utils.export("botset", KICK_REASON_SETTING)
 @utils.export("serverset", KICK_REASON_SETTING)
@@ -176,29 +182,40 @@ class Module(ModuleManager.BaseModule):
     def tappend(self, event):
         event["target"].send_topic(event["target"].topic + event["args"])
 
-    def _mute_method(self, server, channel, user):
-        mask = self._get_hostmask(channel, user)
-        mute_method = server.get_setting("mute-method", "qmode").lower()
+    def _quiet_method(self, server):
+        quiet_method = server.get_setting("quiet-method", "qmode").lower()
 
-        if mute_method == "qmode":
-            return "q", mask
-        elif mute_method == "insp":
-            return "b", "m:%s" % mask
-        elif mute_method == "unreal":
-            return "b", "~q:%s" % mask
+        if quiet_method in QUIET_METHODS:
+            mode, prefix, list, start = QUIET_METHODS[quiet_method]
+            return mode, prefix
         elif mute_method == "none":
             return None, None
-        raise ValueError("Unknown mute-method '%s'" % mute_method)
+        else:
+            raise ValueError("Unknown mute-method '%s'" % mute_method)
 
-    @utils.hook("received.command.mute", usage="[+time] <nickname>")
-    @utils.hook("received.command.unmute", usage="<nickname>")
+    @utils.hook("received.command.quiet")
+    @utils.hook("received.command.mute")
     @utils.kwarg("min_args", 1)
+    @utils.kwarg("usage", "[+time] <nickname>")
     @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "mute")
-    @utils.kwarg("help", "Mute a given user")
-    def _mute(self, event):
-        add = event["command"] == "mute"
+    @utils.kwarg("require_access", "quiet")
+    @utils.kwarg("help", "Quiet a given user")
+    def quiet(self, event):
+        self._quiet(event, True)
+
+    @utils.hook("received.command.unquiet")
+    @utils.hook("received.command.unmute")
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("usage", "<nickname>")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "unquiet")
+    @utils.kwarg("help", "Unquiet a given user")
+    def unquiet(self, event):
+        self._quiet(event, False)
+
+    def _quiet(self, event, add):
         time, args = utils.parse.timed_args(event["args_split"], 1)
 
         target_name = args[0]
@@ -209,21 +226,23 @@ class Module(ModuleManager.BaseModule):
         if not event["target"].has_user(target_user):
             raise utils.EventError("No such user")
 
-        mode, mask = self._mute_method(event["server"], event["target"],
-            target_user)
+        mode, prefix = self._quiet_method(event["server"])
+
         if mode == None:
-            raise utils.EventError("This network doesn't support mutes")
+            raise utils.EventError("This network doesn't support quiets")
+        mask = self._get_hostmask(event["target"], target_user)
+        mask = "%s%s" % (prefix, mask)
 
         if add and time:
-            self.timers.add_persistent("unmute", time,
+            self.timers.add_persistent("unquiet", time,
                 server_id=event["server"].id, channel_name=event["target"].name,
                 mode=mode, mask=mask)
 
         mode_modifier = "+" if add else "-"
         event["target"].send_mode("%s%s" % (mode_modifier, mode), [mask])
 
-    @utils.hook("timer.unmute")
-    def _timer_unmute(self, event):
+    @utils.hook("timer.unquiet")
+    def _timer_unquiet(self, event):
         server = self.bot.get_server_by_id(event["server_id"])
         if server and event["channel_name"] in server.channels:
             channel = server.channels.get(event["channel_name"])
