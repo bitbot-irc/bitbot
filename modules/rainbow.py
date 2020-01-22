@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
 
         offset = random.randint(0, len(COLORS))
         out = ""
-        for i, c in enumerate(event["args"]):
+        for i, c in enumerate(args):
             color = COLORS[(i+offset)%len(COLORS)]
             out += utils.irc.color(c, color, terminate=False)
         event["stdout"].write(out)
