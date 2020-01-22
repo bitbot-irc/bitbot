@@ -13,6 +13,10 @@ DEFAULT_EVENT_CATEGORIES = [
     "ping", "code", "pr", "issue", "repo"
 ]
 
+PRIVATE_SETTING_NAME = "git-show-private"
+PRIVATE_SETTING = utils.BoolSetting(PRIVATE_SETTING_NAME,
+    "Whether or not to show git activity for private repositories")
+
 @utils.export("channelset", utils.BoolSetting("git-prevent-highlight",
     "Enable/disable preventing highlights"))
 @utils.export("channelset", utils.BoolSetting("git-hide-organisation",
@@ -21,8 +25,8 @@ DEFAULT_EVENT_CATEGORIES = [
     "Hide/show command-like prefix on git webhook outputs"))
 @utils.export("channelset", utils.BoolSetting("git-shorten-urls",
     "Weather or not git webhook URLs should be shortened"))
-@utils.export("botset", utils.BoolSetting("git-show-private",
-    "Whether or not to show git activity for private repositories"))
+@utils.export("botset", PRIVATE_SETTING)
+@utils.export("channelset", PRIVATE_SETTING)
 class Module(ModuleManager.BaseModule):
     _name = "Webhooks"
 
@@ -54,8 +58,8 @@ class Module(ModuleManager.BaseModule):
                 "payload"][0])
         data = json.loads(payload)
 
-        if handler.is_private(data, headers) and not self.bot.get_setting(
-                "git-show-private", False):
+        is_private = handler.is_private(data, headers)
+        if is_private and not self.bot.get_setting(PRIVATE_SETTING_NAME, True):
             return {"state": "success", "deliveries": 0}
 
         full_name, repo_username, repo_name, organisation = handler.names(
@@ -80,6 +84,10 @@ class Module(ModuleManager.BaseModule):
                     if server and channel_name in server.channels:
                         channel = server.channels.get(channel_name)
                         hooks = channel.get_setting("git-webhooks", {})
+
+                        if is_private and not channel.get_setting(
+                                PRIVATE_SETTING_NAME, False):
+                            continue
 
                         if hooks:
                             found_hook = self._find_hook(
