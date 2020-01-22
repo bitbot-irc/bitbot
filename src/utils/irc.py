@@ -284,7 +284,7 @@ def hostmask_parse(hostmask: str):
     return HostmaskPattern(hostmask, re.compile(".".join(part1_out)))
 
 def hostmask_match_many(hostmasks: typing.List[str], pattern: HostmaskPattern,
-        ) -> typing.Optional[str]:
+        ) -> typing.Generator[str, None, None]:
     for hostmask in hostmasks:
         if pattern.match(hostmask):
             yield hostmask
