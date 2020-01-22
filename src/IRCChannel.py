@@ -18,7 +18,7 @@ class Channel(IRCObject.Object):
         self.topic_time = 0
         self.users = set([]) # type: typing.Set[IRCUser.User]
         self.modes = {} # type: typing.Dict[str, typing.Set]
-        self.mode_lists = {}
+        self.mode_lists: typing.Dict[str, typing.Set[str]] = {}
         self.user_modes = {} # type: typing.Dict[IRCUser.User, typing.Set]
         self.created_timestamp = None
         self.buffer = IRCBuffer.Buffer(bot, server)
