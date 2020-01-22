@@ -396,6 +396,44 @@ class Module(ModuleManager.BaseModule):
     def _cunmute(self, channel):
         channel.send_mode("-m")
 
+    @utils.hook("new.channel")
+    def new_channel_lists(self, event):
+        event["channel"].mode_lists = {"b": []}
+        quiet = self._quiet_method(event["server"])
+        if quiet and not quiet[0] == "b":
+            event["channel"].mode_lists[quiet[0]] = []
+
+    # RPL_BANLIST
+    @utils.hook("received.367")
+    def on_367(self, event):
+        self._mode_list_mask(event["server"], event["line"].args[1], "b",
+            event["line"].args[2])
+    @utils.hook("received.368")
+    def on_368(self, event):
+        self._mode_list_end(event["server"], event["line"].args[1], "b")
+
+    # RPL_QUIETLIST
+    @utils.hook("received.728")
+    def on_728(self, event):
+        self._mode_list_mask(event["server"], event["line"].args[1], "q",
+            event["line"].args[3])
+    @utils.hook("received.729")
+    def on_729(self, event):
+        self._mode_list_end(event["server"], event["line"].args[1], "q")
+
+    def _mode_list_mask(self, server, target, mode, mask):
+        if target in server.channels:
+            channel = server.channels.get(target)
+            temp_key = "~%s" % mode
+            if not temp_key in channel.mode_lists:
+                channel.mode_lists[temp_key] = []
+            channel.mode_lists[temp_key].append(mask)
+    def _mode_list_end(self, server, target, mode):
+        if target in server.channels:
+            channel = server.channels.get(target)
+            temp_key = "~%s" % mode
+            channel.mode_lists[mode] = channel.mode_lists.pop(temp_key, [])
+
     @utils.hook("self.join")
     def self_join(self, event):
         list_modes = ["b"]
