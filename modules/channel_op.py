@@ -183,13 +183,15 @@ class Module(ModuleManager.BaseModule):
         event["target"].send_topic(event["target"].topic + event["args"])
 
     def _quiet_method(self, server):
+        if server.quiet:
+            return server.quiet
+
         quiet_method = server.get_setting("quiet-method", "qmode").lower()
 
         if quiet_method in QUIET_METHODS:
-            mode, prefix, list, start = QUIET_METHODS[quiet_method]
-            return mode, prefix
+            return QUIET_METHODS[quiet_method]
         elif mute_method == "none":
-            return None, None
+            return None
         else:
             raise ValueError("Unknown mute-method '%s'" % mute_method)
 
@@ -226,10 +228,12 @@ class Module(ModuleManager.BaseModule):
         if not event["target"].has_user(target_user):
             raise utils.EventError("No such user")
 
-        mode, prefix = self._quiet_method(event["server"])
+        quiet_method = self._quiet_method(event["server"])
 
-        if mode == None:
+        if quiet_method == None:
             raise utils.EventError("This network doesn't support quiets")
+
+        mode, prefix, _, _ = quiet_method
         mask = self._get_hostmask(event["target"], target_user)
         mask = "%s%s" % (prefix, mask)
 
