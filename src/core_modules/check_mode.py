@@ -18,6 +18,12 @@ class Module(ModuleManager.BaseModule):
                 require_mode = event["target"].get_setting(
                     "mode-%s" % require_mode.lower(),
                     LOWHIGH[require_mode.lower()])
+            elif require_mode.lower() == "admin":
+                previous = None
+                for mode, _ in event["server"].prefix_modes:
+                    if mode == "o":
+                        return previous or mone
+                    previous = mode
 
             if not event["target"].mode_or_above(event["user"],
                     require_mode):
