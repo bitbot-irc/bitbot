@@ -314,7 +314,7 @@ class Module(ModuleManager.BaseModule):
                 event["target"].set_user_setting(target.get_id(), "flags",
                     new_flags_str)
 
-                self._check_flags(event["target"], target)
+                self._check_flags(event["server"], event["target"], target)
 
                 event["stdout"].write("Set flags for %s to +%s" % (
                     target.nickname, new_flags_str))
@@ -322,19 +322,21 @@ class Module(ModuleManager.BaseModule):
                 event["target"].del_user_setting(target.get_id(), "flags")
                 event["stdout"].write("Cleared flags for %s" % target.nickname)
 
-    def _chunk(self, l, n):
+    def _chunk_n(self, n, l):
         return [l[i:i+n] for i in range(0, len(l), n)]
+    def _chunk(self, server, l):
+        return self._chunk_n(int(server.isupport.get("MODES", "3")), l)
 
     @utils.hook("received.join")
     def on_join(self, event):
-        self._check_flags(event["channel"], event["user"])
+        self._check_flags(event["server"], event["channel"], event["user"])
     @utils.hook("received.account.login")
     @utils.hook("internal.identified")
     def on_account(self, event):
         for channel in event["user"].channels:
-            self._check_flags(channel, event["user"])
+            self._check_flags(event["server"], channel, event["user"])
 
-    def _check_flags(self, channel, user):
+    def _check_flags(self, server, channel, user):
         flags = channel.get_user_setting(user.get_id(), "flags", "")
 
         if flags:
@@ -359,7 +361,7 @@ class Module(ModuleManager.BaseModule):
 
             # break up in to chunks of (maximum) 3
             # https://tools.ietf.org/html/rfc2812.html#section-3.2.3
-            for chunk in self._chunk(new_modes, 3):
+            for chunk in self._chunk(server, new_modes):
                 chars, args = list(zip(*chunk))
                 channel.send_mode("+%s" % "".join(chars), list(args))
             if not kick_reason == None:
@@ -424,8 +426,8 @@ class Module(ModuleManager.BaseModule):
             channel = server.channels.get(target)
             temp_key = "~%s" % mode
             if not temp_key in channel.mode_lists:
-                channel.mode_lists[temp_key] = []
-            channel.mode_lists[temp_key].append(mask)
+                channel.mode_lists[temp_key] = set([])
+            channel.mode_lists[temp_key].add(mask)
     def _mode_list_end(self, server, target, mode):
         if target in server.channels:
             channel = server.channels.get(target)
@@ -446,3 +448,22 @@ class Module(ModuleManager.BaseModule):
         event["channel"].send_mode("+%s" %
             "".join(event["server"].channel_list_modes))
 
+    @utils.hook("received.command.clear")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "clear")
+    @utils.kwarg("help", "Clear a given channel list mode (e.g. +b)")
+    @utils.kwarg("usage", "+<mode>")
+    def clear(self, event):
+        type = event["args_split"][0]
+        if type[0] == "+" and type[1:]:
+            mode = type[1]
+            if mode in event["target"].mode_lists:
+                chunks = self._chunk(
+                    event["server"], list(event["target"].mode_lists[mode]))
+                for chunk in chunks:
+                    event["target"].send_mode("-%s" % mode*len(chunk), chunk)
+            else:
+                event["stderr"].write("Unknown list mode")
+        else:
+            ...
