@@ -190,7 +190,7 @@ class Module(ModuleManager.BaseModule):
 
         if quiet_method in QUIET_METHODS:
             return QUIET_METHODS[quiet_method]
-        elif mute_method == "none":
+        elif quiet_method == "none":
             return None
         else:
             raise ValueError("Unknown mute-method '%s'" % mute_method)
