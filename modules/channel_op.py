@@ -186,7 +186,7 @@ class Module(ModuleManager.BaseModule):
         if server.quiet:
             return server.quiet
 
-        quiet_method = server.get_setting("quiet-method", "qmode").lower()
+        quiet_method = server.get_setting("quiet-method", "none").lower()
 
         if quiet_method in QUIET_METHODS:
             return QUIET_METHODS[quiet_method]
