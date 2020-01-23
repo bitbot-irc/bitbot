@@ -27,7 +27,7 @@ KICK_REASON_SETTING = utils.Setting("default-kick-reason",
     "($n = nick, $u = username, $h = hostname, $a = account)", example="~a:$a"))
 
 @utils.export("serverset", utils.OptionsSetting(
-    ["qmode", "insp", "unreal", "none"], "quiet-method",
+    list(QUIET_METHODS.keys())+["none"], "quiet-method",
     "Set this server's method of muting users"))
 @utils.export("botset", KICK_REASON_SETTING)
 @utils.export("serverset", KICK_REASON_SETTING)
