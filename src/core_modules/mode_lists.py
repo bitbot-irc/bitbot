@@ -18,7 +18,6 @@ class Module(ModuleManager.BaseModule):
     def on_729(self, event):
         self._mode_list_end(event, event["line"].args[2])
 
-
     def _excepts(self, server):
         return server.isupport.get("EXCEPTS", None) or "e"
     # RPL_EXCEPTLIST
