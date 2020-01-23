@@ -14,6 +14,8 @@ SETTING = utils.BoolSetting("word-tracking",
 
 @utils.export("set", SETTING)
 @utils.export("channelset", SETTING)
+@utils.export("channelset", utils.BoolSetting("words-prevent-highlight",
+    "Whether or not to prevent highlights in wordiest lists"))
 class Module(ModuleManager.BaseModule):
     def _channel_message(self, user, event):
         if not event["channel"].get_setting("word-tracking", True
@@ -109,6 +111,12 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("Tracked words: %s" % ", ".join(
             event["server"].get_setting("tracked-words", [])))
 
+    def _get_nickname(self, server, target, nickname):
+        nickname = server.get_user(nickname).nickname
+        if target.get_setting("words-prevent-highlight", True):
+            nickname = utils.prevent_highlight(nickname)
+        return nickname
+
     @utils.hook("received.command.wordusers", min_args=1)
     def word_users(self, event):
         """
@@ -122,18 +130,12 @@ class Module(ModuleManager.BaseModule):
             items = [(word_user[0], word_user[1]) for word_user in word_users]
             word_users = dict(items)
             top_10 = utils.top_10(word_users,
-                convert_key=lambda nickname:
-                event["server"].get_user(nickname).nickname)
+                convert_key=lambda nickname: self._get_nickname(
+                event["server"], event["target"], nickname))
             event["stdout"].write("Top '%s' users: %s" % (word,
                 ", ".join(top_10)))
         else:
             event["stderr"].write("That word is not being tracked")
-
-    def _get_nickname(self, server, target, nickname):
-        nickname = server.get_user(nickname).nickname
-        if target.get_setting("wordiest-prevent-highlight", True):
-            nickname = utils.prevent_highlight(nickname)
-        return nickname
 
     @utils.hook("received.command.wordiest")
     def wordiest(self, event):
