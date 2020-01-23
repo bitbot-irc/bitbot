@@ -8,7 +8,7 @@ from src import ModuleManager, utils
 QUIET_METHODS = {
     "qmode": ["q", "", "728", "729"],
     "insp":  ["b", "m:", "367", "368"],
-    "insp":  ["b", "~q:", "367", "368"]
+    "unreal":  ["b", "~q:", "367", "368"]
 }
 
 KICK_REASON = "your behavior is not conducive to the desired environment"
