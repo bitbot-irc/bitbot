@@ -30,7 +30,6 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.join")
     @utils.hook("formatted.part")
     @utils.hook("formatted.nick")
-    @utils.hook("formatted.server-notice")
     @utils.hook("formatted.invite")
     @utils.hook("formatted.mode.channel")
     @utils.hook("formatted.topic")

@@ -155,12 +155,6 @@ class Module(ModuleManager.BaseModule):
     def self_nick(self, event):
         self._on_nick(event, event["server"].get_user(event["server"].nickname))
 
-    @utils.hook("received.server-notice")
-    def server_notice(self, event):
-        line = "-*{~NAME}- {MSG}"
-        self._event("server-notice", event["server"], line, None,
-            formatting={"MSG": event["message"], "~NAME": event["server"].name})
-
     @utils.hook("received.invite")
     def invite(self, event):
         formatting = {"CHAN": event["target_channel"],
