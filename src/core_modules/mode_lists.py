@@ -12,10 +12,11 @@ class Module(ModuleManager.BaseModule):
     # RPL_QUIETLIST
     @utils.hook("received.728")
     def on_728(self, event):
-        self._mode_list_mask(event, "q", event["line"].args[3])
+        mode = event["line"].args[2]
+        self._mode_list_mask(event, mode, event["line"].args[3])
     @utils.hook("received.729")
     def on_729(self, event):
-        self._mode_list_end(event, "q")
+        self._mode_list_end(event, event["line"].args[2])
 
 
     def _excepts(self, server):
