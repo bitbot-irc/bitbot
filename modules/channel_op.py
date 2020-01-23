@@ -13,6 +13,8 @@ QUIET_METHODS = {
 
 KICK_REASON = "your behavior is not conducive to the desired environment"
 
+NO_QUIETS = "This network doesn't support quiets"
+
 KICK_REASON_SETTING = utils.Setting("default-kick-reason",
     "Set the default kick reason", example="have a nice trip")
 
@@ -193,7 +195,7 @@ class Module(ModuleManager.BaseModule):
         elif quiet_method == "none":
             return None
         else:
-            raise ValueError("Unknown mute-method '%s'" % mute_method)
+            raise ValueError("Unknown quiet-method '%s'" % quiet_method)
 
     @utils.hook("received.command.quiet")
     @utils.hook("received.command.mute")
@@ -231,7 +233,7 @@ class Module(ModuleManager.BaseModule):
         quiet_method = self._quiet_method(event["server"])
 
         if quiet_method == None:
-            raise utils.EventError("This network doesn't support quiets")
+            raise utils.EventError(NO_QUIETS)
 
         mode, prefix, _, _ = quiet_method
         mask = self._get_hostmask(event["target"], target_user)
@@ -401,27 +403,53 @@ class Module(ModuleManager.BaseModule):
     def _cunmute(self, channel):
         channel.send_mode("-m")
 
+    def _filter_mask(self, mask, list):
+        parsed_mask = utils.irc.hostmask_parse(mask)
+        return list(utils.irc.hostmask_match_many(list, parsed_mask))
+    def _filter_prefix(self, prefix, list):
+        return [l for l in list if l.startswith(prefix)]
+
     @utils.hook("received.command.clear")
     @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "clear")
     @utils.kwarg("help", "Clear a given channel list mode (e.g. +b)")
+    @utils.kwarg("usage", "<type> [mask]")
     @utils.kwarg("usage", "+<mode> [mask]")
     def clear(self, event):
-        type = event["args_split"][0]
-        if type[0] == "+" and type[1:]:
-            mode = type[1]
-            if mode in event["target"].mode_lists:
-                mode_list = event["target"].mode_lists[mode]
-                if len(event["args_split"]) > 1:
-                    hostmask = utils.irc.hostmask_parse(event["args_split"][1])
-                    mode_list = list(utils.irc.hostmask_match_many(
-                        mode_list, hostmask))
+        list_type = event["args_split"][0]
+        list_mode = None
+        list_filter = lambda l: list(l)
 
-                chunks = self._chunk(event["server"], list(mode_list))
-                for chunk in chunks:
-                    event["target"].send_mode("-%s" % mode*len(chunk), chunk)
+        if list_type[0] == "+":
+            if list_type[1:]:
+                list_mode = type[1]
             else:
-                event["stderr"].write("Unknown list mode")
+                raise utils.EventError("Please provide a list mode")
+
+        elif list_type in ["quiets", "mutes"]:
+            quiet_method = self._quiet_method(event["server"])
+            if quiet_method:
+                list_mode = quiet_method[0]
+                if quiet_method[1]:
+                    list_filter = lambda list: self._filter_prefix(
+                        quiet_method[1], list)
+            else:
+                raise utils.EventError(NO_QUIETS)
+
         else:
-            ...
+            raise utils.EventError("Unknown type '%s'" % type)
+
+        if list_mode in event["target"].mode_lists:
+            if len(event["args_split"]) > 1:
+                old_filter = list_filter
+                list_filter = lambda list: self._filter_mask(
+                    event["args_split"][1], old_filter(list))
+
+            mode_list = list_filter(event["target"].mode_lists[list_mode])
+
+            chunks = self._chunk(event["server"], mode_list)
+            for chunk in chunks:
+                event["target"].send_mode("-%s" % list_mode*len(chunk), chunk)
+        else:
+            raise utils.EventError("Unknown list mode")
