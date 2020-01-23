@@ -216,14 +216,19 @@ class Module(ModuleManager.BaseModule):
         user.account(self.events, event)
 
     # response to a WHO command for user information
-    @utils.hook("raw.received.352", default_event=True)
+    @utils.hook("raw.received.352")
     def handle_352(self, event):
         core.handle_352(self.events, event)
 
     # response to a WHOX command for user information, including account name
-    @utils.hook("raw.received.354", default_event=True)
+    @utils.hook("raw.received.354")
     def handle_354(self, event):
         core.handle_354(self.events, event)
+
+    # RPLENDOFWHO
+    @utils.hook("raw.received.315")
+    def handle_315(self, event):
+        core.handle_315(self.events, event)
 
     # response to an empty mode command
     @utils.hook("raw.received.324")

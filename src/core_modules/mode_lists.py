@@ -75,19 +75,18 @@ class Module(ModuleManager.BaseModule):
                     self._mask_add(event["channel"], mode[1], arg)
                 else:
                     self._mask_remove(event["channel"], mode[1], arg)
+            elif mode[1] in dict(event["server"].prefix_modes):
+                if (event["server"].irc_equals(event["server"].nickname, arg)
+                        and event["channel"].seen_who):
+                    self._query_lists(event["server"], event["channel"])
 
-    @utils.hook("received.315")
-    def who_end(self, event):
-        channel = self._channel(event)
 
-        if channel:
-            missed = set(event["server"].channel_list_modes)-set(
-                channel.mode_lists.keys())
-            if missed:
-                channel.send_mode("+%s" % "".join(missed))
+    def _query_lists(self, server, channel):
+        seen = set(k.lstrip("~") for k in channel.mode_lists.keys())
+        missing = set(server.channel_list_modes)-seen
+        if missing:
+            channel.send_mode("+%s" % "".join(missing))
 
     @utils.hook("self.join")
     def self_join(self, event):
-        event["channel"].send_mode("+%s" %
-            "".join(event["server"].channel_list_modes))
-
+        self._query_lists(event["server"], event["channel"])

@@ -22,6 +22,7 @@ class Channel(IRCObject.Object):
         self.user_modes = {} # type: typing.Dict[IRCUser.User, typing.Set]
         self.created_timestamp = None
         self.buffer = IRCBuffer.Buffer(bot, server)
+        self.seen_who = False
 
         self._setting_cache_prefix = "channelsetting%s-" % self.id
 
