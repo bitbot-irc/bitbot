@@ -17,7 +17,7 @@ class Server(IRCObject.Object):
         self.id = id
         self.alias = alias
         self.connection_params = connection_params
-        self.name = None # type: typing.Optional[str]
+        self.name = connection_params.hostname
         self.version = None # type: typing.Optional[str]
 
         self.connected = False

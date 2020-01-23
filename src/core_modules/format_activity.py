@@ -157,9 +157,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.server-notice")
     def server_notice(self, event):
-        line = "-*{~SOURCE}- {MSG}"
+        line = "-*{~NAME}- {MSG}"
         self._event("server-notice", event["server"], line, None,
-            formatting={"MSG": event["message"], "~SOURCE": event["source"]})
+            formatting={"MSG": event["message"], "~NAME": event["server"].name})
 
     @utils.hook("received.invite")
     def invite(self, event):

@@ -1,5 +1,5 @@
 import uuid
-from src import IRCBuffer, utils
+from src import IRCBuffer, IRCLine, utils
 
 def _from_self(server, source):
     if source:
@@ -20,28 +20,22 @@ def message(events, event):
     if len(event["line"].args) > 1:
         message = event["line"].args[1]
 
-    if not from_self and (
-            not event["line"].source or
-            not event["server"].name or
-            event["line"].source.hostmask == event["server"].name or
-            target_str == "*"):
-        if event["line"].source:
+    source = event["line"].source
+    if (not event["server"].nickname
+            or not source
+            or source.hostmask == event["server"].name):
+        if source:
             event["server"].name = event["line"].source.hostmask
-
-        source = (event["server"].name or
-            event["server"].connection_params.hostname)
-
-        events.on("received.server-notice").call(message=message,
-            message_split=message.split(" "), server=event["server"],
-            source=source)
-        return
+        else:
+            source = IRCLine.parse_hostmask(event["server"].name)
+        target_str = event["server"].nickname or "*"
 
     if from_self:
         user = event["server"].get_user(event["server"].nickname)
     else:
-        user = event["server"].get_user(event["line"].source.nickname,
-            username=event["line"].source.username,
-            hostname=event["line"].source.hostname)
+        user = event["server"].get_user(source.nickname,
+            username=source.username,
+            hostname=source.hostname)
 
     # strip prefix_symbols from the start of target, for when people use
     # e.g. 'PRIVMSG +#channel :hi' which would send a message to only
