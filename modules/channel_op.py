@@ -407,7 +407,7 @@ class Module(ModuleManager.BaseModule):
         parsed_mask = utils.irc.hostmask_parse(mask)
         return list(utils.irc.hostmask_match_many(list, parsed_mask))
     def _filter_prefix(self, prefix, list):
-        return [l for l in list if l.startswith(prefix)]
+        return [l for l in list if prefix in l]
 
     @utils.hook("received.command.clear")
     @utils.kwarg("channel_only", True)
@@ -423,7 +423,7 @@ class Module(ModuleManager.BaseModule):
 
         if list_type[0] == "+":
             if list_type[1:]:
-                list_mode = type[1]
+                list_mode = list_type[1]
             else:
                 raise utils.EventError("Please provide a list mode")
 
