@@ -46,9 +46,9 @@ def nick(events, event):
         events.on("received.nick").call(new_nickname=new_nickname,
             old_nickname=old_nickname, user=user, server=event["server"])
     else:
+        event["server"].set_own_nickname(new_nickname)
         events.on("self.nick").call(server=event["server"],
             new_nickname=new_nickname, old_nickname=old_nickname)
-        event["server"].set_own_nickname(new_nickname)
 
 def away(events, event):
     user = event["server"].get_user(event["line"].source.nickname)
