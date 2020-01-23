@@ -115,6 +115,7 @@ def part(events, event):
 def handle_324(events, event):
     if event["line"].args[1] in event["server"].channels:
         channel = event["server"].channels.get(event["line"].args[1])
+        channel.seen_modes = True
         modes = event["line"].args[2]
         args = event["line"].args[3:]
         new_modes = channel.parse_modes(modes, args[:])

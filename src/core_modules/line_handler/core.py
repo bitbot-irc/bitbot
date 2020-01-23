@@ -150,14 +150,6 @@ def handle_354(events, event):
         events.on("received.whox").call(server=event["server"],
             user=target)
 
-def handle_315(events, event):
-    target = event["line"].args[1]
-    if target in event["server"].channels:
-        channel = event["server"].channels.get(target)
-        events.on("received.endofwho").call(server=event["server"],
-            channel=channel)
-        channel.seen_who = True
-
 def _nick_in_use(server):
     new_nick = "%s|" % server.connection_params.nickname
     server.send_nick(new_nick)

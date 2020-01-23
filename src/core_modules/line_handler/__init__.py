@@ -225,11 +225,6 @@ class Module(ModuleManager.BaseModule):
     def handle_354(self, event):
         core.handle_354(self.events, event)
 
-    # RPLENDOFWHO
-    @utils.hook("raw.received.315")
-    def handle_315(self, event):
-        core.handle_315(self.events, event)
-
     # response to an empty mode command
     @utils.hook("raw.received.324")
     def handle_324(self, event):

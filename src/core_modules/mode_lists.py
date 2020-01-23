@@ -77,7 +77,7 @@ class Module(ModuleManager.BaseModule):
                     self._mask_remove(event["channel"], mode[1], arg)
             elif mode[1] in dict(event["server"].prefix_modes):
                 if (event["server"].irc_equals(event["server"].nickname, arg)
-                        and event["channel"].seen_who):
+                        and event["channel"].seen_modes):
                     self._query_lists(event["server"], event["channel"])
 
 
