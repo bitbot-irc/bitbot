@@ -6,6 +6,8 @@ class Module(ModuleManager.BaseModule):
         if not self._regained(server, target_nick):
             if "MONITOR" in server.isupport:
                 server.send_raw("MONITOR + %s" % target_nick)
+            elif "WATCH" in server.isupport:
+                server.send_raw("WATCH +%s" % target_nick)
             else:
                 self.timers.add("ison-check", self._ison_check, 30,
                     server=server)
@@ -28,6 +30,8 @@ class Module(ModuleManager.BaseModule):
         if self._regained(event["server"], target_nick):
             if "MONITOR" in event["server"].isupport:
                 event["server"].send_raw("MONITOR - %s" % target_nick)
+            elif "WATCH" in event["server"].isupport:
+                event["server"].send_raw("WATCH -%s" % target_nick)
 
     @utils.hook("received.nick")
     def nick(self, event):
@@ -43,12 +47,18 @@ class Module(ModuleManager.BaseModule):
             server.send_nick(target_nick)
 
     @utils.hook("received.731")
-    def mon_offline(self, event):
-        target_nick = self._target(event["server"])
-        nicks = event["line"].args[1].split(",")
-        nicks = [event["server"].irc_lower(n) for n in nicks]
-        if event["server"].irc_lower(target_nick) in nicks:
-            event["server"].send_nick(target_nick)
+    def monitor_offline(self, event):
+        self._offline(event["server"], event["line"].args[1].split(","))
+
+    @utils.hook("received.601")
+    def watch_offline(self, event):
+        self._offline(event["server"], [event["line"].args[1]])
+
+    def _offline(self, server, nicks):
+        target_nick = self._target(server)
+        nicks = [server.irc_lower(n) for n in nicks]
+        if server.irc_lower(target_nick) in nicks:
+            server.send_nick(target_nick)
 
     def _ison_check(self, timer):
         server = timer.kwargs["server"]
