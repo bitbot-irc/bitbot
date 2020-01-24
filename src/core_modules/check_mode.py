@@ -13,10 +13,10 @@ LOWHIGH = {
     "Set which channel mode is considered to be 'high' access", example="o"))
 class Module(ModuleManager.BaseModule):
     def _check_command(self, event, channel, require_mode):
-        if event["is_channel"] and require_mode:
+        print(channel)
+        if channel and require_mode:
             if require_mode in LOWHIGH:
-                require_mode = event["target"].get_setting(
-                    "mode-%s" % require_mode,
+                require_mode = channel.get_setting("mode-%s" % require_mode,
                     LOWHIGH[require_mode])
             elif require_mode == "admin":
                 previous = None
@@ -27,9 +27,7 @@ class Module(ModuleManager.BaseModule):
                     previous = mode
             elif require_mode == "highest":
                 require_mode = event["server"].prefix_modes[0][0]
-
-            if not event["target"].mode_or_above(event["user"],
-                    require_mode):
+            if not channel.mode_or_above(event["user"], require_mode):
                 return (utils.consts.PERMISSION_ERROR,
                     "You do not have permission to do this")
             else:
@@ -39,7 +37,9 @@ class Module(ModuleManager.BaseModule):
     def preprocess_command(self, event):
         require_mode = event["hook"].get_kwarg("require_mode")
         if not require_mode == None:
-            return self._check_command(event, event["target"], require_mode)
+            channel = event["kwargs"].get("channel",
+                event["target"] if event["is_channel"] else None)
+            return self._check_command(event, channel, require_mode)
 
     @utils.hook("check.command.channel-mode")
     def check_command(self, event):

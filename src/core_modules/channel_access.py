@@ -13,21 +13,22 @@ class Module(ModuleManager.BaseModule):
 
         return (require_access in access or "*" in access) and identified
 
-    def _command_check(self, event, target, require_access):
-        if event["is_channel"]:
-            if require_access:
-                if self._has_channel_access(target, event["user"],
-                        require_access):
-                    return utils.consts.PERMISSION_FORCE_SUCCESS, None
-                else:
-                    return (utils.consts.PERMISSION_ERROR,
+    def _command_check(self, event, channel, require_access):
+        if channel and require_access:
+            if self._has_channel_access(channel, event["user"],
+                    require_access):
+                return utils.consts.PERMISSION_FORCE_SUCCESS, None
+            else:
+                return (utils.consts.PERMISSION_ERROR,
                         "You do not have permission to do this")
 
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
         require_access = event["hook"].get_kwarg("require_access")
         if require_access:
-            return self._command_check(event, event["target"],  require_access)
+            channel = event["kwargs"].get("channel",
+                event["target"] if event["is_channel"] else None)
+            return self._command_check(event, channel, require_access)
 
     @utils.hook("check.command.channel-access")
     def check_command(self, event):
