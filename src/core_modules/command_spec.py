@@ -104,6 +104,8 @@ class Module(ModuleManager.BaseModule):
             args = event["args_split"].copy()
 
             out = []
+            kwargs = {"channel": channel}
+
             for word in spec.split():
                 optional = word[0] == "?"
                 word = word[1:]
@@ -111,7 +113,8 @@ class Module(ModuleManager.BaseModule):
                 raw_spec_types = word.split("|")
                 spec_types = [t.replace("~", "", 1) for t in raw_spec_types]
 
-                options = self._spec_chunk(server, channel, user, spec_types, args)
+                options = self._spec_chunk(server, kwargs["channel"], user,
+                    spec_types, args)
 
                 found = None
                 first_error = None
@@ -124,7 +127,7 @@ class Module(ModuleManager.BaseModule):
 
                     if chunk:
                         if "~" in raw_spec_type:
-                            event["kwargs"][raw_spec_type.split("~", 1)[1]] = chunk
+                            kwargs[raw_spec_type.split("~", 1)[1]] = chunk
 
                         found = True
                         args = args[n:]
@@ -137,4 +140,6 @@ class Module(ModuleManager.BaseModule):
                 if not optional and not found:
                     error = first_error or "Invalid arguments"
                     return utils.consts.PERMISSION_HARD_FAIL, error
-            event["kwargs"]["spec"] = out
+
+            kwargs["spec"] = out
+            event["kwargs"].update(kwargs)
