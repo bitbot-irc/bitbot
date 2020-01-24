@@ -40,23 +40,19 @@ class Module(ModuleManager.BaseModule):
             server.get_setting("default-kick-reason",
             self.bot.get_setting("default-kick-reson", KICK_REASON)))
 
-    def _kick(self, server, channel, target_nickname, reason):
-        target_user = server.get_user(target_nickname, create=False)
-        if target_user and channel.has_user(target_user):
-            reason = " ".join(reason) or self._kick_reason(server, channel)
-            channel.send_kick(target_user.nickname, reason)
-        else:
-            raise utils.EventError("No such user")
+    def _kick(self, server, channel, target_user, reason):
+        reason = reason or self._kick_reason(server, channel)
+        channel.send_kick(target_user.nickname, reason)
 
     @utils.hook("received.command.kick")
     @utils.hook("received.command.k", alias_of="kick")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "kick")
     @utils.kwarg("usage", "<nickname> [reason]")
+    @utils.kwarg("spec", "!r~channel !cuser ?...")
     def kick(self, event):
-        self._kick(event["server"], event["target"], event["args_split"][0],
-            event["args_split"][1:])
+        self._kick(event["server"], event["target"], event["spec"][0],
+            event["spec"][1])
 
     def _format_hostmask(self, user, s):
         vars = {}
@@ -75,14 +71,13 @@ class Module(ModuleManager.BaseModule):
         return self._format_hostmask(user, format)
 
     def _ban(self, server, channel, target, allow_hostmask, time, add):
-        hostmask = None
-        target_user = server.get_user(target, create=False)
-        if target_user and channel.has_user(target_user):
-            hostmask = self._get_hostmask(channel, target_user)
+        if target[0] == "user":
+            hostmask = self._get_hostmask(channel, target[1])
         else:
             if not allow_hostmask:
                 raise utils.EventError("No such user")
-            hostmask = target
+            hostmask = target[1]
+
         if not add:
             channel.send_unban(hostmask)
         else:
@@ -101,88 +96,83 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.ban")
     @utils.hook("received.command.b", alias_of="ban")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "ban")
     @utils.kwarg("usage", "[+time] <target>")
+    @utils.kwarg("spec", "!r~channel ?time !user|text")
     def ban(self, event):
-        time, args = utils.parse.timed_args(event["args_split"], 1)
-        self._ban(event["server"], event["target"], args[0], True, time, True)
+        self._ban(event["server"], event["spec"][0], event["spec"][2], True,
+            event["spec"][1], True)
 
     @utils.hook("received.command.unban")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "ban")
     @utils.kwarg("usage", "<target>")
+    @utils.kwarg("spec", "!r~channel !user|word")
     def unban(self, event):
-        self._ban(event["server"], event["target"], event["args_split"][0],
+        self._ban(event["server"], event["spec"][0], event["spec"][1],
             True, None, False)
 
     @utils.hook("received.command.kickban")
     @utils.hook("received.command.kb", alias_of="kickban")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "kickban")
     @utils.kwarg("usage", "[+time] <nickname> [reason]")
+    @utils.kwarg("spec", "!r~channel ?time !cuser| ?...")
     def kickban(self, event):
-        time, args = utils.parse.timed_args(event["args_split"], 1)
-        self._ban(event["server"], event["target"], args[0], False, time, True)
-        self._kick(event["server"], event["target"], args[0], args[1:])
+        self._ban(event["server"], event["spec"][0], event["spec"][2],
+            False, event["spec"][1], True)
+        self._kick(event["server"], event["spec"][0], event["spec"][2],
+            event["spec"][1])
 
     @utils.hook("received.command.op")
     @utils.hook("received.command.up", alias_of="op")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "op")
     @utils.kwarg("usage", "[nickname]")
+    @utils.kwarg("spec", "!r~channel !ruser")
     def op(self, event):
-        self._op(True, event)
+        self._op(True, event["spec"])
 
     @utils.hook("received.command.deop")
     @utils.hook("received.command.down", alias_of="deop")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "op")
     @utils.kwarg("usage", "[nickname]")
+    @utils.kwarg("spec", "!r~channel !ruser")
     def deop(self, event):
-        self._op(False, event)
+        self._op(False, event["spec"])
 
-    def _op(self, add, event):
-        target = event["args_split"][0] if event["args"] else event[
-            "user"].nickname
-        event["target"].send_mode("+o" if add else "-o", [target])
+    def _op(self, add, spec):
+        spec[0].send_mode("%so" % ("+" if add else "-"), [spec[1].nickname])
 
     @utils.hook("received.command.voice")
     @utils.hook("received.command.devoice")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "voice")
     @utils.kwarg("usage", "[nickname]")
+    @utils.kwarg("spec", "!r~channel !ruser")
     def voice(self, event):
         add = event["command"] == "voice"
-        target = event["args_split"][0] if event["args"] else event[
-            "user"].nickname
-        event["target"].send_mode("+v" if add else "-v", [target])
+        event["spec"][0].send_mode("+v" if add else "-v", [event["spec"][1]])
 
     @utils.hook("received.command.topic")
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "topic")
     @utils.kwarg("remove_empty", False)
     @utils.kwarg("usage", "<topic>")
+    @utils.kwarg("spec", "!r~channel !...")
     def topic(self, event):
-        event["target"].send_topic(event["args"])
+        event["spec"][0].send_topic(event["spec"][1])
 
     @utils.hook("received.command.tappend")
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "topic")
     @utils.kwarg("remove_empty", False)
     @utils.kwarg("usage", "<topic>")
+    @utils.kwarg("spec", "!r~channel !...")
     def tappend(self, event):
-        event["target"].send_topic(event["target"].topic + event["args"])
+        event["spec"][0].send_topic(event["spec"][0].topic + event["spec"][1])
 
     def _quiet_method(self, server):
         if server.quiet:
@@ -199,53 +189,43 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.quiet")
     @utils.hook("received.command.mute")
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("usage", "[+time] <nickname>")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "quiet")
     @utils.kwarg("help", "Quiet a given user")
+    @utils.kwarg("usage", "[+time] <nickname>")
+    @utils.kwarg("spec", "!r~channel ?time !user|word")
     def quiet(self, event):
-        self._quiet(event, True)
+        self._quiet(event["server"], True, event["spec"])
 
     @utils.hook("received.command.unquiet")
     @utils.hook("received.command.unmute")
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("usage", "<nickname>")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "unquiet")
     @utils.kwarg("help", "Unquiet a given user")
+    @utils.kwarg("usage", "<nickname>")
+    @utils.kwarg("spec", "!r~channel !user|word")
     def unquiet(self, event):
-        self._quiet(event, False)
+        self._quiet(event["server"], False, event["spec"])
 
-    def _quiet(self, event, add):
-        time, args = utils.parse.timed_args(event["args_split"], 1)
-
-        target_name = args[0]
-        if not event["server"].has_user(target_name):
-            raise utils.EventError("No such user")
-
-        target_user = event["server"].get_user(target_name)
-        if not event["target"].has_user(target_user):
-            raise utils.EventError("No such user")
-
+    def _quiet(self, server, add, spec):
         quiet_method = self._quiet_method(event["server"])
 
         if quiet_method == None:
             raise utils.EventError(NO_QUIETS)
 
         mode, prefix, _, _ = quiet_method
-        mask = self._get_hostmask(event["target"], target_user)
+        mask = spec[1][1]
+        if spec[1][0] == "user":
+            mask = self._get_hostmask(spec[0], spec[1][1])
         mask = "%s%s" % (prefix, mask)
 
         if add and time:
             self.timers.add_persistent("unquiet", time,
-                server_id=event["server"].id, channel_name=event["target"].name,
+                server_id=server.id, channel_name=spec[0].name,
                 mode=mode, mask=mask)
 
         mode_modifier = "+" if add else "-"
-        event["target"].send_mode("%s%s" % (mode_modifier, mode), [mask])
+        spec[0].send_mode("%s%s" % (mode_modifier, mode), [mask])
 
     @utils.hook("timer.unquiet")
     def _timer_unquiet(self, event):
@@ -255,12 +235,11 @@ class Module(ModuleManager.BaseModule):
             channel.send_mode("-%s" % event["mode"], [event["mask"]])
 
     @utils.hook("received.command.invite")
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "invite")
     @utils.kwarg("help", "Invite a given user")
     @utils.kwarg("usage", "<nickname>")
+    @utils.kwarg("spec", "!r~channel !word")
     def invite(self, event):
         user_nickname = event["args_split"][0]
 
@@ -281,23 +260,22 @@ class Module(ModuleManager.BaseModule):
             return None, None
 
     @utils.hook("received.command.flags")
-    @utils.kwarg("channel_only", True)
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Configure access flags for a given user")
-    @utils.kwarg("usage", "<nickname> [flags]")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "flags")
+    @utils.kwarg("usage", "<nickname> [flags]")
+    @utils.kwarg("spec", "!r~channel !ouser ?...")
     def flags(self, event):
-        target = event["server"].get_user(event["args_split"][0])
-        current_flags = event["target"].get_user_setting(target.get_id(),
+        target = event["spec"][1]
+        current_flags = event["spec"][0].get_user_setting(target.get_id(),
             "flags", "")
 
-        if len(event["args_split"]) == 1:
+        if event["spec"][2]:
             current_flags_str = ("+%s" % current_flags) if current_flags else ""
-            event["stdout"].write("Flags for %s: %s" % (target.nickname,
-                current_flags_str))
+            event["stdout"].write("Flags for %s: %s" %
+                (target, current_flags_str))
         else:
-            is_add, parsed_flags = self._parse_flags(event["args_split"][1])
+            is_add, parsed_flags = self._parse_flags(event["spec"][2])
             new_flags = None
 
             if is_add == None:
@@ -313,15 +291,15 @@ class Module(ModuleManager.BaseModule):
                     key=lambda c: ("0" if c.islower() else "1")+c)
 
                 new_flags_str = "".join(new_flags)
-                event["target"].set_user_setting(target.get_id(), "flags",
+                event["spec"][0].set_user_setting(target.get_id(), "flags",
                     new_flags_str)
 
-                self._check_flags(event["server"], event["target"], target)
+                self._check_flags(event["server"], event["spec"][0], target)
 
                 event["stdout"].write("Set flags for %s to +%s" % (
                     target.nickname, new_flags_str))
             else:
-                event["target"].del_user_setting(target.get_id(), "flags")
+                event["spec"][0].del_user_setting(target.get_id(), "flags")
                 event["stdout"].write("Cleared flags for %s" % target.nickname)
 
     def _chunk_n(self, n, l):
@@ -373,18 +351,18 @@ class Module(ModuleManager.BaseModule):
                 channel.send_kick(user.nickname, kick_reason)
 
     @utils.hook("received.command.cmute")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "cmute")
-    @utils.kwarg("usage", "[+time]")
     @utils.kwarg("help", "Mute the current channel")
+    @utils.kwarg("usage", "[+time]")
+    @utils.kwarg("spec", "!r~channel ?time")
     def cmute(self, event):
-        time, args = utils.parse.timed_args(event["args_split"], 0)
-        event["target"].send_mode("+m")
+        event["spec"][0].send_mode("+m")
 
-        if time:
-            self.timers.add_persistent("cunmute", time,
-                server_id=event["server"].id, channel_name=event["target"].name)
+        if event["spec"][1]:
+            self.timers.add_persistent("cunmute", event["spec"][1],
+                server_id=event["server"].id,
+                channel_name=event["spec"][0].name)
     @utils.hook("timer.cunmute")
     def cunmute_timer(self, event):
         server = self.bot.get_server_by_id(event["server_id"])
@@ -392,13 +370,12 @@ class Module(ModuleManager.BaseModule):
             self._cunmute(server.channels.get(event["channel_name"]))
 
     @utils.hook("received.command.cunmute")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "cmute")
-    @utils.kwarg("usage", "[+time]")
     @utils.kwarg("help", "Mute the current channel")
+    @utils.kwarg("spec", "!r~channel")
     def cunmute(self):
-        self._cunmute(event["target"])
+        self._cunmute(event["spec"][0])
 
     def _cunmute(self, channel):
         channel.send_mode("-m")
@@ -427,7 +404,7 @@ class Module(ModuleManager.BaseModule):
         else:
             raise utils.EventError("Unknown type '%s'" % type)
 
-    def _list_query_event(self, server, channel, args):
+    def _list_query_event(self, server, channel, type, mask):
         list_type = args[0]
         list_mode, list_prefix = self._type_to_mode(server, channel, list_type)
 
@@ -444,30 +421,32 @@ class Module(ModuleManager.BaseModule):
         return list_mode, mode_list
 
     @utils.hook("received.command.clear")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "clear")
     @utils.kwarg("help", "Clear a given channel list mode (e.g. +b)")
     @utils.kwarg("usage", "<type> [mask]")
     @utils.kwarg("usage", "+<mode> [mask]")
+    @utils.kwarg("spec", "!r~channel !word ?word")
     def clear(self, event):
         mode, mode_list = self._list_query_event(
-            event["server"], event["target"], event["args_split"])
+            event["server"], event["spec"][0], event["spec"][1],
+            event["spec"][2])
 
         chunks = self._chunk(event["server"], mode_list)
         for chunk in chunks:
-            event["target"].send_mode("-%s" % mode*len(chunk), chunk)
+            event["spec"][0].send_mode("-%s" % mode*len(chunk), chunk)
 
     @utils.hook("received.command.lsearch")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "lsearch")
     @utils.kwarg("help", "Search a given channel list mode (e.g. +b)")
     @utils.kwarg("usage", "<type> [mask]")
     @utils.kwarg("usage", "+<mode> [mask]")
+    @utils.kwarg("spec", "!r~channel !word ?word")
     def lsearch(self, event):
         mode, mode_list = self._list_query_event(
-            event["server"], event["target"], event["args_split"])
+            event["server"], event["spec"][0], event["spec"][1],
+            event["spec"][2])
 
         if mode_list:
             event["stdout"].write("%s: %s" %
