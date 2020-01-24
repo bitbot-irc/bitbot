@@ -1,20 +1,36 @@
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
+
+# describing command arg specifications, to centralise parsing and validating.
+#
+# format: <!|?><name>
+#   ! = required
+#   ? = optional
+#
+# if "name" contains "~", it will be marked as an "important" spec
+# this means that, e.g. "!r~channel" will be:
+#   - marked as important
+#   - name split to everything after ~
+#   - the name, and it's value, will be offered to other preprocessors.
+#
+# this means, in practice, that "!r~channel" is a:
+#   - "revelant" channel (current if in channel, explicit arg otherwise)
+#   - will be used to check if a user has permissions
 
 class Module(ModuleManager.BaseModule):
-    def _spec_chunk(self, server, channel, user, types, args):
+    def _spec_chunk(self, server, channel, user, spec_types, args):
         options = []
         first_error = None
-        for type in types:
+        for spec_type in spec_types:
             chunk = None
             n = 0
             error = None
 
-            if type == "time" and args:
+            if spec_type == "time" and args:
                 time, _ = utils.parse.timed_args(args)
                 chunk = time
                 n = 1
                 error = "Invalid timeframe"
-            elif type == "rchannel":
+            elif spec_type == "rchannel":
                 if channel:
                     chunk = channel
                 elif args:
@@ -24,39 +40,45 @@ class Module(ModuleManager.BaseModule):
                     error = "No such channel"
                 else:
                     error = "No channel provided"
-            elif type == "channel" and args:
+            elif spec_type == "channel" and args:
                 if args[0] in server.channels:
                     chunk = server.channels.get(args[0])
                 n = 1
                 error = "No such channel"
-            elif type == "cuser" and args:
+            elif spec_type == "cuser" and args:
                 tuser = server.get_user(args[0], create=False)
                 if tuser and channel.has_user(tuser):
                     chunk = tuser
                 n = 1
                 error = "That user is not in this channel"
-            elif type == "ruser":
+            elif spec_type == "ruser":
                 if args:
                     chunk = server.get_user(args[0], create=False)
                     n = 1
                 else:
                     chunk = user
                 error = "No such user"
-            elif type == "user" and args:
+            elif spec_type == "user" and args:
                 chunk = server.get_user(args[0], create=False)
                 n = 1
                 error = "No such user"
-            elif type == "word" and args:
+            elif spec_type == "ouser" and args:
+                if server.has_user_id(args[0]):
+                    chunk = server.get_user(args[0])
+                n = 1
+                error = "Unknown nickname"
+            elif spec_type == "word" and args:
                 chunk = args[0]
                 n = 1
-            elif type == "...":
+            elif spec_type == "...":
                 chunk = " ".join(args)
                 n = len(args)
 
-            options.append([type, chunk, n, error])
+            options.append([chunk, n, error])
         return options
 
     @utils.hook("preprocess.command")
+    @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
     def preprocess(self, event):
         spec = event["hook"].get_kwarg("spec", None)
         if not spec == None:
@@ -67,22 +89,31 @@ class Module(ModuleManager.BaseModule):
 
             out = []
             for word in spec.split():
-                types = word[1:].split("|")
                 optional = word[0] == "?"
+                word = word[1:]
 
-                options = self._spec_chunk(server, channel, user, types, args)
+                raw_spec_types = word.split("|")
+                spec_types = [t.replace("~", "", 1) for t in raw_spec_types]
+
+                options = self._spec_chunk(server, channel, user, spec_types, args)
 
                 found = None
                 first_error = None
-                for type, chunk, n, error in options:
+                for i, (chunk, n, error) in enumerate(options):
+                    spec_type = spec_types[i]
+                    raw_spec_type = raw_spec_types[i]
+
                     if error and not first_error:
                         first_error = error
 
                     if chunk:
+                        if "~" in raw_spec_type:
+                            event["kwargs"][raw_spec_type.split("~", 1)[1]] = chunk
+
                         found = True
                         args = args[n:]
-                        if len(types) > 1:
-                            chunk = [type, chunk]
+                        if len(spec_types) > 1:
+                            chunk = [spec_type, chunk]
                         found = chunk
                         break
                 out.append(found)
