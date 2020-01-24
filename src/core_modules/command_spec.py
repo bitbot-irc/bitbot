@@ -15,6 +15,19 @@ from src import EventManager, ModuleManager, utils
 # this means, in practice, that "!r~channel" is a:
 #   - "revelant" channel (current if in channel, explicit arg otherwise)
 #   - will be used to check if a user has permissions
+#
+# spec types:
+#   - "time" - +1w2d3h4m5s format time
+#   - "rchannel" - relevant channel. current channel if we're in channel,
+#     otherwise an explicit channel name argument
+#   - "channel" - an argument of a channel name
+#   - "cuser" - a nickname but only if they are in the current channel
+#   - "ruser" - revlevant user. either current user if no arguments, otherwise
+#     take nickname for user from given args
+#   - "user" - an argument of a user's nickname
+#   - "ouser" - an argument of a potentially offline user's nickname
+#   - "word" - one word from arguments
+#   - "..." - collect all remaining args in to a string
 
 class Module(ModuleManager.BaseModule):
     def _spec_chunk(self, server, channel, user, spec_types, args):
