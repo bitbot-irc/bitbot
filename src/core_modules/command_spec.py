@@ -17,11 +17,13 @@ class Module(ModuleManager.BaseModule):
             elif type == "rchannel":
                 if channel:
                     chunk = channel
-                else:
+                elif args:
                     n = 1
                     if args[0] in server.channels:
                         chunk = server.channels.get(args[0])
-                error = "No such channel"
+                    error = "No such channel"
+                else:
+                    error = "No channel provided"
             elif type == "channel" and args:
                 if args[0] in server.channels:
                     chunk = server.channels.get(args[0])
