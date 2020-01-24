@@ -110,7 +110,7 @@ def parse_number(s: str) -> str:
         raise ValueError("Unknown unit '%s' given to parse_number" % unit)
     return str(number)
 
-def timed_args(args, min_args):
+def timed_args(args, min_args: int=0):
     if args and args[0][0] == "+":
         if len(args[1:]) < min_args:
             raise errors.EventError("Not enough arguments")
