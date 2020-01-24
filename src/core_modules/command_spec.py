@@ -58,10 +58,13 @@ class Module(ModuleManager.BaseModule):
                 else:
                     chunk = user
                 error = "No such user"
-            elif spec_type == "user" and args:
-                chunk = server.get_user(args[0], create=False)
-                n = 1
-                error = "No such user"
+            elif spec_type == "user":
+                if args:
+                    chunk = server.get_user(args[0], create=False)
+                    n = 1
+                    error = "No such user"
+                else:
+                    error = "No user provided"
             elif spec_type == "ouser" and args:
                 if server.has_user_id(args[0]):
                     chunk = server.get_user(args[0])
