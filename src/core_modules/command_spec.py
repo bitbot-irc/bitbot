@@ -54,7 +54,7 @@ class Module(ModuleManager.BaseModule):
 
                 options = self._spec_chunk(server, channel, types, args)
 
-                found = False
+                found = None
                 first_error = None
                 for type, chunk, n, error in options:
                     if error and not first_error:
@@ -65,7 +65,9 @@ class Module(ModuleManager.BaseModule):
                         args = args[n:]
                         if len(types) > 1:
                             chunk = [type, chunk]
-                        out.append(chunk)
+                        found = chunk
+                        break
+                out.append(found)
 
                 if not optional and not found:
                     error = first_error or "Invalid arguments"
