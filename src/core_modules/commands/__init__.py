@@ -184,7 +184,8 @@ class Module(ModuleManager.BaseModule):
             "target": target, "target_str": target_str,
             "is_channel": is_channel, "line": line, "args_split": args_split,
             "command": command, "args": " ".join(args_split), "stdout": stdout,
-            "stderr": stderr, "tags": {}}
+            "stderr": stderr, "tags": {}, "kwargs": {}}
+
         event_kwargs.update(kwargs)
 
         check_assert = lambda check: self._check_assert(event_kwargs, user,
@@ -195,6 +196,7 @@ class Module(ModuleManager.BaseModule):
 
         check_success, check_message = self._check("preprocess", event_kwargs)
         if check_success:
+            event_kwargs.update(event_kwargs.pop("kwargs"))
             new_event = self.events.on(hook.event_name).make_event(**event_kwargs)
             self.log.trace("calling command '%s': %s", [command, new_event.kwargs])
 
