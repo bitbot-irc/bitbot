@@ -1,7 +1,7 @@
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    def _spec_chunk(self, server, channel, types, args):
+    def _spec_chunk(self, server, channel, user, types, args):
         options = []
         first_error = None
         for type in types:
@@ -14,17 +14,32 @@ class Module(ModuleManager.BaseModule):
                 chunk = time
                 n = 1
                 error = "Invalid timeframe"
+            elif type == "rchannel":
+                if channel:
+                    chunk = channel
+                else:
+                    n = 1
+                    if args[0] in server.channels:
+                        chunk = server.channels.get(args[0])
+                error = "No such channel"
             elif type == "channel" and args:
                 if args[0] in server.channels:
                     chunk = server.channels.get(args[0])
                 n = 1
                 error = "No such channel"
             elif type == "cuser" and args:
-                user = server.get_user(args[0], create=False)
-                if user and channel.has_user(user):
-                    chunk = user
+                tuser = server.get_user(args[0], create=False)
+                if tuser and channel.has_user(tuser):
+                    chunk = tuser
                 n = 1
                 error = "That user is not in this channel"
+            elif type == "ruser":
+                if args:
+                    chunk = server.get_user(args[0], create=False)
+                    n = 1
+                else:
+                    chunk = user
+                error = "No such user"
             elif type == "user" and args:
                 chunk = server.get_user(args[0], create=False)
                 n = 1
@@ -45,6 +60,7 @@ class Module(ModuleManager.BaseModule):
         if not spec == None:
             server = event["server"]
             channel = event["target"] if event["is_channel"] else None
+            user = event["user"]
             args = event["args_split"].copy()
 
             out = []
@@ -52,7 +68,7 @@ class Module(ModuleManager.BaseModule):
                 types = word[1:].split("|")
                 optional = word[0] == "?"
 
-                options = self._spec_chunk(server, channel, types, args)
+                options = self._spec_chunk(server, channel, user, types, args)
 
                 found = None
                 first_error = None
