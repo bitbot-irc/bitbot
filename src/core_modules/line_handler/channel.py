@@ -87,9 +87,9 @@ def join(events, event):
     user.join_channel(channel)
 
     if is_self:
+        channel.send_mode()
         events.on("self.join").call(channel=channel, server=event["server"],
             account=account, realname=realname)
-        channel.send_mode()
     else:
         events.on("received.join").call(channel=channel, user=user,
             server=event["server"], account=account, realname=realname)
