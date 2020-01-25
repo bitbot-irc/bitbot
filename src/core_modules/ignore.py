@@ -43,22 +43,18 @@ class Module(ModuleManager.BaseModule):
             return utils.consts.PERMISSION_HARD_FAIL, None
 
     @utils.hook("received.command.ignore", min_args=1)
+    @utils.kwarg("permission", "ignore")
+    @utils.kwarg("help", "Ignore commands from a given user")
+    @utils.kwarg("usage", "[+time] <nickname> [command]")
+    @utils.spec("?time !<nickname>ouser ?<command>wordlower")
     def ignore(self, event):
-        """
-        :help: Ignore commands from a given user
-        :usage: <nickname> [command]
-        :permission: ignore
-        """
-        time, args = utils.parse.timed_args(event["args_split"], 1)
-
         setting = "ignore"
         for_str = ""
-        if len(args) > 1:
-            command = args[1].lower()
-            setting = "ignore-%s" % command
+        if event["spec"][2]:
+            setting = "ignore-%s" % event["spec"][2]
             for_str = " for '%s'" % command
 
-        user = event["server"].get_user(args[0])
+        user = event["spec"][1]
         if user.get_setting(setting, False):
             event["stderr"].write("I'm already ignoring '%s'%s" %
                 (user.nickname, for_str))
@@ -67,6 +63,7 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Now ignoring '%s'%s" %
                 (user.nickname, for_str))
 
+        time = event["spec"][0]
         if not time == None:
             self.timers.add_persistent("unignore", time,
                 user_id=user.get_id(), setting=setting)
