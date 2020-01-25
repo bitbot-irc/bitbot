@@ -404,13 +404,8 @@ class Module(ModuleManager.BaseModule):
         else:
             raise utils.EventError("Unknown type '%s'" % type)
 
-    def _list_query_event(self, server, channel, type, mask):
-        list_type = args[0]
+    def _list_query_event(self, server, channel, list_type, list_mask):
         list_mode, list_prefix = self._type_to_mode(server, channel, list_type)
-
-        list_mask = None
-        if len(args) > 1:
-            list_mask = args[1]
 
         mode_list = list(channel.mode_lists[list_mode])
         if list_prefix:
