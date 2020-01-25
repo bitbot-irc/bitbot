@@ -155,3 +155,30 @@ def format_token_replace(s: str, vars: typing.Dict[str, str],
     for i, token in tokens:
         s = s[:i] + vars[token.replace(sigil, "", 1)] + s[i+len(token):]
     return s
+
+class ArgumentSpecType(object):
+    def __init__(self, name: str, exported: str):
+        self.name = name
+        self.exported = exported
+
+class ArgumentSpec(object):
+    def __init__(self, optional: bool, types: typing.List[ArgumentSpecType]):
+        self.optional = optional
+        self.types = types
+
+def argument_spec(spec: str) -> typing.List[ArgumentSpec]:
+    out: typing.List[ArgumentSpec] = []
+    for type_names_str in spec.split(" "):
+        optional = type_names_str[0] == "?"
+        type_names_str = type_names_str[1:]
+
+        spec_types: typing.List[ArgumentSpecType] = []
+        for type_name in type_names_str.split("|"):
+            exported_name = ""
+            if "~" in type_name:
+                exported_name = type_name
+                type_name = type_name.replace("~", "", 1)
+
+            spec_types.append(ArgumentSpecType(type_name, exported_name))
+        out.append(ArgumentSpec(optional, spec_types))
+    return out

@@ -38,12 +38,12 @@ class Module(ModuleManager.BaseModule):
             n = 0
             error = None
 
-            if spec_type == "time" and args:
+            if spec_type.name == "time" and args:
                 time, _ = utils.parse.timed_args(args)
                 chunk = time
                 n = 1
                 error = "Invalid timeframe"
-            elif spec_type == "rchannel":
+            elif spec_type.name == "rchannel":
                 if channel:
                     chunk = channel
                 elif args:
@@ -53,53 +53,53 @@ class Module(ModuleManager.BaseModule):
                     error = "No such channel"
                 else:
                     error = "No channel provided"
-            elif spec_type == "channel" and args:
+            elif spec_type.name == "channel" and args:
                 if args[0] in server.channels:
                     chunk = server.channels.get(args[0])
                 n = 1
                 error = "No such channel"
-            elif spec_type == "cuser" and args:
+            elif spec_type.name == "cuser" and args:
                 tuser = server.get_user(args[0], create=False)
                 if tuser and channel.has_user(tuser):
                     chunk = tuser
                 n = 1
                 error = "That user is not in this channel"
-            elif spec_type == "ruser":
+            elif spec_type.name == "ruser":
                 if args:
                     chunk = server.get_user(args[0], create=False)
                     n = 1
                 else:
                     chunk = user
                 error = "No such user"
-            elif spec_type == "user":
+            elif spec_type.name == "user":
                 if args:
                     chunk = server.get_user(args[0], create=False)
                     n = 1
                     error = "No such user"
                 else:
                     error = "No user provided"
-            elif spec_type == "ouser" and args:
+            elif spec_type.name == "ouser" and args:
                 if server.has_user_id(args[0]):
                     chunk = server.get_user(args[0])
                 n = 1
                 error = "Unknown nickname"
-            elif spec_type == "word":
+            elif spec_type.name == "word":
                 if args:
                     chunk = args[0]
                 n = 1
-            elif spec_type == "...":
+            elif spec_type.name == "...":
                 if args:
                     chunk = " ".join(args)
                 n = max(1, len(args))
 
-            options.append([chunk, n, error])
+            options.append([spec_type, chunk, n, error])
         return options
 
     @utils.hook("preprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
     def preprocess(self, event):
-        spec = event["hook"].get_kwarg("spec", None)
-        if not spec == None:
+        spec_types = event["hook"].get_kwarg("spec", None)
+        if not spec_types == None:
             server = event["server"]
             channel = event["target"] if event["is_channel"] else None
             user = event["user"]
@@ -108,30 +108,20 @@ class Module(ModuleManager.BaseModule):
             out = []
             kwargs = {"channel": channel}
 
-            for word in spec.split():
-                optional = word[0] == "?"
-                word = word[1:]
-
-                raw_spec_types = word.split("|")
-                spec_types = [t.replace("~", "", 1) for t in raw_spec_types]
-
+            for item in spec_types:
                 options = self._spec_chunk(server, kwargs["channel"], user,
-                    spec_types, args)
+                    item.types, args)
 
                 found = None
                 first_error = None
-                for i, (chunk, n, error) in enumerate(options):
-                    spec_type = spec_types[i]
-                    raw_spec_type = raw_spec_types[i]
-
-
+                for spec_type, chunk, n, error in options:
                     if not chunk == None:
-                        if "~" in raw_spec_type:
-                            kwargs[raw_spec_type.split("~", 1)[1]] = chunk
+                        if spec_type.exported:
+                            kwargs[spec_type.exported] = chunk
 
                         found = True
                         args = args[n:]
-                        if len(spec_types) > 1:
+                        if len(item.types) > 1:
                             chunk = [spec_type, chunk]
                         found = chunk
                         break
@@ -143,7 +133,7 @@ class Module(ModuleManager.BaseModule):
 
                 out.append(found)
 
-                if not optional and not found:
+                if not item.optional and not found:
                     error = first_error or "Invalid arguments"
                     return utils.consts.PERMISSION_HARD_FAIL, error
 

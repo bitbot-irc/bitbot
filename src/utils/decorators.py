@@ -1,4 +1,5 @@
 import typing
+from .parse import argument_spec
 
 BITBOT_MAGIC = "__bitbot"
 
@@ -42,10 +43,18 @@ def export(setting: str, value: typing.Any):
         magic.add_export(setting, value)
         return module
     return _export_func
+
+def _kwarg(key: str, value: typing.Any, func: typing.Any):
+    magic = get_magic(func)
+    magic.add_kwarg(key, value)
+    return func
+
 def kwarg(key: str, value: typing.Any):
     def _kwarg_func(func):
-        magic = get_magic(func)
-        magic.add_kwarg(key, value)
-        return func
+        return _kwarg(key, value, func)
     return _kwarg_func
 
+def spec(spec: str):
+    def _spec_func(func):
+        return _kwarg("spec", argument_spec(spec), func)
+    return _spec_func
