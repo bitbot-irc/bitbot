@@ -1,4 +1,4 @@
-import decimal, io, typing
+import decimal, enum, io, typing
 from . import datetime, errors
 
 COMMENT_TYPES = ["#", "//"]
@@ -156,7 +156,14 @@ def format_token_replace(s: str, vars: typing.Dict[str, str],
         s = s[:i] + vars[token.replace(sigil, "", 1)] + s[i+len(token):]
     return s
 
+class SpecArgumentContext(enum.IntFlag):
+    CHANNEL = 1
+    PRIVATE = 2
+    ALL = 3
+
 class SpecArgumentType(object):
+    context = SpecArgumentContext.ALL
+
     def __init__(self, type_name: str, name: typing.Optional[str], exported: str):
         self.type = type_name
         self._name = name
@@ -195,6 +202,9 @@ class SpecArgumentTypeTime(SpecArgumentType):
     def error(self) -> typing.Optional[str]:
         return "Invalid timeframe"
 
+class SpecArgumentPrivateType(SpecArgumentType):
+    context = SpecArgumentContext.PRIVATE
+
 SPEC_ARGUMENT_TYPES = {
     "word": SpecArgumentTypeWord,
     "wordlower": SpecArgumentTypeWordLower,
@@ -228,20 +238,29 @@ def argument_spec(spec: str) -> typing.List[SpecArgument]:
             argument_type_class = SpecArgumentType
             if argument_type in SPEC_ARGUMENT_TYPES:
                 argument_type_class = SPEC_ARGUMENT_TYPES[argument_type]
+            elif exported:
+                argument_type_class = SpecArgumentPrivateType
+
             argument_types.append(argument_type_class(argument_type,
                 argument_type_name, exported))
         out.append(SpecArgument(optional, argument_types))
     return out
 
-def argument_spec_human(spec: typing.List[SpecArgument]) -> str:
+def argument_spec_human(spec: typing.List[SpecArgument],
+        context: SpecArgumentContext=SpecArgumentContext.ALL) -> str:
     out: typing.List[str] = []
     for spec_argument in spec:
-        names = [t.name() or t.type for t in spec_argument.types]
-        names = list(filter(None, names))
+        names: typing.List[str] = []
+        for argument_type in spec_argument.types:
+            if not (context&argument_type.context) == 0:
+                name = argument_type.name() or argument_type.type
+                if name:
+                    names.append(name)
 
-        if spec_argument.optional:
-            format = "[%s]"
-        else:
-            format = "<%s>"
-        out.append(format % "|".join(names))
+        if names:
+            if spec_argument.optional:
+                format = "[%s]"
+            else:
+                format = "<%s>"
+            out.append(format % "|".join(names))
     return " ".join(out)

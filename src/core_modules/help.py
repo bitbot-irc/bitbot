@@ -4,14 +4,18 @@ from src import IRCBot, ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     def _get_help(self, hook):
         return hook.get_kwarg("help", None) or hook.docstring.description
-    def _get_usage(self, hook, command, command_prefix=""):
+    def _get_usage(self, hook, is_channel, command, command_prefix=""):
         command = "%s%s" % (command_prefix, command)
 
         spec = hook.get_kwargs("spec")
         usages_kwarg = hook.get_kwargs("usage")
 
         if spec:
-            usages = [utils.parse.argument_spec_human(s) for s in spec]
+            if is_channel:
+                context = utils.parse.SpecArgumentContext.CHANNEL
+            else:
+                context = utils.parse.SpecArgumentContext.PRIVATE
+            usages = [utils.parse.argument_spec_human(s, context) for s in spec]
         elif usage:
             usages = usages_kwarg
 
@@ -36,7 +40,8 @@ class Module(ModuleManager.BaseModule):
             if hook == None:
                 raise utils.EventError("Unknown command '%s'" % command)
             help = self._get_help(hook)
-            usage = self._get_usage(hook, command, event["command_prefix"])
+            usage = self._get_usage(hook, event["is_channel"], command,
+                event["command_prefix"])
 
             out = help
             if usage:
