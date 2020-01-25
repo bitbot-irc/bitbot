@@ -49,7 +49,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "kick")
     @utils.kwarg("usage", "<nickname> [reason]")
-    @utils.spec("!r~channel !cuser ?...")
+    @utils.spec("!r~channel !cuser ?string")
     def kick(self, event):
         self._kick(event["server"], event["target"], event["spec"][0],
             event["spec"][1])
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "ban")
     @utils.kwarg("usage", "[+time] <target>")
-    @utils.spec("!r~channel ?time !user|text")
+    @utils.spec("!r~channel ?time !user|word")
     def ban(self, event):
         self._ban(event["server"], event["spec"][0], event["spec"][2], True,
             event["spec"][1], True)
@@ -118,7 +118,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "kickban")
     @utils.kwarg("usage", "[+time] <nickname> [reason]")
-    @utils.spec("!r~channel ?time !cuser| ?...")
+    @utils.spec("!r~channel ?time !cuser| ?string")
     def kickban(self, event):
         self._ban(event["server"], event["spec"][0], event["spec"][2],
             False, event["spec"][1], True)
@@ -161,7 +161,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_access", "topic")
     @utils.kwarg("remove_empty", False)
     @utils.kwarg("usage", "<topic>")
-    @utils.spec("!r~channel !...")
+    @utils.spec("!r~channel !string")
     def topic(self, event):
         event["spec"][0].send_topic(event["spec"][1])
 
@@ -170,7 +170,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_access", "topic")
     @utils.kwarg("remove_empty", False)
     @utils.kwarg("usage", "<topic>")
-    @utils.spec("!r~channel !...")
+    @utils.spec("!r~channel !string")
     def tappend(self, event):
         event["spec"][0].send_topic(event["spec"][0].topic + event["spec"][1])
 
@@ -264,7 +264,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "flags")
     @utils.kwarg("usage", "<nickname> [flags]")
-    @utils.spec("!r~channel !ouser ?...")
+    @utils.spec("!r~channel !ouser ?string")
     def flags(self, event):
         target = event["spec"][1]
         current_flags = event["spec"][0].get_user_setting(target.get_id(),

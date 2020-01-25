@@ -27,79 +27,71 @@ from src import EventManager, ModuleManager, utils
 #   - "user" - an argument of a user's nickname
 #   - "ouser" - an argument of a potentially offline user's nickname
 #   - "word" - one word from arguments
-#   - "..." - collect all remaining args in to a string
+#   - "string" - collect all remaining args in to a string
 
 class Module(ModuleManager.BaseModule):
-    def _spec_chunk(self, server, channel, user, spec_types, args):
+    def _spec_value(self, server, channel, user, argument_types, args):
         options = []
         first_error = None
-        for spec_type in spec_types:
-            chunk = None
+        for argument_type in argument_types:
+            value = None
             n = 0
             error = None
 
-            if spec_type.type == "time" and args:
-                time, _ = utils.parse.timed_args(args)
-                chunk = time
-                n = 1
-                error = "Invalid timeframe"
-            elif spec_type.type == "rchannel":
+            simple_value, simple_count = argument_type.simple(args)
+            if not simple_count == -1:
+                value = simple_value
+                n = simple_count
+                error = argument_type.error()
+            elif argument_type.type == "rchannel":
                 if channel:
-                    chunk = channel
+                    value = channel
                 elif args:
                     n = 1
                     if args[0] in server.channels:
-                        chunk = server.channels.get(args[0])
+                        value = server.channels.get(args[0])
                     error = "No such channel"
                 else:
                     error = "No channel provided"
-            elif spec_type.type == "channel" and args:
+            elif argument_type.type == "channel" and args:
                 if args[0] in server.channels:
-                    chunk = server.channels.get(args[0])
+                    value = server.channels.get(args[0])
                 n = 1
                 error = "No such channel"
-            elif spec_type.type == "cuser" and args:
+            elif argument_type.type == "cuser" and args:
                 tuser = server.get_user(args[0], create=False)
                 if tuser and channel.has_user(tuser):
-                    chunk = tuser
+                    value = tuser
                 n = 1
                 error = "That user is not in this channel"
-            elif spec_type.type == "ruser":
+            elif argument_type.type == "ruser":
                 if args:
-                    chunk = server.get_user(args[0], create=False)
+                    value = server.get_user(args[0], create=False)
                     n = 1
                 else:
-                    chunk = user
+                    value = user
                 error = "No such user"
-            elif spec_type.type == "user":
+            elif argument_type.type == "user":
                 if args:
-                    chunk = server.get_user(args[0], create=False)
+                    value = server.get_user(args[0], create=False)
                     n = 1
                     error = "No such user"
                 else:
                     error = "No user provided"
-            elif spec_type.type == "ouser" and args:
+            elif argument_type.type == "ouser" and args:
                 if server.has_user_id(args[0]):
-                    chunk = server.get_user(args[0])
+                    value = server.get_user(args[0])
                 n = 1
                 error = "Unknown nickname"
-            elif spec_type.type == "word":
-                if args:
-                    chunk = args[0]
-                n = 1
-            elif spec_type.type == "...":
-                if args:
-                    chunk = " ".join(args)
-                n = max(1, len(args))
 
-            options.append([spec_type, chunk, n, error])
+            options.append([argument_type, value, n, error])
         return options
 
     @utils.hook("preprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
     def preprocess(self, event):
-        spec_types = event["hook"].get_kwarg("spec", None)
-        if not spec_types == None:
+        spec_arguments = event["hook"].get_kwarg("spec", None)
+        if not spec_arguments == None:
             server = event["server"]
             channel = event["target"] if event["is_channel"] else None
             user = event["user"]
@@ -108,22 +100,22 @@ class Module(ModuleManager.BaseModule):
             out = []
             kwargs = {"channel": channel}
 
-            for item in spec_types:
-                options = self._spec_chunk(server, kwargs["channel"], user,
-                    item.types, args)
+            for spec_argument in spec_arguments:
+                options = self._spec_value(server, kwargs["channel"], user,
+                    spec_argument.types, args)
 
                 found = None
                 first_error = None
-                for spec_type, chunk, n, error in options:
-                    if not chunk == None:
-                        if spec_type.exported:
-                            kwargs[spec_type.exported] = chunk
+                for argument_type, value, n, error in options:
+                    if not value == None:
+                        if argument_type.exported:
+                            kwargs[argument_type.exported] = value
 
                         found = True
                         args = args[n:]
-                        if len(item.types) > 1:
-                            chunk = [spec_type, chunk]
-                        found = chunk
+                        if len(spec_argument.types) > 1:
+                            value = [argument_type.type, value]
+                        found = value
                         break
                     elif not error and n > 0:
                         error = "Not enough arguments"
@@ -131,11 +123,11 @@ class Module(ModuleManager.BaseModule):
                     if error and not first_error:
                         first_error = error
 
-                out.append(found)
-
-                if not item.optional and not found:
+                if not spec_argument.optional and not found:
                     error = first_error or "Invalid arguments"
                     return utils.consts.PERMISSION_HARD_FAIL, error
+
+                out.append(found)
 
             kwargs["spec"] = out
             event["kwargs"].update(kwargs)
