@@ -13,7 +13,6 @@ LOWHIGH = {
     "Set which channel mode is considered to be 'high' access", example="o"))
 class Module(ModuleManager.BaseModule):
     def _check_command(self, event, channel, require_mode):
-        print(channel)
         if channel and require_mode:
             if require_mode in LOWHIGH:
                 require_mode = channel.get_setting("mode-%s" % require_mode,
