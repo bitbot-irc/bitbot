@@ -141,14 +141,14 @@ def format_tokens(s: str, names: typing.List[str], sigil: str="$"
                         i += len(name)
                         break
             else:
-                tokens.append((i, "$"))
+                tokens.append((i-1, "$$"))
         i += 1
     return tokens
 
 def format_token_replace(s: str, vars: typing.Dict[str, str],
         sigil: str="$") -> str:
     vars = vars.copy()
-    vars.update({"": ""})
+    vars.update({sigil: sigil})
     tokens = format_tokens(s, list(vars.keys()), sigil)
     tokens.sort(key=lambda x: x[0])
     tokens.reverse()
