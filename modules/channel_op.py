@@ -374,7 +374,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_access", "cmute")
     @utils.kwarg("help", "Mute the current channel")
     @utils.kwarg("spec", "!r~channel")
-    def cunmute(self):
+    def cunmute(self, event):
         self._cunmute(event["spec"][0])
 
     def _cunmute(self, channel):
