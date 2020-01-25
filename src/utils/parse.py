@@ -110,15 +110,12 @@ def parse_number(s: str) -> str:
         raise ValueError("Unknown unit '%s' given to parse_number" % unit)
     return str(number)
 
-def timed_args(args, min_args: int=0):
-    if args and args[0][0] == "+":
-        if len(args[1:]) < min_args:
-            raise errors.EventError("Not enough arguments")
-        time = datetime.from_pretty_time(args[0][1:])
-        if time == None:
-            raise errors.EventError("Invalid timeframe")
-        return time, args[1:]
-    return None, args
+def duration(s: str):
+    if s[0] == "+":
+        duration = datetime.from_pretty_time(s[1:])
+        if not duration == None:
+            return duration
+    return None
 
 def format_tokens(s: str, names: typing.List[str], sigil: str="$"
         ) -> typing.List[typing.Tuple[int, str]]:
@@ -193,12 +190,14 @@ class SpecArgumentTypeString(SpecArgumentType):
         return "%s ..." % SpecArgumentType.name(self)
     def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
         return " ".join(args), len(args)
-class SpecArgumentTypeTime(SpecArgumentType):
+
+class SpecArgumentTypeDuration(SpecArgumentType):
     def name(self):
-        return "+%s" % (SpecArgumentType.name(self) or "time")
+        return "+%s" % (SpecArgumentType.name(self) or "duration")
     def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
-        time, _ = timed_args(args)
-        return time, 1
+        if args:
+            return duration(args[0]), 1
+        return None, 1
     def error(self) -> typing.Optional[str]:
         return "Invalid timeframe"
 
@@ -209,7 +208,7 @@ SPEC_ARGUMENT_TYPES = {
     "word": SpecArgumentTypeWord,
     "wordlower": SpecArgumentTypeWordLower,
     "string": SpecArgumentTypeString,
-    "time": SpecArgumentTypeTime
+    "duration": SpecArgumentTypeDuration
 }
 
 class SpecArgument(object):
