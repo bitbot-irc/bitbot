@@ -232,3 +232,16 @@ def argument_spec(spec: str) -> typing.List[SpecArgument]:
                 argument_type_name, exported))
         out.append(SpecArgument(optional, argument_types))
     return out
+
+def argument_spec_human(spec: typing.List[SpecArgument]) -> str:
+    out: typing.List[str] = []
+    for spec_argument in spec:
+        names = [t.name() or t.type for t in spec_argument.types]
+        names = list(filter(None, names))
+
+        if spec_argument.optional:
+            format = "[%s]"
+        else:
+            format = "<%s>"
+        out.append(format % "|".join(names))
+    return " ".join(out)
