@@ -83,12 +83,14 @@ class Module(ModuleManager.BaseModule):
                     chunk = server.get_user(args[0])
                 n = 1
                 error = "Unknown nickname"
-            elif spec_type == "word" and args:
-                chunk = args[0]
+            elif spec_type == "word":
+                if args:
+                    chunk = args[0]
                 n = 1
             elif spec_type == "...":
-                chunk = " ".join(args)
-                n = len(args)
+                if args:
+                    chunk = " ".join(args)
+                n = max(1, len(args))
 
             options.append([chunk, n, error])
         return options
@@ -122,10 +124,8 @@ class Module(ModuleManager.BaseModule):
                     spec_type = spec_types[i]
                     raw_spec_type = raw_spec_types[i]
 
-                    if error and not first_error:
-                        first_error = error
 
-                    if chunk:
+                    if not chunk == None:
                         if "~" in raw_spec_type:
                             kwargs[raw_spec_type.split("~", 1)[1]] = chunk
 
@@ -135,6 +135,12 @@ class Module(ModuleManager.BaseModule):
                             chunk = [spec_type, chunk]
                         found = chunk
                         break
+                    elif not error and n > 0:
+                        error = "Not enough arguments"
+
+                    if error and not first_error:
+                        first_error = error
+
                 out.append(found)
 
                 if not optional and not found:
