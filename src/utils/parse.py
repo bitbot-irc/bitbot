@@ -157,7 +157,8 @@ def format_token_replace(s: str, vars: typing.Dict[str, str],
     return s
 
 class ArgumentSpecType(object):
-    def __init__(self, name: str, exported: str):
+    def __init__(self, type_name: str, name: str, exported: str):
+        self.type = type_name
         self.name = name
         self.exported = exported
 
@@ -168,17 +169,23 @@ class ArgumentSpec(object):
 
 def argument_spec(spec: str) -> typing.List[ArgumentSpec]:
     out: typing.List[ArgumentSpec] = []
-    for type_names_str in spec.split(" "):
-        optional = type_names_str[0] == "?"
-        type_names_str = type_names_str[1:]
+    for spec_argument in spec.split(" "):
+        optional = spec_argument[0] == "?"
 
-        spec_types: typing.List[ArgumentSpecType] = []
-        for type_name in type_names_str.split("|"):
-            exported_name = ""
-            if "~" in type_name:
-                exported_name = type_name
-                type_name = type_name.replace("~", "", 1)
+        argument_types: typing.List[ArgumentSpecType] = []
+        for argument_type in spec_argument[1:].split("|"):
+            exported = ""
+            if "~" in argument_type:
+                exported = argument_type.split("~", 1)[1]
+                argument_type = argument_type.replace("~", "", 1)
 
-            spec_types.append(ArgumentSpecType(type_name, exported_name))
-        out.append(ArgumentSpec(optional, spec_types))
+            argument_type_name = argument_type
+            name_end = argument_type.find(">")
+            if argument_type[0] == "<" and name_end > 0:
+                argument_type_name = argument_type[1:name_end]
+                argument_type = argument_type[name_end+1:]
+
+            argument_types.append(ArgumentSpecType(argument_type,
+                argument_type_name, exported))
+        out.append(ArgumentSpec(optional, argument_types))
     return out

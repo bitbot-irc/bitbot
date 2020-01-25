@@ -38,12 +38,12 @@ class Module(ModuleManager.BaseModule):
             n = 0
             error = None
 
-            if spec_type.name == "time" and args:
+            if spec_type.type == "time" and args:
                 time, _ = utils.parse.timed_args(args)
                 chunk = time
                 n = 1
                 error = "Invalid timeframe"
-            elif spec_type.name == "rchannel":
+            elif spec_type.type == "rchannel":
                 if channel:
                     chunk = channel
                 elif args:
@@ -53,41 +53,41 @@ class Module(ModuleManager.BaseModule):
                     error = "No such channel"
                 else:
                     error = "No channel provided"
-            elif spec_type.name == "channel" and args:
+            elif spec_type.type == "channel" and args:
                 if args[0] in server.channels:
                     chunk = server.channels.get(args[0])
                 n = 1
                 error = "No such channel"
-            elif spec_type.name == "cuser" and args:
+            elif spec_type.type == "cuser" and args:
                 tuser = server.get_user(args[0], create=False)
                 if tuser and channel.has_user(tuser):
                     chunk = tuser
                 n = 1
                 error = "That user is not in this channel"
-            elif spec_type.name == "ruser":
+            elif spec_type.type == "ruser":
                 if args:
                     chunk = server.get_user(args[0], create=False)
                     n = 1
                 else:
                     chunk = user
                 error = "No such user"
-            elif spec_type.name == "user":
+            elif spec_type.type == "user":
                 if args:
                     chunk = server.get_user(args[0], create=False)
                     n = 1
                     error = "No such user"
                 else:
                     error = "No user provided"
-            elif spec_type.name == "ouser" and args:
+            elif spec_type.type == "ouser" and args:
                 if server.has_user_id(args[0]):
                     chunk = server.get_user(args[0])
                 n = 1
                 error = "Unknown nickname"
-            elif spec_type.name == "word":
+            elif spec_type.type == "word":
                 if args:
                     chunk = args[0]
                 n = 1
-            elif spec_type.name == "...":
+            elif spec_type.type == "...":
                 if args:
                     chunk = " ".join(args)
                 n = max(1, len(args))
