@@ -39,6 +39,9 @@ class SpecArgumentTypeString(SpecArgumentType):
         return "%s ..." % SpecArgumentType.name(self)
     def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
         return " ".join(args), len(args)
+class SpecArgumentTypeTrimString(SpecArgumentTypeString):
+    def simple(self, args: typing.List[str]):
+        return SpecArgumentTypeString.simple(self, list(filter(None, args)))
 
 class SpecArgumentTypeDuration(SpecArgumentType):
     def name(self):
@@ -57,6 +60,7 @@ SPEC_ARGUMENT_TYPES = {
     "word": SpecArgumentTypeWord,
     "wordlower": SpecArgumentTypeWordLower,
     "string": SpecArgumentTypeString,
+    "tstring": SpecArgumentTypeTrimString,
     "duration": SpecArgumentTypeDuration
 }
 
