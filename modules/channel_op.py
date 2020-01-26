@@ -71,7 +71,7 @@ class Module(ModuleManager.BaseModule):
         return self._format_hostmask(user, format)
 
     def _ban(self, server, channel, target, allow_hostmask, time, add):
-        if target[0] == "user":
+        if target[0] == "cuser":
             hostmask = self._get_hostmask(channel, target[1])
         else:
             if not allow_hostmask:
@@ -120,7 +120,7 @@ class Module(ModuleManager.BaseModule):
     def kickban(self, event):
         self._ban(event["server"], event["spec"][0], event["spec"][2],
             False, event["spec"][1], True)
-        self._kick(event["server"], event["spec"][0], event["spec"][2],
+        self._kick(event["server"], event["spec"][0], event["spec"][2][1],
             event["spec"][3])
 
     @utils.hook("received.command.op")
