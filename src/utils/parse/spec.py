@@ -9,7 +9,8 @@ class SpecArgumentContext(enum.IntFlag):
 class SpecArgumentType(object):
     context = SpecArgumentContext.ALL
 
-    def __init__(self, type_name: str, name: typing.Optional[str], exported: str):
+    def __init__(self, type_name: str, name: typing.Optional[str],
+            exported: typing.Optional[str]):
         self.type = type_name
         self._name = name
         self.exported = exported
@@ -67,7 +68,7 @@ class SpecArgument(object):
     def parse(optional: bool, argument_types: typing.List[str]):
         out: typing.List[SpecArgumentType] = []
         for argument_type in argument_types:
-            exported = ""
+            exported = None
             if "~" in argument_type:
                 exported = argument_type.split("~", 1)[1]
                 argument_type = argument_type.replace("~", "", 1)
@@ -125,7 +126,7 @@ class SpecLiteralArgument(SpecArgument):
         return spec_argument
 
     def format(self, context: SpecArgumentContext) -> typing.Optional[str]:
-        return "|".join(t.name() for t in self.types)
+        return "|".join(t.name() or "" for t in self.types)
 
 def argument_spec(spec: str) -> typing.List[SpecArgument]:
     out: typing.List[SpecArgument] = []
