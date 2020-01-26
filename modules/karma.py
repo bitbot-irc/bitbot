@@ -99,11 +99,11 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.addpoint")
     @utils.hook("received.command.rmpoint")
     @utils.kwarg("min_args", 1)
-    @utils.kwarg("usage", "<target>")
+    @utils.spec("!<target>string")
     def changepoint(self, event):
         positive = event["command"] == "addpoint"
         success, message = self._change_karma(
-            event["server"], event["user"], event["args"].strip(), positive)
+            event["server"], event["user"], event["spec"][0], positive)
         event["stdout" if success else "stderr"].write(message)
 
     @utils.hook("received.command.karma")
@@ -134,14 +134,14 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.resetkarma")
     @utils.kwarg("min_args", 2)
     @utils.kwarg("help", "Reset a specific karma to 0")
-    @utils.kwarg("usage", "by|for <target>")
     @utils.kwarg("permission", "resetkarma")
+    @utils.spec("!'by !<nickname>ouser")
+    @utils.spec("!'for !<target>string")
     def reset_karma(self, event):
-        subcommand = event["args_split"][0].lower()
-        target = " ".join(event["args_split"][1:])
+        subcommand = event["spec"][0]
 
         if subcommand == "by":
-            target_user = event["server"].get_user(target)
+            target_user = event["spec"][1]
             karma = target_user.find_setting(prefix="karma-")
             for setting, _ in karma:
                 target_user.del_setting(setting)
@@ -153,15 +153,16 @@ class Module(ModuleManager.BaseModule):
                 event["stderr"].write("No karma to clear by %s" %
                     target_user.nickname)
         elif subcommand == "for":
-            setting = "karma-%s" % target
+            setting = "karma-%s" % event["spec"][1]
             karma = event["server"].get_all_user_settings(setting)
             for nickname, value in karma:
                 user = event["server"].get_user(nickname)
                 user.del_setting(setting)
 
             if karma:
-                event["stdout"].write("Cleared karma for %s" % target)
+                event["stdout"].write("Cleared karma for %s" % event["spec"][1])
             else:
-                event["stderr"].write("No karma to clearfor %s" % target)
+                event["stderr"].write("No karma to clear for %s"
+                    % event["spec"][1])
         else:
             raise utils.EventError("Unknown subcommand '%s'" % subcommand)
