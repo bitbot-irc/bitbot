@@ -46,37 +46,38 @@ class Module(ModuleManager.BaseModule):
     @utils.spec("!<#channel>r~channel !'add,remove,set !<nickname>ouser "
         "!<permissions>string")
     def access(self, event):
-        subcommand = event["spec"][0].lower()
-        target = event["spec"][1]
-        access = event["target"].get_user_setting(target.get_id(), "access", [])
+        channel = event["spec"][0]
+        subcommand = event["spec"][1].lower()
+        target = event["spec"][2]
+        access = channel.get_user_setting(target.get_id(), "access", [])
 
         if subcommand == "list":
             event["stdout"].write("Access for %s: %s" % (target.nickname,
                 " ".join(access)))
         elif subcommand == "set":
-            event["target"].set_user_setting(target.get_id(), "access",
-                event["spec"][2])
+            channel.set_user_setting(target.get_id(), "access",
+                event["spec"][3])
         elif subcommand == "add":
-            for acc in event["spec"][2].split(" "):
+            for acc in event["spec"][3].split(" "):
                 if acc in access:
                     raise utils.EventError("%s already has '%s' permission" % (
                         target.nickname, acc))
                 access.append(acc)
-            event["target"].set_user_setting(target.get_id(), "access", access)
+            channel.set_user_setting(target.get_id(), "access", access)
             event["stdout"].write("Added permission to %s: %s" % (
-                target.nickname, event["spec"][2]))
+                target.nickname, event["spec"][3]))
         elif subcommand == "remove":
-            for acc in event["spec"][2].split(" "):
+            for acc in event["spec"][3].split(" "):
                 if not acc in access:
                     raise utils.EventError("%s does not have '%s' permission" %
                         (target.nickname, acc))
                 access.remove(acc)
             if access:
-                event["target"].set_user_setting(target.get_id(), "access",
+                channel.set_user_setting(target.get_id(), "access",
                     access)
             else:
-                event["target"].del_user_setting(target.get_id(), "access")
+                channel.del_user_setting(target.get_id(), "access")
             event["stdout"].write("Removed permission from %s: %s" % (
-                target.nickname, event["spec"][2]))
+                target.nickname, event["spec"][3]))
         else:
             event["stderr"].write("Unknown command '%s'" % subcommand)
