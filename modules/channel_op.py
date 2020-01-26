@@ -259,7 +259,7 @@ class Module(ModuleManager.BaseModule):
         current_flags = event["spec"][0].get_user_setting(target.get_id(),
             "flags", "")
 
-        if event["spec"][2]:
+        if not event["spec"][2]:
             current_flags_str = ("+%s" % current_flags) if current_flags else ""
             event["stdout"].write("Flags for %s: %s" %
                 (target, current_flags_str))
