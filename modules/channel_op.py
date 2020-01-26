@@ -51,8 +51,8 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Kick a user from a channel")
     @utils.spec("!<#channel>r~channel !<nickname>cuser ?<reason>string")
     def kick(self, event):
-        self._kick(event["server"], event["target"], event["spec"][0],
-            event["spec"][1])
+        self._kick(event["server"], event["spec"][0], event["spec"][1],
+            event["spec"][2])
 
     def _format_hostmask(self, user, s):
         vars = {}
@@ -121,7 +121,7 @@ class Module(ModuleManager.BaseModule):
         self._ban(event["server"], event["spec"][0], event["spec"][2],
             False, event["spec"][1], True)
         self._kick(event["server"], event["spec"][0], event["spec"][2],
-            event["spec"][1])
+            event["spec"][3])
 
     @utils.hook("received.command.op")
     @utils.hook("received.command.up", alias_of="op")
