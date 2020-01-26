@@ -42,8 +42,9 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.access")
     @utils.kwarg("require_mode", "high")
-    @utils.spec("!'list !<nickname>ouser")
-    @utils.spec("!'add,remove,set !<nickname>ouser !<permissions>string")
+    @utils.spec("!<#channel>r~channel !'list !<nickname>ouser")
+    @utils.spec("!<#channel>r~channel !'add,remove,set !<nickname>ouser "
+        "!<permissions>string")
     def access(self, event):
         subcommand = event["spec"][0].lower()
         target = event["spec"][1]
