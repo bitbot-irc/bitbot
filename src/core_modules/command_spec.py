@@ -101,7 +101,7 @@ class Module(ModuleManager.BaseModule):
                 current_error = error
             elif n > len(args):
                 current_error = "Not enough arguments"
-        return [None, -1, current_error or "Invalid arguments"]
+        return [argument_type, -1, current_error or "Invalid arguments"]
 
     @utils.hook("preprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
@@ -129,7 +129,7 @@ class Module(ModuleManager.BaseModule):
                         spec_argument.types, args)
 
                     argument_type, n, value = self._argument_types(options, args)
-                    if not argument_type == None:
+                    if n > -1:
                         args = args[n:]
 
                         if argument_type.exported:
@@ -138,17 +138,17 @@ class Module(ModuleManager.BaseModule):
                         if argument_type_multi:
                             value = [argument_type.type, value]
 
-                        out[i] = value
-                        argument_type_name = argument_type.name()
-                        if argument_type_name:
-                            out[argument_type_name] = value
-
-                    elif spec_argument.optional:
-                        out.append(None)
-                    else:
+                    elif not spec_argument.optional:
                         failed = True
                         current_error = value
                         break
+                    else:
+                        value = None
+
+                    out[i] = value
+                    argument_type_name = argument_type.name()
+                    if argument_type_name:
+                        out[argument_type_name] = value
 
                 if not failed:
                     kwargs["spec"] = out
