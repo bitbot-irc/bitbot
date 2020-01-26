@@ -71,12 +71,12 @@ class Module(ModuleManager.BaseModule):
         return self._format_hostmask(user, format)
 
     def _ban(self, server, channel, target, allow_hostmask, time, add):
-        if target[0] == "cuser":
-            hostmask = self._get_hostmask(channel, target[1])
-        else:
+        if target[0] == "word":
             if not allow_hostmask:
                 raise utils.EventError("No such user")
             hostmask = target[1]
+        else:
+            hostmask = self._get_hostmask(channel, target[1])
 
         if not add:
             channel.send_unban(hostmask)
