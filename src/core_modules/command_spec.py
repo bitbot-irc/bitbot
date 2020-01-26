@@ -117,7 +117,7 @@ class Module(ModuleManager.BaseModule):
                             value = [argument_type.type, value]
                         found = value
                         break
-                    elif not error and n > 0:
+                    elif not error and n > len(args):
                         error = "Not enough arguments"
 
                     if error and not first_error:
