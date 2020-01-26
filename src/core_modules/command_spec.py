@@ -78,11 +78,15 @@ class Module(ModuleManager.BaseModule):
                     error = "No such user"
                 else:
                     error = "No user provided"
-            elif argument_type.type == "ouser" and args:
-                if server.has_user_id(args[0]):
-                    value = server.get_user(args[0])
+            elif argument_type.type == "ouser":
+                if args and server.has_user_id(args[0]):
+                    value = server.get_user(args[0], create=True)
                 n = 1
                 error = "Unknown nickname"
+            elif argument_type.type == "nuser":
+                if args:
+                    value = server.get_user(args[0], create=True)
+                n = 1
 
             options.append([argument_type, value, n, error])
         return options
