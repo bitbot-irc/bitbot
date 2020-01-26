@@ -60,17 +60,13 @@ SPEC_ARGUMENT_TYPES = {
 }
 
 class SpecArgument(object):
-    def __init__(self, optional: bool, types: typing.List[SpecArgumentType]):
-        self.optional = optional
-        self.types = types
+    optional: bool = False
+    types: typing.List[SpecArgumentType] = []
 
-def argument_spec(spec: str) -> typing.List[SpecArgument]:
-    out: typing.List[SpecArgument] = []
-    for spec_argument in spec.split(" "):
-        optional = spec_argument[0] == "?"
-
-        argument_types: typing.List[SpecArgumentType] = []
-        for argument_type in spec_argument[1:].split("|"):
+    @staticmethod
+    def parse(optional: bool, argument_types: typing.List[str]):
+        out: typing.List[SpecArgumentType] = []
+        for argument_type in argument_types:
             exported = ""
             if "~" in argument_type:
                 exported = argument_type.split("~", 1)[1]
@@ -88,26 +84,68 @@ def argument_spec(spec: str) -> typing.List[SpecArgument]:
             elif exported:
                 argument_type_class = SpecArgumentPrivateType
 
-            argument_types.append(argument_type_class(argument_type,
+            out.append(argument_type_class(argument_type,
                 argument_type_name, exported))
-        out.append(SpecArgument(optional, argument_types))
-    return out
 
-def argument_spec_human(spec: typing.List[SpecArgument],
-        context: SpecArgumentContext=SpecArgumentContext.ALL) -> str:
-    out: typing.List[str] = []
-    for spec_argument in spec:
+        spec_argument = SpecArgument()
+        spec_argument.optional = optional
+        spec_argument.types = out
+        return spec_argument
+
+    def format(self, context: SpecArgumentContext) -> typing.Optional[str]:
+        if self.optional:
+            format = "[%s]"
+        else:
+            format = "<%s>"
+
         names: typing.List[str] = []
-        for argument_type in spec_argument.types:
+        for argument_type in self.types:
             if not (context&argument_type.context) == 0:
                 name = argument_type.name() or argument_type.type
                 if name:
                     names.append(name)
-
         if names:
-            if spec_argument.optional:
-                format = "[%s]"
-            else:
-                format = "<%s>"
-            out.append(format % "|".join(names))
-    return " ".join(out)
+            return format % "|".join(names)
+        return None
+
+class SpecArgumentTypeLiteral(SpecArgumentType):
+    def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
+        if args and args[0] == self.name():
+            return args[0], 1
+        return None, 1
+    def error(self) -> typing.Optional[str]:
+        return None
+class SpecLiteralArgument(SpecArgument):
+    @staticmethod
+    def parse(optional: bool, literals: typing.List[str]) -> SpecArgument:
+        spec_argument = SpecLiteralArgument()
+        spec_argument.optional = optional
+        spec_argument.types = [
+            SpecArgumentTypeLiteral("literal", l, None) for l in literals]
+        return spec_argument
+
+    def format(self, context: SpecArgumentContext) -> typing.Optional[str]:
+        return "|".join(t.name() for t in self.types)
+
+def argument_spec(spec: str) -> typing.List[SpecArgument]:
+    out: typing.List[SpecArgument] = []
+    for spec_argument in spec.split(" "):
+        optional = spec_argument[0] == "?"
+
+        if spec_argument[1] == "'":
+            out.append(SpecLiteralArgument.parse(optional,
+                spec_argument[2:].split(",")))
+        else:
+            out.append(SpecArgument.parse(optional,
+                spec_argument[1:].split("|")))
+
+    return out
+
+def argument_spec_human(spec: typing.List[SpecArgument],
+        context: SpecArgumentContext=SpecArgumentContext.ALL) -> str:
+    arguments: typing.List[str] = []
+    for spec_argument in spec:
+        out = spec_argument.format(context)
+        if out:
+            arguments.append(out)
+    return " ".join(arguments)
