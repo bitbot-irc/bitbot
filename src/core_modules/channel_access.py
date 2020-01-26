@@ -40,43 +40,32 @@ class Module(ModuleManager.BaseModule):
 
         return self._command_check(event, target, access)
 
-    @utils.hook("received.command.access", min_args=1, channel_only=True)
+    @utils.hook("received.command.access")
+    @utils.kwarg("require_mode", "high")
+    @utils.spec("!'list !<nickname>ouser")
+    @utils.spec("!'add,remove,set !<nickname>ouser !<permissions>string")
     def access(self, event):
-        """
-        :help: Show/modify channel access for a user
-        :usage: list <nickname>
-        :usage: add <nickname> <permission1 permission2 ...>
-        :usage: remove <nickname> <permission1 permission2 ...>
-        :usage: set <nickname> <permission1 permission2 ...>
-        :require_mode: high
-        """
-        subcommand = event["args_split"][0].lower()
-        target = event["server"].get_user(event["args_split"][1])
+        subcommand = event["spec"][0].lower()
+        target = event["spec"][1]
         access = event["target"].get_user_setting(target.get_id(), "access", [])
 
         if subcommand == "list":
             event["stdout"].write("Access for %s: %s" % (target.nickname,
                 " ".join(access)))
         elif subcommand == "set":
-            if not len(event["args_split"]) > 2:
-                raise utils.EventError("Please provide a list of permissions")
             event["target"].set_user_setting(target.get_id(), "access",
-                event["args_split"][2:])
+                event["spec"][2])
         elif subcommand == "add":
-            if not len(event["args_split"]) > 2:
-                raise utils.EventError("Please provide a list of permissions")
-            for acc in event["args_split"][2:]:
+            for acc in event["spec"][2].split(" "):
                 if acc in access:
                     raise utils.EventError("%s already has '%s' permission" % (
                         target.nickname, acc))
                 access.append(acc)
             event["target"].set_user_setting(target.get_id(), "access", access)
             event["stdout"].write("Added permission to %s: %s" % (
-                target.nickname, " ".join(event["args_split"][2:])))
+                target.nickname, event["spec"][2]))
         elif subcommand == "remove":
-            if not len(event["args_split"]) > 2:
-                raise utils.EventError("Please provide a list of permissions")
-            for acc in event["args_split"][2:]:
+            for acc in event["spec"][2].split(" "):
                 if not acc in access:
                     raise utils.EventError("%s does not have '%s' permission" %
                         (target.nickname, acc))
@@ -87,6 +76,6 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["target"].del_user_setting(target.get_id(), "access")
             event["stdout"].write("Removed permission from %s: %s" % (
-                target.nickname, " ".join(event["args_split"][2:])))
+                target.nickname, event["spec"][2]))
         else:
             event["stderr"].write("Unknown command '%s'" % subcommand)
