@@ -45,8 +45,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.ignore", min_args=1)
     @utils.kwarg("permission", "ignore")
     @utils.kwarg("help", "Ignore commands from a given user")
-    @utils.kwarg("usage", "[+time] <nickname> [command]")
-    @utils.spec("?time !<nickname>ouser ?<command>wordlower")
+    @utils.spec("?duration !<nickname>ouser ?<command>wordlower")
     def ignore(self, event):
         setting = "ignore"
         for_str = ""
