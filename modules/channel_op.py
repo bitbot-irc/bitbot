@@ -199,7 +199,7 @@ class Module(ModuleManager.BaseModule):
         self._quiet(event["server"], False, event["spec"])
 
     def _quiet(self, server, add, spec):
-        quiet_method = self._quiet_method(event["server"])
+        quiet_method = self._quiet_method(server)
 
         if quiet_method == None:
             raise utils.EventError(NO_QUIETS)
