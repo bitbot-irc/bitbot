@@ -90,44 +90,48 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
     def preprocess(self, event):
-        spec_arguments = event["hook"].get_kwarg("spec", None)
-        if not spec_arguments == None:
+        specs = event["hook"].get_kwargs("spec")
+        if specs:
             server = event["server"]
             channel = event["target"] if event["is_channel"] else None
             user = event["user"]
             args = event["args_split"].copy()
 
-            out = []
-            kwargs = {"channel": channel}
+            first_error = None
+            for spec_arguments in specs:
+                out = []
+                kwargs = {"channel": channel}
+                failed = False
+                for spec_argument in spec_arguments:
+                    argument_type_multi = len(set(
+                        t.type for t in spec_argument.types)) > 1
+                    options = self._spec_value(server, kwargs["channel"], user,
+                        spec_argument.types, args)
 
-            for spec_argument in spec_arguments:
-                options = self._spec_value(server, kwargs["channel"], user,
-                    spec_argument.types, args)
+                    found = None
+                    for argument_type, value, n, error in options:
+                        if not value == None:
+                            if argument_type.exported:
+                                kwargs[argument_type.exported] = value
 
-                found = None
-                first_error = None
-                for argument_type, value, n, error in options:
-                    if not value == None:
-                        if argument_type.exported:
-                            kwargs[argument_type.exported] = value
+                            args = args[n:]
+                            if argument_type_multi:
+                                value = [argument_type.type, value]
+                            found = value
+                            break
+                        elif not error and n > len(args):
+                            error = "Not enough arguments"
 
-                        found = True
-                        args = args[n:]
-                        if len(spec_argument.types) > 1:
-                            value = [argument_type.type, value]
-                        found = value
+                        first_error = first_error or error
+                    if not found == None:
+                        out.append(found)
+                    elif not spec_argument.optional:
+                        failed = True
                         break
-                    elif not error and n > len(args):
-                        error = "Not enough arguments"
+                if not failed:
+                    kwargs["spec"] = out
+                    event["kwargs"].update(kwargs)
+                    return
 
-                    if error and not first_error:
-                        first_error = error
-
-                if not spec_argument.optional and not found:
-                    error = first_error or "Invalid arguments"
-                    return utils.consts.PERMISSION_HARD_FAIL, error
-
-                out.append(found)
-
-            kwargs["spec"] = out
-            event["kwargs"].update(kwargs)
+            error = first_error or "Invalid arguments"
+            return utils.consts.PERMISSION_HARD_FAIL, error
