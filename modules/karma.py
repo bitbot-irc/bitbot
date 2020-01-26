@@ -143,8 +143,6 @@ class Module(ModuleManager.BaseModule):
         if subcommand == "by":
             target_user = event["server"].get_user(target)
             karma = target_user.find_setting(prefix="karma-")
-            print(target_user)
-            print(target_user.get_id())
             for setting, _ in karma:
                 target_user.del_setting(setting)
 
