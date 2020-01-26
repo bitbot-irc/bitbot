@@ -79,10 +79,11 @@ class Module(ModuleManager.BaseModule):
                 else:
                     error = "No user provided"
             elif argument_type.type == "ouser":
-                if args and server.has_user_id(args[0]):
-                    value = server.get_user(args[0], create=True)
+                if args:
+                    if server.has_user_id(args[0]):
+                        value = server.get_user(args[0], create=True)
+                    error = "Unknown nickname"
                 n = 1
-                error = "Unknown nickname"
             elif argument_type.type == "nuser":
                 if args:
                     value = server.get_user(args[0], create=True)
@@ -90,6 +91,17 @@ class Module(ModuleManager.BaseModule):
 
             options.append([argument_type, value, n, error])
         return options
+
+    def _argument_types(self, options, args):
+        current_error = None
+        for argument_type, value, n, error in options:
+            if not value == None:
+                return [argument_type, n, value]
+            elif error:
+                current_error = error
+            elif n > len(args):
+                current_error = "Not enough arguments"
+        return [None, -1, current_error or "Invalid arguments"]
 
     @utils.hook("preprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
@@ -100,43 +112,50 @@ class Module(ModuleManager.BaseModule):
             channel = event["target"] if event["is_channel"] else None
             user = event["user"]
 
-            first_error = None
+            overall_error = None
+            best_count = 0
             for spec_arguments in specs:
-                out = []
+                out = {}
                 args = event["args_split"].copy()
                 kwargs = {"channel": channel}
                 failed = False
 
-                for spec_argument in spec_arguments:
+                current_error = None
+                count = 0
+                for i, spec_argument in enumerate(spec_arguments):
                     argument_type_multi = len(set(
                         t.type for t in spec_argument.types)) > 1
                     options = self._spec_value(server, kwargs["channel"], user,
                         spec_argument.types, args)
 
-                    found = None
-                    for argument_type, value, n, error in options:
-                        if not value == None:
-                            if argument_type.exported:
-                                kwargs[argument_type.exported] = value
+                    argument_type, n, value = self._argument_types(options, args)
+                    if not argument_type == None:
+                        args = args[n:]
 
-                            args = args[n:]
-                            if argument_type_multi:
-                                value = [argument_type.type, value]
-                            found = value
-                            break
-                        elif not error and n > len(args):
-                            error = "Not enough arguments"
+                        if argument_type.exported:
+                            kwargs[argument_type.exported] = value
 
-                        first_error = first_error or error
-                    if not found == None:
-                        out.append(found)
-                    elif not spec_argument.optional:
+                        if argument_type_multi:
+                            value = [argument_type.type, value]
+
+                        out[i] = value
+                        argument_type_name = argument_type.name()
+                        if argument_type_name:
+                            out[argument_type_name] = value
+
+                    elif spec_argument.optional:
+                        out.append(None)
+                    else:
                         failed = True
+                        current_error = value
                         break
+
                 if not failed:
                     kwargs["spec"] = out
                     event["kwargs"].update(kwargs)
                     return
+                else:
+                    if count >= best_count:
+                        overall_error = current_error
 
-            error = first_error or "Invalid arguments"
-            return utils.consts.PERMISSION_HARD_FAIL, error
+            return utils.consts.PERMISSION_HARD_FAIL, overall_error
