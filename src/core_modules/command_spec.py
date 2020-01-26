@@ -95,13 +95,14 @@ class Module(ModuleManager.BaseModule):
             server = event["server"]
             channel = event["target"] if event["is_channel"] else None
             user = event["user"]
-            args = event["args_split"].copy()
 
             first_error = None
             for spec_arguments in specs:
                 out = []
+                args = event["args_split"].copy()
                 kwargs = {"channel": channel}
                 failed = False
+
                 for spec_argument in spec_arguments:
                     argument_type_multi = len(set(
                         t.type for t in spec_argument.types)) > 1
