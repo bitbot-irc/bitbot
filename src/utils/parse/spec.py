@@ -79,6 +79,7 @@ SPEC_ARGUMENT_TYPES = {
 }
 
 class SpecArgument(object):
+    consume = True
     optional: bool = False
     types: typing.List[SpecArgumentType] = []
 
@@ -155,8 +156,15 @@ def argument_spec(spec: str) -> typing.List[SpecArgument]:
             out.append(SpecLiteralArgument.parse(optional,
                 spec_argument[2:].split(",")))
         else:
-            out.append(SpecArgument.parse(optional,
-                spec_argument[1:].split("|")))
+            consume = True
+            if spec_argument[1] == "=":
+                consume = False
+                spec_argument = spec_argument[1:]
+
+            spec_argument_obj = SpecArgument.parse(optional,
+                spec_argument[1:].split("|"))
+            spec_argument_obj.consume = consume
+            out.append(spec_argument_obj)
 
     return out
 
@@ -164,7 +172,8 @@ def argument_spec_human(spec: typing.List[SpecArgument],
         context: SpecArgumentContext=SpecArgumentContext.ALL) -> str:
     arguments: typing.List[str] = []
     for spec_argument in spec:
-        out = spec_argument.format(context)
-        if out:
-            arguments.append(out)
+        if spec_argument.consume:
+            out = spec_argument.format(context)
+            if out:
+                arguments.append(out)
     return " ".join(arguments)
