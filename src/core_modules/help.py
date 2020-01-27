@@ -16,7 +16,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 context = utils.parse.SpecArgumentContext.PRIVATE
             usages = [utils.parse.argument_spec_human(s, context) for s in spec]
-        elif usage:
+        elif usages_kwarg:
             usages = usages_kwarg
 
         if usages:
