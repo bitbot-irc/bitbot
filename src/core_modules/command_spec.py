@@ -88,6 +88,14 @@ class Module(ModuleManager.BaseModule):
                 if args:
                     value = server.get_user(args[0], create=True)
                 n = 1
+            elif argument_type.type == "channelonly":
+                if not channel == None:
+                    n = 0
+                error = "Command not valid in private message"
+            elif argument_type.type == "privateonly":
+                if channel == None:
+                    n = 0
+                error = "Command not valid in private message"
 
             options.append([argument_type, value, n, error])
         return options
