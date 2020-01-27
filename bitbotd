@@ -113,7 +113,7 @@ if "external-modules" in config:
 modules = ModuleManager.ModuleManager(events, exports, timers, config, log,
     core_modules, extra_modules)
 
-bot = IRCBot.Bot(directory, args, cache, config, database, events,
+bot = IRCBot.Bot(directory, DATA_DIR, args, cache, config, database, events,
     exports, log, modules, timers)
 bot.add_poll_hook(cache)
 bot.add_poll_hook(lock_file)

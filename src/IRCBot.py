@@ -34,9 +34,10 @@ class ListLambdaPollHook(PollHook.PollHook):
         return min(timeouts or [None])
 
 class Bot(object):
-    def __init__(self, directory, args, cache, config, database, events,
-            exports, log, modules, timers):
+    def __init__(self, directory, data_directory, args, cache, config, database,
+            events, exports, log, modules, timers):
         self.directory = directory
+        self.data_directory = data_directory
         self.args = args
         self.cache = cache
         self.config = config
