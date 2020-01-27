@@ -1,6 +1,6 @@
 import enum, typing
 from .time import duration
-from . import try_int
+from .types import try_int
 
 class SpecArgumentContext(enum.IntFlag):
     CHANNEL = 1
@@ -49,6 +49,12 @@ class SpecArgumentTypeTrimString(SpecArgumentTypeString):
     def simple(self, args: typing.List[str]):
         return SpecArgumentTypeString.simple(self, list(filter(None, args)))
 
+class SpecArgumentTypeInt(SpecArgumentType):
+    def simple(self, args):
+        if args:
+            return try_int(args[0]), 1
+        return None, 1
+
 class SpecArgumentTypeDuration(SpecArgumentType):
     def name(self):
         return "+%s" % (SpecArgumentType.name(self) or "duration")
@@ -68,6 +74,7 @@ SPEC_ARGUMENT_TYPES = {
     "wordlower": SpecArgumentTypeWordLower,
     "string": SpecArgumentTypeString,
     "tstring": SpecArgumentTypeTrimString,
+    "int": SpecArgumentTypeInt,
     "duration": SpecArgumentTypeDuration
 }
 

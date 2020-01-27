@@ -1,8 +1,9 @@
 import decimal, io, typing
 from src.utils import datetime, errors
 
-from .time import duration
 from .spec import *
+from .time import duration
+from .types import try_int
 
 COMMENT_TYPES = ["#", "//"]
 def hashflags(filename: str
@@ -77,12 +78,6 @@ def keyvalue(s: str, delimiter: str=" "
         else:
             items[key] = None
     return items
-
-def try_int(s: str) -> typing.Optional[int]:
-    try:
-        return int(s)
-    except ValueError:
-        return None
 
 def line_normalise(s: str) -> str:
     lines = list(filter(None, [line.strip() for line in s.split("\n")]))
