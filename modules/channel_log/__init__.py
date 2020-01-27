@@ -10,12 +10,11 @@ LOGS_DIRECTORY = os.path.join(ROOT_DIRECTORY, "logs")
 @utils.export("channelset", utils.BoolSetting("log",
     "Enable/disable channel logging"))
 class Module(ModuleManager.BaseModule):
-    def _log_file(self, server_name, channel_name):
-        return open(os.path.join(LOGS_DIRECTORY,
-            "%s%s.log" % (server_name, channel_name)), "a")
+    def _file(self, server_name, channel_name):
+        return self.data_directory("%s/%s.log" % (server_name, channel_name))
     def _log(self, event, channel):
-        if channel.get_setting("log", False):
-            with self._log_file(str(event["server"]), str(channel)) as log:
+        if channel.get_setting("log", True):
+            with open(self._file(str(event["server"]), str(channel)), "a") as log:
                 timestamp = datetime.datetime.now().strftime("%x %X")
                 log.write("%s %s\n" % (timestamp, event["line"]))
 
