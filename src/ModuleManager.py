@@ -1,5 +1,5 @@
-import enum, gc, glob, importlib, importlib.util, io, inspect, os, sys
-import typing, uuid
+import dataclasses, enum, gc, glob, importlib, importlib.util, io, inspect, os
+import sys, typing, uuid
 from src import Config, EventManager, Exports, IRCBot, Logging, Timers, utils
 
 class ModuleException(Exception):
@@ -42,19 +42,15 @@ class TryReloadResult(object):
         self.success = success
         self.message = message
 
+@dataclasses.dataclass
 class BaseModule(object):
-    def __init__(self,
-            bot: "IRCBot.Bot",
-            events: EventManager.Events,
-            exports: Exports.Exports,
-            timers: Timers.Timers,
-            log: Logging.Log):
-        self.bot = bot
-        self.events = events
-        self.exports = exports
-        self.timers = timers
-        self.log = log
-        self.on_load()
+    definition: "ModuleDefinition"
+    bot: "IRCBot.Bot"
+    events: EventManager.Events
+    exports: Exports.Exports
+    timers: Timers.Timers
+    log: Logging.Log
+
     def on_load(self):
         pass
     def unload(self):
@@ -64,6 +60,15 @@ class BaseModule(object):
         pass
     def on_resume(self):
         pass
+
+    def data_directory(self, filename: str):
+        path, filename = os.path.split(filename)
+        path = os.path.join(self.bot.data_directory, "mod-data",
+            self.definition.name, path)
+
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        return os.path.join(path, filename)
 
 class ModuleDefinition(object):
     def __init__(self,
@@ -242,8 +247,9 @@ class ModuleManager(object):
         context_events = self.events.new_context(context)
         context_exports = self.exports.new_context(context)
         context_timers = self.timers.new_context(context)
-        module_object = module_object_pointer(bot, context_events,
+        module_object = module_object_pointer(definition, bot, context_events,
             context_exports, context_timers, self.log)
+        module_object.on_load()
 
         module_title = (getattr(module_object, "_name", None) or
             definition.name.title())
