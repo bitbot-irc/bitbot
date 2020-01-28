@@ -1,6 +1,6 @@
 import enum, re, typing
 import datetime as _datetime
-import dateutil.parser
+import dateutil.parser, dateutil.relativedelta
 
 ISO8601_FORMAT_DT = "%Y-%m-%dT%H:%M:%S"
 ISO8601_FORMAT_TZ = "%z"
@@ -101,32 +101,32 @@ UNIT_MINUTE = 4
 UNIT_HOUR = 3
 UNIT_DAY = 2
 UNIT_WEEK = 1
+UNIT_MONTH = 1
+UNIT_YEAR = 1
 def to_pretty_time(total_seconds: int, minimum_unit: int=UNIT_SECOND,
         max_units: int=UNIT_MINIMUM) -> str:
     if total_seconds == 0:
         return "0s"
 
-    minutes, seconds = divmod(total_seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    days, hours = divmod(hours, 24)
-    weeks, days = divmod(days, 7)
-    out = []
+    now = utcnow()
+    later = now+_datetime.timedelta(seconds=total_seconds)
+    relative = dateutil.relativedelta.relativedelta(later, now)
 
-    units = 0
-    if weeks and minimum_unit >= UNIT_WEEK and units < max_units:
-        out.append("%dw" % weeks)
-        units += 1
-    if days and minimum_unit >= UNIT_DAY and units < max_units:
-        out.append("%dd" % days)
-        units += 1
-    if hours and minimum_unit >= UNIT_HOUR and units < max_units:
-        out.append("%dh" % hours)
-        units += 1
-    if minutes and minimum_unit >= UNIT_MINUTE and units < max_units:
-        out.append("%dm" % minutes)
-        units += 1
-    if seconds and minimum_unit >= UNIT_SECOND and units < max_units:
-        out.append("%ds" % seconds)
-        units += 1
+    out: typing.List[str] = []
+    if relative.years and minimum_unit >= UNIT_YEAR and len(out) < max_units:
+        out.append("%dy" % relative.years)
+    if relative.months and minimum_unit >= UNIT_MONTH and len(out) < max_units:
+        out.append("%dmo" % relative.months)
+    if relative.weeks and minimum_unit >= UNIT_WEEK and len(out) < max_units:
+        out.append("%dw" % relative.weeks)
+    if relative.days and minimum_unit >= UNIT_DAY and len(out) < max_units:
+        out.append("%dd" % relative.days)
+    if relative.hours and minimum_unit >= UNIT_HOUR and len(out) < max_units:
+        out.append("%dh" % relative.hours)
+    if relative.minutes and minimum_unit >= UNIT_MINUTE and len(out) < max_units:
+        out.append("%dmi" % relative.minutes)
+    if relative.seconds and minimum_unit >= UNIT_SECOND and len(out) < max_units:
+        out.append("%ds" % relative.seconds)
+
     return " ".join(out)
 
