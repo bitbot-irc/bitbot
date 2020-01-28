@@ -3,8 +3,8 @@ from src import utils
 
 def _timestamp(dt):
     seconds_since = time.time()-dt.timestamp()
-    since, unit = utils.datetime.time_unit(seconds_since)
-    return "%s %s ago" % (since, unit)
+    timestamp = utils.datetime.to_pretty_time(seconds_since, max_units=2)
+    return "%s ago" % timestamp
 
 def _normalise(tweet):
     return html.unescape(utils.parse.line_normalise(tweet))
