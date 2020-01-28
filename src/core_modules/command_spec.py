@@ -89,12 +89,12 @@ class Module(ModuleManager.BaseModule):
                     value = server.get_user(args[0], create=True)
                 n = 1
             elif argument_type.type == "channelonly":
-                if not channel == None:
-                    n = 0
+                value = not channel == None
+                n = 0
                 error = "Command not valid in private message"
             elif argument_type.type == "privateonly":
-                if channel == None:
-                    n = 0
+                value = channel == None
+                n = 0
                 error = "Command not valid in private message"
 
             options.append([argument_type, value, n, error])
@@ -109,7 +109,7 @@ class Module(ModuleManager.BaseModule):
                 current_error = error
             elif n > len(args):
                 current_error = "Not enough arguments"
-        return [argument_type, -1, current_error or "Invalid arguments"]
+        return [None, -1, current_error or "Invalid arguments"]
 
     @utils.hook("preprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
@@ -153,10 +153,11 @@ class Module(ModuleManager.BaseModule):
                     else:
                         value = None
 
-                    out[i] = value
-                    argument_type_name = argument_type.name()
-                    if argument_type_name:
-                        out[argument_type_name] = value
+                    if not argument_type == None and spec_argument.consume:
+                        out[i] = value
+                        argument_type_name = argument_type.name()
+                        if argument_type_name:
+                            out[argument_type_name] = value
 
                 if not failed:
                     kwargs["spec"] = out
