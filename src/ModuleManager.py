@@ -217,6 +217,10 @@ class ModuleManager(object):
 
     def _load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition,
             check_dependency: bool=True) -> LoadedModule:
+        if definition.name in self.modules:
+            raise ModuleNameCollisionException("Module name '%s' "
+                "attempted to be used twice" % definition.name)
+
         if check_dependency:
             dependencies = definition.get_dependencies()
             for dependency in dependencies:
@@ -269,10 +273,6 @@ class ModuleManager(object):
             magic = utils.decorators.get_magic(module_object)
             for key, value in magic.get_exports():
                 context_exports.add(key, value)
-
-        if definition.name in self.modules:
-            raise ModuleNameCollisionException("Module name '%s' "
-                "attempted to be used twice" % definition.name)
 
         return LoadedModule(definition.name, module_title, module_object,
             context, import_name)
