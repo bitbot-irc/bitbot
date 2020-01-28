@@ -182,11 +182,9 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("Your permissions: %s" % ", ".join(permissions))
 
 
-    @utils.hook("received.command.register", private_only=True, min_args=1)
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("private_only", True)
+    @utils.hook("received.command.register")
     @utils.kwarg("help", "Register your nickname")
-    @utils.kwarg("usage", "<password>")
+    @utils.spec("!=privateonly !<password>string")
     def register(self, event):
         hash, salt = self._get_hash(event["server"], event["user"].nickname)
         if not hash and not salt:
@@ -202,23 +200,17 @@ class Module(ModuleManager.BaseModule):
         else:
             event["stderr"].write("This nickname is already registered")
 
-    @utils.hook("received.command.identify", private_only=True, min_args=1)
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("private_only", True)
+    @utils.hook("received.command.identify")
     @utils.kwarg("help", "Identify for your current nickname")
-    @utils.kwarg("usage", "[account] <password>")
+    @utils.spec("!=privateonly ?<account>aword !<password>string")
     def identify(self, event):
         if not event["user"].channels:
             raise utils.EventError("You must share at least one channel "
                 "with me before you can identify")
 
         if not self._is_identified(event["user"]):
-            if len(event["args_split"]) > 1:
-                account = event["args_split"][0]
-                password = " ".join(event["args_split"][1:])
-            else:
-                account = event["user"].nickname
-                password = event["args"]
+            account = event["spec"][0] or event["user"].nickname
+            password = event["spec"][1]
 
             hash, salt = self._get_hash(event["server"], account)
             if hash and salt:
@@ -240,29 +232,26 @@ class Module(ModuleManager.BaseModule):
                 self._account_name(event["user"]))
 
     @utils.hook("received.command.permission")
-    @utils.kwarg("min_args", 2)
-    @utils.kwarg("usage", "list <account>")
-    @utils.kwarg("usage", "clear <account>")
-    @utils.kwarg("usage", "add <account> <permission>")
-    @utils.kwarg("usage", "remove <account> <permission>")
+    @utils.spec("!'list,clear !<nickname>ouser")
+    @utils.spec("!'add,remove !<nickname>ouser !<permission>tstring")
     @utils.kwarg("permission", "permissions.change")
     def permission(self, event):
-        subcommand = event["args_split"][0].lower()
-        account = event["args_split"][1]
-        target_user = event["server"].get_user(account)
+        subcommand = event["spec"][0].lower()
+        target_user = event["spec"][1]
 
         if subcommand == "list":
             event["stdout"].write("Permissions for %s: %s" % (
-                account, ", ".join(self._get_permissions(target_user))))
+                target_user.nickname,
+                ", ".join(self._get_permissions(target_user))))
         elif subcommand == "clear":
             if not self._get_permissions(target_user):
-                raise utils.EventError("%s has no permissions" % account)
+                raise utils.EventError("%s has no permissions"
+                    % target_user.nickname)
             target_user.del_setting("permissions")
-            event["stdout"].write("Cleared permissions for %s" % account)
+            event["stdout"].write("Cleared permissions for %s"
+                % target_user.nickname)
         else:
-            permissions = event["args_split"][2:]
-            if not permissions:
-                raise utils.EventError("Please provide at least 1 permission")
+            permissions = event["spec"][2].split()
             user_permissions = self._get_permissions(target_user)
 
             if subcommand == "add":
@@ -271,7 +260,7 @@ class Module(ModuleManager.BaseModule):
                     raise utils.EventError("No new permissions to give")
                 target_user.set_setting("permissions", user_permissions+new)
                 event["stdout"].write("Gave %s new permissions: %s" %
-                    (account, ", ".join(new)))
+                    (target_user.nickname, ", ".join(new)))
             elif subcommand == "remove":
                 permissions_set = set(permissions)
                 user_permissions_set = set(user_permissions)
@@ -285,27 +274,22 @@ class Module(ModuleManager.BaseModule):
                 else:
                     target_user.set_setting("permissions", change)
                 event["stdout"].write("Removed permissions from %s: %s" %
-                    (account, ", ".join(change)))
+                    (target_user.nickname, ", ".join(change)))
             else:
                 raise utils.EventError("Unknown subcommand %s" % subcommand)
 
     @utils.hook("received.command.hostmask")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("authenticated", True)
-    @utils.kwarg("usage", "list")
-    @utils.kwarg("usage", "add [hostmask]")
-    @utils.kwarg("usage", "remove [hostmask]")
+    @utils.spec("!'list")
+    @utils.spec("!'add,remove ?<hostmask>word")
     def hostmask(self, event):
-        subcommand = event["args_split"][0].lower()
+        subcommand = event["spect"][0]
         hostmasks = event["user"].get_setting(HOSTMASKS_SETTING, [])
 
         if subcommand == "list":
             event["stdout"].write("Your hostmasks: %s" % ", ".join(hostmasks))
         else:
-            if event["args_split"][1:]:
-                hostmask = event["args_split"][1]
-            else:
-                hostmask = "*!%s" % event["user"].userhost()
+            hostmask = event["spec"][1]
             account = self._account_name(event["user"])
 
             if subcommand == "add":
