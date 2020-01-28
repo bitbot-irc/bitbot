@@ -4,9 +4,6 @@
 import datetime, os.path
 from src import ModuleManager, utils
 
-ROOT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-LOGS_DIRECTORY = os.path.join(ROOT_DIRECTORY, "logs")
-
 SETTING = utils.BoolSetting("channel-log",
     "Enable/disable channel logging")
 
