@@ -18,6 +18,8 @@ class ModuleLoadException(ModuleException):
     pass
 class ModuleUnloadException(ModuleException):
     pass
+class ModuleCannotUnloadException(ModuleException):
+    pass
 
 class ModuleNotLoadedWarning(ModuleWarning):
     pass
@@ -70,16 +72,14 @@ class BaseModule(object):
             os.makedirs(path)
         return os.path.join(path, filename)
 
+@dataclasses.dataclass
 class ModuleDefinition(object):
-    def __init__(self,
-            name: str,
-            filename: str,
-            type: ModuleType,
-            hashflags: typing.List[typing.Tuple[str, typing.Optional[str]]]):
-        self.name = name
-        self.filename = filename
-        self.type = type
-        self.hashflags = hashflags
+    name: str
+    filename: str
+    type: ModuleType
+    hashflags: typing.List[typing.Tuple[str, typing.Optional[str]]]
+    is_core: bool
+
     def get_dependencies(self):
         dependencies = []
         for key, value in self.hashflags:
@@ -87,18 +87,14 @@ class ModuleDefinition(object):
                 dependencies.append(value)
         return sorted(dependencies)
 
+@dataclasses.dataclass
 class LoadedModule(object):
-    def __init__(self,
-            name: str,
-            title: str,
-            module: BaseModule,
-            context: str,
-            import_name: str):
-        self.name = name
-        self.title = title
-        self.module = module
-        self.context = context
-        self.import_name = import_name
+    name: str
+    title: str
+    module: BaseModule
+    context: str
+    import_name: str
+    is_core: bool
 
 class ModuleManager(object):
     def __init__(self,
@@ -119,25 +115,27 @@ class ModuleManager(object):
 
         self.modules = {} # type: typing.Dict[str, LoadedModule]
 
-    def _list_modules(self, directory: str
+    def _list_modules(self, directory: str, is_core: bool
             ) -> typing.Dict[str, ModuleDefinition]:
         modules = []
         for file_module in glob.glob(os.path.join(directory, "*.py")):
-            modules.append(self.define_module(ModuleType.FILE, file_module))
+            modules.append(
+                self.define_module(ModuleType.FILE, file_module, is_core))
 
         for directory_module in glob.glob(os.path.join(
                 directory, "*", "__init__.py")):
             modules.append(self.define_module(ModuleType.DIRECTORY,
-                directory_module))
+                directory_module, is_core))
+
         return {definition.name: definition for definition in modules}
 
     def list_modules(self, whitelist: typing.List[str],
             blacklist: typing.List[str]) -> typing.Dict[str, ModuleDefinition]:
-        core_modules = self._list_modules(self._core_modules)
+        core_modules = self._list_modules(self._core_modules, True)
         extra_modules: typing.Dict[str, ModuleDefinition] = {}
 
         for directory in self._extra_modules:
-            for name, module in self._list_modules(directory).items():
+            for name, module in self._list_modules(directory, False).items():
                 if (not name in extra_modules and
                         (name in whitelist or
                         (not whitelist and not name in blacklist))):
@@ -148,7 +146,7 @@ class ModuleManager(object):
         modules.update(core_modules)
         return modules
 
-    def define_module(self, type: ModuleType, filename: str
+    def define_module(self, type: ModuleType, filename: str, is_core: bool,
             ) -> ModuleDefinition:
         if type == ModuleType.DIRECTORY:
             name = os.path.dirname(filename)
@@ -157,14 +155,13 @@ class ModuleManager(object):
         name = self._module_name(name)
 
         return ModuleDefinition(name, filename, type,
-            utils.parse.hashflags(filename))
+            utils.parse.hashflags(filename), is_core)
 
     def find_module(self, name: str) -> ModuleDefinition:
         type = ModuleType.FILE
         paths = self._module_paths(name)
 
-        path = None
-        for possible_path in paths:
+        for is_core, possible_path in paths:
             if os.path.isdir(possible_path):
                 type = ModuleType.DIRECTORY
                 possible_path = os.path.join(possible_path, "__init__.py")
@@ -172,20 +169,17 @@ class ModuleManager(object):
                 possible_path = "%s.py" % possible_path
 
             if os.path.isfile(possible_path):
-                path = possible_path
-                break
+                return self.define_module(type, possible_path, is_core)
 
-        if not path:
-            raise ModuleNotFoundException(name)
-
-        return self.define_module(type, path)
+        raise ModuleNotFoundException(name)
 
     def _module_name(self, path: str) -> str:
         return os.path.basename(path).rsplit(".py", 1)[0].lower()
-    def _module_paths(self, name: str) -> typing.List[str]:
+    def _module_paths(self, name: str) -> typing.List[typing.Tuple[bool, str]]:
         paths = []
-        for directory in [self._core_modules]+self._extra_modules:
-            paths.append(os.path.join(directory, name))
+
+        for i, directory in enumerate([self._core_modules]+self._extra_modules):
+            paths.append((i==0, os.path.join(directory, name)))
         return paths
     def _import_name(self, name: str, context: str) -> str:
         return "%s_%s" % (name, context)
@@ -275,7 +269,7 @@ class ModuleManager(object):
                 context_exports.add(key, value)
 
         return LoadedModule(definition.name, module_title, module_object,
-            context, import_name)
+            context, import_name, definition.is_core)
 
     def load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition
             ) -> LoadedModule:
@@ -364,6 +358,9 @@ class ModuleManager(object):
         del self.modules[loaded_module.name]
 
     def _unload_module(self, loaded_module: LoadedModule):
+        if loaded_module.is_core:
+            raise ModuleCannotUnloadException("cannot unload core modules")
+
         if hasattr(loaded_module.module, "unload"):
             try:
                 loaded_module.module.unload()
