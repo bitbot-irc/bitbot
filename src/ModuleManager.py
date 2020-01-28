@@ -354,13 +354,14 @@ class ModuleManager(object):
         if not name in self.modules:
             raise ModuleNotLoadedException(name)
         loaded_module = self.modules[name]
+
+        if loaded_module.is_core:
+            raise ModuleCannotUnloadException("cannot unload core modules")
+
         self._unload_module(loaded_module)
         del self.modules[loaded_module.name]
 
     def _unload_module(self, loaded_module: LoadedModule):
-        if loaded_module.is_core:
-            raise ModuleCannotUnloadException("cannot unload core modules")
-
         if hasattr(loaded_module.module, "unload"):
             try:
                 loaded_module.module.unload()
