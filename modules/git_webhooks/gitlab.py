@@ -199,7 +199,7 @@ class GitLab(object):
         type = data["object_attributes"]["noteable_type"]
         type == "issue" if type == "Issue" else "MR"
 
-        title = object["title"]
+        title = type["title"]
         commenter = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
         return [["[%s] %s commented on %s: %s" %
