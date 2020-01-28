@@ -184,7 +184,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.register")
     @utils.kwarg("help", "Register your nickname")
-    @utils.spec("!=privateonly !<password>string")
+    @utils.spec("!-privateonly !<password>string")
     def register(self, event):
         hash, salt = self._get_hash(event["server"], event["user"].nickname)
         if not hash and not salt:
@@ -202,7 +202,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.identify")
     @utils.kwarg("help", "Identify for your current nickname")
-    @utils.spec("!=privateonly ?<account>aword !<password>string")
+    @utils.spec("!-privateonly ?<account>aword !<password>string")
     def identify(self, event):
         if not event["user"].channels:
             raise utils.EventError("You must share at least one channel "

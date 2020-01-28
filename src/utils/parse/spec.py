@@ -157,7 +157,7 @@ def argument_spec(spec: str) -> typing.List[SpecArgument]:
                 spec_argument[2:].split(",")))
         else:
             consume = True
-            if spec_argument[1] == "=":
+            if spec_argument[1] == "-":
                 consume = False
                 spec_argument = spec_argument[1:]
 
