@@ -194,12 +194,12 @@ class GitLab(object):
         elif type == "MergeRequest":
             self._note(full_name, data, data["merge_request"])
 
-    def _note(self, full_name, data, type):
-        number = utils.irc.color("#%s" % type["iid"], colors.COLOR_ID)
+    def _note(self, full_name, data, object):
+        number = utils.irc.color("#%s" % object["iid"], colors.COLOR_ID)
         type = data["object_attributes"]["noteable_type"]
         type == "issue" if type == "Issue" else "MR"
 
-        title = type["title"]
+        title = object["title"]
         commenter = utils.irc.bold(data["user"]["username"])
         url = data["object_attributes"]["url"]
         return [["[%s] %s commented on %s: %s" %
