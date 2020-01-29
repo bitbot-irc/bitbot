@@ -166,11 +166,11 @@ class Module(ModuleManager.BaseModule):
                     else:
                         value = None
 
-                    if not argument_type == None and spec_argument.consume:
+                    if spec_argument.consume:
                         out[i] = value
-                        argument_type_name = argument_type.name()
-                        if argument_type_name:
-                            out[argument_type_name] = value
+                        if argument_type:
+                            key = argument_type.name() or argument_type.type
+                            out[key] = value
 
                 if not failed:
                     kwargs["spec"] = out
