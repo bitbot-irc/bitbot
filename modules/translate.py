@@ -10,19 +10,14 @@ REGEX_LANGUAGES = re.compile("(\w+)?:(\w+)? ")
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.tr", alias_of="translate")
     @utils.hook("received.command.translate")
+    @utils.spec("!<phrase>lstring")
     def translate(self, event):
         """
         :help: Translate the provided phrase or the last line in thie current
             channel
         :usage: [phrase]
         """
-        phrase = event["args"]
-        if not phrase:
-            phrase = event["target"].buffer.get()
-            if phrase:
-                phrase = utils.irc.strip_font(phrase.message)
-        if not phrase:
-            raise utils.EventError("No phrase provided.")
+        phrase = event["spec"][0]
         source_language = "auto"
         target_language = "en"
 

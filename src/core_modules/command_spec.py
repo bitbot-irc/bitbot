@@ -88,6 +88,17 @@ class Module(ModuleManager.BaseModule):
                 if args:
                     value = server.get_user(args[0], create=True)
                 n = 1
+            elif argument_type.type == "lstring":
+                if args:
+                    value = " ".join(args)
+                    n = len(args)
+                else:
+                    last_message = (channel or user).buffer.get()
+                    if last_message:
+                        value = last_message.message
+                        n = 0
+                    else:
+                        n = 1
             elif argument_type.type == "channelonly":
                 if channel:
                     value = True
