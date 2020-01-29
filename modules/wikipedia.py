@@ -7,15 +7,13 @@ URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.wi", alias_of="wiki")
     @utils.hook("received.command.wiki", alias_of="wikipedia")
-    @utils.hook("received.command.wikipedia", min_args=1)
+    @utils.hook("received.command.wikipedia")
+    @utils.kwarg("help", "Get information from wikipedia")
+    @utils.spec("!<term>lstring")
     def wikipedia(self, event):
-        """
-        :help: Get information from wikipedia
-        :usage: <term>
-        """
         page = utils.http.request(URL_WIKIPEDIA, get_params={
             "action": "query", "prop": "extracts|info", "inprop": "url",
-            "titles": event["args"], "exintro": "", "explaintext": "",
+            "titles": event["spec"][0], "exintro": "", "explaintext": "",
             "exchars": "500", "redirects": "", "format": "json"}).json()
 
         if page:
