@@ -21,7 +21,8 @@ class Module(ModuleManager.BaseModule):
     def _log(self, server, channel, line):
         if self._enabled(server, channel):
             with open(self._file(str(server), str(channel)), "a") as log:
-                timestamp = datetime.datetime.now().strftime("%x %X")
+                timestamp = utils.datetime.datetime_human(
+                    datetime.datetime.now())
                 log.write("%s %s\n" % (timestamp, line))
 
     @utils.hook("formatted.message.channel")
