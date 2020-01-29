@@ -44,7 +44,9 @@ class SpecArgumentTypeString(SpecArgumentType):
     def name(self):
         return "%s ..." % SpecArgumentType.name(self)
     def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
-        return " ".join(args), len(args)
+        if args:
+            return " ".join(args), len(args)
+        return None, 1
 class SpecArgumentTypeTrimString(SpecArgumentTypeString):
     def simple(self, args: typing.List[str]):
         return SpecArgumentTypeString.simple(self, list(filter(None, args)))
