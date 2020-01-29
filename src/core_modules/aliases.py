@@ -56,10 +56,10 @@ class Module(ModuleManager.BaseModule):
         permission="balias")
     @utils.hook("received.command.calias",
         require_mode="o", require_access="alias")
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("usage", "list")
-    @utils.kwarg("usage", "add <alias> <command> [arg1 [arg2 ...]]")
-    @utils.kwarg("usage", "remove <alias>")
+
+    @utils.spec("!'list ?<alias>wordlower")
+    @utils.spec("!'add !<alias>wordlower !<command>wordlower ?<args>string")
+    @utils.spec("!'remove !<alias>wordlower")
     @utils.kwarg("remove_empty", False)
     def alias(self, event):
         target = event["server"]
@@ -71,41 +71,32 @@ class Module(ModuleManager.BaseModule):
         elif event["command"] == "balias":
             target = self.bot
 
-        subcommand = event["args_split"][0].lower()
+        subcommand = event["spec"][0]
+        alias = event["spec"][1]
         if subcommand == "list":
-            aliases = self._get_aliases([target])
-            event["stdout"].write("Available aliases: %s" %
-                ", ".join(sorted(aliases.keys())))
+            if alias:
+                setting = target.get_setting(f"{SETTING_PREFIX}{alias}", None)
 
-        elif subcommand == "show":
-            if not len(event["args_split"]) > 1:
-                raise utils.EventError("Please provide an alias to remove")
-
-            alias = event["args_split"][1].lower()
-            setting = target.get_setting("%s%s" % (SETTING_PREFIX, alias), None)
-
-            if setting == None:
-                raise utils.EventError("I don't have an '%s' alias" % alias)
-            prefix = event["command_prefix"]
-            event["stdout"].write(f"{prefix}{alias}: {prefix}{setting}")
+                if setting == None:
+                    raise utils.EventError("I don't have an '%s' alias" % alias)
+                prefix = event["command_prefix"]
+                event["stdout"].write(f"{prefix}{alias}: {prefix}{setting}")
+            else:
+                aliases = self._get_aliases([target])
+                event["stdout"].write("Available aliases: %s" %
+                    ", ".join(sorted(aliases.keys())))
 
         elif subcommand == "add":
-            if not len(event["args_split"]) > 2:
-                raise utils.EventError("Please provide an alias and a command")
+            command = event["spec"][2].lower()
+            args = event["spec"][3]
+            if args:
+                command = f"{command} {args}"
 
-            alias = event["args_split"][1].lower()
-            command = event["args_split"][2].lower()
-            command = " ".join([command]+event["args_split"][3:])
             target.set_setting("%s%s" % (SETTING_PREFIX, alias), command)
-
             event["stdout"].write("Added '%s' alias" % alias)
 
         elif subcommand == "remove":
-            if not len(event["args_split"]) > 1:
-                raise utils.EventError("Please provide an alias to remove")
-
-            alias = event["args_split"][1].lower()
-            setting = "%s%s" % (SETTING_PREFIX, alias)
+            setting = f"{SETTING_PREFIX}{alias}"
             if target.get_setting(setting, None) == None:
                 raise utils.EventError("I don't have an '%s' alias" % alias)
 
