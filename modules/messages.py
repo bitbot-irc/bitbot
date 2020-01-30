@@ -12,16 +12,15 @@ class Module(ModuleManager.BaseModule):
 
         if message_list:
             messages = []
-            for message in message_list:
+            for i, message in enumerate(message_list):
                 seconds = utils.datetime.seconds_since(message.line.timestamp)
-                messages.append("%s ago %s" % (
+                messages.append("(%d/%d) %s ago %s" % (i+1, message_count,
                     utils.datetime.to_pretty_time(seconds),
                     message.line.format()))
 
             plural = "message" if message_count == 0 else "messages"
-            event["stdout"].write("%s: found %d/%d messages: %s"
-                % (event["user"].nickname, message_count,
-                len(event["target"].buffer), "\n".join(messages)))
+            event["stdout"].write("%s: found messages: %s"
+                % (event["user"].nickname, "\n".join(messages)))
         else:
             event["stderr"].write("%s: no messages found"
                 % event["user"].nickname)
