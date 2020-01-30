@@ -2,6 +2,8 @@ import re
 from src import ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
+    _name = "MSG"
+
     @utils.hook("received.command.msearch")
     @utils.spec("!-channelonly !<pattern>string")
     def msearch(self, event):
