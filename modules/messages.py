@@ -5,11 +5,10 @@ class Module(ModuleManager.BaseModule):
     _name = "MSG"
 
     @utils.hook("received.command.msearch")
-    @utils.spec("!-channelonly !<pattern>string")
+    @utils.spec("!r~channel !<pattern>string")
     def msearch(self, event):
-        print(event["spec"])
-        pattern = re.compile(event["spec"][0], re.I)
-        message_list = list(event["target"].buffer.find_all(pattern))
+        pattern = re.compile(event["spec"][1], re.I)
+        message_list = list(event["spec"][0].buffer.find_all(pattern))
         message_count = len(message_list)
 
         if message_list:
