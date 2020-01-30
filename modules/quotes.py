@@ -134,10 +134,7 @@ class Module(ModuleManager.BaseModule):
 
             lines_str = []
             for line in lines:
-                if line.action:
-                    lines_str.append("* %s %s" % (line.sender, line.message))
-                else:
-                    lines_str.append("<%s> %s" % (line.sender, line.message))
+                lines_str.append(line.format())
             text = " ".join(lines_str)
 
             quotes.append([event["user"].name, int(time.time()), text])

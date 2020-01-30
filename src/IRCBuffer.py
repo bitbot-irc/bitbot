@@ -22,6 +22,13 @@ class BufferLine(object):
     timestamp: datetime.datetime = dataclasses.field(
         default_factory=utils.datetime.utcnow)
 
+    def format(self):
+        if self.action:
+            format = "* %s %s"
+        else:
+            format = "<%s> %s"
+        return format % (self.sender, self.message)
+
 class BufferLineMatch(object):
     def __init__(self, line: BufferLine, match: str):
         self.line = line
