@@ -6,6 +6,12 @@ from .common import *
 def iso8601(s: str) -> _datetime.datetime:
     return dateutil.parser.parse(s)
 
+def date_human(s: str) -> typing.Optional[_datetime.datetime]:
+    try:
+        return _datetime.datetime.strptime(s, DATE_HUMAN)
+    except ValueError:
+        return None
+
 REGEX_PRETTYTIME = re.compile(
     r"(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?", re.I)
 

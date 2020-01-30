@@ -1,6 +1,7 @@
 import enum, typing
 from .time import duration
 from .types import try_int
+from src.utils.datetime.parse import date_human
 
 class SpecArgumentContext(enum.IntFlag):
     CHANNEL = 1
@@ -67,6 +68,14 @@ class SpecArgumentTypeDuration(SpecArgumentType):
     def error(self) -> typing.Optional[str]:
         return "Invalid timeframe"
 
+class SpecArgumentTypeDate(SpecArgumentType):
+    def name(self):
+        return SpecArgumentType.name(self) or "yyyy-mm-dd"
+    def simple(self, args):
+        if args:
+            return date_human(args[0], 1)
+        return None, 1
+
 class SpecArgumentPrivateType(SpecArgumentType):
     context = SpecArgumentContext.PRIVATE
 
@@ -77,6 +86,7 @@ SPEC_ARGUMENT_TYPES = {
     "string": SpecArgumentTypeString,
     "tstring": SpecArgumentTypeTrimString,
     "int": SpecArgumentTypeInt,
+    "date": SpecArgumentTypeDate,
     "duration": SpecArgumentTypeDuration
 }
 
