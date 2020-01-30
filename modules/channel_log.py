@@ -17,7 +17,13 @@ class Module(ModuleManager.BaseModule):
             server.get_setting("channel-log",
             self.bot.get_setting("channel-log", False)))
     def _file(self, server_name, channel_name):
-        return self.data_directory("%s/%s.log" % (server_name, channel_name))
+        # if a channel name has os.path.sep (e.g. "/") in it, the channel's log
+        # file will create a subdirectory.
+        #
+        # to avoid this, we'll replace os.path.sep with "," (0x2C) as it is
+        # forbidden in channel names.
+        sanitised_name = channel_name.replace(os.path.sep, ",")
+        return self.data_directory("%s/%s.log" % (server_name, sanitised_name))
     def _log(self, server, channel, line):
         if self._enabled(server, channel):
             with open(self._file(str(server), str(channel)), "a") as log:
