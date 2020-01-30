@@ -21,18 +21,13 @@ COLORS = [
 class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.rainbow")
     @utils.kwarg("help", "Rainbowify a given string or the last message")
-    @utils.kwarg("usage", "[string]")
+    @utils.spec("!<string>lstring")
     def rainbow(self, event):
         if event["is_channel"] and not event["target"].get_setting(
                 "rainbow", False):
             return
 
-        args = event["args"]
-        if not args:
-            args = event["target"].buffer.get()
-            if not args:
-                raise utils.EventError("No line found to rainbowify")
-        args = utils.irc.strip_font(args)
+        args = utils.irc.strip_font(event["spec"][0])
 
         offset = random.randint(0, len(COLORS))
         out = ""
