@@ -46,7 +46,7 @@ if args.version:
     print("BitBot %s" % IRCBot.VERSION)
     sys.exit(0)
 
-config = Config.Config(args.config)
+config = Config.Config("bot", args.config)
 config.load()
 
 DATA_DIR = os.path.expanduser(config.get("data-directory", "~/.bitbot"))
