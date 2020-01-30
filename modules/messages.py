@@ -18,8 +18,7 @@ class Module(ModuleManager.BaseModule):
                     utils.datetime.to_pretty_time(seconds),
                     message.line.format()))
 
-            plural = "message" if message_count == 0 else "messages"
-            event["stdout"].write("%s: found messages: %s"
+            event["stdout"].write("%s: found: %s"
                 % (event["user"].nickname, "\n".join(messages)))
         else:
             event["stderr"].write("%s: no messages found"
