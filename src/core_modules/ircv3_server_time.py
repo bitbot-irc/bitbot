@@ -21,5 +21,5 @@ class Module(ModuleManager.BaseModule):
     def message(self, event):
         server_time = self._get(event["line"].tags)
         if not server_time == None:
-            dt = utils.datetime.iso8601_parse(server_time)
+            dt = utils.datetime.parse.iso8601(server_time)
             event["buffer_line"].timestamp = dt

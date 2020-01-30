@@ -14,7 +14,7 @@ class LockFile(PollHook.PollHook):
             with open(self._filename, "r") as lock_file:
                 timestamp_str = lock_file.read().strip().split(" ", 1)[0]
 
-            timestamp = utils.datetime.iso8601_parse(timestamp_str)
+            timestamp = utils.datetime.parse.iso8601(timestamp_str)
 
             if (now-timestamp).total_seconds() < EXPIRATION:
                 return False
@@ -24,7 +24,7 @@ class LockFile(PollHook.PollHook):
     def lock(self):
         with open(self._filename, "w") as lock_file:
             last_lock = utils.datetime.utcnow()
-            lock_file.write("%s" % utils.datetime.iso8601_format(last_lock))
+            lock_file.write("%s" % utils.datetime.format.iso8601(last_lock))
             self._next_lock = last_lock+datetime.timedelta(
                 seconds=EXPIRATION/2)
 

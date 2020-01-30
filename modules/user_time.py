@@ -52,7 +52,7 @@ class Module(ModuleManager.BaseModule):
             if utc_offset > 0:
                 tz += "+"
             tz += "%g" % utc_offset
-        return "%s %s" % (utils.datetime.datetime_human(dt), tz)
+        return "%s %s" % (utils.datetime.format.datetime_human(dt), tz)
 
     @utils.hook("received.command.time")
     @utils.kwarg("help", "Get the time for you or someone else")

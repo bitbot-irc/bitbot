@@ -44,9 +44,10 @@ class Module(ModuleManager.BaseModule):
             statistics = item["statistics"]
             content = item["contentDetails"]
 
-            video_uploaded_at = utils.datetime.iso8601_parse(
+            video_uploaded_at = utils.datetime.parse.iso8601(
                 snippet["publishedAt"])
-            video_uploaded_at = utils.datetime.date_human(video_uploaded_at)
+            video_uploaded_at = utils.datetime.format.date_human(
+                video_uploaded_at)
 
             video_uploader = snippet["channelTitle"]
             video_title = utils.irc.bold(snippet["title"])

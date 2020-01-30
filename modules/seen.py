@@ -35,8 +35,8 @@ class Module(ModuleManager.BaseModule):
                     seen_info = " (%s%s)" % (seen_info["action"],
                         utils.consts.RESET)
 
-            since = utils.datetime.to_pretty_time(time.time()-seen_seconds,
-                max_units=2)
+            since = utils.datetime.format.to_pretty_time(
+                time.time()-seen_seconds, max_units=2)
             event["stdout"].write("%s was last seen %s ago%s" % (
                 event["args_split"][0], since, seen_info or ""))
         else:

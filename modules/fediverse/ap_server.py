@@ -52,7 +52,7 @@ class Server(object):
             activities.append([activity_id, content, timestamp])
         return activities
     def _make_activity(self, content):
-        timestamp = utils.datetime.iso8601_format_now()
+        timestamp = utils.datetime.format.iso8601_now()
         activity_id = self._random_id()
         self.bot.set_setting("ap-activity-%s" % activity_id,
             [content, timestamp])

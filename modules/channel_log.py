@@ -27,7 +27,7 @@ class Module(ModuleManager.BaseModule):
     def _log(self, server, channel, line):
         if self._enabled(server, channel):
             with open(self._file(str(server), str(channel)), "a") as log:
-                timestamp = utils.datetime.datetime_human(
+                timestamp = utils.datetime.format.datetime_human(
                     datetime.datetime.now())
                 log.write("%s %s\n" % (timestamp, line))
 

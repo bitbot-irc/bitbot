@@ -3,7 +3,8 @@ from src import utils
 
 def _timestamp(dt):
     seconds_since = time.time()-dt.timestamp()
-    timestamp = utils.datetime.to_pretty_time(seconds_since, max_units=2)
+    timestamp = utils.datetime.format.to_pretty_time(
+        seconds_since, max_units=2)
     return "%s ago" % timestamp
 
 def _normalise(tweet):

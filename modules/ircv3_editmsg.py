@@ -12,7 +12,7 @@ class Module(ModuleManager.BaseModule):
             if line:
                 line.deleted = True
 
-                timestamp = utils.datetime.datetime_human(line.timestamp,
+                timestamp = utils.datetime.format.datetime_human(line.timestamp,
                     timespec=utils.datetime.TimeSpec.MILLISECOND)
                 minimal = "{~NICK} deleted line from %s (%s)" % (
                     timestamp, line.message)

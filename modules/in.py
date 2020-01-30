@@ -11,7 +11,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Set a reminder")
     @utils.kwarg("usage", "<time> <message>")
     def in_command(self, event):
-        seconds = utils.datetime.from_pretty_time(event["args_split"][0])
+        seconds = utils.datetime.parse.from_pretty_time(event["args_split"][0])
         message = " ".join(event["args_split"][1:])
         if seconds:
             if seconds <= SECONDS_MAX:
