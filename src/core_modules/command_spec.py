@@ -143,7 +143,8 @@ class Module(ModuleManager.BaseModule):
 
                 current_error = None
                 count = 0
-                for i, spec_argument in enumerate(spec_arguments):
+                spec_index = 0
+                for spec_argument in spec_arguments:
                     argument_type_multi = len(set(
                         t.type for t in spec_argument.types)) > 1
                     options = self._spec_value(server, kwargs["channel"], user,
@@ -166,8 +167,10 @@ class Module(ModuleManager.BaseModule):
                     else:
                         value = None
 
+                    count += 1
                     if spec_argument.consume:
-                        out[i] = value
+                        out[spec_index] = value
+                        spec_index += 1
                         if argument_type:
                             key = argument_type.name() or argument_type.type
                             out[key] = value
