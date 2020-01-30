@@ -1,7 +1,7 @@
 import collections, dataclasses, datetime, re, typing, uuid
 from src import IRCBot, IRCServer, utils
 
-MAX_LINES = 64
+MAX_LINES = 2**10
 
 @dataclasses.dataclass
 class BufferLine(object):
