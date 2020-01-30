@@ -38,8 +38,11 @@ class Buffer(object):
     def __init__(self, bot: "IRCBot.Bot", server: "IRCServer.Server"):
         self.bot = bot
         self.server = server
-        self._lines = collections.deque(maxlen=MAX_LINES
-            ) # type: typing.Deque[BufferLine]
+        self._lines: typing.Deque[BufferLine] = collections.deque(
+            maxlen=MAX_LINES)
+
+    def __len__(self) -> int:
+        return len(self._lines)
 
     def add(self, line: BufferLine):
         self._lines.appendleft(line)
@@ -62,10 +65,10 @@ class Buffer(object):
             for line in self._lines:
                 yield line
 
-    def find(self, pattern: typing.Union[str, typing.Pattern[str]],
+    def find_all(self, pattern: typing.Union[str, typing.Pattern[str]],
             not_pattern: typing.Union[str, typing.Pattern[str]]=None,
             from_self=True, for_user: str=None, deleted=False
-            ) -> typing.Optional[BufferLineMatch]:
+            ) -> typing.Generator[BufferLineMatch, None, None]:
         if for_user:
             for_user = self.server.irc_lower(for_user)
 
@@ -82,8 +85,11 @@ class Buffer(object):
                         continue
                     if line.deleted and not deleted:
                         continue
-                    return BufferLineMatch(line, match.group(0))
+                    yield BufferLineMatch(line, match.group(0))
         return None
+    def find(self, pattern: typing.Union[str, typing.Pattern[str]]
+            ) -> typing.Optional[BufferLineMatch]:
+        return next(self.find_all(pattern), None)
 
     def find_id(self, id: str) -> typing.Optional[BufferLine]:
         for line in self._lines:
