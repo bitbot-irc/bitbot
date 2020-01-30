@@ -43,6 +43,9 @@ def datetime_human(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL):
 def date_human(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL):
     return _datetime.datetime.strftime(dt, DATE_HUMAN)
 
+def seconds_since(dt: _datetime.datetime) -> float:
+    return (utcnow()-dt).total_seconds()
+
 TIME_SECOND = 1
 TIME_MINUTE = TIME_SECOND*60
 TIME_HOUR = TIME_MINUTE*60
