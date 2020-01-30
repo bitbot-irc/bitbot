@@ -13,7 +13,7 @@ LOWHIGH = {
     "Set which channel mode is considered to be 'high' access", example="o"))
 class Module(ModuleManager.BaseModule):
     def _check_command(self, event, channel, require_mode):
-        if channel and require_mode:
+        if channel:
             if require_mode in LOWHIGH:
                 require_mode = channel.get_setting("mode-%s" % require_mode,
                     LOWHIGH[require_mode])
@@ -31,6 +31,8 @@ class Module(ModuleManager.BaseModule):
                     "You do not have permission to do this")
             else:
                 return utils.consts.PERMISSION_FORCE_SUCCESS, None
+        else:
+            raise ValueError("_command_check requires a channel")
 
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):

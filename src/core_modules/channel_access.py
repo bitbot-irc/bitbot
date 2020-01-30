@@ -14,13 +14,15 @@ class Module(ModuleManager.BaseModule):
         return (require_access in access or "*" in access) and identified
 
     def _command_check(self, event, channel, require_access):
-        if channel and require_access:
+        if channel:
             if self._has_channel_access(channel, event["user"],
                     require_access):
                 return utils.consts.PERMISSION_FORCE_SUCCESS, None
             else:
                 return (utils.consts.PERMISSION_ERROR,
                         "You do not have permission to do this")
+        else:
+            raise ValueError("_command_check requires a channel")
 
     @utils.hook("preprocess.command")
     def preprocess_command(self, event):
