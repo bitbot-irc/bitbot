@@ -8,4 +8,4 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Ping pong
         """
-        event["stdout"].write("Pong!")
+        event["stdout"].write("%s: pong!" % event["user"].nickname)
