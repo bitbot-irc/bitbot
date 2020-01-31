@@ -67,7 +67,14 @@ class Module(ModuleManager.BaseModule):
                 # async url get failed
                 continue
 
-            feed = feedparser.parse(pages[url].decode())
+            try:
+                data = pages[url].decode()
+            except Exception as e:
+                self.log.error("Failed to decode rss URL %s", [url],
+                    exc_info=True)
+                continue
+
+            feed = feedparser.parse(data)
             feed_title = feed["feed"].get("title", None)
             max_ids = len(feed["entries"])*10
 
