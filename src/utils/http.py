@@ -130,14 +130,20 @@ class Response(object):
     def soup(self, parser: str="lxml") -> bs4.BeautifulSoup:
         return bs4.BeautifulSoup(self.decode(), parser)
 
-def _meta_content(s: str) -> typing.Dict[str, str]:
+def _split_content(s: str) -> typing.Dict[str, str]:
     out = {}
     for keyvalue in s.split(";"):
         key, _, value = keyvalue.strip().partition("=")
         out[key] = value
     return out
 
-def _find_encoding(data: bytes) -> typing.Optional[str]:
+def _find_encoding(headers: typing.Dict[str, str], data: bytes
+        ) -> typing.Optional[str]:
+    if "Content-Type" in headers:
+        content_header = _split_content(headers["Content-Type"])
+        if "charset" in content_header:
+            return content_header["charset"]
+
     soup = bs4.BeautifulSoup(data, "lxml")
     if not soup.meta == None:
         meta_charset = soup.meta.get("charset")
@@ -147,7 +153,7 @@ def _find_encoding(data: bytes) -> typing.Optional[str]:
         meta_content_type = soup.findAll("meta",
             {"http-equiv": lambda v: (v or "").lower() == "content-type"})
         if meta_content_type:
-            return _meta_content(meta_content_type[0].get("content"))["charset"]
+            return _split_content(meta_content_type[0].get("content"))["charset"]
 
     doctype = [item for item in soup.contents if isinstance(item,
         bs4.Doctype)] or None
@@ -201,7 +207,7 @@ def _request(request_obj: Request) -> Response:
 
     if (response.content_type and
             response.content_type in SOUP_CONTENT_TYPES):
-        encoding = _find_encoding(response.data) or encoding
+        encoding = _find_encoding(response.headers, response.data) or encoding
     response.encoding = encoding
 
     return response
@@ -248,7 +254,8 @@ def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
                 "request_many failed for %s" % url)
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
-        responses[request.id] = Response(response.code, response.body, "utf8",
+        encoding = _find_encoding(headers, response.body) or "utf8"
+        responses[request.id] = Response(response.code, response.body, encoding,
             headers, {})
 
     loop = asyncio.new_event_loop()
