@@ -85,10 +85,6 @@ class Module(ModuleManager.BaseModule):
                         channel = server.channels.get(channel_name)
                         hooks = channel.get_setting("git-webhooks", {})
 
-                        if is_private and not channel.get_setting(
-                                PRIVATE_SETTING_NAME, False):
-                            continue
-
                         if hooks:
                             found_hook = self._find_hook(
                                 full_name_lower, repo_username_lower,
@@ -104,6 +100,10 @@ class Module(ModuleManager.BaseModule):
         repo_hooked = bool(unfiltered_targets)
         targets = []
         for server, channel, hook in unfiltered_targets:
+            if is_private and not channel.get_setting(
+                    PRIVATE_SETTING_NAME, False):
+                continue
+
             if (branch and
                     hook["branches"] and
                     not branch in hook["branches"]):
