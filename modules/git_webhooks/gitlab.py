@@ -50,9 +50,9 @@ ISSUE_ACTIONS = {
 
 class GitLab(object):
     def is_private(self, data, headers):
-        if "visibility_level" in data.get("project", {}):
+        if "project" in data:
             return not data["project"]["visibility_level"] == 20
-        return data.get("repository", {}).get("private", False)
+        return False
 
     def names(self, data, headers):
         full_name = data["project"]["path_with_namespace"]
