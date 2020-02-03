@@ -75,8 +75,8 @@ class GitLab(object):
 
     def event(self, data, headers):
         event = headers["X-GitLab-Event"].rsplit(" ", 1)[0].lower()
-
         event = event.replace(" ", "_")
+
         action = None
         event_action = None
 
@@ -193,9 +193,9 @@ class GitLab(object):
     def note(self, full_name, data):
         type = data["object_attributes"]["noteable_type"]
         if type == "Issue":
-            self._note(full_name, data, data["issue"])
+            return self._note(full_name, data, data["issue"])
         elif type == "MergeRequest":
-            self._note(full_name, data, data["merge_request"])
+            return self._note(full_name, data, data["merge_request"])
 
     def _note(self, full_name, data, object):
         number = utils.irc.color("#%s" % object["iid"], colors.COLOR_ID)
