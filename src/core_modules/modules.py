@@ -18,6 +18,30 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Failed to reload module '%s': %s" % (
                 name, str(e)))
 
+    @utils.hook("received.command.modinfo")
+    @utils.spec("!<module>string")
+    def info(self, event):
+        name = event["spec"][0]
+        if not name in self.bot.modules.modules:
+            raise
+        module = self.bot.modules.modules[name]
+
+        event_calls = 0
+        for event_name, hooks in self.events.all_hooks().items():
+            for hook in hooks:
+                if hook.context == module.context:
+                    event_calls += hook.call_count
+
+        event_str = "event" if event_calls == 1 else "events"
+
+        loaded_at = utils.datetime.format.datetime_human(module.loaded_at)
+        if module.commit:
+            loaded_at = "%s (git @%s)" % (loaded_at, module.commit)
+
+        event["stdout"].write("%s: '%s' was loaded at %s and has handled %d %s"
+            % (event["user"].nickname, module.name, loaded_at, event_calls,
+            event_str))
+
     @utils.hook("received.command.loadmodule", min_args=1)
     def load(self, event):
         """
