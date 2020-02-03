@@ -1,13 +1,14 @@
 import uuid
 from src import ModuleManager, utils
 
-CAP = utils.irc.Capability(None, "draft/labeled-response-0.2",
-    alias="labeled-response", depends_on=["batch"])
-TAG = utils.irc.MessageTag(None, "draft/label")
-BATCH = utils.irc.BatchType(None, "draft/labeled-response")
+CAP = utils.irc.Capability("labeled-response", "draft/labeled-response-0.2",
+    depends_on=["batch"])
+TAG = utils.irc.MessageTag("label", "draft/label")
+BATCH = utils.irc.BatchType("labeled-response", "draft/labeled-response")
 
 CAP_TO_TAG = {
-    "draft/labeled-response-0.2": "draft/label"
+    "draft/labeled-response-0.2": "draft/label",
+    "labeled-response": "label"
 }
 
 class WaitingForLabel(object):
