@@ -10,6 +10,7 @@ class Module(ModuleManager.BaseModule):
         spec = hook.get_kwargs("spec")
         usages_kwarg = hook.get_kwargs("usage")
 
+        usages = []
         if spec:
             if is_channel:
                 context = utils.parse.SpecArgumentContext.CHANNEL
