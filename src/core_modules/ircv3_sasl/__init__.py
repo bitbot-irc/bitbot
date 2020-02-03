@@ -171,6 +171,8 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.903")
     def sasl_success(self, event):
+        self.log.info("SASL authentication succeeded for %s",
+            [str(event["server"])])
         self._end_sasl(event["server"])
     @utils.hook("received.904")
     def sasl_failure(self, event):
