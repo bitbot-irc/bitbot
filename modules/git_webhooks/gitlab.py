@@ -55,7 +55,10 @@ class GitLab(object):
         return False
 
     def names(self, data, headers):
-        full_name = data["project"]["path_with_namespace"]
+        if "project" in data:
+            full_name = data["project"]["path_with_namespace"]
+        else:
+            full_name = data["project_name"].replace(" ", "")
         repo_username, repo_name = full_name.split("/", 1)
 
         organisation = None
