@@ -73,11 +73,14 @@ def chghost(events, event):
         event["server"].hostname = hostname
 
     target = event["server"].get_user(nickname)
-    events.on("received.chghost").call(user=target, server=event["server"],
-        username=username, hostname=hostname)
 
+    old_username = target.username
+    old_hostname = target.hostname
     target.username = username
     target.hostname = hostname
+
+    events.on("received.chghost").call(user=target, server=event["server"],
+        old_username=old_username, old_hostname=old_hostname)
 
 def setname(event):
     nickname = event["line"].source.nickname
