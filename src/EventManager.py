@@ -37,6 +37,7 @@ class EventHook(object):
         self.priority = priority
         self.docstring = utils.parse.docstring(func.__doc__ or "")
 
+        self.call_count = 0
         self._kwargs: typing.Dict[str, typing.Any] = {}
         self._multi_kwargs: typing.Dict[str, typing.List[typing.Any]] = {}
         for key, value in kwargs:
@@ -48,6 +49,7 @@ class EventHook(object):
                 self._kwargs[key] = value
 
     def call(self, event: Event) -> typing.Any:
+        self.call_count += 1
         return self.function(event)
 
     def get_kwargs(self, key: str) -> typing.List[typing.Any]:
@@ -121,6 +123,9 @@ class Events(object):
 
     def purge_context(self, context: str):
         self._root._purge_context(context)
+
+    def all_hooks(self):
+        return self._root.all_hooks()
 
 class EventRoot(object):
     def __init__(self, log: Logging.Log):
@@ -232,3 +237,6 @@ class EventRoot(object):
         if path_str in self._hooks:
             return self._hooks[path_str][:]
         return []
+
+    def all_hooks(self):
+        return self._hooks.copy()

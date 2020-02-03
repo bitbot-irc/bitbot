@@ -1,5 +1,5 @@
-import dataclasses, enum, gc, glob, importlib, importlib.util, io, inspect, os
-import sys, typing, uuid
+import dataclasses, datetime, enum, gc, glob, importlib, importlib.util, io
+import inspect, os, sys, typing, uuid
 from src import Config, EventManager, Exports, IRCBot, Logging, Timers, utils
 
 class ModuleException(Exception):
@@ -95,6 +95,10 @@ class LoadedModule(object):
     context: str
     import_name: str
     is_core: bool
+    commit: typing.Optional[str] = None
+
+    loaded_at: datetime.datetime = dataclasses.field(
+        default_factory=lambda: utils.datetime.utcnow())
 
 class ModuleManager(object):
     def __init__(self,
@@ -268,8 +272,9 @@ class ModuleManager(object):
             for key, value in magic.get_exports():
                 context_exports.add(key, value)
 
+        current_commit = utils.git_commit(bot.directory)
         return LoadedModule(definition.name, module_title, module_object,
-            context, import_name, definition.is_core)
+            context, import_name, definition.is_core, commit=current_commit)
 
     def load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition
             ) -> LoadedModule:

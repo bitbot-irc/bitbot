@@ -1,5 +1,5 @@
-import contextlib, enum, ipaddress, multiprocessing, queue, signal, threading
-import typing
+import contextlib, enum, ipaddress, multiprocessing, os.path, queue, signal
+import threading, typing
 from . import cli, consts, datetime, decorators, irc, http, parse, security
 
 from .decorators import export, hook, kwarg, spec
@@ -126,3 +126,18 @@ def deadline_process(func: typing.Callable[[], DeadlineProcessReturnType],
         return out
     else:
         raise out # type: ignore
+
+def git_commit(bot_directory: str) -> typing.Optional[str]:
+    git_dir = os.path.join(bot_directory, ".git")
+    head_filepath = os.path.join(git_dir, "HEAD")
+    if os.path.isfile(head_filepath):
+        ref = None
+        with open(head_filepath, "r") as head_file:
+            ref = head_file.readline().split(" ", 1)[1].strip()
+        branch = ref.rsplit("/", 1)[1]
+
+        ref_filepath = os.path.join(git_dir, ref)
+        if os.path.isfile(ref_filepath):
+            with open(ref_filepath, "r") as ref_file:
+                return ref_file.readline().strip()[:8]
+    return None
