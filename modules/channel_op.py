@@ -149,7 +149,8 @@ class Module(ModuleManager.BaseModule):
     @utils.spec("!<#channel>r~channel !<nickname>ruser")
     def voice(self, event):
         add = event["command"] == "voice"
-        event["spec"][0].send_mode("+v" if add else "-v", [event["spec"][1]])
+        event["spec"][0].send_mode("+v" if add else "-v",
+            [event["spec"][1].nickname])
 
     @utils.hook("received.command.topic")
     @utils.kwarg("require_mode", "o")
