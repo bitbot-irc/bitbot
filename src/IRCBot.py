@@ -6,8 +6,8 @@ URL: str = "https://bitbot.dev"
 
 import enum, queue, os, queue, select, socket, sys, threading, time, traceback
 import typing, uuid
-from src import EventManager, Exports, IRCServer, Logging, ModuleManager
-from src import PollHook, PollSource, Socket, Timers, utils
+from src import Config, EventManager, Exports, IRCServer, Logging
+from src import ModuleManager, PollHook, PollSource, Socket, Timers, utils
 
 class TriggerResult(enum.Enum):
     Return = 1
@@ -147,9 +147,16 @@ class Bot(object):
         self.log.critical("panic() called: %s", [reason], exc_info=exc_info)
         sys.exit(utils.consts.Exit.PANIC)
 
+    def get_config(self, name: str) -> Config.Config:
+        path = os.path.join(self.data_directory, "%s.conf" % name)
+        config = Config.Config(name, path)
+        config.load()
+        return config
+
     def _module_lists(self):
-        whitelist = self.config.get_list("module-whitelist")
-        blacklist = self.config.get_list("module-blacklist")
+        module_lists = self.get_config("modules")
+        whitelist = module_lists.get_list("whitelist")
+        blacklist = module_lists.get_list("blacklist")
 
         return whitelist, blacklist
 

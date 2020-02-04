@@ -102,10 +102,11 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write(result.message)
 
     def _get_blacklist(self):
-        return self.bot.config.get_list("module-blacklist")
-    def _save_blacklist(self, modules):
-        self.bot.config.set_list("module-blacklist", modules)
-        self.bot.config.save()
+        config = self.bot.get_config("modules")
+        return config, config.get_list("blacklist")
+    def _save_blacklist(self, config, modules):
+        config.set_list("blacklist", sorted(modules))
+        config.save()
 
     @utils.hook("received.command.enablemodule")
     @utils.kwarg("min_args", 1)
@@ -115,12 +116,12 @@ class Module(ModuleManager.BaseModule):
     def enable(self, event):
         name = event["args_split"][0].lower()
 
-        blacklist = self._get_blacklist()
+        config, blacklist = self._get_blacklist()
         if not name in blacklist:
             raise utils.EventError("Module '%s' isn't disabled" % name)
 
         blacklist.remove(name)
-        self._save_blacklist(blacklist)
+        self._save_blacklist(config, blacklist)
         event["stdout"].write("Module '%s' has been enabled and can now "
             "be loaded" % name)
 
@@ -136,11 +137,11 @@ class Module(ModuleManager.BaseModule):
             self.bot.modules.unload_module(name)
             and_unloaded = " and unloaded"
 
-        blacklist = self._get_blacklist()
+        config, blacklist = self._get_blacklist()
         if name in blacklist:
             raise utils.EventError("Module '%s' is already disabled" % name)
 
         blacklist.append(name)
-        self._save_blacklist(blacklist)
+        self._save_blacklist(config, blacklist)
         event["stdout"].write("Module '%s' has been disabled%s" % (
             name, and_unloaded))
