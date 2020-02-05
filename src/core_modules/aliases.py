@@ -35,7 +35,6 @@ class Module(ModuleManager.BaseModule):
         return aliases
 
     @utils.hook("get.command")
-    @utils.kwarg("priority", EventManager.PRIORITY_URGENT)
     def get_command(self, event):
         alias = self._get_alias(event["server"], event["target"],
             event["command"].command)
