@@ -13,7 +13,7 @@ def iso8601(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL
         ms_format = ".%s" % str(int(dt.microsecond/1000)).zfill(3)
 
     return "%s%s%s" % (dt_format, ms_format, tz_format)
-def iso8601_format_now(timespec: TimeSpec=TimeSpec.NORMAL) -> str:
+def iso8601_now(timespec: TimeSpec=TimeSpec.NORMAL) -> str:
     return iso8601(utcnow(), timespec)
 
 def datetime_human(dt: _datetime.datetime, timespec: TimeSpec=TimeSpec.NORMAL):
