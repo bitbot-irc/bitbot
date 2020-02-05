@@ -51,6 +51,12 @@ class SpecArgumentTypeString(SpecArgumentType):
 class SpecArgumentTypeTrimString(SpecArgumentTypeString):
     def simple(self, args: typing.List[str]):
         return SpecArgumentTypeString.simple(self, list(filter(None, args)))
+class SpecArgumentTypeWords(SpecArgumentTypeString):
+    def simple(self, args: typing.List[str]):
+        if args:
+            out = list(filter(None, args))
+            return out, len(out)
+        return None, 1
 
 class SpecArgumentTypeInt(SpecArgumentType):
     def simple(self, args):
@@ -84,6 +90,7 @@ SPEC_ARGUMENT_TYPES = {
     "aword": SpecArgumentTypeAdditionalWord,
     "wordlower": SpecArgumentTypeWordLower,
     "string": SpecArgumentTypeString,
+    "words": SpecArgumentTypeWords,
     "tstring": SpecArgumentTypeTrimString,
     "int": SpecArgumentTypeInt,
     "date": SpecArgumentTypeDate,
