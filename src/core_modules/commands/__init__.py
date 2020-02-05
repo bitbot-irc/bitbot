@@ -78,7 +78,8 @@ class Module(ModuleManager.BaseModule):
         if not self.has_command(command):
             command_event = CommandEvent(command, args)
             self.events.on("get.command").call(command=command_event,
-                server=server, target=target, is_channel=is_channel, user=user)
+                server=server, target=target, is_channel=is_channel, user=user,
+                kwargs={})
 
             command = command_event.command
             args = command_event.args

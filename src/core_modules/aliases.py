@@ -47,7 +47,7 @@ class Module(ModuleManager.BaseModule):
 
             event["command"].command = alias
             event["command"].args = self._arg_replace(alias_args, given_args,
-                {"NICK": event["user"].nickname})
+                event["kwargs"])
 
     @utils.hook("received.command.alias",
         permission="alias")
