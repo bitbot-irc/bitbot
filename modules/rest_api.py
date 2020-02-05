@@ -198,45 +198,39 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.apikey")
     @utils.kwarg("private_only", True)
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("usage", "list")
-    @utils.kwarg("usage", "add <alias> [endpoint [endpoint ...]]")
-    @utils.kwarg("usage", "remove <alias>")
-    @utils.kwarg("usage", "info <alias>")
+    @utils.spec("!'list ?<alias>wordlower")
+    @utils.spec("!'add !<alias>wordlower ?<endpoints>words")
+    @utils.spec("!'remove !<alias>wordlower")
     @utils.kwarg("permission", "apikey")
     def apikey(self, event):
-        subcommand = event["args_split"][0].lower()
-        alias = None
-        alias_lower = None
+        subcommand = event["spec"][0]
+        alias = event["spec"][1]
         found = None
-        if len(event["args_split"]) > 1:
-            alias = event["args_split"][1]
-            alias_lower = alias.lower()
 
         api_keys = {}
         for key, value in self.bot.find_settings(prefix="api-key-"):
             api_keys[key] = value
-            if alias and value["comment"].lower() == alias_lower:
-                alias = value["comment"]
+            if alias and value["comment"].lower() == alias:
                 found = key
 
         if subcommand == "list":
-            aliases = [v["comment"] for v in api_keys.values()]
-            aliases.sort()
-            event["stdout"].write("API keys: %s" % ", ".join(aliases))
+            aliases = {v["comment"]: v for v in api_keys.values()}
+            if alias:
+                if not alias in aliases:
+                    event["stderr"].write("API key '%s' not found" % alias)
+                event["stdout"].write("API key %s ('%s') can access: %s" %
+                    (key, alias, " ".join(aliases[alias]["permissions"])))
+            else:
+                event["stdout"].write("API keys: %s"
+                    % ", ".join(sorted(aliases.keys())))
         elif subcommand == "add":
-            if not len(event["args_split"]) > 1:
-                raise utils.EventError(
-                    "Please provide an alias for the API key")
-
             if found == None:
-                comment = event["args_split"][1]
                 new_key = binascii.hexlify(os.urandom(16)).decode("ascii")
                 self.bot.set_setting("api-key-%s" % new_key, {
-                    "comment": comment, "permissions": event["args_split"][2:]
+                    "comment": alias, "permissions": event["spec"][2] or []
                 })
                 event["stdout"].write("New API key '%s': %s" %
-                    (comment, new_key))
+                    (alias, new_key))
             else:
                 event["stderr"].write("API key alias '%s' already exists" %
                     alias)
@@ -249,16 +243,6 @@ class Module(ModuleManager.BaseModule):
                 key = found.replace("api-key-", "", 1)
                 event["stdout"].write("Deleted API key %s ('%s')" %
                     (key, alias))
-            else:
-                event["stderr"].write("Count not find API key '%s'" % alias)
-        elif subcommand == "info":
-            if not len(event["args_split"]) > 1:
-                raise utils.EventError("Please provide a key alias to remove")
-
-            if not found == None:
-                key = found.replace("api-key-", "", 1)
-                event["stdout"].write("API key %s ('%s') can access: %s" %
-                    (key, alias, " ".join(api_keys[found]["permissions"])))
             else:
                 event["stderr"].write("Count not find API key '%s'" % alias)
 
