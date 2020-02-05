@@ -68,6 +68,11 @@ class Channels(Table):
             channels WHERE server_id=? AND name=?""",
             [server_id, name.lower()])
         return value if value == None else value[0]
+    def by_id(self, channel_id: int):
+        value = self.database.execute_fetchone(
+            "SELECT server_id, name FROM channels WHERE channel_id=?",
+            [channel_id])
+        return value
     def rename(self, channel_id: int, new_name: str):
         self.database.execute("UPDATE channels SET name=? where channel_id=?",
             [new_name.lower(), channel_id])

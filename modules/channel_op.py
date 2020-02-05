@@ -35,6 +35,21 @@ KICK_REASON_SETTING = utils.Setting("default-kick-reason",
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 
+    @utils.hook("timer.unmode")
+    def unmode(self, timer):
+        channel = self.bot.database.channels.by_id(timer.kwargs["channel"])
+
+        if channel:
+            server_id, channel_name = channel
+            server = self.bot.get_server_by_id(server_id)
+            if server and channel_name in server.channels:
+                channel = server.channels.get(channel_name)
+                mode = "-%s" % timer.kwargs.get("mode", "b")
+
+                arg = timer.kwargs.get("args", [timer.kwargs.get("arg", None)])
+                server.send_mode(channel.name, mode, arg)
+
+
     def _kick_reason(self, server, channel):
         return channel.get_setting("default-kick-reason",
             server.get_setting("default-kick-reason",
@@ -84,15 +99,8 @@ class Module(ModuleManager.BaseModule):
             channel.send_ban(hostmask)
 
             if not time == None:
-                self.timers.add_persistent("unban", time, server_id=server.id,
-                    channel_name=channel.name, hostmask=hostmask)
-
-    @utils.hook("timer.unban")
-    def _timer_unban(self, event):
-        server = self.bot.get_server_by_id(event["server_id"])
-        if server and event["channel_name"] in server.channels:
-            channel = server.channels.get(event["channel_name"])
-            channel.send_unban(event["hostmask"])
+                self.timers.add_persistent("unmode", time, channel=channel.id,
+                    arg=hostmask)
 
     @utils.hook("received.command.ban")
     @utils.hook("received.command.b", alias_of="ban")
@@ -212,19 +220,11 @@ class Module(ModuleManager.BaseModule):
         mask = "%s%s" % (prefix, mask)
 
         if add and time:
-            self.timers.add_persistent("unquiet", time,
-                server_id=server.id, channel_name=spec[0].name,
-                mode=mode, mask=mask)
+            self.timers.add_persistent("unmode", time, channel=spec[0].id,
+                mode=mode, arg=mask)
 
         mode_modifier = "+" if add else "-"
         spec[0].send_mode("%s%s" % (mode_modifier, mode), [mask])
-
-    @utils.hook("timer.unquiet")
-    def _timer_unquiet(self, event):
-        server = self.bot.get_server_by_id(event["server_id"])
-        if server and event["channel_name"] in server.channels:
-            channel = server.channels.get(event["channel_name"])
-            channel.send_mode("-%s" % event["mode"], [event["mask"]])
 
     @utils.hook("received.command.invite")
     @utils.kwarg("require_mode", "o")
@@ -349,14 +349,8 @@ class Module(ModuleManager.BaseModule):
         event["spec"][0].send_mode("+m")
 
         if event["spec"][1]:
-            self.timers.add_persistent("cunmute", event["spec"][1],
-                server_id=event["server"].id,
-                channel_name=event["spec"][0].name)
-    @utils.hook("timer.cunmute")
-    def cunmute_timer(self, event):
-        server = self.bot.get_server_by_id(event["server_id"])
-        if server and event["channel_name"] in server.channels:
-            self._cunmute(server.channels.get(event["channel_name"]))
+            self.timers.add_persistent("unmode", event["spec"][1],
+                channel=event["spec"][0].id, mode="m")
 
     @utils.hook("received.command.cunmute")
     @utils.kwarg("require_mode", "o")
