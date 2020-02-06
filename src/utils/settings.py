@@ -24,8 +24,8 @@ class Setting(object):
     def format(self, value: typing.Any):
         return repr(value)
 
-SETTING_TRUE = ["true", "yes", "on", "y"]
-SETTING_FALSE = ["false", "no", "off", "n"]
+SETTING_TRUE = ["true", "yes", "on", "y", "1"]
+SETTING_FALSE = ["false", "no", "off", "n", "0"]
 class BoolSetting(Setting):
     example: typing.Optional[str] = "on"
     def parse(self, value: str) -> typing.Any:
