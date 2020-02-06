@@ -62,7 +62,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.kick")
     @utils.hook("received.command.k", alias_of="kick")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "kick")
+    @utils.kwarg("require_access", "high,kick")
     @utils.kwarg("help", "Kick a user from a channel")
     @utils.spec("!<#channel>r~channel !<nickname>cuser ?<reason>string")
     def kick(self, event):
@@ -105,7 +105,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.ban")
     @utils.hook("received.command.b", alias_of="ban")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "ban")
+    @utils.kwarg("require_access", "high,ban")
     @utils.spec("!<#channel>r~channel ?duration !<nickname>user|<mask>word")
     def ban(self, event):
         self._ban(event["server"], event["spec"][0], event["spec"][2], True,
@@ -113,7 +113,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.unban")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "ban")
+    @utils.kwarg("require_access", "high,ban")
     @utils.spec("!<#channel>r~channel !<nickname>user|<mask>word")
     def unban(self, event):
         self._ban(event["server"], event["spec"][0], event["spec"][1],
@@ -122,7 +122,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.kickban")
     @utils.hook("received.command.kb", alias_of="kickban")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "kickban")
+    @utils.kwarg("require_access", "high,kickban")
     @utils.spec(
         "!<#channel>r~channel ?duration !<nickname>cuser| ?<reason>string")
     def kickban(self, event):
@@ -134,7 +134,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.op")
     @utils.hook("received.command.up", alias_of="op")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "op")
+    @utils.kwarg("require_access", "high,op")
     @utils.spec("!<#channel>r~channel !<nickname>ruser")
     def op(self, event):
         self._op(True, event["spec"])
@@ -142,7 +142,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.deop")
     @utils.hook("received.command.down", alias_of="deop")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "op")
+    @utils.kwarg("require_access", "high,op")
     @utils.spec("!<#channel>r~channel !<nickname>ruser")
     def deop(self, event):
         self._op(False, event["spec"])
@@ -153,7 +153,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.voice")
     @utils.hook("received.command.devoice")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "voice")
+    @utils.kwarg("require_access", "low,voice")
     @utils.spec("!<#channel>r~channel !<nickname>ruser")
     def voice(self, event):
         add = event["command"] == "voice"
@@ -162,7 +162,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.topic")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "topic")
+    @utils.kwarg("require_access", "low,topic")
     @utils.kwarg("remove_empty", False)
     @utils.spec("!<#channel>r~channel !<topic>string")
     def topic(self, event):
@@ -170,7 +170,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.tappend")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "topic")
+    @utils.kwarg("require_access", "low,topic")
     @utils.kwarg("remove_empty", False)
     @utils.spec("!<#channel>r~channel !<topic>string")
     def tappend(self, event):
@@ -192,7 +192,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.quiet")
     @utils.hook("received.command.mute")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "quiet")
+    @utils.kwarg("require_access", "high,quiet")
     @utils.kwarg("help", "Quiet a given user")
     @utils.spec("!<#channel>r~channel ?duration !<nickname>user|<mask>word")
     def quiet(self, event):
@@ -201,7 +201,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.unquiet")
     @utils.hook("received.command.unmute")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "unquiet")
+    @utils.kwarg("require_access", "high,unquiet")
     @utils.kwarg("help", "Unquiet a given user")
     @utils.spec("!<#channel>r~channel !<nickname>user|<mask>word")
     def unquiet(self, event):
@@ -228,7 +228,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.invite")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "invite")
+    @utils.kwarg("require_access", "low,invite")
     @utils.kwarg("help", "Invite a given user")
     @utils.spec("!<#channel>r~channel !<nickname>word")
     def invite(self, event):
@@ -253,7 +253,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.flags")
     @utils.kwarg("help", "Configure access flags for a given user")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "flags")
+    @utils.kwarg("require_access", "admin,flags")
     @utils.spec("!<#channel>r~channel !<nickname>ouser ?<flags>word")
     def flags(self, event):
         target = event["spec"][1]
@@ -342,7 +342,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.cmute")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "cmute")
+    @utils.kwarg("require_access", "high,cmute")
     @utils.kwarg("help", "Mute the current channel")
     @utils.spec("!<#channel>r~channel ?duration")
     def cmute(self, event):
@@ -354,7 +354,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.cunmute")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "cmute")
+    @utils.kwarg("require_access", "high,cmute")
     @utils.kwarg("help", "Mute the current channel")
     @utils.spec("!<#channel>r~channel")
     def cunmute(self, event):
@@ -400,7 +400,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.clear")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "clear")
+    @utils.kwarg("require_access", "admin,clear")
     @utils.kwarg("help", "Clear a given channel list mode (e.g. +b)")
     @utils.spec("!<#channel>r~channel !<type>word|<mode>word ?<mask>word")
     def clear(self, event):
@@ -414,7 +414,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.lsearch")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "lsearch")
+    @utils.kwarg("require_access", "high,lsearch")
     @utils.kwarg("help", "Search a given channel list mode (e.g. +b)")
     @utils.spec("!<#channel>r~channel !<type>word|<mode>word ?<mask>word")
     def lsearch(self, event):

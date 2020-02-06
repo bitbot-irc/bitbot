@@ -4,14 +4,28 @@
 
 from src import ModuleManager, utils
 
+SPECIAL = ["low", "high", "admin"]
+
 class Module(ModuleManager.BaseModule):
     _name = "ChanAccess"
 
-    def _has_channel_access(self, target, user, require_access):
-        access = target.get_user_setting(user.get_id(), "access", [])
-        identified = self.exports.get_one("is-identified")(user)
+    def _has_channel_access(self, target, user, names):
+        required_access = []
+        for name in names.split(","):
+            name = name.strip()
 
-        return (require_access in access or "*" in access) and identified
+            if name in SPECIAL:
+                required_access.extend(SPECIAL[:SPECIAL.index(name)+1])
+            else:
+                required_access.append(name)
+
+        print(required_access)
+
+        user_access = target.get_user_setting(user.get_id(), "access", [])
+        identified = self.exports.get_one("is-identified")(user)
+        matched = list(set(required_access)&set(user_access))
+
+        return ("*" in required_access or matched) and identified
 
     def _command_check(self, event, channel, require_access):
         if channel:
