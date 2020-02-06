@@ -90,6 +90,10 @@ class Users(Table):
             "SELECT user_id FROM users WHERE server_id=? and nickname=?",
             [server_id, nickname])
         return value if value == None else value[0]
+    def by_id(self, user_id: int):
+        return self.database.execute_fetchone(
+            "SELECT server_id, nickname FROM users WHERE user_id=?",
+            [user_id])
     def get_nickname(self, server_id: int, user_id: int):
         value = self.database.execute_fetchone(
             "SELECT nickname FROM users WHERe server_id=? AND user_id=?",
