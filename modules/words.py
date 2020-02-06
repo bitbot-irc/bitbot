@@ -11,9 +11,13 @@ WORD_STOP = WORD_DELIM+"”)}>;:.,!?"
 
 SETTING = utils.BoolSetting("word-tracking",
     "Disable/enable tracking your wordcounts")
+REGISTERED_SETTING = utils.BoolSetting("word-tracking-registered",
+    "Whether or not word tracking is registered-users-only")
 
 @utils.export("set", SETTING)
 @utils.export("channelset", SETTING)
+@utils.export("serverset", REGISTERED_SETTING)
+@utils.export("channelset", REGISTERED_SETTING)
 @utils.export("channelset", utils.BoolSetting("words-prevent-highlight",
     "Whether or not to prevent highlights in wordiest lists"))
 class Module(ModuleManager.BaseModule):
@@ -59,6 +63,11 @@ class Module(ModuleManager.BaseModule):
         if not event["channel"].get_setting("word-tracking", True
                 ) or not user.get_setting("word-tracking", True):
             return
+
+        if event["channel"].get_setting("word-tracking-registered",
+                event["server"].get_setting("word-tracking-registered", False)):
+            if not self.exports.get_one("is-identified")(event["user"]):
+                return
 
         if user.get_setting("first-words", None) == None:
             user.set_setting("first-words", time.time())
