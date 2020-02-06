@@ -283,7 +283,7 @@ class Module(ModuleManager.BaseModule):
     @utils.spec("!'list")
     @utils.spec("!'add,remove ?<hostmask>word")
     def hostmask(self, event):
-        subcommand = event["spect"][0]
+        subcommand = event["spec"][0]
         hostmasks = event["user"].get_setting(HOSTMASKS_SETTING, [])
 
         if subcommand == "list":
