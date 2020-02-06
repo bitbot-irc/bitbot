@@ -17,22 +17,59 @@ SETTING = utils.BoolSetting("word-tracking",
 @utils.export("channelset", utils.BoolSetting("words-prevent-highlight",
     "Whether or not to prevent highlights in wordiest lists"))
 class Module(ModuleManager.BaseModule):
+    def on_load(self):
+        if not self.bot.database.has_table("words"):
+            self.bot.database.execute("""CREATE TABLE words
+                (user_id INTEGER, channel_id INTEGER, date TEXT, count INTEGER,
+                FOREIGN KEY (user_id) REFERENCES users(user_id),
+                FOREIGN KEY (channel_id) REFERENCES channels(channel_id),
+                PRIMARY KEY (user_id, channel_id, date))""")
+
+    def _get_words_date(self, user, channel, date):
+        words = self.bot.database.execute_fetchone("""SELECT count FROM words
+            WHERE user_id=? AND channel_id=? AND date=?""",
+            [user.get_id(), channel.id, date])
+        return (words or [0])[0]
+    def _set_words_date(self, user, channel, date, count):
+        self.bot.database.execute("""
+            INSERT OR REPLACE INTO words (user_id, channel_id, date, count)
+            VALUES (?, ?, ?, ?)""", [user.get_id(), channel.id, date, count])
+
+    def _channel_between_dates(self, channel, date1, date2):
+        return self.bot.database.execute_fetchall("""
+            SELECT user_id, count FROM words
+            WHERE channel_id=? AND date>=? AND date<=?""",
+            [channel.id, date1, date2])
+    def _channel_all(self, channel):
+        return self.bot.database.execute_fetchall(
+            "SELECT user_id, count FROM words WHERE channel_id=?",
+            [channel.id])
+
+    def _user_between_dates(self, user, channel, date1, date2):
+        return self.bot.datebase.execute_fetchall("""
+            SELECT count FROM words
+            WHERE user_id=? AND channel_id=? AND date>=? AND date<=?""",
+            [user.get_id(), channel.id, date1, date2])
+    def _user_all(self, user):
+        return self.bot.database.execute_fetchall(
+            "SELECT channel_id, count FROM words WHERE user_id=?",
+            [user.get_id()])
+
     def _channel_message(self, user, event):
         if not event["channel"].get_setting("word-tracking", True
                 ) or not user.get_setting("word-tracking", True):
             return
 
-        words = list(filter(None, event["message_split"]))
-        word_count = len(words)
-
-        user_words = event["channel"].get_user_setting(user.get_id(),
-            "words", 0)
-        user_words += word_count
-
         if user.get_setting("first-words", None) == None:
             user.set_setting("first-words", time.time())
 
-        event["channel"].set_user_setting(user.get_id(), "words", user_words)
+        words = list(filter(None, event["message_split"]))
+        word_count = len(words)
+
+        date = utils.datetime.format.date_human(utils.datetime.utcnow())
+        user_words = self._get_words_date(event["user"], event["channel"], date)
+        self._set_words_date(event["user"], event["channel"], date,
+            user_words+word_count)
 
         tracked_words = set(event["server"].get_setting(
             "tracked-words", []))
@@ -60,32 +97,28 @@ class Module(ModuleManager.BaseModule):
             event["server"].nickname), event)
 
     @utils.hook("received.command.words", channel_only=True)
+    @utils.kwarg("help",
+        "See how many words you or the given nickname have used")
+    @utils.spec("!-channelonly ?<nickname>ouser")
     def words(self, event):
-        """
-        :help: See how many words you or the given nickname have used
-        :usage: [nickname]
-        """
-        if event["args_split"]:
-            target = event["server"].get_user(event["args_split"
-                ][0])
-        else:
-            target = event["user"]
-        words = dict(target.get_channel_settings_per_setting(
-            "words", []))
-        this_channel = words.get(event["target"].name, 0)
+        target_user = event["spec"][0] or event["user"]
+
+        words = dict(self._user_all(target_user))
+        this_channel = words.get(event["target"].id, 0)
 
         total = 0
-        for channel in words:
-            total += words[channel]
+        for channel_id in words:
+            total += words[channel_id]
 
         since = ""
-        first_words = target.get_setting("first-words", None)
+        first_words = target_user.get_setting("first-words", None)
         if not first_words == None:
             since = " since %s" % utils.datetime.format.date_human(
                 utils.datetime.timestamp(first_words))
 
         event["stdout"].write("%s has used %d words (%d in %s)%s" % (
-            target.nickname, total, this_channel, event["target"].name, since))
+            target_user.nickname, total, this_channel, event["target"].name,
+            since))
 
     @utils.hook("received.command.trackword", min_args=1)
     def track_word(self, event):
@@ -138,32 +171,32 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("That word is not being tracked")
 
     @utils.hook("received.command.wordiest")
+    @utils.spec("!-channelonly ?<start>date ?<end>date")
     def wordiest(self, event):
         """
         :help: Show wordiest users
-        :usage: [channel]
+        :usage: [startdate
         """
-        channel_query = None
-        word_prefix = ""
-        if event["args"]:
-            if not event["args_split"][0] == "*":
-                channel_query = event["args_split"][0].lower()
-        elif event["is_channel"]:
-            channel_query = event["target"].name
 
-        if channel_query:
-            word_prefix = " (%s)" % channel_query
+        date_str = ""
 
-        words = event["server"].find_all_user_channel_settings("words")
+        if event["spec"][0]:
+            date1 = utils.datetime.format.date_human(event["spec"][0])
+            date2 = utils.datetime.format.date_human(
+                event["spec"][1] or utils.datetime.utcnow())
+
+            date_str = f" ({date1} to {date2})"
+            words = self._channel_between_dates(event["target"], date1, date2)
+        else:
+            words = self._channel_all(event["target"])
+
         user_words = {}
-        for channel_name, nickname, word_count in words:
-            if not channel_query or channel_name == channel_query:
-                if not nickname in user_words:
-                    user_words[nickname] = 0
-                user_words[nickname] += word_count
+        for user_id, word_count in words:
+            _, nickname = self.bot.database.users.by_id(user_id)
+            user_words[nickname] = word_count
 
         top_10 = utils.top_10(user_words,
             convert_key=lambda nickname: self._get_nickname(
             event["server"], event["target"], nickname))
-        event["stdout"].write("wordiest%s: %s" % (
-            word_prefix, ", ".join(top_10)))
+        event["stdout"].write("wordiest in %s%s: %s" %
+            (str(event["target"]), date_str, ", ".join(top_10)))
