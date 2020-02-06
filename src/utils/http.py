@@ -153,7 +153,9 @@ def _find_encoding(headers: typing.Dict[str, str], data: bytes
         meta_content_type = soup.findAll("meta",
             {"http-equiv": lambda v: (v or "").lower() == "content-type"})
         if meta_content_type:
-            return _split_content(meta_content_type[0].get("content"))["charset"]
+            meta_content = _split_content(meta_content_type[0].get("content"))
+            if "charset" in meta_content:
+                return meta_content["charset"]
 
     doctype = [item for item in soup.contents if isinstance(item,
         bs4.Doctype)] or None
