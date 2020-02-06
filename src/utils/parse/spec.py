@@ -79,7 +79,7 @@ class SpecArgumentTypeDate(SpecArgumentType):
         return SpecArgumentType.name(self) or "yyyy-mm-dd"
     def simple(self, args):
         if args:
-            return date_human(args[0], 1)
+            return date_human(args[0]), 1
         return None, 1
 
 class SpecArgumentPrivateType(SpecArgumentType):
