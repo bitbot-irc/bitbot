@@ -42,14 +42,12 @@ class Module(ModuleManager.BaseModule):
             % (event["user"].nickname, module.name, loaded_at, event_calls,
             event_str))
 
-    @utils.hook("received.command.loadmodule", min_args=1)
+    @utils.hook("received.command.loadmodule")
+    @utils.kwarg("help", "Load a module")
+    @utils.kwarg("permission", "loadmodule")
+    @utils.spec("!<name>wordlower")
     def load(self, event):
-        """
-        :help: Load a module
-        :usage: <module name>
-        :permission: load-module
-        """
-        name = event["args_split"][0].lower()
+        name = event["spec"][0]
         if name in self.bot.modules.modules:
             raise utils.EventError("Module '%s' is already loaded" % name)
         definition = self._catch(name,
@@ -58,14 +56,12 @@ class Module(ModuleManager.BaseModule):
         self._catch(name, lambda: self.bot.modules.load_module(self.bot, definition))
         event["stdout"].write("Loaded '%s'" % name)
 
-    @utils.hook("received.command.unloadmodule", min_args=1)
+    @utils.hook("received.command.unloadmodule")
+    @utils.kwarg("help", "Unload a module")
+    @utils.kwarg("permission", "unloadmodule")
+    @utils.spec("!<name>wordlower")
     def unload(self, event):
-        """
-        :help: Unload a module
-        :usage: <module name>
-        :permission: unload-module
-        """
-        name = event["args_split"][0].lower()
+        name = event["spec"][0]
         if not name in self.bot.modules.modules:
             raise utils.EventError("Module '%s' isn't loaded" % name)
 
@@ -77,24 +73,19 @@ class Module(ModuleManager.BaseModule):
         definition = self._catch(name,
             lambda: self.bot.modules.find_module(name))
         self.bot.modules.load_module(self.bot, definition)
-    @utils.hook("received.command.reloadmodule", min_args=1)
+    @utils.hook("received.command.reloadmodule")
+    @utils.kwarg("help", "Reload a module")
+    @utils.kwarg("permission", "reloadmodule")
+    @utils.spec("!<name>wordlower")
     def reload(self, event):
-        """
-        :help: Reload a module
-        :usage: <module name>
-        :permission: reload-module
-        """
-        name = event["args_split"][0].lower()
-
+        name = event["spec"][0]
         self._catch(name, lambda: self._reload(name))
         event["stdout"].write("Reloaded '%s'" % name)
 
     @utils.hook("received.command.reloadallmodules")
+    @utils.kwarg("help", "Reload all modules")
+    @utils.kwarg("permission", "reloadallmodules")
     def reload_all(self, event):
-        """
-        :help: Reload all modules
-        :permission: reload-all-modules
-        """
         result = self.bot.try_reload_modules()
         if result.success:
             event["stdout"].write(result.message)
