@@ -4,27 +4,22 @@
 from src import IRCLine, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    @utils.hook("received.command.nick", min_args=1)
+    @utils.hook("received.command.nick")
+    @utils.kwarg("help", "Change my nickname")
+    @utils.kwarg("permission", "changenickname")
+    @utils.spec("!<nickname>word")
     def change_nickname(self, event):
-        """
-        :help: Change my nickname
-        :usage: <nickname>
-        :permission: changenickname
-        """
-        nickname = event["args_split"][0]
-        event["server"].send_nick(nickname)
+        event["server"].send_nick(event["spec"][0])
 
-    @utils.hook("received.command.raw", min_args=1)
+    @utils.hook("received.command.raw")
+    @utils.kwarg("help", "Send a line of raw IRC data")
+    @utils.kwarg("permission", "raw")
+    @utils.spec("!<line>string")
     def raw(self, event):
-        """
-        :help: Send a line of raw IRC data
-        :usage: <raw line>
-        :permission: raw
-        """
-        if IRCLine.is_human(event["args"]):
-            line = IRCLine.parse_human(event["args"])
+        if IRCLine.is_human(event["spec"][0]):
+            line = IRCLine.parse_human(event["spec"][0])
         else:
-            line = IRCLine.parse_line(event["args"])
+            line = IRCLine.parse_line(event["spec"][0])
         line = event["server"].send(line)
 
         if not line == None:
@@ -34,22 +29,12 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.part")
     @utils.kwarg("help", "Part from the current or given channel")
-    @utils.kwarg("usage", "[channel]")
+    @utils.kwarg("permission", "part")
+    @utils.kwarg("require_mode", "high")
+    @utils.kwarg("require_access", "high,part")
+    @utils.spec("!r~channel")
     def part(self, event):
-        check = utils.Check("permission", "part")
-
-        if event["args"]:
-            target = event["args_split"][0]
-        elif event["is_channel"]:
-            target = event["target"].name
-            check |= utils.Check("channel-mode", "high")
-            check |= utils.Check("channel-access", "high,part")
-        else:
-            event["stderr"].write("No channel provided")
-
-        event["check_assert"](check)
-
-        event["server"].send_part(target)
+        event["server"].send_part(event["spec"][0].name)
 
     def _id_from_alias(self, alias):
         return self.bot.database.servers.get_by_alias(alias)
@@ -63,16 +48,12 @@ class Module(ModuleManager.BaseModule):
         return id, self.bot.get_server_by_id(id)
 
     @utils.hook("received.command.reconnect")
+    @utils.kwarg("help", "Reconnect to the current, or provided, server")
+    @utils.kwarg("permission", "reconnect")
+    @utils.spec("?<server>word")
     def reconnect(self, event):
-        """
-        :help: Reconnect to the current network
-        :permission: reconnect
-        """
-        server = event["server"]
-        alias = str(event["server"])
-        if event["args"]:
-            alias = event["args_split"][0]
-            server = self._server_from_alias(alias)
+        alias = event["spec"][0] or str(event["server"])
+        server = self._server_from_alias(alias)
 
         if server:
             line = server.send_quit("Reconnecting")
@@ -84,13 +65,11 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Not connected to %s" % alias)
 
     @utils.hook("received.command.connect", min_args=1)
+    @utils.kwarg("help", "Connect to a given server")
+    @utils.kwarg("permission", "connect")
+    @utils.spec("!<server>word")
     def connect(self, event):
-        """
-        :help: Connect to a network
-        :usage: <server id>
-        :permission: connect
-        """
-        alias = event["args_split"][0]
+        alias = event["spec"][0]
         server = self._server_from_alias(alias)
         if server:
             raise utils.EventError("Already connected to %s" % str(server))
@@ -99,21 +78,14 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("Connecting to %s" % str(server))
 
     @utils.hook("received.command.disconnect")
+    @utils.kwarg("help", "Disconnect from the current or provided server")
+    @utils.kwarg("permission", "disconnect")
+    @utils.spec("?<server>word")
     def disconnect(self, event):
-        """
-        :help: Disconnect from a server
-        :usage: [server id]
-        :permission: disconnect
-        """
-        server = event["server"]
-        id = -1
-        alias = str(event["server"])
-        if event["args"]:
-            alias = event["args_split"][0]
-            id, server = self._both_from_alias(alias)
+        alias = event["spec"][0] or str(event["server"])
+        id, server = self._both_from_alias(alias)
 
         if not server == None:
-            alias = str(server)
             server.disconnect()
             self.bot.disconnect(server)
         elif id in self.bot.reconnections:
@@ -122,16 +94,15 @@ class Module(ModuleManager.BaseModule):
         else:
             raise utils.EventError("Server not connected")
 
-        event["stdout"].write("Disconnected from %s" % alias)
+        if not server == event["server"]:
+            event["stdout"].write("Disconnected from %s" % alias)
 
     @utils.hook("received.command.shutdown")
+    @utils.kwarg("help", "Shutdown the bot")
+    @utils.kwarg("permission", "shutdown")
+    @utils.spec("?<reason>string")
     def shutdown(self, event):
-        """
-        :help: Shutdown bot
-        :usage: [reason]
-        :permission: shutdown
-        """
-        reason = event["args"] or ""
+        reason = event["spec"][0] or "Shutting down"
         for server in self.bot.servers.values():
             line = server.send_quit(reason)
             line.events.on("send").hook(self._shutdown_hook(server))
@@ -141,15 +112,14 @@ class Module(ModuleManager.BaseModule):
             self.bot.disconnect(server)
         return shutdown
 
-    @utils.hook("received.command.addserver", min_args=3)
+    @utils.hook("received.command.addserver")
+    @utils.kwarg("help", "Add a new server")
+    @utils.kwarg("pemission", "addserver")
+    @utils.spec(
+        "!<alias>word !<hostname:port>word !<nickname!username@bindhost>word")
     def add_server(self, event):
-        """
-        :help: Add a new server
-        :usage: <alias> <hostname>:[+]<port> <nickname>!<username>[@<bindhost>]
-        :permission: addserver
-        """
-        alias = event["args_split"][0]
-        hostname, sep, port = event["args_split"][1].partition(":")
+        alias = event["spec"][0]
+        hostname, sep, port = event["spec"][1].partition(":")
         tls = port.startswith("+")
         port = port.lstrip("+")
 
@@ -157,7 +127,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Please provide <hostname>:[+]<port>")
         port = int(port)
 
-        hostmask = IRCLine.parse_hostmask(event["args_split"][2])
+        hostmask = IRCLine.parse_hostmask(event["spec"][2])
         nickname = hostmask.nickname
         username = hostmask.username or nickname
         realname = nickname
@@ -174,18 +144,17 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("Added server '%s'" % alias)
 
     @utils.hook("received.command.editserver")
-    @utils.kwarg("min_args", 3)
     @utils.kwarg("help", "Edit server details")
-    @utils.kwarg("usage", "<alias> <option> <value>")
     @utils.kwarg("permission", "editserver")
+    @utils.spec("!<alias>word !<option>word !<value>string")
     def edit_server(self, event):
-        alias = event["args_split"][0]
+        alias = event["spec"][0]
         server_id = self._id_from_alias(alias)
         if server_id == None:
             raise utils.EventError("Unknown server '%s'" % alias)
 
-        option = event["args_split"][1].lower()
-        value = " ".join(event["args_split"][2:])
+        option = event["spec"][1].lower()
+        value = " ".join(event["spec"][2])
         value_parsed = None
 
         if option == "hostname":
