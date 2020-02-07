@@ -200,7 +200,7 @@ class Module(ModuleManager.BaseModule):
         """
         :help: Add/remove/modify a git webhook
         :require_mode: high
-        :require_access: git-webhook
+        :require_access: admin,git-webhook
         :permission: gitoverride
         :usage: list
         :usage: add <hook>

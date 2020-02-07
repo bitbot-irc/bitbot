@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
         elif event["is_channel"]:
             target = event["target"].name
             check |= utils.Check("channel-mode", "high")
-            check |= utils.Check("channel-access", "part")
+            check |= utils.Check("channel-access", "high,part")
         else:
             event["stderr"].write("No channel provided")
 

@@ -103,7 +103,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "<nickname>")
     @utils.kwarg("permission", "cignore")
     @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "cignore")
+    @utils.kwarg("require_access", "high,cignore")
     def cignore(self, event):
         remove = event["command"] == "cunignore"
 

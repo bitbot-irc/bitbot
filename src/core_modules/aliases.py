@@ -54,8 +54,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.balias",
         permission="balias")
     @utils.hook("received.command.calias",
-        require_mode="o", require_access="alias")
-
+        require_mode="o", require_access="high,alias")
     @utils.spec("!'list ?<alias>wordlower")
     @utils.spec("!'add !<alias>wordlower !<command>wordlower ?<args>string")
     @utils.spec("!'remove !<alias>wordlower")

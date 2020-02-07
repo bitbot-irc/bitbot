@@ -85,7 +85,7 @@ class Module(ModuleManager.BaseModule):
         if event["target"].get_setting("votes-start-restricted", True):
             event["check_assert"](utils.Check("channel-mode", "o")|
                 utils.Check("permission", "vote")|
-                utils.Check("channel-access", "vote"))
+                utils.Check("channel-access", "low,vote"))
 
         vote = self._start_vote(event["target"], event["args"])
         event["stdout"].write(
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
         :help: End a vote
         :usage: <id>
         :require_mode: o
-        :require_access: vote
+        :require_access: high,vote
         :permission: vote
         """
         vote_id = event["args_split"][0]
@@ -117,10 +117,10 @@ class Module(ModuleManager.BaseModule):
         :help: Cast choice for a given vote
         :usage: <id> [choice]
         """
-        if event["target"].get_setting("votes-scast-restricted", True):
+        if event["target"].get_setting("votes-cast-restricted", True):
             event["check_assert"](utils.Check("channel-mode", "v")|
                 utils.Check("permission", "vote")|
-                utils.Check("channel-access", "vote"))
+                utils.Check("channel-access", "low,vote"))
 
         vote_id = event["args_split"][0]
         vote = self._get_vote(event["target"], vote_id)
