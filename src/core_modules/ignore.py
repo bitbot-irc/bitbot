@@ -71,21 +71,19 @@ class Module(ModuleManager.BaseModule):
         self.bot.database.user_settings.delete(
             event["user_id"], event["setting"])
 
-    @utils.hook("received.command.unignore", min_args=1)
+    @utils.hook("received.command.unignore")
+    @utils.kwarg("help", "Unignore commands from a given user")
+    @utils.kwarg("permission", "unignore")
+    @utils.spec("!<nickname>ouser ?<command>wordlower")
     def unignore(self, event):
-        """
-        :help: Unignore commands from a given user
-        :usage: <nickname> [command]
-        :permission: unignore
-        """
         setting = "ignore"
         for_str = ""
-        if len(event["args_split"]) > 1:
-            command = event["args_split"][1].lower()
+        if event["spec"][1]:
+            command = event["spec"][1]
             setting = "ignore-%s" % command
             for_str = " for '%s'" % command
 
-        user = event["server"].get_user(event["args_split"][0])
+        user = event["spec"][0]
         if not user.get_setting(setting, False):
             event["stderr"].write("I'm not ignoring '%s'%s" %
                 (user.nickname, for_str))
@@ -125,12 +123,12 @@ class Module(ModuleManager.BaseModule):
                 True)
             event["stdout"].write("Ignoring %s" % target_user.nickname)
 
-    @utils.hook("received.command.serverignore", min_args=1)
+    @utils.hook("received.command.serverignore")
+    @utils.kwarg("help", "Ignore a command on the current server")
+    @utils.kwarg("permissions", "serverignore")
+    @utils.spec("!<command>wordlower")
     def server_ignore(self, event):
-        """
-        :permission: server-ignore
-        """
-        command = event["args_split"][0].lower()
+        command = event["spec"][0]
         setting = "ignore-%s" % command
 
         if event["server"].get_setting(setting, False):
@@ -141,12 +139,12 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write("Now ignoring '%s' for %s" %
                 (command, str(event["server"])))
 
-    @utils.hook("received.command.serverunignore", min_args=1)
+    @utils.hook("received.command.serverunignore")
+    @utils.kwarg("help", "Unignore a command on the current server")
+    @utils.kwarg("permissions", "serverunignore")
+    @utils.spec("!<command>wordlower")
     def server_unignore(self, event):
-        """
-        :permission: server-unignore
-        """
-        command = event["args_split"][0].lower()
+        command = event["spec"][0]
         setting = "ignore-%s" % command
 
         if not event["server"].get_setting(setting, False):
