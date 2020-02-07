@@ -13,12 +13,13 @@ USERPASS_MECHANISMS = [
     "PLAIN"
 ]
 ALL_MECHANISMS = USERPASS_MECHANISMS+["EXTERNAL"]
+SETTING_MECHANISMS = ALL_MECHANISMS+["USERPASS"]
 
 def _parse(value):
     mechanism, _, arguments = value.partition(" ")
     mechanism = mechanism.upper()
 
-    if mechanism in ALL_MECHANISMS:
+    if mechanism in SETTING_MECHANISMS:
         return {"mechanism": mechanism.upper(), "args": arguments}
     else:
         raise utils.settings.SettingParseException(
