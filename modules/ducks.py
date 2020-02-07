@@ -5,7 +5,6 @@ import random, re, time
 from src import EventManager, ModuleManager, utils
 
 DUCK = "・゜゜・。。・゜゜\_o< QUACK!"
-NO_DUCK = "There was no duck!"
 
 DEFAULT_MIN_MESSAGES = 100
 
@@ -66,6 +65,7 @@ class Module(ModuleManager.BaseModule):
 
     def _duck_action(self, channel, user, action, setting):
         duck_timestamp = channel.duck_active
+        channel.set_setting("duck-last", time.time())
         channel.duck_active = None
 
         user_id = user.get_id()
@@ -82,10 +82,16 @@ class Module(ModuleManager.BaseModule):
             channel.name)
 
     def _no_duck(self, channel, user, stderr):
+        message = "There was no duck!"
+        duck_timestamp = channel.get_setting("duck-last", None)
+        if not duck_timestamp == None:
+            seconds = round(time.time()-duck_timestamp, 2)
+            message += " missed by %s seconds" % seconds
+
         if channel.get_setting("ducks-kick"):
-            channel.send_kick(user.nickname, NO_DUCK)
+            channel.send_kick(user.nickname, message)
         else:
-            stderr.write("%s: %s" % (user.nickname, NO_DUCK))
+            stderr.write("%s: %s" % (user.nickname, message))
 
     @utils.hook("received.command.bef", alias_of="befriend")
     @utils.hook("received.command.befriend", channel_only=True)
