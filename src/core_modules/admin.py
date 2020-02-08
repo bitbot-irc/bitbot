@@ -154,7 +154,7 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("Unknown server '%s'" % alias)
 
         option = event["spec"][1].lower()
-        value = " ".join(event["spec"][2])
+        value = event["spec"][2]
         value_parsed = None
 
         if option == "hostname":
