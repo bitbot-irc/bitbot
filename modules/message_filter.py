@@ -6,6 +6,27 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     _name = "Filter"
 
+    def _split(self, s):
+        backslash = False
+        forward_slash = []
+        for i, c in enumerate(s):
+            if not backslash:
+                if c == "/":
+                    forward_slash.append(i)
+                if c == "\\":
+                    backslash = True
+            else:
+                backslash = False
+        if forward_slash and (not forward_slash[-1] == (len(s)-1)):
+            forward_slash.append(len(s))
+
+        last = 0
+        out = []
+        for i in forward_slash:
+            out.append(s[last:i])
+            last = i+1
+        return out
+
     def _get_filters(self, server, target):
         filters = server.get_setting("message-filters", [])
         filters.extend(target.get_setting("message-filters", []))
@@ -14,7 +35,9 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.send.privmsg")
     @utils.hook("preprocess.send.notice")
     def channel_message(self, event):
-        message = utils.irc.strip_font(event["line"].args[1])
+        message = event["line"].args[1]
+        message_plain = utils.irc.strip_font(message)
+        original_message = message
         target_name = event["line"].args[0]
 
         # strip off any STATUSMSG chars
@@ -27,61 +50,54 @@ class Module(ModuleManager.BaseModule):
 
         filters = self._get_filters(event["server"], target)
         for filter in filters:
-            if re.search(filter, message):
-                self.log.info("Message matched filter, dropping: %s"
-                    % event["line"].format())
-                event["line"].invalidate()
-                break
-
-    def _filter(self, target, args):
-        subcommand = args[0]
-        arg = args[1] if len(args) > 1 else None
-
-        message_filters = target.get_setting("message-filters", [])
-        if subcommand == "list":
-            if not arg:
-                return "%d filters in place" % len(message_filters)
-            else:
-                index = int(arg)
-                return "Filter %d: %s" % (index, message_filters[index])
-        elif subcommand == "add":
-            if arg == None:
-                raise TypeError()
-            message_filters = set(message_filters)
-            message_filters.add(arg)
-            target.set_setting("message-filters", list(message_filters))
-            return "Added filter"
-        elif subcommand == "remove":
-            if arg == None:
-                raise TypeError()
-
-            index = int(arg)
-            message_filters = list(message_filters)
-            filter = message_filters.pop(index)
-            target.set_setting("message-filters", message_filters)
-            return "Removed filter: %s" % filter
-        else:
-            return None
+            type, pattern, *args = self._split(filter)
+            if type == "m":
+                if re.search(pattern, message_plain):
+                    self.log.info("Message matched filter, dropping: %s"
+                        % event["line"].format())
+                    event["line"].invalidate()
+                    return
+            elif type == "s":
+                replace, *args = args
+                message = re.sub(pattern, replace, message)
+        if not message == message_plain:
+            event["line"].args[1] = message
 
     @utils.hook("received.command.cfilter", min_args=1)
+    @utils.kwarg("help", "Add a message filter for the current channel")
+    @utils.kwarg("permissions", "cfilter")
+    @utils.spec("!'list ?<index>int")
+    @utils.spec("!'add ?<m/pattern/>string|<s/pattern/replace/>string")
+    @utils.spec("!'remove !<index>int")
     def cfilter(self, event):
-        """
-        :help: Add a message filter for the current channel
-        :usage: list
-        :usage: add <regex>
-        :usage: remove <index>
-        :permission: cfilter
-        """
         # mark output as "assured" so it can bypass filtering
         event["stdout"].assure()
         event["stderr"].assure()
+        target = event["target"]
+        filters = target.get_setting("message-filters", [])
 
-        try:
-            out = self._filter(event["target"], event["args_split"])
-            event["stdout"].write(out)
-        except TypeError as e:
-            event["stderr"].write("Please provide an argument")
-        except ValueError:
-            event["stderr"].write("Indexes must be numbers")
-        except IndexError:
-            event["stderr"].write("Unknown index")
+        if event["spec"][0] == "list":
+            if event["spec"][1]:
+                if not len(filters) > event["spec"][1]:
+                    raise utils.EventError("Filter index %d doesn't exist"
+                        % event["spec"][1])
+                event["stdout"].write("Message filter %d: %s"
+                    % (event["spec"][1], filters[event["spec"][1]]))
+            else:
+                s = ", ".join(
+                    f"({i}) {s}" for i, s in enumerate(filters))
+                event["stdout"].write("Message filters: %s" % s)
+
+        elif event["spec"][0] == "add":
+            filters.append(event["spec"][1])
+            target.set_setting("message-filters", filters)
+            event["stdout"].write("Added filter %d" % (len(filters)-1))
+
+        elif event["spec"][0] == "remove":
+            if not filters:
+                raise utils.EventError("No filters")
+
+            removed = filters.pop(event["spec"][1])
+            target.set_setting("message-filters", filters)
+            event["stdout"].write("Removed filter %d: %s" %
+                (event["spec"][1], removed))
