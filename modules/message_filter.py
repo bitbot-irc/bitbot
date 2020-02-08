@@ -63,17 +63,22 @@ class Module(ModuleManager.BaseModule):
         if not message == message_plain:
             event["line"].args[1] = message
 
-    @utils.hook("received.command.cfilter", min_args=1)
+    @utils.hook("received.command.cfilter", channel_only=True)
+    @utils.hook("received.command.filter")
     @utils.kwarg("help", "Add a message filter for the current channel")
     @utils.kwarg("permissions", "cfilter")
     @utils.spec("!'list ?<index>int")
     @utils.spec("!'add ?<m/pattern/>string|<s/pattern/replace/>string")
     @utils.spec("!'remove !<index>int")
-    def cfilter(self, event):
+    def filter(self, event):
         # mark output as "assured" so it can bypass filtering
         event["stdout"].assure()
         event["stderr"].assure()
-        target = event["target"]
+
+        if event["command"] == "cfilter":
+            target = event["target"]
+        else:
+            target = event["server"]
         filters = target.get_setting("message-filters", [])
 
         if event["spec"][0] == "list":
