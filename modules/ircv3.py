@@ -18,9 +18,11 @@ class Module(ModuleManager.BaseModule):
                     port = str(server.connection_params.port)
                     if server.connection_params.tls:
                         port = "+%s" % port
-                    supporting_servers.append("%s (%s:%s %s)" % (
-                        str(server), server.connection_params.hostname, port,
-                        server.version))
+                    hostname = utils.irc.bold("%s:%s" % (
+                        server.connection_params.hostname, port))
+
+                    supporting_servers.append("%s (%s %s)" % (
+                        str(server), hostname, server.version))
         if supporting_servers:
             event["stdout"].write("%s: %s" % (spec,
                 ", ".join(supporting_servers)))
