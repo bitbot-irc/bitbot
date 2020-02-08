@@ -272,9 +272,10 @@ class ModuleManager(object):
             for key, value in magic.get_exports():
                 context_exports.add(key, value)
 
-        current_commit = utils.git_commit(bot.directory)
+        branch, commit = utils.git_commit(bot.directory)
+
         return LoadedModule(definition.name, module_title, module_object,
-            context, import_name, definition.is_core, commit=current_commit)
+            context, import_name, definition.is_core, commit=commit)
 
     def load_module(self, bot: "IRCBot.Bot", definition: ModuleDefinition
             ) -> LoadedModule:

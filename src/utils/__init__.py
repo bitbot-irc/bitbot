@@ -127,17 +127,20 @@ def deadline_process(func: typing.Callable[[], DeadlineProcessReturnType],
     else:
         raise out # type: ignore
 
-def git_commit(bot_directory: str) -> typing.Optional[str]:
+def git_commit(bot_directory: str
+        ) -> typing.Tuple[typing.Optional[str], typing.Optional[str]]:
     git_dir = os.path.join(bot_directory, ".git")
     head_filepath = os.path.join(git_dir, "HEAD")
     if os.path.isfile(head_filepath):
-        ref = None
         with open(head_filepath, "r") as head_file:
-            ref = head_file.readline().split(" ", 1)[1].strip()
-        branch = ref.rsplit("/", 1)[1]
+            ref_line = head_file.readline().strip()
+            if not ref_line.startswith("ref: "):
+                return None, ref_line
+            else:
+                ref = ref_line.split(" ", 1)[1]
+                branch = ref.rsplit("/", 1)[1]
 
-        ref_filepath = os.path.join(git_dir, ref)
-        if os.path.isfile(ref_filepath):
-            with open(ref_filepath, "r") as ref_file:
-                return ref_file.readline().strip()[:8]
-    return None
+                ref_filepath = os.path.join(git_dir, ref)
+                with open(ref_filepath, "r") as ref_file:
+                    return branch, ref_file.readline().strip()[:8]
+    return None, None
