@@ -1,9 +1,10 @@
-import decimal, io, typing
+import decimal, io, re, typing
 from src.utils import datetime, errors
 
 from .spec import *
 from .time import duration
 from .types import try_int
+from . import sed
 
 COMMENT_TYPES = ["#", "//"]
 def hashflags(filename: str
