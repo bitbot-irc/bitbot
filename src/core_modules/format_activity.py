@@ -121,6 +121,19 @@ class Module(ModuleManager.BaseModule):
         self._event("chghost", event["server"], line, None, user=event["user"],
             minimal=minimal, formatting={"USER": username, "HOST": hostname})
 
+    @utils.hook("received.account.login")
+    def account_login(self, event):
+        self._account(event, "in")
+    @utils.hook("received.account.logout")
+    def account_logout(self, event):
+        self._account(event, "out")
+    def _account(self, event, action):
+        minimal = "{~NICK} logged %s as {ACC}" % action
+        line = "- %s" % minimal
+
+        self._event("account", event["server"], line, None, user=event["user"],
+            minimal=minimal, formatting={"ACC": event["account"]})
+
     def _on_part(self, event, user):
         channel_name = event["channel"].name
         reason = event["reason"]

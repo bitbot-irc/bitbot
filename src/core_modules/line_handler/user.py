@@ -100,6 +100,7 @@ def account(events, event):
         events.on("received.account.login").call(user=user,
             server=event["server"], account=event["line"].args[0])
     else:
+        account = user.account
         user.account = None
         events.on("received.account.logout").call(user=user,
-            server=event["server"])
+            server=event["server"], account=account)

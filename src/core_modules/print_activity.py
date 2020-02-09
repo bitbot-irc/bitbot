@@ -38,6 +38,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("formatted.quit")
     @utils.hook("formatted.rename")
     @utils.hook("formatted.chghost")
+    @utils.hook("formatted.account")
     @utils.hook("formatted.delete")
     def formatted(self, event):
         self._print(event)
