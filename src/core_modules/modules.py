@@ -68,18 +68,14 @@ class Module(ModuleManager.BaseModule):
         self._catch(name, lambda: self.bot.modules.unload_module(name))
         event["stdout"].write("Unloaded '%s'" % name)
 
-    def _reload(self, name):
-        self.bot.modules.unload_module(name)
-        definition = self._catch(name,
-            lambda: self.bot.modules.find_module(name))
-        self.bot.modules.load_module(self.bot, definition)
     @utils.hook("received.command.reloadmodule")
     @utils.kwarg("help", "Reload a module")
     @utils.kwarg("permission", "reloadmodule")
     @utils.spec("!<name>wordlower")
     def reload(self, event):
         name = event["spec"][0]
-        self._catch(name, lambda: self._reload(name))
+        self._catch(name,
+            lambda: self.bot.modules.try_reload_module(self.bot, name))
         event["stdout"].write("Reloaded '%s'" % name)
 
     @utils.hook("received.command.reloadallmodules")

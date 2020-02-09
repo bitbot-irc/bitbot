@@ -402,6 +402,20 @@ class ModuleManager(object):
                 [loaded_module.name,
                 ", ".join([str(referrer) for referrer in referrers])])
 
+    def try_reload_module(self, bot: "IRCBot.Bot", name: str):
+        loaded_module = self.modules.pop(name)
+        loaded_module.module.on_pause()
+
+        new_definition = self.find_module(name)
+        try:
+            self.load_module(bot, new_definition)
+        except:
+            loaded_module.module.on_resume()
+            self.modules[name] = loaded_module
+            raise
+
+        self._unload_module(loaded_module)
+
     def try_reload_modules(self, bot: "IRCBot.Bot",
             whitelist: typing.List[str], blacklist: typing.List[str]):
         loadable, nonloadable = self._list_valid_modules(
