@@ -72,7 +72,7 @@ class Module(ModuleManager.BaseModule):
             targets = [["server", event["server"]], ["channel", event["target"]]]
             value = self._get_factoid(targets, factoid)
             if value == None:
-                raise utils.EventError("Unknown %s factoid '%s'" % factoid)
+                raise utils.EventError("Unknown factoid '%s'" % factoid)
             target_desc, value = value
             event["stdout"].write("%s: %s" % (factoid, value))
 
