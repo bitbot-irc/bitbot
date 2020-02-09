@@ -19,13 +19,12 @@ class Module(ModuleManager.BaseModule):
             else:
                 required_access.append(name)
 
-        print(required_access)
 
         user_access = target.get_user_setting(user.get_id(), "access", [])
         identified = self.exports.get_one("is-identified")(user)
         matched = list(set(required_access)&set(user_access))
 
-        return ("*" in required_access or matched) and identified
+        return ("*" in user_access or matched) and identified
 
     def _command_check(self, event, channel, require_access):
         if channel:
