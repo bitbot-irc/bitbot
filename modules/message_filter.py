@@ -6,27 +6,6 @@ from src import ModuleManager, utils
 class Module(ModuleManager.BaseModule):
     _name = "Filter"
 
-    def _split(self, s):
-        backslash = False
-        forward_slash = []
-        for i, c in enumerate(s):
-            if not backslash:
-                if c == "/":
-                    forward_slash.append(i)
-                if c == "\\":
-                    backslash = True
-            else:
-                backslash = False
-        if forward_slash and (not forward_slash[-1] == (len(s)-1)):
-            forward_slash.append(len(s))
-
-        last = 0
-        out = []
-        for i in forward_slash:
-            out.append(s[last:i])
-            last = i+1
-        return out
-
     def _get_filters(self, server, target):
         filters = self.bot.get_setting("message-filters", [])
         filters.extend(server.get_setting("message-filters", []))
@@ -37,8 +16,8 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.send.notice")
     def channel_message(self, event):
         message = event["line"].args[1]
-        message_plain = utils.irc.strip_font(message)
         original_message = message
+        message_plain = utils.irc.strip_font(message)
         target_name = event["line"].args[0]
 
         # strip off any STATUSMSG chars
@@ -51,17 +30,18 @@ class Module(ModuleManager.BaseModule):
 
         filters = self._get_filters(event["server"], target)
         for filter in filters:
-            type, pattern, *args = self._split(filter)
-            if type == "m":
-                if re.search(pattern, message_plain):
-                    self.log.info("Message matched filter, dropping: %s"
-                        % event["line"].format())
-                    event["line"].invalidate()
-                    return
+            sed = utils.parse.sed.parse_sed(filter)
+            type, out = utils.parse.sed.sed(sed, message)
+
+            if type == "m" and out:
+                self.log.info("Message matched filter, dropping: %s"
+                    % event["line"].format())
+                event["line"].invalidate()
+                return
             elif type == "s":
-                replace, *args = args
-                message = re.sub(pattern, replace, message)
-        if not message == message_plain:
+                message = out
+
+        if not message == original_message:
             event["line"].args[1] = message
 
     @utils.hook("received.command.cfilter", channel_only=True)
