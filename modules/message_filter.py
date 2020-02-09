@@ -28,7 +28,8 @@ class Module(ModuleManager.BaseModule):
         return out
 
     def _get_filters(self, server, target):
-        filters = server.get_setting("message-filters", [])
+        filters = self.bot.get_setting("message-filters", [])
+        filters.extend(server.get_setting("message-filters", []))
         filters.extend(target.get_setting("message-filters", []))
         return list(set(filters))
 
@@ -65,6 +66,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.cfilter", channel_only=True)
     @utils.hook("received.command.filter")
+    @utils.hook("received.command.bfilter")
     @utils.kwarg("help", "Add a message filter for the current channel")
     @utils.kwarg("permissions", "cfilter")
     @utils.spec("!'list ?<index>int")
@@ -77,6 +79,8 @@ class Module(ModuleManager.BaseModule):
 
         if event["command"] == "cfilter":
             target = event["target"]
+        elif event["command"] == "bfilter":
+            target = self.bot
         else:
             target = event["server"]
         filters = target.get_setting("message-filters", [])
