@@ -13,5 +13,5 @@ class Module(ModuleManager.BaseModule):
         try:
             utils.http.request(url)
         except Exception as e:
-            self.log.error("Failed to cal healthcheck-url (%s)", [url],
+            self.log.error("Failed to call healthcheck-url (%s)", [url],
                 exc_info=True)
