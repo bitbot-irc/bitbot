@@ -4,9 +4,7 @@
 import re, traceback
 from src import ModuleManager, utils
 
-REGEX_SPLIT = re.compile("(?<!\\\\)/")
 REGEX_SED = re.compile("^(?:(\\S+)[:,] )?s/")
-SED_AMPERSAND = re.compile(r"((?:^|[^\\])(?:\\\\)*)&")
 
 @utils.export("channelset",
     utils.BoolSetting("sed","Disable/Enable sed in a channel"))
@@ -21,72 +19,38 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("command", "sed")
     @utils.kwarg("pattern", REGEX_SED)
     def channel_message(self, event):
-        sed_split = re.split(REGEX_SPLIT, event["message"], 3)
-        if len(sed_split) > 2:
-            if not self._closest_setting(event, "sed", False):
-                return
+        for_user = event["match"].group(1)
+        sed_s = event["message"]
+        if for_user:
+            sed_s = sed_s.split(" ", 1)[1]
+        if not self._closest_setting(event, "sed", False):
+            return
 
-            regex_flags = 0
-            flags = (sed_split[3:] or [""])[0].split(" ", 1)[0]
-            count = None
+        try:
+            sed = utils.parse.sed.parse(event["message"])
+        except:
+            traceback.print_exc()
+            event["stderr"].write("Invalid regex in pattern")
+            return
+        sed.replace = utils.irc.bold(sed.replace)
 
-            last_flag = ""
-            for flag in flags:
-                if flag.isdigit():
-                    if last_flag.isdigit():
-                        count = int(str(count) + flag)
-                    elif not count:
-                        count = int(flag)
-                elif flag == "i":
-                    regex_flags |= re.I
-                elif flag == "g":
-                    count = 0
-                last_flag = flag
-            if count == None:
-                count = 1
+        if self._closest_setting(event, "sed-sender-only", False):
+            for_user = event["user"].nickname
 
-            try:
-                pattern = re.compile(sed_split[1], regex_flags)
-            except:
-                traceback.print_exc()
-                event["stderr"].write("Invalid regex in pattern")
-                return
+        match_line = None
+        match_message = None
+        with utils.deadline():
+            for line in event["target"].buffer.get_all(for_user):
+                if not line.from_self:
+                    match = sed.match(line.message)
+                    if not match == line.message:
+                        match_line = line
+                        match_message = match
+                        break
 
-            for_user = event["match"].group(1)
-            if self._closest_setting(event, "sed-sender-only", False):
-                for_user = event["user"].nickname
-
-            match_line = None
-            match = None
-            match_message = None
-            with utils.deadline():
-                for line in event["target"].buffer.get_all(for_user):
-                    if not line.from_self:
-                        message = line.notes.get("sed-line", line.message)
-                        match = pattern.search(message)
-                        if match and not REGEX_SED.match(message):
-                            match_line = line
-                            match = match.group(0)
-                            match_message = message
-                            break
-
-            if match:
-                replace = sed_split[2]
-                replace = replace.replace("\\/", "/")
-
-                with utils.deadline():
-                    for found in SED_AMPERSAND.finditer(replace):
-                        found = found.group(1)
-                        replace.replace(found, "%s%s" % (found, match))
-
-                replace_color = utils.irc.bold(replace)
-
-                new_message = re.sub(pattern, replace, message, count)
-                new_message_color = re.sub(pattern, utils.irc.bold(replace),
-                    message, count)
-                if match_line.action:
-                    prefix = "* %s" % match_line.sender
-                else:
-                    prefix = "<%s>" % match_line.sender
-                match_line.notes["sed-line"] = new_message
-                event["stdout"].write("%s %s" % (prefix, new_message_color))
+        if match_line:
+            if match_line.action:
+                format = "* %s %s"
+            else:
+                format = "<%s> %s"
+            event["stdout"].write(format % (match_line.sender, match_message))

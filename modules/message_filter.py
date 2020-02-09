@@ -30,7 +30,7 @@ class Module(ModuleManager.BaseModule):
 
         filters = self._get_filters(event["server"], target)
         for filter in filters:
-            sed = utils.parse.sed.parse_sed(filter)
+            sed = utils.parse.sed.parse(filter)
             type, out = utils.parse.sed.sed(sed, message)
 
             if type == "m" and out:

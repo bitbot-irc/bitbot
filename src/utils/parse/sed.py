@@ -1,5 +1,18 @@
 import dataclasses, re, typing
 
+def _tokens(s: str, token: str) -> typing.List[int]:
+    backslash = False
+    tokens = []
+    for i, c in enumerate(s):
+        if not backslash:
+            if c == token:
+                tokens.append(i)
+            elif c == "\\":
+                backslash = True
+        else:
+            backslash = False
+    return tokens
+
 class Sed(object):
     type: str
     def match(self, s: str) -> typing.Optional[str]:
@@ -13,7 +26,17 @@ class SedReplace(Sed):
     count: int
 
     def match(self, s):
-        return self.pattern.sub(self.replace, s, self.count)
+        matches = list(self.pattern.finditer(s))
+        if not self.count == 0:
+            matches = matches[:self.count]
+
+        for match in matches:
+            replace_copy = self.replace
+            for token in reversed(_tokens(replace_copy, "&")):
+                replace_copy = (
+                    replace_copy[:token]+match.group(0)+replace_copy[token+1:])
+            s = s.replace(match.group(0), replace_copy, 1)
+        return s
 
 @dataclasses.dataclass
 class SedMatch(Sed):
@@ -26,24 +49,15 @@ class SedMatch(Sed):
             return match.group(0)
         return None
 
-def _sed_split(s):
-    backslash = False
-    forward_slash = []
-    for i, c in enumerate(s):
-        if not backslash:
-            if c == "/":
-                forward_slash.append(i)
-            if c == "\\":
-                backslash = True
-        else:
-            backslash = False
-    if forward_slash and (not forward_slash[-1] == (len(s)-1)):
-        forward_slash.append(len(s))
+def _sed_split(s: str) -> typing.List[str]:
+    tokens = _tokens(s, "/")
+    if tokens and (not tokens[-1] == (len(s)-1)):
+        tokens.append(len(s))
 
     last = 0
     out = []
-    for i in forward_slash:
-        out.append(s[last:i])
+    for i in tokens:
+        out.append(s[last:i].replace("\\/", "/"))
         last = i+1
     return out
 
@@ -56,13 +70,13 @@ def _sed_flags(s: str) -> typing.Tuple[int, int]:
         re_flags |= re.I
     return count, re_flags
 
-def parse_sed(sed_s: str) -> typing.Optional[Sed]:
+def parse(sed_s: str) -> typing.Optional[Sed]:
     type, pattern, *args = _sed_split(sed_s)
     if type == "s":
         replace, *args = args
         count, flags = _sed_flags((args or [""])[0])
-        pattern = re.compile(pattern, flags)
-        return SedReplace(type, pattern, replace, count)
+        pattern_re = re.compile(pattern, flags)
+        return SedReplace(type, pattern_re, replace, count)
     elif type == "m":
         count, flags = _sed_flags((args or [""])[0])
         return SedMatch(type, re.compile(pattern, flags))
