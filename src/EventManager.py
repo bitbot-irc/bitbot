@@ -165,7 +165,7 @@ class EventRoot(object):
                 hook_array.insert(i, new_hook)
                 break
         if not hooked:
-            hook_array.append(new_hook)
+            hook_array.insert(0, new_hook)
         return new_hook
 
     def _call(self, path: typing.List[str], kwargs: dict, safe: bool,
