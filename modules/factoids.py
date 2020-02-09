@@ -63,7 +63,7 @@ class Module(ModuleManager.BaseModule):
             exists = not self._get_factoid([["", target]], factoid) == None
 
         if event["spec"][0] == "list":
-            all_factoids = self._all_factoids(target)
+            all_factoids = self._all_factoids([target])
             event["stdout"].write("Available %s factoids: %s"
                 % (target_desc, ", ".join(sorted(all_factoids.keys()))))
 
