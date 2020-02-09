@@ -13,10 +13,13 @@ class Module(ModuleManager.BaseModule):
             if not value == None:
                 return target_type, value
         return None
-    def _all_factoids(self, target):
+    def _all_factoids(self, targets):
         factoids = {}
-        for factoid, value in target.find_settings(prefix="factoid-"):
-            factoids[factoid.replace("factoid-", "", 1)] = value
+        for target in targets:
+            for factoid, value in target.find_settings(prefix="factoid-"):
+                factoid = factoid.replace("factoid-", "", 1)
+                if not factoid in factoids:
+                    factoids[factoid] = value
         return factoids
 
     def _set_factoid(self, target, factoid, value):
@@ -24,11 +27,23 @@ class Module(ModuleManager.BaseModule):
     def _del_factoid(self, target, factoid):
         target.del_setting("factoid-%s" % factoid)
 
+    def _format_factoid(self, s, targets, depth=0):
+        if depth == 5:
+            return
+
+        for match in REGEX_FACTOID.finditer(s):
+            key = match.group(1)
+            value = self._get_factoid(targets, key)
+            if value:
+                target_desc, value = value
+                value = self._format_factoid(value, targets, depth+1)
+                s = s.replace(match.group(0), value, 1)
+        return s
+
     @utils.hook("received.command.factoid", permission="factoid")
     @utils.hook("received.command.cfactoid", require_mode="o",
         require_access="low,factoid")
     @utils.kwarg("help", "Set or get a factoid")
-
     @utils.spec("!'list")
     @utils.spec("!'get !<name>wordlower")
     @utils.spec("!'add !<name>wordlower !<value>string")
@@ -87,4 +102,5 @@ class Module(ModuleManager.BaseModule):
         value = self._get_factoid(targets, factoid)
         if not value == None:
             target_desc, value = value
+            value = self._format_factoid(value, targets)
             event["stdout"].write("%s: %s" % (factoid, value))
