@@ -1,6 +1,14 @@
 import datetime, time
 from src import ModuleManager, utils
 
+TIMESTAMP_BOUNDS = [
+    [0, 59],
+    [0, 23],
+    [1, 31],
+    [1, 12],
+    [0, 6],
+]
+
 class Module(ModuleManager.BaseModule):
     def on_load(self):
         now = datetime.datetime.utcnow()
@@ -24,20 +32,29 @@ class Module(ModuleManager.BaseModule):
                 cron.call(event)
 
     def _schedule_match(self, timestamp, schedule):
-        for timestamp_part, schedule_part in zip(timestamp, schedule):
-            if not self._schedule_match_part(timestamp_part, schedule_part):
+        items = enumerate(zip(timestamp, schedule))
+        for i, (timestamp_part, schedule_part) in items:
+            if not self._schedule_match_part(i, timestamp_part, schedule_part):
                 return False
         return True
 
-    def _schedule_match_part(self, timestamp_part, schedule_part):
+    def _schedule_match_part(self, i, timestamp_part, schedule_part):
         if "," in schedule_part:
             for schedule_part in schedule_part.split(","):
                 if self._schedule_match_part([timestamp_part], [schedule_part]):
                     return True
 
-        elif schedule_part.startswith("*/"):
-            schedule_step = int(schedule_part.split("*/", 1)[1])
-            if (timestamp_part%schedule_step) == 0:
+        elif "/" in schedule_part:
+            range_s, _, step = schedule_part.partition("/")
+            if "-" in range_s:
+                range_min, _, range_max = range_s.partition("-")
+                range_min = int(range_min)
+                range_max = int(range_max)
+            else:
+                range_min, range_max = TIMESTAMP_BOUNDS[i]
+
+            if (range_min <= timestamp_part <= range_max and
+                    ((timestamp_part-range_min)%int(step)) == 0):
                 return True
 
         elif "-" in schedule_part:
