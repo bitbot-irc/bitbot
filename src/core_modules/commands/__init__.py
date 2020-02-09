@@ -261,6 +261,8 @@ class Module(ModuleManager.BaseModule):
             obj.insert("%s %s" % (STR_CONTINUED, trunc))
             valid = valid+STR_MORE
         line = IRCLine.parse_line(valid)
+        if obj._assured:
+            line.assure()
         server.send(line)
 
     @utils.hook("preprocess.command")
