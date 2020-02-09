@@ -4,6 +4,7 @@ import re
 from src import ModuleManager, utils
 
 REGEX_FACTOID = re.compile("{!([^}]+)}", re.I)
+FACTOID_DEPTH_MAX = 8
 
 class Module(ModuleManager.BaseModule):
     def _get_factoid(self, targets, factoid):
@@ -28,7 +29,7 @@ class Module(ModuleManager.BaseModule):
         target.del_setting("factoid-%s" % factoid)
 
     def _format_factoid(self, s, targets, depth=0):
-        if depth == 5:
+        if depth == FACTOID_DEPTH_MAX:
             return
 
         for match in REGEX_FACTOID.finditer(s):
