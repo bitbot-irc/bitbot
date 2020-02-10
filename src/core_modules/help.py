@@ -23,7 +23,7 @@ class Module(ModuleManager.BaseModule):
         if usages:
             return " | ".join(
                 "%s %s" % (command, usage) for usage in usages)
-        return usage
+        return None
 
     def _get_hook(self, command):
         hooks = self.events.on("received.command").on(command).get_hooks()
