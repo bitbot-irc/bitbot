@@ -393,6 +393,7 @@ class GitHub(object):
         action = data["action"]
         issue_title = data["issue"]["title"]
         type = "PR" if "pull_request" in data["issue"] else "issue"
+        title = data["issue"]["title"]
         commenter = utils.irc.bold(data["sender"]["login"])
         url = self._short_url(data["comment"]["html_url"])
 
@@ -400,8 +401,9 @@ class GitHub(object):
         if not action == "deleted":
             body = ": %s" % self._comment(data["comment"]["body"])
 
-        return ["[%s] %s %s on %s%s - %s" %
-            (type, commenter, COMMENT_ACTIONS[action], number, body, url)]
+        return ["[%s] %s %s on %s (%s)%s - %s" %
+            (type, commenter, COMMENT_ACTIONS[action], number, title, body,
+            url)]
 
     def create(self, full_name, data):
         ref = data["ref"]
