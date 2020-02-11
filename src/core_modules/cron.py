@@ -21,14 +21,20 @@ class Module(ModuleManager.BaseModule):
         now = datetime.datetime.utcnow().replace(second=0, microsecond=0)
         timer.redo()
 
-        timestamp = [now.minute, now.hour]
+        timestamp = [now.minute, now.hour, now.day, now.month,
+            now.isoweekday()%7]
 
         events = self.events.on("cron")
-        event = events.make_event()
-        for cron in events.get_hooks():
-            schedule = cron.get_kwarg("schedule").split(" ")
+        def _check(schedule):
+            return self._schedule_match(timestamp, schedule.split(" "))
+        event = events.make_event(schedule=_check)
 
-            if self._schedule_match(timestamp, schedule):
+
+        for cron in events.get_hooks():
+            schedule = cron.get_kwarg("schedule", None)
+            if schedule and not _check(schedule):
+                continue
+            else:
                 cron.call(event)
 
     def _schedule_match(self, timestamp, schedule):
