@@ -29,7 +29,6 @@ class Module(ModuleManager.BaseModule):
             return self._schedule_match(timestamp, schedule.split(" "))
         event = events.make_event(schedule=_check)
 
-
         for cron in events.get_hooks():
             schedule = cron.get_kwarg("schedule", None)
             if schedule and not _check(schedule):
