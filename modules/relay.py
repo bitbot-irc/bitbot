@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
                     utils.consts.LIGHTBLUE)
                 server_name = "%s%s" % (server_name, utils.consts.RESET)
                 relay_message = "[%s%s] %s" % (server_name,
-                    relay_prefix_channel, event["line"])
+                    relay_prefix_channel, event["minimal"])
 
                 self.bot.trigger(self._send_factory(server, relay_channel.name,
                     relay_message))
