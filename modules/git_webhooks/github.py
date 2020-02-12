@@ -275,6 +275,7 @@ class GitHub(object):
         author = utils.irc.bold(data["pull_request"]["user"]["login"])
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
             colors.COLOR_ID)
+        number += " (%s)" % data["pull_request"]["title"]
         identifier = "%s by %s" % (number, author)
 
         action = data["action"]
@@ -295,7 +296,7 @@ class GitHub(object):
         elif action == "ready_for_review":
             action_desc = "marked %s ready for review" % number
         elif action == "synchronize":
-            action_desc = "committed to %s" % number
+            action_desc = "committed to %s" % identifier
 
             commits_url = data["pull_request"]["commits_url"]
             commits = utils.http.request(commits_url).json()
@@ -313,7 +314,7 @@ class GitHub(object):
                     data["before"], data["after"])
                 single_url = PR_COMMIT_URL % (full_name, raw_number, "%s")
                 if new_commits:
-                    outputs = self._format_push(number, author, new_commits,
+                    outputs = self._format_push(identifier, author, new_commits,
                         False, single_url, range_url)
                     for i, output in enumerate(outputs):
                         outputs[i] = "[PR] %s" % output
