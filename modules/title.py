@@ -29,16 +29,17 @@ class Module(ModuleManager.BaseModule):
                 title_word = title_word.lower()
                 title_words.append(title_word.strip("'\"<>()"))
 
-        present = 0
-        for title_word in title_words:
-            if title_word in url:
-                present += 1
+        if title_words:
+            present = 0
+            for title_word in title_words:
+                if title_word in url:
+                    present += 1
 
-        similarity = present/len(title_words)
-        # if at least 80% of words are in the URL, too similar
-        if similarity >= 0.8:
-            return False
-        return True
+            similarity = present/len(title_words)
+            # less than 80% similar, proceed
+            if similarity < 0.8:
+                return True
+        return False
 
     def _get_title(self, server, channel, url):
         if not urllib.parse.urlparse(url).scheme:
