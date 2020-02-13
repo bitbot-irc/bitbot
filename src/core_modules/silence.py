@@ -20,21 +20,14 @@ class Module(ModuleManager.BaseModule):
         return False
 
     @utils.hook("received.command.silence")
-    @utils.kwarg("channel_only", True)
     @utils.kwarg("help", "Prevent me saying anything for a period of time "
         "(default: 5 minutes)")
-    @utils.kwarg("usage", "[+time]")
     @utils.kwarg("require_mode", "high")
     @utils.kwarg("require_access", "low,silence")
     @utils.kwarg("permission", "silence")
+    @utils.spec("!-channelonly ?duration")
     def silence(self, event):
-        duration = SILENCE_TIME
-        if event["args"] and event["args_split"][0].startswith("+"):
-            duration = utils.datetime.parse.from_pretty_time(
-                event["args_split"][0][1:])
-            if duration == None:
-                raise utils.EventError("Invalid duration provided")
-
+        duration = event["spec"][0] or SILENCE_TIME
         silence_until = time.time()+duration
         event["target"].set_setting("silence-until", silence_until)
         event["stdout"].write("Ok, I'll be back")
