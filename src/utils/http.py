@@ -127,7 +127,7 @@ class Response(object):
         return self.data.decode(encoding or self.encoding)
     def json(self) -> typing.Any:
         return _json.loads(self.data)
-    def soup(self, parser: str="lxml") -> bs4.BeautifulSoup:
+    def soup(self, parser: str="html5lib") -> bs4.BeautifulSoup:
         return bs4.BeautifulSoup(self.decode(), parser)
 
 def _split_content(s: str) -> typing.Dict[str, str]:
@@ -144,7 +144,7 @@ def _find_encoding(headers: typing.Dict[str, str], data: bytes
         if "charset" in content_header:
             return content_header["charset"]
 
-    soup = bs4.BeautifulSoup(data, "lxml")
+    soup = bs4.BeautifulSoup(data, "html5lib")
     if not soup.meta == None:
         meta_charset = soup.meta.get("charset")
         if not meta_charset == None:
@@ -275,7 +275,7 @@ class Client(object):
     request_many = request_many
 
 def strip_html(s: str) -> str:
-    return bs4.BeautifulSoup(s, "lxml").get_text()
+    return bs4.BeautifulSoup(s, "html5lib").get_text()
 
 def resolve_hostname(hostname: str) -> typing.List[str]:
     try:
