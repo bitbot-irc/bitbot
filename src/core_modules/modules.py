@@ -3,6 +3,8 @@
 
 from src import ModuleManager, utils
 
+ERR_NOTLOADED = "Module '%s' isn't loaded"
+
 class Module(ModuleManager.BaseModule):
     def _catch(self, name, func):
         try:
@@ -10,7 +12,7 @@ class Module(ModuleManager.BaseModule):
         except ModuleManager.ModuleNotFoundException:
             raise utils.EventError("Module '%s' not found" % name)
         except ModuleManager.ModuleNotLoadedException:
-            raise utils.EventError("Module '%s' isn't loaded" % name)
+            raise utils.EventError(ERR_NOTLOADED % name)
         except ModuleManager.ModuleWarning as warning:
             raise utils.EventError("Module '%s' not loaded: %s" % (
                 name, str(warning)))
@@ -19,11 +21,11 @@ class Module(ModuleManager.BaseModule):
                 name, str(e)))
 
     @utils.hook("received.command.modinfo")
-    @utils.spec("!<module>string")
+    @utils.spec("!<module>word")
     def info(self, event):
         name = event["spec"][0]
         if not name in self.bot.modules.modules:
-            raise
+            raise utils.EventError(ERR_NOTLOADED % name)
         module = self.bot.modules.modules[name]
 
         event_calls = 0
@@ -63,7 +65,7 @@ class Module(ModuleManager.BaseModule):
     def unload(self, event):
         name = event["spec"][0]
         if not name in self.bot.modules.modules:
-            raise utils.EventError("Module '%s' isn't loaded" % name)
+            raise utils.EventError(ERR_NOTLOADED % name)
 
         self._catch(name, lambda: self.bot.modules.unload_module(name))
         event["stdout"].write("Unloaded '%s'" % name)
