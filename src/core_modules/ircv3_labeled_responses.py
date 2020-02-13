@@ -59,7 +59,7 @@ class Module(ModuleManager.BaseModule):
 
         cached = server._label_cache.pop(label)
         cached.events.on("labeled-response").call(line=cached.line,
-            responses=lines)
+            responses=lines, server=server)
 
         for label, other_cached in server._label_cache.items():
             other_cached.labels_since += 1
