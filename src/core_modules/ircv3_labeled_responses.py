@@ -1,5 +1,5 @@
 import uuid
-from src import ModuleManager, utils
+from src import EventManager, ModuleManager, utils
 
 CAP = utils.irc.Capability("labeled-response", "draft/labeled-response-0.2",
     depends_on=["batch"])
@@ -38,6 +38,7 @@ class Module(ModuleManager.BaseModule):
                 event["events"])
 
     @utils.hook("raw.received")
+    @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
     def raw_recv(self, event):
         if not event["line"].command == "BATCH":
             label = TAG.get_value(event["line"].tags)
