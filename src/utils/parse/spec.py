@@ -25,17 +25,17 @@ class SpecArgumentType(object):
         return None
 
 class SpecArgumentTypeWord(SpecArgumentType):
-    def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
+    def simple(self, args):
         if args:
             return args[0], 1
         return None, 1
 class SpecArgumentTypeAdditionalWord(SpecArgumentType):
-    def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
+    def simple(self, args):
         if len(args) > 1:
             return args[0], 1
         return None, 1
 class SpecArgumentTypeWordLower(SpecArgumentTypeWord):
-    def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
+    def simple(self, args):
         out = SpecArgumentTypeWord.simple(self, args)
         if out[0]:
             return out[0].lower(), out[1]
@@ -44,15 +44,15 @@ class SpecArgumentTypeWordLower(SpecArgumentTypeWord):
 class SpecArgumentTypeString(SpecArgumentType):
     def name(self):
         return "%s ..." % SpecArgumentType.name(self)
-    def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
+    def simple(self, args):
         if args:
             return " ".join(args), len(args)
         return None, 1
 class SpecArgumentTypeTrimString(SpecArgumentTypeString):
-    def simple(self, args: typing.List[str]):
+    def simple(self, args):
         return SpecArgumentTypeString.simple(self, list(filter(None, args)))
 class SpecArgumentTypeWords(SpecArgumentTypeString):
-    def simple(self, args: typing.List[str]):
+    def simple(self, args):
         if args:
             out = list(filter(None, args))
             return out, len(out)
@@ -67,7 +67,7 @@ class SpecArgumentTypeInt(SpecArgumentType):
 class SpecArgumentTypeDuration(SpecArgumentType):
     def name(self):
         return "+%s" % (SpecArgumentType.name(self) or "duration")
-    def simple(self, args: typing.List[str]) -> typing.Tuple[typing.Any, int]:
+    def simple(self, args):
         if args:
             return duration(args[0]), 1
         return None, 1

@@ -1,4 +1,5 @@
 from src import EventManager, ModuleManager, utils
+from . import types
 
 # describing command arg specifications, to centralise parsing and validating.
 #
@@ -43,72 +44,12 @@ class Module(ModuleManager.BaseModule):
                 value = simple_value
                 n = simple_count
                 error = argument_type.error()
-            elif argument_type.type == "rchannel":
-                if channel:
-                    value = channel
-                elif args:
-                    n = 1
-                    if args[0] in server.channels:
-                        value = server.channels.get(args[0])
-                    error = "No such channel"
-                else:
-                    error = "No channel provided"
-            elif argument_type.type == "channel" and args:
-                if args[0] in server.channels:
-                    value = server.channels.get(args[0])
-                n = 1
-                error = "No such channel"
-            elif argument_type.type == "cuser" and args:
-                tuser = server.get_user(args[0], create=False)
-                if tuser and channel.has_user(tuser):
-                    value = tuser
-                n = 1
-                error = "That user is not in this channel"
-            elif argument_type.type == "ruser":
-                if args:
-                    value = server.get_user(args[0], create=False)
-                    n = 1
-                else:
-                    value = user
-                error = "No such user"
-            elif argument_type.type == "user":
-                if args:
-                    value = server.get_user(args[0], create=False)
-                    n = 1
-                    error = "No such user"
-                else:
-                    error = "No user provided"
-            elif argument_type.type == "ouser":
-                if args:
-                    if server.has_user_id(args[0]):
-                        value = server.get_user(args[0], create=True)
-                    error = "Unknown nickname"
-                n = 1
-            elif argument_type.type == "nuser":
-                if args:
-                    value = server.get_user(args[0], create=True)
-                n = 1
-            elif argument_type.type == "lstring":
-                if args:
-                    value = " ".join(args)
-                    n = len(args)
-                else:
-                    last_message = (channel or user).buffer.get()
-                    if last_message:
-                        value = last_message.message
-                        n = 0
-                    else:
-                        n = 1
-            elif argument_type.type == "channelonly":
-                if channel:
-                    value = True
-                n = 0
-                error = "Command not valid in PM"
-            elif argument_type.type == "privateonly":
-                if not channel:
-                    value = True
-                n = 0
-                error = "Command not valid in-channel"
+            elif argument_type.type in types.TYPES:
+                func = types.TYPES[argument_type.type]
+                try:
+                    value, n = func(server, channel, user, args)
+                except types.SpecTypeError as e:
+                    error = e.message
 
             options.append([argument_type, value, n, error])
         return options
