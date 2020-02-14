@@ -44,12 +44,17 @@ class Module(ModuleManager.BaseModule):
                 value = simple_value
                 n = simple_count
                 error = argument_type.error()
-            elif argument_type.type in types.TYPES:
-                func = types.TYPES[argument_type.type]
-                try:
-                    value, n = func(server, channel, user, args)
-                except types.SpecTypeError as e:
-                    error = e.message
+            else:
+                if argument_type.type in types.TYPES:
+                    func = types.TYPES[argument_type.type]
+                else:
+                    func = self.exports.get_one("spec.%s" % argument_type.type)
+
+                if func:
+                    try:
+                        value, n = func(server, channel, user, args)
+                    except types.SpecTypeError as e:
+                        error = e.message
 
             options.append([argument_type, value, n, error])
         return options
