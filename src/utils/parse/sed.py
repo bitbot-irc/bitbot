@@ -35,7 +35,7 @@ class SedReplace(Sed):
             for token in reversed(_tokens(replace_copy, "&")):
                 replace_copy = (
                     replace_copy[:token]+match.group(0)+replace_copy[token+1:])
-            s = s.replace(match.group(0), replace_copy, 1)
+            s = re.sub(self.pattern, replace_copy, s, 1)
         return s
 
 @dataclasses.dataclass
