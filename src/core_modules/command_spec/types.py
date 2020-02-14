@@ -1,8 +1,4 @@
-
-class SpecTypeError(Exception):
-    def __init__(self, message: str, arg_count: int=1):
-        self.message = message
-        self.arg_count = arg_count
+from src.utils.parse import SpecTypeError
 
 TYPES = {}
 def _type(func):

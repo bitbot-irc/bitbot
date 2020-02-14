@@ -3,6 +3,11 @@ from .time import duration
 from .types import try_int
 from src.utils.datetime.parse import date_human
 
+class SpecTypeError(Exception):
+    def __init__(self, message: str, arg_count: int=1):
+        self.message = message
+        self.arg_count = arg_count
+
 class SpecArgumentContext(enum.IntFlag):
     CHANNEL = 1
     PRIVATE = 2

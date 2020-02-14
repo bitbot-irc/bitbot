@@ -53,7 +53,7 @@ class Module(ModuleManager.BaseModule):
                 if func:
                     try:
                         value, n = func(server, channel, user, args)
-                    except types.SpecTypeError as e:
+                    except utils.parse.SpecTypeError as e:
                         error = e.message
 
             options.append([argument_type, value, n, error])
