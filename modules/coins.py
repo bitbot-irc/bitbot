@@ -8,7 +8,6 @@ SIDES = {"heads": 0, "tails": 1}
 DEFAULT_REDEEM_DELAY = 600 # 600 seconds, 10 minutes
 DEFAULT_REDEEM_AMOUNT = "100.0"
 DEFAULT_INTEREST_RATE = "0.01"
-INTEREST_INTERVAL = 60*60 # 1 hour
 REGEX_FLOAT = re.compile("(?:\d+(?:\.\d{1,2}|$)|\.\d{1,2})")
 
 DECIMAL_ZERO = decimal.Decimal("0")
@@ -40,6 +39,32 @@ class CoinParseException(Exception):
     pass
 
 class Module(ModuleManager.BaseModule):
+    def on_load(self):
+        self.exports.add("command-spec.coins", self._coins_spec)
+        self.exports.add("command-spec.coinsmany", self._coins_many_spec)
+
+    def _coin_spec_parse(self, word):
+        try:
+            out = decimal.Decimal(word)
+        except decimal.InvalidOperation:
+            raise utils.parse.SpecTypeError(
+                "Please provide a valid coin amount")
+        if out >= DECIMAL_ZERO:
+            return out
+        else:
+            raise utils.parse.SpecTypeError(
+                "Please provide a positive coin amount")
+    def _coins_spec(self, server, channel, user, args):
+        if args:
+            return self._coin_spec_parse(args[0]), 1
+        else:
+            raise utils.parse.SpecTypeError("No coin amount provided")
+    def _coins_many_spec(self, server, channel, user, args):
+        out = []
+        for arg in args:
+            out.append(self._coin_spec_parse(arg))
+        return (out or None), 1
+
     def _until_next_hour(self, now=None):
         now = now or datetime.datetime.utcnow()
         until_next_hour = 60-now.second
@@ -108,10 +133,8 @@ class Module(ModuleManager.BaseModule):
                 "Please provide a valid positive coin amount")
 
     @utils.hook("received.command.coins")
+    @utils.kwarg("help", "Show how many coins you have")
     def coins(self, event):
-        """
-        :help: Show how many coins you have
-        """
         if event["args_split"]:
             target = event["server"].get_user(event["args_split"][0])
         else:
@@ -120,40 +143,30 @@ class Module(ModuleManager.BaseModule):
         event["stdout"].write("%s has %s coin%s" % (target.nickname,
             self._coin_str_human(coins), "" if coins == 1 else "s"))
 
-    @utils.hook("received.command.resetcoins", min_args=1)
+    @utils.hook("received.command.resetcoins")
+    @utils.kwarg("help", "Reset a user's coins to 0")
+    @utils.kwarg("permission", "reset-coins")
+    @utils.spec("!<nickname>ouser")
     def reset_coins(self, event):
-        """
-        :help: Reset a user's coins to 0
-        :usage: <target>
-        :permission: resetcoins
-        """
         target = event["server"].get_user(event["args_split"][0])
         coins = self._get_user_coins(target)
         self._take(event["server"], target, coins)
         event["stdout"].write("Reset coins for %s" % target.nickname)
 
-    @utils.hook("received.command.givecoins", min_args=1)
+    @utils.hook("received.command.givecoins")
+    @utils.kwarg("help", "Create coins and give them to a user")
+    @utils.kwarg("permission", "give-coins")
+    @utils.spec("!<nickname>ouser !<amount>coins")
     def give_coins(self, event):
-        """
-        :help: Give coins to a user
-        :usage: <nickname> <coins>
-        :permission: givecoins
-        """
-        target = event["server"].get_user(event["args_split"][0])
-        try:
-            coins = self._parse_coins(event["args_split"][1], DECIMAL_ZERO)
-        except CoinParseException as e:
-            raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
-
+        target = event["spec"][0]
+        coins = event["spec"][1]
         self._give(event["server"], target, coins)
         event["stdout"].write("Gave '%s' %s coins" % (target.nickname,
             self._coin_str(coins)))
 
     @utils.hook("received.command.richest")
+    @utils.kwarg("help", "Show the top 10 richest users")
     def richest(self, event):
-        """
-        :help: Show the top 10 richest users
-        """
         top_10 = utils.top_10(self._all_coins(event["server"]),
             convert_key=lambda nickname:
             event["server"].get_user(nickname).nickname,
@@ -164,10 +177,8 @@ class Module(ModuleManager.BaseModule):
         return "redeem|%s|%s@%s" % (server.id, user.username, user.hostname)
 
     @utils.hook("received.command.redeemcoins")
+    @utils.kwarg("help", "Redeem your free coins")
     def redeem_coins(self, event):
-        """
-        :help: Redeem your free coins
-        """
         user_coins = self._get_user_coins(event["user"])
         if user_coins == DECIMAL_ZERO:
             cache = self._redeem_cache(event["server"], event["user"])
@@ -190,29 +201,19 @@ class Module(ModuleManager.BaseModule):
                 "%s: You can only redeem coins when you have none" %
                 event["user"].nickname)
 
-    @utils.hook("received.command.flip", min_args=2, authenticated=True)
+    @utils.hook("received.command.flip")
+    @utils.kwarg("help", "Bet on a coin flip")
+    @utils.kwarg("authenticated", True)
+    @utils.spec("!'heads,tails !'all")
+    @utils.spec("!'heads,tails !<amount>coins")
     def flip(self, event):
-        """
-        :help: Bet on a coin flip
-        :usage: heads|tails <coin amount>
-        """
-        side_name = event["args_split"][0].lower()
-        coin_bet = event["args_split"][1].lower()
+        side_name = event["spec"][0]
+        coin_bet = event["spec"][1]
         if coin_bet == "all":
             coin_bet = self._get_user_coins(event["user"])
             if coin_bet <= DECIMAL_ZERO:
                 raise utils.EventError("%s: You have no coins to bet" %
                     event["user"].nickname)
-        else:
-            try:
-                coin_bet = self._parse_coins(coin_bet, DECIMAL_BET_MINIMUM)
-            except CoinParseException as e:
-                raise utils.EventError("%s: %s" % (event["user"].nickname,
-                    str(e)))
-
-        if not side_name in SIDES:
-             raise utils.EventError("%s: Please provide 'heads' or 'tails'" %
-                event["user"].nickname)
 
         user_coins = self._get_user_coins(event["user"])
         if coin_bet > user_coins:
@@ -242,23 +243,18 @@ class Module(ModuleManager.BaseModule):
                 )
             )
 
-    @utils.hook("received.command.sendcoins", min_args=2, authenticated=True)
+    @utils.hook("received.command.sendcoins")
+    @utils.kwarg("help", "Send coins to another user")
+    @utils.kwarg("authenticated", True)
+    @utils.spec("!<nickname>ouser !<amount>coins")
     def send(self, event):
-        """
-        :help: Send coins to another user
-        :usage: <nickname> <amount>
-        """
-        target_user = event["server"].get_user(event["args_split"][0])
+        target_user = event["spec"][0]
 
         if event["user"].get_id() == target_user.get_id():
             raise utils.EventError("%s: You can't send coins to yourself" %
                 event["user"].nickname)
 
-        send_amount = event["args_split"][1]
-        try:
-            send_amount = self._parse_coins(send_amount, DECIMAL_ZERO)
-        except CoinParseException as e:
-            raise utils.EventError("%s: %s" % (event["user"].nickname, str(e)))
+        send_amount = event["spec"][1]
 
         user_coins = self._get_user_coins(event["user"])
         redeem_amount = self._redeem_amount(event["server"])
@@ -288,39 +284,29 @@ class Module(ModuleManager.BaseModule):
     def _double_street(self, i):
         return (i*3)-2, (i*3)+3
 
-    @utils.hook("received.command.roulette", min_args=2, authenticated=True)
+    @utils.hook("received.command.roulette")
+    @utils.kwarg("help", "Spin a roulette wheel")
+    @utils.kwarg("authenticated", True)
+    @utils.spec("!<types>word !'all")
+    @utils.spec("!<types>word !<amounts>coinsmany")
     def roulette(self, event):
-        """
-        :help: Spin a roulette wheel
-        :usage: <type> <amount>
-        """
-        expected_args = 1
-        expected_args += len(event["args_split"][0].split(","))
-
-        bets = event["args_split"][0].lower().split(",")
-        if "0" in bets:
-            raise utils.EventError("%s: You can't bet on 0" %
-                event["user"].nickname)
-        bet_amounts = [amount.lower() for amount in event["args_split"][
-            1:expected_args]]
-        if len(bet_amounts) < len(bets):
+        bets = event["spec"][0].lower().split(",")
+        if not len(bets) <= len(event["spec"][1]):
             raise utils.EventError("%s: Please provide an amount for each bet" %
                 event["user"].nickname)
 
-        if len(bet_amounts) == 1 and bet_amounts[0] == "all":
-            bet_amounts[0] = self._get_user_coins(event["user"])
-            if bet_amounts[0] <= DECIMAL_ZERO:
+        if "0" in bets:
+            raise utils.EventError("%s: You can't bet on 0" %
+                event["user"].nickname)
+        bet_amounts = []
+        if event["spec"][1] == "all":
+            all_coins = self._get_user_coins(event["user"])
+            if all_coins <= DECIMAL_ZERO:
                 raise utils.EventError("%s: You have no coins to bet" %
                     event["user"].nickname)
-            bet_amounts[0] = self._coin_str(bet_amounts[0])
-
-        for i, bet_amount in enumerate(bet_amounts):
-            try:
-                bet_amounts[i] = self._parse_coins(bet_amount,
-                    DECIMAL_BET_MINIMUM)
-            except CoinParseException as e:
-                raise utils.EventError("%s: %s" % (event["user"].nickname,
-                    str(e)))
+            bet_amounts = [all_coins]
+        else:
+            bet_amounts = event["spec"][1]
 
         bet_amount_total = sum(bet_amounts)
 
@@ -452,19 +438,12 @@ class Module(ModuleManager.BaseModule):
                     server.set_user_setting(nickname, "coins",
                         self._coin_str(coins+interest))
 
-    @utils.hook("received.command.lotterybuy", authenticated=True)
+    @utils.hook("received.command.lotterybuy")
+    @utils.kwarg("help", "Buy ticket(s) for the lottery")
+    @utils.kwarg("authenticated", True)
+    @utils.spec("?<count>int")
     def lottery_buy(self, event):
-        """
-        :help: Buy ticket(s) for the lottery
-        :usage: [amount]
-        """
-        amount = "1"
-        if event["args_split"]:
-            amount = event["args_split"][0]
-        if not amount.isdigit():
-            raise utils.EventError("%s: Please provide a positive number "
-                "of tickets to buy" % event["user"].nickname)
-        amount = int(amount)
+        amount = event["spec"][0] or 1
 
         user_coins = self._get_user_coins(event["user"])
         coin_amount = decimal.Decimal(LOTTERY_BUYIN)*amount
@@ -494,39 +473,31 @@ class Module(ModuleManager.BaseModule):
             self._coin_str(coin_amount)))
 
     @utils.hook("received.command.mylottery")
+    @utils.kwarg("help", "Show how many lottery tickets you currently have")
     def my_lottery(self, event):
-        """
-        :help: Show how many lottery tickets you currently have
-        """
         lottery = event["server"].get_setting("lottery", {})
         count = lottery.get(event["user"].nickname_lower, 0)
         event["stdout"].write("%s: You have %d lottery ticket%s" % (
             event["user"].nickname, count, "" if count == 1 else "s"))
 
     @utils.hook("received.command.jackpot")
+    @utils.kwarg("help", "Show the current lottery jackpot")
     def jackpot(self, event):
-        """
-        :help: Show the current lottery jackpot
-        """
         lottery = event["server"].get_setting("lottery", {})
         count = sum(value for nickname, value in lottery.items())
         event["stdout"].write("%s: The current jackpot is %s" % (
             event["user"].nickname, decimal.Decimal(LOTTERY_BUYIN)*count))
 
     @utils.hook("received.command.nextlottery")
+    @utils.kwarg("help", "Show time until the next lottery draw")
     def next_lottery(self, event):
-        """
-        :help: Show time until the next lottery draw
-        """
         until = self._until_next_6_hour()
         event["stdout"].write("Next lottery is in: %s" %
             utils.datetime.format.to_pretty_time(until))
 
     @utils.hook("received.command.lotterywinner")
+    @utils.kwarg("help", "Show who last won the lottery")
     def lottery_winner(self, event):
-        """
-        :help: Show who last won the lottery
-        """
         winner = event["server"].get_setting("lottery-winner", None)
         if winner:
             event["stdout"].write("Last lottery winner: %s" % winner)
