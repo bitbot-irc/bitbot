@@ -23,7 +23,7 @@ class SpecArgumentType(object):
         self._set_modifier(modifier)
         self.exported = exported
 
-    def _set_modifier(self, modifier: str):
+    def _set_modifier(self, modifier: typing.Optional[str]):
         pass
 
     def name(self) -> typing.Optional[str]:
