@@ -15,43 +15,37 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.roll")
     @utils.hook("received.command.dice", alias_of="roll")
     @utils.kwarg("help", "Roll dice DND-style")
-    @utils.kwarg("usage", "[1-%s]d[1-%d]" % (MAX_DICE, MAX_SIDES))
+    @utils.spec("?<1d20>pattern(^(\d+)d(\d+)((?:\s*[-+]\d+)*))")
     def roll_dice(self, event):
-        args = None
-        if event["args_split"]:
-            args = event["args"]
-        else:
-            args = "1d6"
+        dice_count, side_count = 1, 6
+        roll = "1d6"
+        modifiers = []
 
-        match = RE_DICE.match(args)
-        if match:
-            roll = match.group(0)
-            dice_count = int(match.group(1) or "1")
-            side_count = int(match.group(2))
-            modifiers_str = "".join(match.group(3).split())
-            modifiers = RE_MODIFIERS.findall(modifiers_str)
+        if event["spec"][0]:
+            dice_count = int(event["spec"][0].group(1) or "1")
+            side_count = int(event["spec"][0].group(2))
+            roll = event["spec"][0].group(0)
+            modifiers = RE_MODIFIERS.findall(event["spec"][0].group(3))
 
-            if dice_count > 6:
-                raise utils.EventError("Max number of dice is %s" % MAX_DICE)
-            if side_count > MAX_SIDES:
-                raise utils.EventError("Max number of sides is %s"
-                    % MAX_SIDES)
+        if dice_count > 6:
+            raise utils.EventError("Max number of dice is %s" % MAX_DICE)
+        if side_count > MAX_SIDES:
+            raise utils.EventError("Max number of sides is %s"
+                % MAX_SIDES)
 
-            results = random.choices(range(1, side_count+1), k=dice_count)
+        results = random.choices(range(1, side_count+1), k=dice_count)
 
-            total_n = sum(results)
-            for modifier in modifiers:
-                if modifier[0] == "+":
-                    total_n += int(modifier[1:])
-                else:
-                    total_n -= int(modifier[1:])
+        total_n = sum(results)
+        for modifier in modifiers:
+            if modifier[0] == "+":
+                total_n += int(modifier[1:])
+            else:
+                total_n -= int(modifier[1:])
 
-            total = ""
-            if len(results) > 1 or modifiers:
-                total = " (total: %d)" % total_n
+        total = ""
+        if len(results) > 1 or modifiers:
+            total = " (total: %d)" % total_n
 
-            results_str = ", ".join(str(r) for r in results)
-            event["stdout"].write("Rolled %s and got %s%s" % (
-                roll, results_str, total))
-        else:
-            event["stderr"].write("Invalid format. Example: 2d12+2")
+        results_str = ", ".join(str(r) for r in results)
+        event["stdout"].write("Rolled %s and got %s%s" % (
+            roll, results_str, total))

@@ -1,4 +1,4 @@
-import enum, typing
+import enum, re, typing
 from .time import duration
 from .types import try_int
 from src.utils.datetime.parse import date_human
@@ -17,10 +17,14 @@ class SpecArgumentType(object):
     context = SpecArgumentContext.ALL
 
     def __init__(self, type_name: str, name: typing.Optional[str],
-            exported: typing.Optional[str]):
+            modifier: typing.Optional[str], exported: typing.Optional[str]):
         self.type = type_name
         self._name = name
+        self._set_modifier(modifier)
         self.exported = exported
+
+    def _set_modifier(self, modifier: str):
+        pass
 
     def name(self) -> typing.Optional[str]:
         return self._name
@@ -28,6 +32,18 @@ class SpecArgumentType(object):
         return None, -1
     def error(self) -> typing.Optional[str]:
         return None
+
+class SpecArgumentTypePattern(SpecArgumentType):
+    _pattern: typing.Pattern
+    def _set_modifier(self, modifier):
+        print(modifier)
+        self._pattern = re.compile(modifier)
+    def simple(self, args):
+        match = self._pattern.search(" ".join(args))
+        if match:
+            return match, match.group(0).rstrip(" ").count(" ")
+        else:
+            return None, 1
 
 class SpecArgumentTypeWord(SpecArgumentType):
     def simple(self, args):
@@ -99,7 +115,8 @@ SPEC_ARGUMENT_TYPES = {
     "tstring": SpecArgumentTypeTrimString,
     "int": SpecArgumentTypeInt,
     "date": SpecArgumentTypeDate,
-    "duration": SpecArgumentTypeDuration
+    "duration": SpecArgumentTypeDuration,
+    "pattern": SpecArgumentTypePattern
 }
 
 class SpecArgument(object):
@@ -118,9 +135,15 @@ class SpecArgument(object):
 
             argument_type_name: typing.Optional[str] = None
             name_end = argument_type.find(">")
-            if argument_type.startswith("<") and name_end > 0:
+            if name_end > 0 and argument_type.startswith("<"):
                 argument_type_name = argument_type[1:name_end]
                 argument_type = argument_type[name_end+1:]
+
+            argument_type_modifier: typing.Optional[str] = None
+            modifier_start = argument_type.find("(")
+            if modifier_start > 0 and argument_type.endswith(")"):
+                argument_type_modifier = argument_type[modifier_start+1:-1]
+                argument_type = argument_type[:modifier_start]
 
             argument_type_class = SpecArgumentType
             if argument_type in SPEC_ARGUMENT_TYPES:
@@ -129,7 +152,7 @@ class SpecArgument(object):
                 argument_type_class = SpecArgumentPrivateType
 
             out.append(argument_type_class(argument_type,
-                argument_type_name, exported))
+                argument_type_name, argument_type_modifier, exported))
 
         spec_argument = SpecArgument()
         spec_argument.optional = optional
@@ -165,7 +188,7 @@ class SpecLiteralArgument(SpecArgument):
         spec_argument = SpecLiteralArgument()
         spec_argument.optional = optional
         spec_argument.types = [
-            SpecArgumentTypeLiteral("literal", l, None) for l in literals]
+            SpecArgumentTypeLiteral("literal", l, None, None) for l in literals]
         return spec_argument
 
     def format(self, context: SpecArgumentContext) -> typing.Optional[str]:
