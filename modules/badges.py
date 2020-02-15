@@ -7,33 +7,19 @@ RE_HUMAN_FORMAT = re.compile(r"(\d\d\d\d)-(\d?\d)-(\d?\d)")
 HUMAN_FORMAT_HELP = "year-month-day (e.g. 2018-12-29)"
 
 class Module(ModuleManager.BaseModule):
-    def _parse_date(self, dt: str):
-        if dt.lower() == "today":
-            return utils.datetime.utcnow()
+    def on_load(self):
+        self.exports.add("command-spec.marginstring", self._marginstring_spec)
+    def _marginstring_spec(self, server, channel, user, args):
+        if len(args) > 1:
+            new_args = args[:-1]
+            return " ".join(new_args), len(new_args)
         else:
-            match = RE_HUMAN_FORMAT.match(dt)
-            if not match:
-                raise utils.EventError("Invalid date format, please use %s" %
-                    HUMAN_FORMAT_HELP)
-            return datetime.datetime(
-                year=int(match.group(1)),
-                month=int(match.group(2)),
-                day=int(match.group(3))
-            ).replace(tzinfo=datetime.timezone.utc)
-
-    def _date_str(self, dt: datetime.datetime):
-        return utils.datetime.format.date_human(dt)
+            return None, 1
 
     def _round_up_day(self, dt: datetime.datetime):
         return dt.date()+datetime.timedelta(days=1)
     def _days_since(self, now: datetime.date, dt: datetime.datetime):
         return (now-dt.date()).days
-
-    def _find_badge(self, badges, badge):
-        badge_lower = badge.lower()
-        for badge_name in badges.keys():
-            if badge_name.lower() == badge_lower:
-                return badge_name
 
     def _get_badges(self, user):
         return user.get_setting("badges", {})
@@ -42,158 +28,49 @@ class Module(ModuleManager.BaseModule):
     def _del_badges(self, user):
         user.del_setting("badges")
 
-    @utils.hook("received.command.badge", min_args=1)
+    @utils.hook("received.command.badge")
+    @utils.spec("!'list ?<nickname>ouser")
+    @utils.spec("!'add !<name>marginstring !'now")
+    @utils.spec("!'add !<name>marginstring !date")
+    @utils.spec("!'remove !<name>string")
     def badge(self, event):
-        """
-        :help: Show a badge
-        :usage: <badge>
-        """
-        badge = event["args"]
-        badge_lower = badge.lower()
-        badges = self._get_badges(event["user"])
+        if event["spec"][0] == "list":
+            target = event["spec"][1] or event["user"]
+            badges = self._get_badges(target)
+            if not badges:
+                raise utils.EventError("%s has no badges" % target.nickname)
 
-        now = self._round_up_day(utils.datetime.utcnow())
+            now = self._round_up_day(utils.datetime.utcnow())
 
-        found_badge = self._find_badge(badges, badge)
+            outs = []
+            for name in sorted(badges.keys()):
+                dt = utils.datetime.parse.iso8601(badges[name])
+                days_since = self._days_since(now, dt)
+                human = utils.datetime.format.date_human(dt)
+                outs.append("%s on day %d (%s)"
+                    % (name, days_since, human))
+            event["stdout"].write("badges for %s: %s"
+                % (target.nickname, ", ".join(outs)))
 
-        if found_badge:
-            dt = utils.datetime.parse.iso8601(badges[found_badge])
-            days_since = self._days_since(now, dt)
-            event["stdout"].write("(%s) %s on day %s (%s)" % (
-                event["user"].nickname, found_badge, days_since,
-                self._date_str(dt)))
         else:
-            event["stderr"].write("You have no '%s' badge" % badge)
+            badges = self._get_badges(event["user"])
+            if event["spec"][0] == "add":
+                if event["spec"][2] == "now":
+                    dt = utils.datetime.utcnow()
+                else:
+                    dt = event["spec"][2]
+                badges[event["spec"][1]] = utils.datetime.format.iso8601(dt)
+                human = utils.datetime.format.date_human(dt)
+                event["stdout"].write("%s: added badge %s (%s)"
+                    % (event["user"].nickname, event["spec"][1], human))
 
-    @utils.hook("received.command.badges")
-    def badges(self, event):
-        """
-        :help: Show all badges for you or a given user
-        """
-        user = event["user"]
-        if event["args"]:
-            user = event["server"].get_user(event["args_split"][0])
+            elif event["spec"][0] == "remove":
+                if not event["spec"][1] in badges:
+                    raise utils.EventError("%s: you don't have a '%s' badge"
+                        % (event["user"].nickname, event["spec"][1]))
 
-        now = self._round_up_day(utils.datetime.utcnow())
-        badges = []
-        for badge, date in self._get_badges(user).items():
-            days_since = self._days_since(now,
-                utils.datetime.parse.iso8601(date))
-            badges.append("%s on day %s" % (
-                badge, days_since))
-
-        event["stdout"].write("Badges for %s: %s" % (
-            user.nickname, ", ".join(badges)))
-
-    @utils.hook("received.command.addbadge", min_args=1)
-    def add_badge(self, event):
-        """
-        :help: Add a badge with today's date
-        :usage: <badge>
-        """
-        badge = event["args"]
-        badge_lower = badge.lower()
-        badges = self._get_badges(event["user"])
-
-        for badge_name in badges.keys():
-            if badge_name.lower() == badge_lower:
-                raise utils.EventError("You already have a '%s' badge" % badge)
-
-        badges[badge] = utils.datetime.format.iso8601_now()
-        self._set_badges(event["user"], badges)
-        event["stdout"].write("Added '%s' badge" % badge)
-
-    @utils.hook("received.command.removebadge", min_args=1)
-    def remove_badge(self, event):
-        """
-        :help: Remove a badge
-        :usage: <badge>
-        """
-        badge = event["args"]
-        badge_lower = badge.lower()
-        badges = self._get_badges(event["user"])
-
-        found_badge = self._find_badge(badges, badge)
-
-        if found_badge:
-            del badges[found_badge]
+                human = utils.datetime.format.date_human(
+                    utils.datetime.parse.iso8601(badges.pop(event["spec"][1])))
+                event["stdout"].write("%s: removed badge '%s' (%s)"
+                    % (event["user"].nickname, event["spec"][1], human))
             self._set_badges(event["user"], badges)
-            event["stdout"].write("Removed '%s' badge" % found_badge)
-        else:
-            event["stderr"].write("You have no '%s' badge" % badge)
-
-    @utils.hook("received.command.resetbadge", min_args=1)
-    def reset_badge(self, event):
-        """
-        :help: Reset a badge to today's date
-        :usage: <badge>
-        """
-        badge = event["args"]
-        badge_lower = badge.lower()
-        badges = self._get_badges(event["user"])
-
-        found_badge = self._find_badge(badges, badge)
-
-        if found_badge:
-            badges[found_badge] = utils.datetime.format.iso8601_now()
-            self._set_badges(event["user"], badges)
-            event["stdout"].write("Reset badge '%s'" % found_badge)
-        else:
-            event["stderr"].write("You have no '%s' badge" % badge)
-
-    @utils.hook("received.command.updatebadge", min_args=2)
-    def update_badge(self, event):
-        """
-        :help: Change the date of a badge
-        :usage: <badge> today|<yyyy-mm-dd>
-        """
-        badge = " ".join(event["args_split"][:-1])
-        badge_lower = badge.lower()
-        badges = self._get_badges(event["user"])
-
-        found_badge = self._find_badge(badges, badge)
-
-        if not found_badge:
-            raise utils.EventError("You have no '%s' badge" % badge)
-
-        dt = self._parse_date(event["args_split"][-1])
-
-        badges[found_badge] = utils.datetime.format.iso8601(dt)
-        self._set_badges(event["user"], badges)
-        event["stdout"].write("Updated '%s' badge to %s" % (
-            found_badge, self._date_str(dt)))
-
-    @utils.hook("received.command.upsertbadge", min_args=2)
-    def upsert_badge(self, event):
-        """
-        :help: Add or update a badge
-        :usage: <badge> today|<yyyy-mm-dd>
-        """
-        badge = " ".join(event["args_split"][:-1])
-        badge_lower = badge.lower()
-        badges = self._get_badges(event["user"])
-
-        found_badge = self._find_badge(badges, badge)
-        dt = self._parse_date(event["args_split"][-1])
-
-        badges[found_badge or badge] = utils.datetime.format.iso8601(dt)
-        self._set_badges(event["user"], badges)
-
-        add_or_update = "Added" if not found_badge else "Updated"
-        event["stdout"].write("%s '%s' badge to %s" % (
-            add_or_update, badge, self._date_str(dt)))
-
-    @utils.hook("received.command.clearbadges", min_args=1)
-    def clear_badges(self, event):
-        """
-        :help: Clear another user's badges
-        :usage: <nickname>
-        :permission: clearbadges
-        """
-        user = event["server"].get_user(event["args_split"][0])
-        badges = self._get_badges(user)
-        if badges:
-            self._del_badges(user)
-            event["stdout"].write("Cleared badges for %s" % user.nickname)
-        else:
-            event["stderr"].write("%s has no badges" % user.nickname)
