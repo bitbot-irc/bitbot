@@ -129,13 +129,11 @@ class Module(ModuleManager.BaseModule):
             target_user.nickname, total, this_channel, event["target"].name,
             since))
 
-    @utils.hook("received.command.trackword", min_args=1)
+    @utils.hook("received.command.trackword")
+    @utils.kwarg("help", "Start tracking a word")
+    @utils.kwarg("permission", "track-word")
+    @utils.spec("!<word>wordlower")
     def track_word(self, event):
-        """
-        :help: Start tracking a word
-        :usage: <word>
-        :permission: track-word
-        """
         word = event["args_split"][0].lower()
         tracked_words = event["server"].get_setting("tracked-words", [])
         if not word in tracked_words:
@@ -146,10 +144,9 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("Already tracking '%s'" % word)
 
     @utils.hook("received.command.trackedwords")
+    @utils.kwarg("help",
+        "List which words are being tracked on the current network")
     def tracked_words(self, event):
-        """
-        :help: List which words are being tracked on the current network
-        """
         event["stdout"].write("Tracked words: %s" % ", ".join(
             event["server"].get_setting("tracked-words", [])))
 
@@ -159,12 +156,10 @@ class Module(ModuleManager.BaseModule):
             nickname = utils.prevent_highlight(nickname)
         return nickname
 
-    @utils.hook("received.command.wordusers", min_args=1)
+    @utils.hook("received.command.wordusers")
+    @utils.kwarg("help", "Show who has used a tracked word the most")
+    @utils.spec("!<word>wordlower")
     def word_users(self, event):
-        """
-        :help: Show who has used a tracked word the most
-        :usage: <word>
-        """
         word = event["args_split"][0].lower()
         if word in event["server"].get_setting("tracked-words", []):
             word_users = event["server"].get_all_user_settings(
@@ -180,13 +175,9 @@ class Module(ModuleManager.BaseModule):
             event["stderr"].write("That word is not being tracked")
 
     @utils.hook("received.command.wordiest")
+    @utils.kwarg("help", "Show wordiest users")
     @utils.spec("!-channelonly ?<start>date ?<end>date")
     def wordiest(self, event):
-        """
-        :help: Show wordiest users
-        :usage: [startdate
-        """
-
         date_str = ""
 
         if event["spec"][0]:
