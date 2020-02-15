@@ -185,7 +185,9 @@ class EventRoot(object):
             [path_str, str(kwargs)])
         start = time.monotonic()
 
-        hooks = self._hooks[path_str]
+        # .copy() hooks so we don't call new hooks in this loop
+        mutable_hooks = self._hooks[path_str]
+        hooks = mutable_hooks.copy()
         if maximum:
             hooks = hooks[:maximum]
         event = self._make_event(path, kwargs)
@@ -193,6 +195,9 @@ class EventRoot(object):
         for hook in hooks:
             if event.eaten:
                 break
+            if not hook in mutable_hooks:
+                # this hook has been removed while handling this event
+                continue
 
             try:
                 returned = hook.call(event)
