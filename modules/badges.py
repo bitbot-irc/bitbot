@@ -29,6 +29,7 @@ class Module(ModuleManager.BaseModule):
         user.del_setting("badges")
 
     @utils.hook("received.command.badge")
+    @utils.kwarg("help", "List, add and remove badges")
     @utils.spec("!'list ?<nickname>ouser")
     @utils.spec("!'add !<name>marginstring !'now")
     @utils.spec("!'add !<name>marginstring !date")
@@ -74,3 +75,16 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write("%s: removed badge '%s' (%s)"
                     % (event["user"].nickname, event["spec"][1], human))
             self._set_badges(event["user"], badges)
+
+    @utils.hook("received.command.badgeclear")
+    @utils.kwarg("help", "Clear a user's badges")
+    @utils.kwarg("permission", "badge-clear")
+    @utils.spec("!<nickname>ouser")
+    def badgeclear(self, event):
+        if self._get_badges(event["spec"][0]):
+            self._del_badges(event["spec"][0])
+            event["stdout"].write("Cleared badges for %s"
+                % event["spec"][0].nickname)
+        else:
+            event["stderr"].write("%s has no badges"
+                % event["spec"][0].nickname)
