@@ -27,21 +27,10 @@ class Module(ModuleManager.BaseModule):
             return False, None
 
     @utils.hook("received.command.define")
+    @utils.kwarg("help", "Define a provided term")
+    @utils.spec("!<term>lstring")
     def define(self, event):
-        """
-        :help: Define a provided term
-        :usage: <phrase>
-        """
-        if event["args"]:
-            word = event["args"]
-        else:
-            word = event["target"].buffer.get(from_self=False)
-            if word:
-                word = word.message
-
-        if not word:
-            raise utils.EventError("No phrase provided")
-        word = word.replace(" ", "+")
+        word = event["spec"][0].replace(" ", "+")
 
         success, definition = self._get_definition(word)
         if success:
@@ -54,10 +43,8 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventResultsError()
 
     @utils.hook("received.command.randomword")
+    @utils.kwarg("help", "Define a random word")
     def random_word(self, event):
-        """
-        :help: Define a random word
-        """
         if not self._last_called or (time.time()-self._last_called >=
                 RANDOM_DELAY_SECONDS):
             self._last_called = time.time()
