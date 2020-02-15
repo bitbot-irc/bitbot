@@ -94,11 +94,10 @@ class Module(ModuleManager.BaseModule):
             stderr.write("%s: %s" % (user.nickname, message))
 
     @utils.hook("received.command.bef", alias_of="befriend")
-    @utils.hook("received.command.befriend", channel_only=True)
+    @utils.hook("received.command.befriend")
+    @utils.kwarg("help", "Befriend a duck")
+    @utils.spec("!-channelonly")
     def befriend(self, event):
-        """
-        :help: Befriend a duck
-        """
         if event["target"].duck_active:
             action = self._duck_action(event["target"], event["user"],
                 "befriended", "ducks-befriended")
@@ -106,11 +105,10 @@ class Module(ModuleManager.BaseModule):
         else:
             self._no_duck(event["target"], event["user"], event["stderr"])
 
-    @utils.hook("received.command.trap", channel_only=True)
+    @utils.hook("received.command.trap")
+    @utils.kwarg("help", "Trap a duck")
+    @utils.spec("!-channelonly")
     def trap(self, event):
-        """
-        :help: Trap a duck
-        """
         if event["target"].duck_active:
             action = self._duck_action(event["target"], event["user"],
                 "trapped", "ducks-shot")
@@ -118,34 +116,29 @@ class Module(ModuleManager.BaseModule):
         else:
             self._no_duck(event["target"], event["user"], event["stderr"])
 
+    def _target(self, target, is_channel, query):
+        if query:
+            if not query == "*":
+                return query
+        elif is_channel:
+            return target.name
+
     @utils.hook("received.command.friends")
+    @utils.kwarg("help", "Show top 10 duck friends")
+    @utils.spec("?<channel>word")
     def friends(self, event):
-        """
-        :help: Show top 10 duck friends
-        :usage: [channel]
-        """
-        query = None
-        if event["args"]:
-            if not event["args_split"][0] == "*":
-                query = event["args_split"][0]
-        elif event["is_channel"]:
-            query = event["target"].name
+        query = self._target(event["target"], event["is_channel"],
+            event["spec"][0])
 
         stats = self._top_duck_stats(event["server"], event["target"],
             "ducks-befriended", "friends", query)
         event["stdout"].write(stats)
     @utils.hook("received.command.enemies")
+    @utils.kwarg("help", "Show top 10 duck enemies")
+    @utils.spec("?<channel>word")
     def enemies(self, event):
-        """
-        :help: Show top 10 duck enemies
-        :usage: [channel]
-        """
-        query = None
-        if event["args"]:
-            if not event["args_split"][0] == "*":
-                query = event["args_split"][0]
-        elif event["is_channel"]:
-            query = event["target"].name
+        query = self._target(event["target"], event["is_channel"],
+            event["spec"][0])
 
         stats = self._top_duck_stats(event["server"], event["target"],
             "ducks-shot", "enemies", query)
@@ -179,14 +172,10 @@ class Module(ModuleManager.BaseModule):
         return nickname
 
     @utils.hook("received.command.duckstats")
+    @utils.kwarg("help", "Get yours, or someone else's, duck stats")
+    @utils.spec("?<nickname>ouser")
     def duckstats(self, event):
-        """
-        :help: Get yours, or someone else's, duck stats
-        :usage: [nickname]
-        """
-        target_user = event["user"]
-        if event["args"]:
-            target_user = event["server"].get_user(event["args_split"][0])
+        target_user = event["spec"][0] or event["user"]
 
         befs = target_user.get_channel_settings_per_setting(
             "ducks-befriended")
