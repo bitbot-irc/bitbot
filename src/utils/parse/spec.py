@@ -36,7 +36,6 @@ class SpecArgumentType(object):
 class SpecArgumentTypePattern(SpecArgumentType):
     _pattern: typing.Pattern
     def _set_modifier(self, modifier):
-        print(modifier)
         self._pattern = re.compile(modifier)
     def simple(self, args):
         match = self._pattern.search(" ".join(args))
