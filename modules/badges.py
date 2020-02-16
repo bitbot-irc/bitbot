@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.badge")
     @utils.kwarg("help", "List, add and remove badges")
     @utils.spec("!'list ?<nickname>ouser")
-    @utils.spec("!'add !<name>marginstring !'now")
+    @utils.spec("!'add !<name>marginstring !'now,today")
     @utils.spec("!'add !<name>marginstring !date")
     @utils.spec("!'remove !<name>string")
     def badge(self, event):
@@ -56,7 +56,7 @@ class Module(ModuleManager.BaseModule):
         else:
             badges = self._get_badges(event["user"])
             if event["spec"][0] == "add":
-                if event["spec"][2] == "now":
+                if event["spec"][2] in ["now", "today"]:
                     dt = utils.datetime.utcnow()
                 else:
                     dt = event["spec"][2]
