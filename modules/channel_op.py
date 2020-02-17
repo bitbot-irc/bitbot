@@ -55,9 +55,9 @@ class Module(ModuleManager.BaseModule):
             server.get_setting("default-kick-reason",
             self.bot.get_setting("default-kick-reson", KICK_REASON)))
 
-    def _kick(self, server, channel, target_user, reason):
+    def _kick(self, server, channel, nicknames, reason):
         reason = reason or self._kick_reason(server, channel)
-        channel.send_kick(target_user.nickname, reason)
+        channel.send_kicks(nicknames, reason)
 
     @utils.hook("received.command.kick")
     @utils.hook("received.command.k", alias_of="kick")
@@ -66,8 +66,8 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Kick a user from a channel")
     @utils.spec("!<#channel>r~channel !<nickname>cuser ?<reason>string")
     def kick(self, event):
-        self._kick(event["server"], event["spec"][0], event["spec"][1],
-            event["spec"][2])
+        self._kick(event["server"], event["spec"][0],
+            [event["spec"][1].nickname], event["spec"][2])
 
     def _format_hostmask(self, user, s):
         vars = {}
@@ -143,9 +143,8 @@ class Module(ModuleManager.BaseModule):
             users = event["spec"][2][1]
         else:
             users = [event["spec"][2][1]]
-        for user in users:
-            self._kick(event["server"], event["spec"][0], user,
-                event["spec"][3])
+        self._kick(event["server"], event["spec"][0],
+            [u.nickname for u in users], event["spec"][3])
 
     @utils.hook("received.command.op")
     @utils.hook("received.command.up", alias_of="op")

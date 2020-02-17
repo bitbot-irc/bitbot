@@ -215,17 +215,25 @@ class Channel(IRCObject.Object):
     def send_tagmsg(self, tags: dict):
         return self.server.send_tagmsg(self.name, tags)
 
+    def _chunks(self, n: int, l: typing.List[str]):
+        return [l[i:i+n] for i in range(0, len(l), n)]
+
     def send_mode(self, mode: str=None, target: typing.List[str]=None):
         return self.server.send_mode(self.name, mode, target)
     def send_modes(self, mode: str, add: bool, args: typing.List[str]):
         chunk_n = int(self.server.isupport.get("MODES", "3") or "6")
-        chunks = [args[i:i+chunk_n] for i in range(0, len(args), chunk_n)]
-        for chunk in chunks:
+        for chunk in self._chunks(chunk_n, args):
             mode_str = "%s%s" % ("+" if add else "-", mode*len(chunk))
             self.server.send_mode(self.name, mode_str, chunk)
 
     def send_kick(self, target: str, reason: str=None):
         return self.server.send_kick(self.name, target, reason)
+    def send_kicks(self, targets: typing.List[str], reason: str=None):
+        chunk_n = self.server.targmax.get("KICK", 1)
+        for chunk in self._chunks(chunk_n, targets):
+            chan_str = ",".join([self.name]*len(chunk))
+            self.server.send_kick(chan_str, ",".join(chunk), reason)
+
     def send_ban(self, hostmask: str):
         return self.server.send_mode(self.name, "+b", [hostmask])
     def send_unban(self, hostmask: str):

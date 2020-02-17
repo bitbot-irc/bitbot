@@ -61,6 +61,13 @@ def handle_005(events, event):
         list_numeric = qiuet.get(2, "367") # RPL_BANLIST
         end_numeric = quiet.get(3, "368")  # RPL_ENDOFBANLIST
         event["server"].quiet = [quiet[0], prefix, list_numeric, end_numeric]
+    if "TARGMAX" in isupport:
+        targmax = {}
+        for piece in isupport["TARGMAX"].split(","):
+            cmd, _, n = piece.partition(":")
+            if n:
+                targmax[cmd] = int(n)
+        event["server"].targmax = targmax
 
     events.on("received.005").call(isupport=isupport,
         server=event["server"])
