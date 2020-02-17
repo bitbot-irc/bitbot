@@ -217,12 +217,20 @@ class Channel(IRCObject.Object):
 
     def send_mode(self, mode: str=None, target: typing.List[str]=None):
         return self.server.send_mode(self.name, mode, target)
+    def send_modes(self, mode: str, add: bool, args: typing.List[str]):
+        chunk_n = int(self.server.isupport.get("MODES", "3") or "6")
+        chunks = [args[i:i+chunk_n] for i in range(0, len(args), chunk_n)]
+        for chunk in chunks:
+            mode_str = "%s%s" % ("+" if add else "-", mode*len(chunk))
+            self.server.send_mode(self.name, mode_str, chunk)
+
     def send_kick(self, target: str, reason: str=None):
         return self.server.send_kick(self.name, target, reason)
     def send_ban(self, hostmask: str):
         return self.server.send_mode(self.name, "+b", [hostmask])
     def send_unban(self, hostmask: str):
         return self.server.send_mode(self.name, "-b", [hostmask])
+
     def send_topic(self, topic: str):
         return self.server.send_topic(self.name, topic)
     def send_part(self, reason: str=None):
