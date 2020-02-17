@@ -1,4 +1,5 @@
 from src.utils.parse import SpecTypeError
+from src.utils.irc import hostmask_match, hostmask_parse
 
 TYPES = {}
 def _type(func):
@@ -69,6 +70,19 @@ def ouser(server, channel, user, args):
 def nuser(server, channel, user, args):
     _assert_args(args, "user")
     return server.get_user(args[0], create=True), 1
+
+@_type
+def cmask(server, channel, user, args):
+    _assert_args(args, "mask")
+    hostmask_obj = hostmask_parse(args[0])
+    users = []
+    for user in channel.users:
+        if hostmask_match(user.hostmask(), hostmask_obj):
+            users.append(user)
+    if users:
+        return users, 1
+    else:
+        raise SpecTypeError("No users found")
 
 @_type
 def lstring(server, channel, user, args):
