@@ -62,7 +62,7 @@ class Server(IRCObject.Object):
         self.channel_types = ["#"]
         self.case_mapping = "rfc1459"
         self.statusmsg = [] # type: typing.List[str]
-        self.targmax = {}
+        self.targmax: typing.Dict[str, int] = {}
 
         self.motd_lines = [] # type: typing.List[str]
         self.motd_done = False
