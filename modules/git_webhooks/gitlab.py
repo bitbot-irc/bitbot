@@ -208,7 +208,7 @@ class GitLab(object):
     def _note(self, full_name, data, object):
         number = utils.irc.color("#%s" % object["iid"], colors.COLOR_ID)
         type = data["object_attributes"]["noteable_type"]
-        type == "issue" if type == "Issue" else "MR"
+        type = "issue" if type == "Issue" else "MR"
 
         title = object["title"]
         commenter = utils.irc.bold(data["user"]["username"])
