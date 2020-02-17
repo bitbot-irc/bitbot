@@ -48,6 +48,12 @@ ISSUE_ACTIONS = {
     "merge": "merged"
 }
 
+WIKI_ACTIONS = {
+    "create": "created",
+    "update": "updated",
+    "delete": "deleted"
+}
+
 class GitLab(object):
     def is_private(self, data, headers):
         if "project" in data:
@@ -112,6 +118,8 @@ class GitLab(object):
             return self.note(full_name, data)
         elif event == "tag_push":
             return self.tag_push(full_name, data)
+        elif event == "wiki_page":
+            return self.wiki_page(data)
 
     def _short_hash(self, hash):
         return hash[:7]
@@ -207,3 +215,11 @@ class GitLab(object):
         url = data["object_attributes"]["url"]
         return [["[%s] %s commented on %s: %s" %
             (type, commenter, number, title), url]]
+
+    def wiki_page(self, data):
+        author = utils.irc.bold(data["user"]["username"])
+        action = data["object_attributes"]["action"]
+        action = WIKI_ACTIONS.get(action, action)
+        title = data["object_attributes"]["title"]
+        url = data["object_attributes"]["url"]
+        return [["%s %s a wiki page: %s" % (author, action, title), url]]
