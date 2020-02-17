@@ -211,7 +211,8 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Quiet a given user")
     @utils.spec("!<#channel>r~channel ?duration !<nickname>user|<mask>word")
     def quiet(self, event):
-        self._quiet(event["server"], True, event["spec"])
+        self._quiet(event["server"], event["spec"][0], event["spec"][2], True,
+            event["spec"][1])
 
     @utils.hook("received.command.unquiet")
     @utils.hook("received.command.unmute")
@@ -220,26 +221,28 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Unquiet a given user")
     @utils.spec("!<#channel>r~channel !<nickname>user|<mask>word")
     def unquiet(self, event):
-        self._quiet(event["server"], False, event["spec"])
+        self._quiet(event["server"], event["spec"][0], event["spec"][1], False,
+            None)
 
-    def _quiet(self, server, add, spec):
+    def _quiet(self, server, channel, target, add, time):
         quiet_method = self._quiet_method(server)
 
         if quiet_method == None:
             raise utils.EventError(NO_QUIETS)
 
         mode, prefix, _, _ = quiet_method
-        mask = spec[1][1]
-        if spec[1][0] == "user":
-            mask = self._get_hostmask(spec[0], spec[1][1])
+        if target[0] == "word":
+            mask = target[1]
+        else:
+            mask = self._get_hostmask(channel, target[1])
         mask = "%s%s" % (prefix, mask)
 
         if add and time:
-            self.timers.add_persistent("unmode", time, channel=spec[0].id,
+            self.timers.add_persistent("unmode", time, channel=channel.id,
                 mode=mode, arg=mask)
 
         mode_modifier = "+" if add else "-"
-        spec[0].send_mode("%s%s" % (mode_modifier, mode), [mask])
+        channel.send_mode("%s%s" % (mode_modifier, mode), [mask])
 
     @utils.hook("received.command.invite")
     @utils.kwarg("require_mode", "o")
