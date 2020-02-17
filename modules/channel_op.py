@@ -85,51 +85,67 @@ class Module(ModuleManager.BaseModule):
         format = channel.get_setting("ban-format", "*!$u@$h")
         return self._format_hostmask(user, format)
 
-    def _ban(self, server, channel, target, allow_hostmask, time, add):
-        if target[0] == "word":
-            if not allow_hostmask:
-                raise utils.EventError("No such user")
-            hostmask = target[1]
-        else:
-            hostmask = self._get_hostmask(channel, target[1])
-
+    def _ban(self, channel, masks, time, add):
         if not add:
-            channel.send_unban(hostmask)
+            channel.send_modes("b", False, masks)
         else:
-            channel.send_ban(hostmask)
+            channel.send_modes("b", True, masks)
 
             if not time == None:
                 self.timers.add_persistent("unmode", time, channel=channel.id,
-                    arg=hostmask)
+                    args=args)
+
+    def _mask_spec(self, channel, spec):
+        if spec[0] == "cuser":
+            return [self._get_hostmask(channel, spec[1])]
+        elif spec[0] == "cmask":
+            return [self._get_hostmask(channel, u) for u in spec[1]]
+        elif spec[0] == "word":
+            return [spec[1]]
 
     @utils.hook("received.command.ban")
     @utils.hook("received.command.b", alias_of="ban")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "high,ban")
-    @utils.spec("!<#channel>r~channel ?duration !<nickname>user|<mask>word")
+    @utils.spec(
+        "!<#channel>r~channel ?duration !<nickname>user|<mask>cmask|<mask>word")
     def ban(self, event):
-        self._ban(event["server"], event["spec"][0], event["spec"][2], True,
-            event["spec"][1], True)
+        masks = self._mask_spec(event["spec"][0], event["spec"][2])
+        self._ban(event["spec"][0], masks, event["spec"][1], True)
 
     @utils.hook("received.command.unban")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "high,ban")
     @utils.spec("!<#channel>r~channel !<nickname>user|<mask>word")
     def unban(self, event):
-        self._ban(event["server"], event["spec"][0], event["spec"][1],
-            True, None, False)
+        if event["spec"][1][0] == "user":
+            masks = self._get_hostmask(event["spec"][0], event["spec"][1][1])
+        elif event["spec"][1][0] == "word":
+            _, masks = self._list_query_event(event["server"],
+                event["spec"][0], "+b", event["spec"][1][1])
+        if masks:
+            event["spec"][0].send_modes("b", False, masks)
+        else:
+            event["stderr"].write("No bans found to remove")
 
     @utils.hook("received.command.kickban")
     @utils.hook("received.command.kb", alias_of="kickban")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "high,kickban")
     @utils.spec(
-        "!<#channel>r~channel ?duration !<nickname>cuser| ?<reason>string")
+        "!<#channel>r~channel ?duration "
+        "!<nickname>cuser|<mask>cmask ?<reason>string")
     def kickban(self, event):
-        self._ban(event["server"], event["spec"][0], event["spec"][2],
-            False, event["spec"][1], True)
-        self._kick(event["server"], event["spec"][0], event["spec"][2][1],
-            event["spec"][3])
+        masks = self._mask_spec(event["spec"][0], event["spec"][2])
+        self._ban(event["spec"][0], masks, event["spec"][1], True)
+
+        if event["spec"][2][0] == "cmask":
+            users = event["spec"][2][1]
+        else:
+            users = [event["spec"][2][1]]
+        for user in users:
+            self._kick(event["server"], event["spec"][0], user,
+                event["spec"][3])
 
     @utils.hook("received.command.op")
     @utils.hook("received.command.up", alias_of="op")
@@ -408,9 +424,7 @@ class Module(ModuleManager.BaseModule):
             event["server"], event["spec"][0], event["spec"][1],
             event["spec"][2])
 
-        chunks = self._chunk(event["server"], mode_list)
-        for chunk in chunks:
-            event["spec"][0].send_mode("-%s" % mode*len(chunk), chunk)
+        event["spec"][0].send_modes(mode, False, mode_list)
 
     @utils.hook("received.command.lsearch")
     @utils.kwarg("require_mode", "o")
