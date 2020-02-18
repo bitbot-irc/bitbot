@@ -62,10 +62,11 @@ def to_pretty_time(total_seconds: int, minimum_unit: int=UNIT_SECOND,
         out.append("%dy" % relative.years)
     if relative.months and minimum_unit >= UNIT_MONTH and len(out) < max_units:
         out.append("%dmo" % relative.months)
-    if relative.weeks and minimum_unit >= UNIT_WEEK and len(out) < max_units:
-        out.append("%dw" % relative.weeks)
-    if relative.days and minimum_unit >= UNIT_DAY and len(out) < max_units:
-        out.append("%dd" % relative.days)
+    weeks, days = divmod(relative.days, 7)
+    if weeks and minimum_unit >= UNIT_WEEK and len(out) < max_units:
+        out.append("%dw" % weeks)
+    if days and minimum_unit >= UNIT_DAY and len(out) < max_units:
+        out.append("%dd" % days)
     if relative.hours and minimum_unit >= UNIT_HOUR and len(out) < max_units:
         out.append("%dh" % relative.hours)
     if relative.minutes and minimum_unit >= UNIT_MINUTE and len(out) < max_units:
