@@ -13,7 +13,7 @@ CAPABILITIES = [
     utils.irc.Capability("cap-notify"),
     utils.irc.Capability("batch"),
     utils.irc.Capability(None, "draft/rename", alias="rename"),
-    utils.irc.Capability(None, "draft/setname", alias="setname")
+    utils.irc.Capability("setname", "draft/setname")
 ]
 
 def _cap_depend_sort(caps, server_caps):
