@@ -7,9 +7,6 @@ from src import EventManager, ModuleManager, utils
 SILENCE_TIME = 60*5 # 5 minutes
 
 class Module(ModuleManager.BaseModule):
-    def on_load(self):
-        self.exports.add("is-silenced", self._is_silenced)
-
     def _is_silenced(self, target):
         silence_until = target.get_setting("silence-until", None)
         if not silence_until == None:
