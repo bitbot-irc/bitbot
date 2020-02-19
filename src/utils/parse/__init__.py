@@ -134,9 +134,12 @@ def format_token_replace(s: str, vars: typing.Dict[str, str],
         sigil: str="$") -> str:
     vars = vars.copy()
     vars.update({sigil: sigil})
+
     tokens = format_tokens(s, sigil)
+    # reverse sort tokens so replaces don't effect proceeding indexes
     tokens.sort(key=lambda x: x[0])
     tokens.reverse()
+
     for start, end, token in tokens:
         if token in vars:
             s = s[:start] + vars[token] + s[end+1:]
