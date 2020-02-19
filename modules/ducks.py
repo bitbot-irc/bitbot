@@ -39,7 +39,7 @@ class Module(ModuleManager.BaseModule):
                 DEFAULT_MIN_MESSAGES)
 
             if channel.duck_lines >= min_lines:
-                show_duck = random.SystemRandom().randint(1, 2) == 1
+                show_duck = random.SystemRandom().randint(1, 20) == 1
 
                 if show_duck:
                     self._trigger_duck(channel)
