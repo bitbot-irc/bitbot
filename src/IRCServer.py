@@ -40,7 +40,6 @@ class Server(IRCObject.Object):
         self.batches = {} # type: typing.Dict[str, IRCLine.IRCBatch]
 
         self.users = {} # type: typing.Dict[str, IRCUser.User]
-        self.new_users = set([]) #type: typing.Set[IRCUser.User]
         self.channels = IRCChannels.Channels(self, self.bot, self.events)
         self.own_modes = {} # type: typing.Dict[str, typing.Optional[str]]
 
@@ -176,7 +175,6 @@ class Server(IRCObject.Object):
             user_id = self.get_user_id(nickname)
             new_user = IRCUser.User(nickname, user_id, self, self.bot)
             self.users[new_user.nickname_lower] = new_user
-            self.new_users.add(new_user)
 
         user = self.users.get(self.irc_lower(nickname), None)
         if user:
@@ -203,6 +201,12 @@ class Server(IRCObject.Object):
         del self.users[user.nickname_lower]
         for channel in user.channels:
             channel.remove_user(user)
+
+    def quit_user(self, user: IRCUser.User):
+        self.remove_user(user)
+    def part_user(self, channel: IRCChannel.Channel, user: IRCUser.User):
+        user.part_channel(channel)
+        channel.remove_user(user)
 
     def is_channel(self, name: str) -> bool:
         return name[0] in self.channel_types
@@ -234,10 +238,12 @@ class Server(IRCObject.Object):
                 line=IRCLine.parse_line(line))
             self.check_users()
     def check_users(self):
-        for user in self.new_users:
+        prune: typing.List[IRCUser.User] = []
+        for user in self.users.values():
             if not len(user.channels):
-                self.remove_user(user)
-        self.new_users.clear()
+                prune.append(user)
+        for user in prune:
+            self.remove_user(user)
 
     def until_next_ping(self) -> typing.Optional[float]:
         if self.ping_sent:

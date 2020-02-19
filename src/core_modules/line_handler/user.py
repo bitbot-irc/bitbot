@@ -27,9 +27,9 @@ def quit(events, event):
         if (not event["server"].is_own_nickname(nickname) and
                 not event["line"].source.hostmask == "*"):
             user = event["server"].get_user(nickname)
+            event["server"].quit_user(user)
             events.on("received.quit").call(reason=reason, user=user,
                 server=event["server"])
-            event["server"].remove_user(user)
         else:
             event["server"].disconnect()
     else:

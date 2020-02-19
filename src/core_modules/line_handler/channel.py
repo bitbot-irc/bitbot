@@ -99,10 +99,7 @@ def part(events, event):
     user = event["server"].get_user(event["line"].source.nickname)
     reason = event["line"].args.get(1)
 
-    channel.remove_user(user)
-    user.part_channel(channel)
-    if not len(user.channels):
-        event["server"].remove_user(user)
+    event["server"].part_user(channel, user)
 
     if not event["server"].is_own_nickname(event["line"].source.nickname):
         events.on("received.part").call(channel=channel, reason=reason,
@@ -148,8 +145,6 @@ def kick(events, event):
 
     channel.remove_user(target_user)
     target_user.part_channel(channel)
-    if not len(target_user.channels):
-        event["server"].remove_user(target_user)
 
 def rename(events, event):
     old_name = event["line"].args[0]
