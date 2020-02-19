@@ -256,7 +256,13 @@ class ModuleManager(object):
         module_title = (getattr(module_object, "_name", None) or
             definition.name.title())
 
-        # @utils.hook() magic
+        # per-module @export magic
+        if utils.decorators.has_magic(module_object):
+            magic = utils.decorators.get_magic(module_object)
+            for key, value in magic.get_exports():
+                context_exports.add(key, value)
+
+        # per-function @hook/@export magic
         for attribute_name in dir(module_object):
             attribute = getattr(module_object, attribute_name)
             if (inspect.ismethod(attribute) and
@@ -265,12 +271,8 @@ class ModuleManager(object):
 
                 for hook, kwargs in magic.get_hooks():
                     context_events.on(hook)._hook(attribute, kwargs=kwargs)
-
-        # @utils.export() magic
-        if utils.decorators.has_magic(module_object):
-            magic = utils.decorators.get_magic(module_object)
-            for key, value in magic.get_exports():
-                context_exports.add(key, value)
+                for key, value in magic.get_exports():
+                    context_exports.add(key, attribute)
 
         branch, commit = utils.git_commit(bot.directory)
 

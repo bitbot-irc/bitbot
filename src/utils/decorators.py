@@ -37,12 +37,11 @@ def hook(event: str, **kwargs):
         magic.add_hook(event, kwargs)
         return func
     return _hook_func
-def export(setting: str, value: typing.Any):
-    def _export_func(module):
-        magic = get_magic(module)
-        magic.add_export(setting, value)
-        return module
-    return _export_func
+def export(setting: str, value: typing.Any=None):
+    def _export(obj: typing.Any):
+        get_magic(obj).add_export(setting, value)
+        return obj
+    return _export
 
 def _kwarg(key: str, value: typing.Any, func: typing.Any):
     magic = get_magic(func)

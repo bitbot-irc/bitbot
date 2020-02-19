@@ -39,10 +39,6 @@ class CoinParseException(Exception):
     pass
 
 class Module(ModuleManager.BaseModule):
-    def on_load(self):
-        self.exports.add("command-spec.coins", self._coins_spec)
-        self.exports.add("command-spec.coinsmany", self._coins_many_spec)
-
     def _coin_spec_parse(self, word):
         try:
             out = decimal.Decimal(word)
@@ -54,11 +50,14 @@ class Module(ModuleManager.BaseModule):
         else:
             raise utils.parse.SpecTypeError(
                 "Please provide a positive coin amount")
+
+    @utils.export("command-spec.coins")
     def _coins_spec(self, server, channel, user, args):
         if args:
             return self._coin_spec_parse(args[0]), 1
         else:
             raise utils.parse.SpecTypeError("No coin amount provided")
+    @utils.export("command-spec.coinsmany")
     def _coins_many_spec(self, server, channel, user, args):
         out = []
         for arg in args:
