@@ -2,12 +2,10 @@ import datetime
 from src import EventManager, ModuleManager, utils
 
 class Module(ModuleManager.BaseModule):
-    def on_load(self):
-        self.exports.add("format", self._event)
-
     def _color(self, nickname):
         return utils.irc.hash_colorize(nickname)
 
+    @utils.export("format")
     def _event(self, type, server, line, context, minimal=None, channel=None,
             user=None, formatting={}, **kwargs):
         pretty = line

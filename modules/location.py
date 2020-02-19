@@ -11,8 +11,8 @@ class Module(ModuleManager.BaseModule):
         setting = utils.FunctionSetting(self._get_location, "location",
             "Set your location", example="London, GB")
         self.exports.add("set", setting)
-        self.exports.add("get-location", self._get_location)
 
+    @utils.export("get-location")
     def _get_location(self,  s):
         page = utils.http.request(URL_OPENCAGE, get_params={"limit": "1",
             "q": s, "key": self.bot.config["opencagedata-api-key"]}).json()

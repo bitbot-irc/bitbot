@@ -171,8 +171,6 @@ class Module(ModuleManager.BaseModule):
         global _log
         _log = self.log
 
-        self.exports.add("url-for", self._url_for)
-
         self.httpd = None
         if self.bot.get_setting("rest-api", False):
             self._start_httpd()
@@ -246,6 +244,7 @@ class Module(ModuleManager.BaseModule):
             else:
                 event["stderr"].write("Count not find API key '%s'" % alias)
 
+    @utils.export("url-for")
     def _url_for(self, route, endpoint, args=[], get_params={},
             host_override=None):
         host = host_override or self.bot.get_setting("rest-api-host", None)

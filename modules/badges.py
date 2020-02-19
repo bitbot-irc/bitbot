@@ -7,8 +7,7 @@ RE_HUMAN_FORMAT = re.compile(r"(\d\d\d\d)-(\d?\d)-(\d?\d)")
 HUMAN_FORMAT_HELP = "year-month-day (e.g. 2018-12-29)"
 
 class Module(ModuleManager.BaseModule):
-    def on_load(self):
-        self.exports.add("command-spec.marginstring", self._marginstring_spec)
+    @utils.export("command-spec.marginstring")
     def _marginstring_spec(self, server, channel, user, args):
         if len(args) > 1:
             new_args = args[:-1]

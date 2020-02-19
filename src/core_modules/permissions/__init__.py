@@ -9,10 +9,6 @@ NO_PERMISSION = "You do not have permission to do that"
 ACCOUNT_TAG = utils.irc.MessageTag("account")
 
 class Module(ModuleManager.BaseModule):
-    def on_load(self):
-        self.exports.add("is-identified", self._is_identified)
-        self.exports.add("account-name", self._account_name)
-
     @utils.hook("new.server")
     def new_server(self, event):
         event["server"]._hostmasks = {}
@@ -59,6 +55,7 @@ class Module(ModuleManager.BaseModule):
         user._id_override = server.get_user_id(account)
         self.events.on("internal.identified").call(server=server, user=user,
             accunt=account)
+    @utils.export("is-identified")
     def _is_identified(self, user):
         return not user._id_override == None
     def _signout(self, user):
@@ -79,6 +76,7 @@ class Module(ModuleManager.BaseModule):
                     user._hostmask_account = (hostmask, account)
                     self._has_identified(server, user, account)
 
+    @utils.export("account-name")
     def _account_name(self, user):
         if not user.account == None:
             return user.account

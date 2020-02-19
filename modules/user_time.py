@@ -15,9 +15,6 @@ class LocationType(enum.Enum):
 class Module(ModuleManager.BaseModule):
     _name = "Time"
 
-    def on_load(self):
-        self.exports.add("time-localise", self.time_localise)
-
     def _find_setting(self, event):
         query = None
         target_user = None
@@ -80,6 +77,7 @@ class Module(ModuleManager.BaseModule):
 
             event["stderr"].write(out % name)
 
+    @utils.export("time-localise")
     def time_localise(self, user, dt):
         location = user.get_setting("location", None)
         timezone = "UTC"

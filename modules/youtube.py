@@ -24,9 +24,6 @@ ARROW_DOWN = "↓"
 @utils.export("channelset", utils.BoolSetting("youtube-safesearch",
     "Turn safe search off/on"))
 class Module(ModuleManager.BaseModule):
-    def on_load(self):
-        self.exports.add("search-youtube", self._search_youtube)
-
     def get_video_page(self, video_id):
         return utils.http.request(URL_YOUTUBEVIDEO, get_params={
             "part": "contentDetails,snippet,statistics",
@@ -115,6 +112,7 @@ class Module(ModuleManager.BaseModule):
         elif parsed.path == "/playlist" and "list" in query:
             return self.playlist_details(query["list"][0])
 
+    @utils.export("search-youtube")
     def _search_youtube(self, query):
         video_id = ""
 

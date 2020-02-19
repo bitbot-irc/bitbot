@@ -8,11 +8,6 @@ URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
 
 class Module(ModuleManager.BaseModule):
     def on_load(self):
-        self.exports.add("shorturl", self._shorturl)
-        self.exports.add("shorturl-any", self._shorturl_any)
-
-        self.exports.add("shorturl-s-bitly", self._bitly)
-
         setting = utils.OptionsSetting([], "url-shortener",
             "Set URL shortener service",
             options_factory=self._shorturl_options_factory)
@@ -35,9 +30,11 @@ class Module(ModuleManager.BaseModule):
             return None
         return short_url
 
+    @utils.export("shorturl-any")
     def _shorturl_any(self, url):
         return self._call_shortener("bitly", url) or url
 
+    @utils.export("shorturl")
     def _shorturl(self, server, url, context=None):
         shortener_name = None
         if context:
@@ -50,6 +47,7 @@ class Module(ModuleManager.BaseModule):
             return url
         return self._call_shortener(shortener_name, url) or url
 
+    @utils.export("shorturl-s-bitly")
     def _bitly(self, url):
         if len(url) < 22:
             return None
