@@ -186,8 +186,8 @@ class Module(ModuleManager.BaseModule):
                 redeem_amount = self._redeem_amount(event["server"])
                 self._give(event["server"], event["user"], redeem_amount)
 
-                event["stdout"].write("Redeemed %s coins" % self._coin_str(
-                    redeem_amount))
+                event["stdout"].write("%s: redeemed %s coins"
+                    % (event["user"].nickname, self._coin_str(redeem_amount)))
 
                 redeem_delay = self._redeem_delay(event["server"])
                 self.bot.cache.temporary_cache(cache, True, redeem_delay)
