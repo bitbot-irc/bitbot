@@ -60,10 +60,14 @@ class Module(ModuleManager.BaseModule):
                     dt = utils.datetime.utcnow()
                 else:
                     dt = event["spec"][2]
+
+                exists = event["spec"][1] in badges
+                action = "updated" if exists else "added"
+
                 badges[event["spec"][1]] = utils.datetime.format.iso8601(dt)
                 human = utils.datetime.format.date_human(dt)
-                event["stdout"].write("%s: added badge %s (%s)"
-                    % (event["user"].nickname, event["spec"][1], human))
+                event["stdout"].write("%s: %s badge %s (%s)"
+                    % (event["user"].nickname, action, event["spec"][1], human))
 
             elif event["spec"][0] == "remove":
                 if not event["spec"][1] in badges:
