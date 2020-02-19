@@ -109,12 +109,8 @@ def parse_number(s: str) -> str:
         raise ValueError("Unknown unit '%s' given to parse_number" % unit)
     return str(number)
 
-def format_tokens(s: str, names: typing.List[str], sigil: str="$"
+def format_tokens(s: str, sigil: str="$"
         ) -> typing.List[typing.Tuple[int, str]]:
-    names = names.copy()
-    names.sort()
-    names.reverse()
-
     i = 0
     max = len(s)-1
     sigil_found = False
@@ -123,14 +119,14 @@ def format_tokens(s: str, names: typing.List[str], sigil: str="$"
     while i < max:
         if s[i] == sigil:
             i += 1
-            if not s[i] == sigil:
-                for name in names:
-                    if len(name) <= (len(s)-i) and s[i:i+len(name)] == name:
-                        tokens.append((i-1, "%s%s" % (sigil, name)))
-                        i += len(name)
-                        break
-            else:
-                tokens.append((i-1, "$$"))
+            if s[i] == "{":
+                token_end = s.find("}", i)
+                if token_end > i:
+                    token = s[i:token_end]
+                    tokens.append((i-1, token_end, s[i+1:token_end]))
+                    i = token_end
+            elif s[i] == sigil:
+                tokens.append((i-1, i, sigil))
         i += 1
     return tokens
 
@@ -138,9 +134,10 @@ def format_token_replace(s: str, vars: typing.Dict[str, str],
         sigil: str="$") -> str:
     vars = vars.copy()
     vars.update({sigil: sigil})
-    tokens = format_tokens(s, list(vars.keys()), sigil)
+    tokens = format_tokens(s, sigil)
     tokens.sort(key=lambda x: x[0])
     tokens.reverse()
-    for i, token in tokens:
-        s = s[:i] + vars[token.replace(sigil, "", 1)] + s[i+len(token):]
+    for start, end, token in tokens:
+        if token in vars:
+            s = s[:start] + vars[token] + s[end+1:]
     return s
