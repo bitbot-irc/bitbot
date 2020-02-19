@@ -110,11 +110,11 @@ def parse_number(s: str) -> str:
     return str(number)
 
 def format_tokens(s: str, sigil: str="$"
-        ) -> typing.List[typing.Tuple[int, str]]:
+        ) -> typing.List[typing.Tuple[int, int, str]]:
     i = 0
     max = len(s)-1
     sigil_found = False
-    tokens: typing.List[typing.Tuple[int, str]] = []
+    tokens: typing.List[typing.Tuple[int, int, str]] = []
 
     while i < max:
         if s[i] == sigil:
