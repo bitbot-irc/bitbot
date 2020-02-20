@@ -33,6 +33,9 @@ module-whitelist         =
 # path to an external directory for modules to be found in
 external-modules         =
 
+# optional PEM public key used to encrypt channel_log log lines
+log-key                  =
+
 # https://openweathermap.org/api
 openweathermap-api-key   =
 

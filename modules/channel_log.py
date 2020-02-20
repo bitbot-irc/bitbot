@@ -26,10 +26,16 @@ class Module(ModuleManager.BaseModule):
         return self.data_directory("%s/%s.log" % (server_name, sanitised_name))
     def _log(self, server, channel, line):
         if self._enabled(server, channel):
-            with open(self._file(str(server), str(channel)), "a") as log:
-                timestamp = utils.datetime.format.datetime_human(
-                    datetime.datetime.now())
-                log.write("%s %s\n" % (timestamp, line))
+            timestamp = utils.datetime.format.datetime_human(
+                datetime.datetime.now())
+            log_line = "%s %s" % (timestamp, line)
+
+            if "log-key" in self.bot.config:
+                log_line = "\x02%s" % utils.security.a_encrypt(
+                    self.bot.config["log-key"], log_line)
+
+            with open(self._file(str(server), str(channel)), "a") as log_file:
+                log_file.write("%s\n" % log_line)
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")

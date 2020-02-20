@@ -1,4 +1,4 @@
-import hmac, socket, ssl, typing
+import base64, hmac, socket, ssl, typing
 
 def ssl_context(cert: str=None, key: str=None, verify: bool=True
         ) -> ssl.SSLContext:
@@ -24,3 +24,28 @@ def ssl_wrap(sock: socket.socket, cert: str=None, key: str=None,
 
 def constant_time_compare(a: typing.AnyStr, b: typing.AnyStr) -> bool:
     return hmac.compare_digest(a, b)
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+
+def a_encrypt(key_filename: str, data: str):
+    with open(key_filename, "rb") as key_file:
+        key_content = key_file.read()
+    key = serialization.load_pem_public_key(
+        key_content, backend=default_backend())
+    out = key.encrypt(data.encode("utf8"), padding.OAEP(
+        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+        algorithm=hashes.SHA256(), label=None))
+    return base64.b64encode(out).decode("iso-8859-1")
+
+def a_decrypt(key_filename: str, data: str):
+    with open(key_filename, "rb") as key_file:
+        key_content = key_file.read()
+    key = serialization.load_pem_private_key(
+        key_content, password=None, backend=default_backend())
+    out = key.decrypt(base64.b64decode(data), padding.OAEP(
+        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+        algorithm=hashes.SHA256(), label=None))
+    return out.decode("utf8")
