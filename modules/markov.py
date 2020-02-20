@@ -3,6 +3,8 @@ from src import ModuleManager, utils
 
 NO_MARKOV = "Markov chains not enabled in this channel"
 
+@utils.export("channelset", utils.IntRangeSetting(0, 100, "markov-chance",
+    "0 to 100 percent chance of markov chains being generated at random"))
 class Module(ModuleManager.BaseModule):
     _load_thread = None
 
@@ -20,6 +22,16 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("command", "markov-trigger")
     @utils.kwarg("pattern", re.compile(".+"))
     def channel_message(self, event):
+        markov_chance = event["target"].get_setting("markov-chance", 0)
+        if random.randint(0, 99) < markov_chance:
+            words = event["message"].split()
+            random.shuffle(words)
+            for word in words:
+                out = self._generate(event["target"].id, [word])
+                if out:
+                    event["stdout"].write(out)
+                    break
+
         if event["target"].get_setting("markov", False):
             self._create(event["target"].id, event["match"].group(0))
 
