@@ -48,7 +48,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.filter")
     @utils.hook("received.command.bfilter")
     @utils.kwarg("help", "Add a message filter for the current channel")
-    @utils.kwarg("permissions", "cfilter")
+    @utils.kwarg("permission", "cfilter")
     @utils.spec("!'list ?<index>int")
     @utils.spec("!'add ?<m/pattern/>string|<s/pattern/replace/>string")
     @utils.spec("!'remove !<index>int")
