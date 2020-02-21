@@ -96,7 +96,7 @@ class Module(ModuleManager.BaseModule):
                     args=args)
 
     def _mask_spec(self, channel, spec):
-        if spec[0] == "cuser":
+        if spec[0] in ["user", "cuser"]:
             return [self._get_hostmask(channel, spec[1])]
         elif spec[0] == "cmask":
             return [self._get_hostmask(channel, u) for u in spec[1]]
