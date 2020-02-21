@@ -12,23 +12,23 @@ QUIET_METHODS = {
 }
 
 KICK_REASON = "your behavior is not conducive to the desired environment"
-
 NO_QUIETS = "This network doesn't support quiets"
 
 KICK_REASON_SETTING = utils.Setting("default-kick-reason",
     "Set the default kick reason", example="have a nice trip")
 
+BAN_FORMATTING = "${n} = nick, ${u} = username, ${h} = hostname, ${a} = account"
 @utils.export("channelset", utils.Setting("ban-format",
-    "Set ban format ($n = nick, $u = username, $h = hostname, $a = account)",
+    "Set ban format (%s)" % BAN_FORMATTING, example="*!${u}@${h}"))
 
-    example="*!$u@$h"))
 @utils.export("channelset", utils.Setting("ban-format-account",
-    "Set ban format for users with accounts "
-    "($n = nick, $u = username, $h = hostname, $a = account)", example="~a:$a"))
+    "Set ban format for users with accounts (%s)" % BAN_FORMATTING,
+    example="~a:${a}"))
 
 @utils.export("serverset", utils.OptionsSetting(
     list(QUIET_METHODS.keys())+["none"], "quiet-method",
     "Set this server's method of muting users"))
+
 @utils.export("botset", KICK_REASON_SETTING)
 @utils.export("serverset", KICK_REASON_SETTING)
 @utils.export("channelset", KICK_REASON_SETTING)
@@ -82,7 +82,7 @@ class Module(ModuleManager.BaseModule):
             if not account_format == None:
                 return self._format_hostmask(user, account_format)
 
-        format = channel.get_setting("ban-format", "*!$u@$h")
+        format = channel.get_setting("ban-format", "*!${u}@${h}")
         return self._format_hostmask(user, format)
 
     def _ban(self, channel, masks, time, add):
