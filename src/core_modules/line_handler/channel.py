@@ -106,7 +106,7 @@ def part(events, event):
             user=user, server=event["server"])
     else:
         event["server"].channels.remove(channel)
-        for user in channel.users:
+        for user in channel.users.copy():
             event["server"].part_user(channel, user)
 
         events.on("self.part").call(channel=channel, reason=reason,
