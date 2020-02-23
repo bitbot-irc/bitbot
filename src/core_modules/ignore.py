@@ -51,7 +51,7 @@ class Module(ModuleManager.BaseModule):
         for_str = ""
         if event["spec"][2]:
             setting = "ignore-%s" % event["spec"][2]
-            for_str = " for '%s'" % command
+            for_str = " for '%s'" % event["spec"][2]
 
         user = event["spec"][1]
         if user.get_setting(setting, False):
