@@ -1,10 +1,12 @@
 import re, typing
 import datetime as _datetime
-import dateutil.parser
+import dateutil.parser, isodate
 from .common import *
 
 def iso8601(s: str) -> _datetime.datetime:
     return dateutil.parser.parse(s)
+def iso8601_duration(s: str) -> _datetime.timedelta:
+    return isodate.parse_duration(s)
 
 def date_human(s: str) -> typing.Optional[_datetime.datetime]:
     try:

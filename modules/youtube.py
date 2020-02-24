@@ -6,7 +6,6 @@ import datetime, re, urllib.parse
 from src import EventManager, ModuleManager, utils
 
 REGEX_YOUTUBE = re.compile("https?://(?:www\.|m\.)?(?:youtu.be/|youtube.com/)\\S+", re.I)
-REGEX_ISO8601 = re.compile("PT(\d+H)?(\d+M)?(\d+S)?", re.I)
 
 URL_YOUTUBESEARCH = "https://www.googleapis.com/youtube/v3/search"
 URL_YOUTUBEVIDEO = "https://www.googleapis.com/youtube/v3/videos"
@@ -52,7 +51,6 @@ class Module(ModuleManager.BaseModule):
             video_views = self._number(statistics.get("viewCount"))
             video_likes = self._number(statistics.get("likeCount"))
             video_dislikes = self._number(statistics.get("dislikeCount"))
-            video_duration = content["duration"]
 
             video_opinions = ""
             if video_likes and video_dislikes:
@@ -66,14 +64,9 @@ class Module(ModuleManager.BaseModule):
             if video_views:
                 video_views_str = ", %s views" % video_views
 
-            match = re.match(REGEX_ISO8601, video_duration)
-            video_duration = ""
-            video_duration += "%s:" % match.group(1)[:-1].zfill(2
-                ) if match.group(1) else ""
-            video_duration += "%s:" % match.group(2)[:-1].zfill(2
-                ) if match.group(2) else "00:"
-            video_duration += "%s" % match.group(3)[:-1].zfill(2
-                ) if match.group(3) else "00"
+            td = utils.datetime.parse.iso8601_duration(content["duration"])
+            video_duration = utils.datetime.format.to_pretty_time(
+                td.total_seconds())
 
             url = URL_YOUTUBESHORT % video_id
 
