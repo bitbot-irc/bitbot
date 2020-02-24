@@ -25,24 +25,24 @@ class Module(ModuleManager.BaseModule):
         sanitised_name = channel_name.replace(os.path.sep, ",")
         return self.data_directory("%s/%s.log" % (server_name, sanitised_name))
     def _write_line(self, channel, line):
-        channel.__log_file.write("%s\n" % line)
+        channel._log_file.write("%s\n" % line)
     def _write(self, channel, filename, key, line):
-        if not hasattr(channel, "__log_file"):
-            channel.__log_file = utils.io.open(filename, "a")
-            channel.__log_rsa = None
-            channel.__log_aes = None
+        if not hasattr(channel, "_log_file"):
+            channel._log_file = utils.io.open(filename, "a")
+            channel._log_rsa = None
+            channel._log_aes = None
 
-        if key and not key == channel.__log_rsa:
+        if key and not key == channel._log_rsa:
             aes_key = utils.security.aes_key()
-            channel.__log_rsa = key
-            channel.__log_aes = aes_key
+            channel._log_rsa = key
+            channel._log_aes = aes_key
 
             aes_key_line = utils.security.rsa_encrypt(key, aes_key)
             self._write_line(channel, "\x03%s" % aes_key_line)
 
-        if not channel.__log_aes == None:
+        if not channel._log_aes == None:
             line = "\x04%s" % utils.security.aes_encrypt(
-                channel.__log_aes, line)
+                channel._log_aes, line)
         self._write_line(channel, line)
 
     def _log(self, server, channel, line):
