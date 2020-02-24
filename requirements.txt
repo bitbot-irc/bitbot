@@ -1,16 +1,16 @@
-beautifulsoup4==4.8.0
-cryptography==2.7
-dataclasses==0.6
-dnspython==1.16.0
-feedparser==5.2.1
-html5lib==1.0.1
-lxml==4.4.1
-netifaces==0.10.9
-PySocks==1.7.1
-python-dateutil==2.8.1
-pytz==2019.2
-requests==2.22.0
-scrypt==0.8.13
-suds-jurko==0.6
-tornado==6.0.3
-tweepy==3.8.0
+beautifulsoup4  ==4.8.0
+cryptography    ==2.7
+dataclasses     ==0.6
+dnspython       ==1.16.0
+feedparser      ==5.2.1
+html5lib        ==1.0.1
+lxml            ==4.4.1
+netifaces       ==0.10.9
+PySocks         ==1.7.1
+python-dateutil ==2.8.1
+pytz            ==2019.2
+requests        ==2.22.0
+scrypt          ==0.8.13
+suds-jurko      ==0.6
+tornado         ==6.0.3
+tweepy          ==3.8.0
