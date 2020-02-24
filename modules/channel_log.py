@@ -26,6 +26,7 @@ class Module(ModuleManager.BaseModule):
         return self.data_directory("%s/%s.log" % (server_name, sanitised_name))
     def _write_line(self, channel, line):
         channel._log_file.write("%s\n" % line)
+        channel._log_file.flush()
     def _write(self, channel, filename, key, line):
         if not hasattr(channel, "_log_file"):
             channel._log_file = utils.io.open(filename, "a")
