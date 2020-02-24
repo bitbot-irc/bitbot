@@ -61,8 +61,9 @@ def to_pretty_time(total_seconds: int, max_units: int=UNIT_MINIMUM,
             later += mod
         else:
             later -= mod
-        relative = dateutil.relativedelta.relativedelta(
-            *sorted([later, now], reverse=True))
+
+        dts = [later, now]
+        relative = dateutil.relativedelta.relativedelta(max(dts), min(dts))
         years = relative.years
         months = relative.months
         weeks, days = divmod(relative.days, 7)
