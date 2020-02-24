@@ -26,9 +26,9 @@ def constant_time_compare(a: typing.AnyStr, b: typing.AnyStr) -> bool:
     return hmac.compare_digest(a, b)
 
 import scrypt
-def password(byte_n: int=32):
+def password(byte_n: int=32) -> str:
     return binascii.hexlify(os.urandom(byte_n)).decode("utf8")
-def salt(byte_n: int=64) -> bytes:
+def salt(byte_n: int=64) -> str:
     return base64.b64encode(os.urandom(byte_n)).decode("utf8")
 def hash(given_salt: str, data: str):
     return base64.b64encode(scrypt.hash(data, given_salt)).decode("utf8")
