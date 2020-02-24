@@ -24,18 +24,35 @@ class Module(ModuleManager.BaseModule):
         # forbidden in channel names.
         sanitised_name = channel_name.replace(os.path.sep, ",")
         return self.data_directory("%s/%s.log" % (server_name, sanitised_name))
+    def _write_line(self, channel, line):
+        channel.__log_file.write("%s\n" % line)
+    def _write(self, channel, filename, key, line):
+        if not hasattr(channel, "__log_file"):
+            channel.__log_file = open(filename, "a")
+            channel.__log_rsa = None
+            channel.__log_aes = None
+
+        if key and not key == channel.__log_rsa:
+            aes_key = utils.security.aes_key()
+            channel.__log_rsa = key
+            channel.__log_aes = aes_key
+
+            aes_key_line = utils.security.rsa_encrypt(key, aes_key)
+            self._write_line(channel, "\x03%s" % aes_key_line)
+
+        if not channel.__log_aes == None:
+            line = "\x04%s" % utils.security.aes_encrypt(
+                channel.__log_aes, line)
+        self._write_line(channel, line)
+
     def _log(self, server, channel, line):
         if self._enabled(server, channel):
+            filename = self._file(str(server), str(channel))
             timestamp = utils.datetime.format.datetime_human(
                 datetime.datetime.now())
             log_line = "%s %s" % (timestamp, line)
-
-            if "log-key" in self.bot.config:
-                log_line = "\x02%s" % utils.security.a_encrypt(
-                    self.bot.config["log-key"], log_line)
-
-            with open(self._file(str(server), str(channel)), "a") as log_file:
-                log_file.write("%s\n" % log_line)
+            self._write(channel, filename, self.bot.config.get("log-key"),
+                log_line)
 
     @utils.hook("formatted.message.channel")
     @utils.hook("formatted.notice.channel")

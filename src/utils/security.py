@@ -39,24 +39,30 @@ def hash_verify(salt: str, data: str, compare: str):
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding as a_padding
 
-def a_encrypt(key_filename: str, data: str):
+def rsa_encrypt(key_filename: str, data: bytes) -> str:
     with open(key_filename, "rb") as key_file:
         key_content = key_file.read()
     key = serialization.load_pem_public_key(
         key_content, backend=default_backend())
-    out = key.encrypt(data.encode("utf8"), padding.OAEP(
-        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+    out = key.encrypt(data, a_padding.OAEP(
+        mgf=a_padding.MGF1(algorithm=hashes.SHA256()),
         algorithm=hashes.SHA256(), label=None))
     return base64.b64encode(out).decode("iso-8859-1")
 
-def a_decrypt(key_filename: str, data: str):
-    with open(key_filename, "rb") as key_file:
-        key_content = key_file.read()
-    key = serialization.load_pem_private_key(
-        key_content, password=None, backend=default_backend())
-    out = key.decrypt(base64.b64decode(data), padding.OAEP(
-        mgf=padding.MGF1(algorithm=hashes.SHA256()),
-        algorithm=hashes.SHA256(), label=None))
-    return out.decode("utf8")
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
+
+def aes_key() -> bytes:
+    return os.urandom(32)
+def aes_encrypt(key: bytes, data: str) -> str:
+    iv = os.urandom(16)
+    padder = padding.PKCS7(256).padder()
+
+    data_bytes = padder.update(data.encode("utf8"))+padder.finalize()
+    encryptor = Cipher(algorithms.AES(key), modes.CBC(iv),
+        backend=default_backend()).encryptor()
+
+    ct = encryptor.update(data_bytes)+encryptor.finalize()
+    return base64.b64encode(iv+ct).decode("latin-1")
