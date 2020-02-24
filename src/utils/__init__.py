@@ -1,6 +1,6 @@
 import contextlib, enum, ipaddress, multiprocessing, os.path, queue, signal
 import threading, typing
-from . import cli, consts, datetime, decorators, irc, http, parse, security
+from . import cli, consts, datetime, decorators, io, irc, http, parse, security
 
 from .decorators import export, hook, kwarg, spec
 from .settings import (BoolSetting, FunctionSetting, IntRangeSetting,

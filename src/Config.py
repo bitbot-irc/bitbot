@@ -1,4 +1,5 @@
 import collections, configparser, os, typing
+from src import utils
 
 class Config(object):
     def __init__(self, name: str, location: str):
@@ -11,7 +12,7 @@ class Config(object):
 
     def load(self):
         if os.path.isfile(self.location):
-            with open(self.location) as config_file:
+            with utils.io.open(self.location, "r") as config_file:
                 parser = self._parser()
                 parser.read_string(config_file.read())
                 self._config.clear()
@@ -20,7 +21,7 @@ class Config(object):
                         self._config[k] = v
 
     def save(self):
-        with open(self.location, "w") as config_file:
+        with utils.io.open(self.location, "w") as config_file:
             parser = self._parser()
             parser[self._name] = self._config.copy()
             parser.write(config_file)

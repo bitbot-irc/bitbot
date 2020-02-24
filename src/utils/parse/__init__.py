@@ -1,5 +1,5 @@
-import decimal, io, re, typing
-from src.utils import datetime, errors
+import decimal, re, typing
+from src.utils import datetime, errors, io
 
 from .spec import *
 from .time import duration
@@ -10,7 +10,7 @@ COMMENT_TYPES = ["#", "//"]
 def hashflags(filename: str
         ) -> typing.List[typing.Tuple[str, typing.Optional[str]]]:
     hashflags = [] # type: typing.List[typing.Tuple[str, typing.Optional[str]]]
-    with io.open(filename, mode="r", encoding="utf8") as f:
+    with io.open(filename, "r") as f:
         for line in f:
             line = line.strip("\n")
             found = False

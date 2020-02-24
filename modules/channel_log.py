@@ -28,7 +28,7 @@ class Module(ModuleManager.BaseModule):
         channel.__log_file.write("%s\n" % line)
     def _write(self, channel, filename, key, line):
         if not hasattr(channel, "__log_file"):
-            channel.__log_file = open(filename, "a")
+            channel.__log_file = utils.io.open(filename, "a")
             channel.__log_rsa = None
             channel.__log_aes = None
 
