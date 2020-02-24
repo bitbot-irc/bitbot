@@ -62,4 +62,7 @@ for line in lines:
         printable = line
 
     if not printable == None:
-        print(printable)
+        try:
+            sys.stdout.write("%s\n" % printable)
+        except BrokenPipeError:
+            break
