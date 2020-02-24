@@ -49,7 +49,7 @@ def rsa_encrypt(key_filename: str, data: bytes) -> str:
     out = key.encrypt(data, a_padding.OAEP(
         mgf=a_padding.MGF1(algorithm=hashes.SHA256()),
         algorithm=hashes.SHA256(), label=None))
-    return base64.b64encode(out).decode("iso-8859-1")
+    return base64.b64encode(out).decode("latin-1")
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
