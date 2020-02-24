@@ -7,7 +7,7 @@ HIDDEN_MODES = set(["s", "p"])
 
 class Module(ModuleManager.BaseModule):
     def _uptime(self):
-        return utils.datetime.format.to_pretty_time(
+        return utils.datetime.format.to_pretty_since(
             int(time.time()-self.bot.start_time))
 
     @utils.hook("received.command.uptime")

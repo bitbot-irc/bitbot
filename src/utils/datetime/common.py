@@ -40,3 +40,7 @@ def timestamp(seconds: float) -> _datetime.datetime:
 
 def seconds_since(dt: _datetime.datetime) -> float:
     return (utcnow()-dt).total_seconds()
+
+class RelativeDirection(enum.Enum):
+    FORWARD = 1
+    BACKWARD = 2

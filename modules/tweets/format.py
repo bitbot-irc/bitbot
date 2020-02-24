@@ -3,7 +3,7 @@ from src import utils
 
 def _timestamp(dt):
     seconds_since = time.time()-dt.timestamp()
-    timestamp = utils.datetime.format.to_pretty_time(
+    timestamp = utils.datetime.format.to_pretty_since(
         seconds_since, max_units=2)
     return "%s ago" % timestamp
 

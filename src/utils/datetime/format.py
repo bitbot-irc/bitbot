@@ -48,31 +48,55 @@ def time_unit(seconds: int) -> typing.Tuple[int, str]:
         unit = "%ss" % unit # pluralise the unit
     return (since, unit)
 
-def to_pretty_time(total_seconds: int, minimum_unit: int=UNIT_SECOND,
-        max_units: int=UNIT_MINIMUM) -> str:
+def to_pretty_time(total_seconds: int, max_units: int=UNIT_MINIMUM,
+        direction: typing.Optional[RelativeDirection]=None) -> str:
     if total_seconds == 0:
         return "0s"
 
-    now = utcnow()
-    later = now+_datetime.timedelta(seconds=total_seconds)
-    relative = dateutil.relativedelta.relativedelta(later, now)
+    if not direction == None:
+        now = utcnow()
+        later = now
+        mod = _datetime.timedelta(seconds=total_seconds)
+        if direction == RelativeDirection.FORWARD:
+            later += mod
+        else:
+            later -= mod
+        relative = dateutil.relativedelta.relativedelta(
+            *sorted([later, now], reverse=True))
+        years = relative.years
+        months = relative.months
+        weeks, days = divmod(relative.days, 7)
+        hours = relative.hours
+        minutes = relative.minutes
+        seconds = relative.seconds
+    else:
+        years, months    = 0, 0
+        weeks, days      = divmod(total_seconds, SECONDS_WEEKS)
+        days, hours      = divmod(days, SECONDS_DAYS)
+        hours, minutes   = divmod(hours, SECONDS_HOURS)
+        minutes, seconds = divmod(minutes, SECONDS_MINUTES)
 
     out: typing.List[str] = []
-    if relative.years and minimum_unit >= UNIT_YEAR and len(out) < max_units:
-        out.append("%dy" % relative.years)
-    if relative.months and minimum_unit >= UNIT_MONTH and len(out) < max_units:
-        out.append("%dmo" % relative.months)
-    weeks, days = divmod(relative.days, 7)
-    if weeks and minimum_unit >= UNIT_WEEK and len(out) < max_units:
+    if years and len(out) < max_units:
+        out.append("%dy" % years)
+    if months and len(out) < max_units:
+        out.append("%dmo" % months)
+    if weeks and len(out) < max_units:
         out.append("%dw" % weeks)
-    if days and minimum_unit >= UNIT_DAY and len(out) < max_units:
+    if days and len(out) < max_units:
         out.append("%dd" % days)
-    if relative.hours and minimum_unit >= UNIT_HOUR and len(out) < max_units:
-        out.append("%dh" % relative.hours)
-    if relative.minutes and minimum_unit >= UNIT_MINUTE and len(out) < max_units:
-        out.append("%dmi" % relative.minutes)
-    if relative.seconds and minimum_unit >= UNIT_SECOND and len(out) < max_units:
-        out.append("%ds" % relative.seconds)
+    if hours and len(out) < max_units:
+        out.append("%dh" % hours)
+    if minutes and len(out) < max_units:
+        out.append("%dmi" % minutes)
+    if seconds and len(out) < max_units:
+        out.append("%ds" % seconds)
 
     return " ".join(out)
 
+def to_pretty_since(total_seconds: int, max_units: int=UNIT_MINIMUM
+        ) -> str:
+    return to_pretty_time(total_seconds, max_units, RelativeDirection.BACKWARD)
+def to_pretty_until(total_seconds: int, max_units: int=UNIT_MINIMUM
+        ) -> str:
+    return to_pretty_time(total_seconds, max_units, RelativeDirection.FORWARD)

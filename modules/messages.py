@@ -16,7 +16,7 @@ class Module(ModuleManager.BaseModule):
             for i, message in enumerate(message_list):
                 seconds = utils.datetime.seconds_since(message.line.timestamp)
                 messages.append("(%d/%d) %s ago %s" % (i+1, message_count,
-                    utils.datetime.format.to_pretty_time(seconds),
+                    utils.datetime.format.to_pretty_since(seconds),
                     message.line.format()))
 
             event["stdout"].write("%s: found: %s"
