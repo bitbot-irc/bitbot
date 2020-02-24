@@ -1,7 +1,6 @@
 #--depends-on commands
 
 import base64, binascii, os
-import scrypt
 from src import EventManager, ModuleManager, utils
 
 HOSTMASKS_SETTING = "hostmask-account"
@@ -25,15 +24,9 @@ class Module(ModuleManager.BaseModule):
         if hostmask in server._hostmasks:
             del server._hostmasks[hostmask]
 
-    def _make_salt(self):
-        return base64.b64encode(os.urandom(64)).decode("utf8")
-
-    def _random_password(self):
-        return binascii.hexlify(os.urandom(32)).decode("utf8")
-
     def _make_hash(self, password, salt=None):
-        salt = salt or self._make_salt()
-        hash = base64.b64encode(scrypt.hash(password, salt)).decode("utf8")
+        salt = salt or utils.security.salt()
+        hash = utils.security.hash(salt, password)
         return hash, salt
 
     def _get_hash(self, server, account):
@@ -42,7 +35,7 @@ class Module(ModuleManager.BaseModule):
         return hash, salt
 
     def _master_password(self):
-        master_password = self._random_password()
+        master_password = utils.security.password()
         hash, salt = self._make_hash(master_password)
         self.bot.set_setting("master-password", [hash, salt])
         return master_password
@@ -162,8 +155,7 @@ class Module(ModuleManager.BaseModule):
         saved_hash, saved_salt = self.bot.get_setting("master-password",
             (None, None))
         if saved_hash and saved_salt:
-            given_hash, _ = self._make_hash(event["args"], saved_salt)
-            if utils.security.constant_time_compare(given_hash, saved_hash):
+            if utils.security.hash_verify(saved_salt, event["args"], saved_hash):
                 self.bot.del_setting("master-password")
                 event["user"]._master_admin = True
                 event["stdout"].write("Master login successful")
@@ -212,8 +204,7 @@ class Module(ModuleManager.BaseModule):
 
             hash, salt = self._get_hash(event["server"], account)
             if hash and salt:
-                attempt, _ = self._make_hash(password, salt)
-                if utils.security.constant_time_compare(attempt, hash):
+                if utils.security.hash_verify(salt, password, hash):
                     event["user"]._account_override = account
                     self._has_identified(event["server"], event["user"], account)
 
