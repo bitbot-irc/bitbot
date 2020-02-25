@@ -46,8 +46,7 @@ class Module(ModuleManager.BaseModule):
                 channel = server.channels.get(channel_name)
 
                 args = timer.kwargs.get("args", [timer.kwargs.get("arg", None)])
-                mode = timer.kwargs.get("mode", "b")*max(1, len(args))
-                server.send_mode(channel.name, "-%s" % mode, args)
+                channel.send_modes(timer.kwargs.get("mode", "b"), False, args)
 
 
     def _kick_reason(self, server, channel):
