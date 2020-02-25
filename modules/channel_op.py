@@ -44,10 +44,10 @@ class Module(ModuleManager.BaseModule):
             server = self.bot.get_server_by_id(server_id)
             if server and channel_name in server.channels:
                 channel = server.channels.get(channel_name)
-                mode = "-%s" % timer.kwargs.get("mode", "b")
 
-                arg = timer.kwargs.get("args", [timer.kwargs.get("arg", None)])
-                server.send_mode(channel.name, mode, arg)
+                args = timer.kwargs.get("args", [timer.kwargs.get("arg", None)])
+                mode = timer.kwargs.get("mode", "b")*max(1, len(args))
+                server.send_mode(channel.name, "-%s" % mode, args)
 
 
     def _kick_reason(self, server, channel):
@@ -58,16 +58,6 @@ class Module(ModuleManager.BaseModule):
     def _kick(self, server, channel, nicknames, reason):
         reason = reason or self._kick_reason(server, channel)
         channel.send_kicks(nicknames, reason)
-
-    @utils.hook("received.command.kick")
-    @utils.hook("received.command.k", alias_of="kick")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "high,kick")
-    @utils.kwarg("help", "Kick a user from a channel")
-    @utils.spec("!<#channel>r~channel !<nickname>cuser ?<reason>string")
-    def kick(self, event):
-        self._kick(event["server"], event["spec"][0],
-            [event["spec"][1].nickname], event["spec"][2])
 
     def _format_hostmask(self, user, s):
         vars = {}
@@ -85,95 +75,6 @@ class Module(ModuleManager.BaseModule):
         format = channel.get_setting("ban-format", "*!${u}@${h}")
         return self._format_hostmask(user, format)
 
-    def _ban(self, channel, masks, time, add):
-        if not add:
-            channel.send_modes("b", False, masks)
-        else:
-            channel.send_modes("b", True, masks)
-
-            if not time == None:
-                self.timers.add_persistent("unmode", time, channel=channel.id,
-                    args=args)
-
-    def _mask_spec(self, channel, spec):
-        if spec[0] in ["user", "cuser"]:
-            return [self._get_hostmask(channel, spec[1])]
-        elif spec[0] == "cmask":
-            return [self._get_hostmask(channel, u) for u in spec[1]]
-        elif spec[0] == "word":
-            return [spec[1]]
-
-    @utils.hook("received.command.ban")
-    @utils.hook("received.command.b", alias_of="ban")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "high,ban")
-    @utils.spec(
-        "!<#channel>r~channel ?duration !<nickname>user|<mask>cmask|<mask>word")
-    def ban(self, event):
-        masks = self._mask_spec(event["spec"][0], event["spec"][2])
-        self._ban(event["spec"][0], masks, event["spec"][1], True)
-
-    @utils.hook("received.command.unban")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "high,ban")
-    @utils.spec("!<#channel>r~channel !<nickname>user|<mask>word")
-    def unban(self, event):
-        if event["spec"][1][0] == "user":
-            masks = self._get_hostmask(event["spec"][0], event["spec"][1][1])
-        elif event["spec"][1][0] == "word":
-            _, masks = self._list_query_event(event["server"],
-                event["spec"][0], "+b", event["spec"][1][1])
-        if masks:
-            event["spec"][0].send_modes("b", False, masks)
-        else:
-            event["stderr"].write("No bans found to remove")
-
-    @utils.hook("received.command.kickban")
-    @utils.hook("received.command.kb", alias_of="kickban")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "high,kickban")
-    @utils.spec(
-        "!<#channel>r~channel ?duration "
-        "!<nickname>cuser|<mask>cmask ?<reason>string")
-    def kickban(self, event):
-        masks = self._mask_spec(event["spec"][0], event["spec"][2])
-        self._ban(event["spec"][0], masks, event["spec"][1], True)
-
-        if event["spec"][2][0] == "cmask":
-            users = event["spec"][2][1]
-        else:
-            users = [event["spec"][2][1]]
-        self._kick(event["server"], event["spec"][0],
-            [u.nickname for u in users], event["spec"][3])
-
-    @utils.hook("received.command.op")
-    @utils.hook("received.command.up", alias_of="op")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "high,op")
-    @utils.spec("!<#channel>r~channel !<nickname>ruser")
-    def op(self, event):
-        self._op(True, event["spec"])
-
-    @utils.hook("received.command.deop")
-    @utils.hook("received.command.down", alias_of="deop")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "high,op")
-    @utils.spec("!<#channel>r~channel !<nickname>ruser")
-    def deop(self, event):
-        self._op(False, event["spec"])
-
-    def _op(self, add, spec):
-        spec[0].send_mode("%so" % ("+" if add else "-"), [spec[1].nickname])
-
-    @utils.hook("received.command.voice")
-    @utils.hook("received.command.devoice")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "low,voice")
-    @utils.spec("!<#channel>r~channel !<nickname>ruser")
-    def voice(self, event):
-        add = event["command"] == "voice"
-        event["spec"][0].send_mode("+v" if add else "-v",
-            [event["spec"][1].nickname])
 
     @utils.hook("received.command.topic")
     @utils.kwarg("require_mode", "o")
@@ -203,46 +104,6 @@ class Module(ModuleManager.BaseModule):
             return None
         else:
             raise ValueError("Unknown quiet-method '%s'" % quiet_method)
-
-    @utils.hook("received.command.quiet")
-    @utils.hook("received.command.mute")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "high,quiet")
-    @utils.kwarg("help", "Quiet a given user")
-    @utils.spec("!<#channel>r~channel ?duration !<nickname>user|<mask>word")
-    def quiet(self, event):
-        self._quiet(event["server"], event["spec"][0], event["spec"][2], True,
-            event["spec"][1])
-
-    @utils.hook("received.command.unquiet")
-    @utils.hook("received.command.unmute")
-    @utils.kwarg("require_mode", "o")
-    @utils.kwarg("require_access", "high,unquiet")
-    @utils.kwarg("help", "Unquiet a given user")
-    @utils.spec("!<#channel>r~channel !<nickname>user|<mask>word")
-    def unquiet(self, event):
-        self._quiet(event["server"], event["spec"][0], event["spec"][1], False,
-            None)
-
-    def _quiet(self, server, channel, target, add, time):
-        quiet_method = self._quiet_method(server)
-
-        if quiet_method == None:
-            raise utils.EventError(NO_QUIETS)
-
-        mode, prefix, _, _ = quiet_method
-        if target[0] == "word":
-            mask = target[1]
-        else:
-            mask = self._get_hostmask(channel, target[1])
-        mask = "%s%s" % (prefix, mask)
-
-        if add and time:
-            self.timers.add_persistent("unmode", time, channel=channel.id,
-                mode=mode, arg=mask)
-
-        mode_modifier = "+" if add else "-"
-        channel.send_mode("%s%s" % (mode_modifier, mode), [mask])
 
     @utils.hook("received.command.invite")
     @utils.kwarg("require_mode", "o")
@@ -369,17 +230,13 @@ class Module(ModuleManager.BaseModule):
         if event["spec"][1]:
             self.timers.add_persistent("unmode", event["spec"][1],
                 channel=event["spec"][0].id, mode="m")
-
     @utils.hook("received.command.cunmute")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "high,cmute")
     @utils.kwarg("help", "Mute the current channel")
     @utils.spec("!<#channel>r~channel")
     def cunmute(self, event):
-        self._cunmute(event["spec"][0])
-
-    def _cunmute(self, channel):
-        channel.send_mode("-m")
+        event["spec"][0].send_mode("-m")
 
     def _filter_mask(self, mask, mode_list):
         parsed_mask = utils.irc.hostmask_parse(mask)
@@ -405,16 +262,14 @@ class Module(ModuleManager.BaseModule):
         else:
             raise utils.EventError("Unknown type '%s'" % type)
 
-    def _list_query_event(self, server, channel, list_type, list_mask):
-        list_mode, list_prefix = self._type_to_mode(server, channel, list_type)
-
+    def _list_query_event(self, channel, list_mask, list_mode, list_prefix):
         mode_list = list(channel.mode_lists[list_mode])
         if list_prefix:
             mode_list = self._filter_prefix(list_prefix, mode_list)
         if list_mask:
             mode_list = self._filter_mask(list_mask, mode_list)
 
-        return list_mode, mode_list
+        return mode_list
 
     @utils.hook("received.command.clear")
     @utils.kwarg("require_mode", "o")
@@ -422,9 +277,11 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Clear a given channel list mode (e.g. +b)")
     @utils.spec("!<#channel>r~channel !<type>word|<mode>word ?<mask>word")
     def clear(self, event):
-        mode, mode_list = self._list_query_event(
-            event["server"], event["spec"][0], event["spec"][1],
-            event["spec"][2])
+        mode, prefix = self._type_to_mode(event["server"], event["spec"][0],
+            event["spec"][1])
+
+        mode_list = self._list_query_event(event["spec"][0], event["spec"][2],
+            mode, prefix)
 
         event["spec"][0].send_modes(mode, False, mode_list)
 
@@ -434,12 +291,141 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Search a given channel list mode (e.g. +b)")
     @utils.spec("!<#channel>r~channel !<type>word|<mode>word ?<mask>word")
     def lsearch(self, event):
-        mode, mode_list = self._list_query_event(
-            event["server"], event["spec"][0], event["spec"][1],
-            event["spec"][2])
+        mode, prefix = self._type_to_mode(event["server"], event["spec"][0],
+            event["spec"][1])
+
+        mode_list = self._list_query_event(event["spec"][0], event["spec"][2],
+            mode, prefix)
 
         if mode_list:
             event["stdout"].write("%s: %s" %
                 (event["user"].nickname, " ".join(mode_list)))
         else:
             event["stderr"].write("%s: no matches" % event["user"].nickname)
+
+    def _find_mode(self, type, server):
+        if type == "ban":
+            return True, "b", ""
+        elif type == "invex":
+            if not "INVEX" in server.isupport:
+                raise utils.EventError(
+                    "invexes are not supported on this network")
+            return True, server.isupport["INVEX"] or "I", ""
+        elif type == "quiet":
+            quiet_method = self._quiet_method(server)
+            if quiet_method == None:
+                raise utils.EventError(NO_QUIETS)
+            mode, prefix, _, _ = quiet_method
+            return True, mode, prefix
+        elif type == "op":
+            return False, "o", None
+        elif type =="voice":
+            return False, "v", None
+
+    @utils.hook("received.command.ban", require_access="high,ban", type="ban")
+    @utils.hook("received.command.quiet", require_access="high,quiet",
+        type="quiet")
+    @utils.hook("received.command.invex", require_access="high,invex",
+        type="invex")
+    @utils.kwarg("require_mode", "o")
+    @utils.spec("!r~channel ?duration !<mask>cmask|<nickname>user|<mask>word")
+    def mask_mode(self, event):
+        self._mask_mode(event["server"], event["spec"],
+            event["hook"].get_kwarg("type"))
+
+    @utils.hook("received.command.op", require_access="high,op", type="op")
+    @utils.hook("received.command.voice", require_access="low,voice",
+        type="voice")
+    @utils.kwarg("require_mode", "o")
+    @utils.spec("!r~channel ?duration !<mask>cmask|<nickname>cuser")
+    def access_mode(self, event):
+        self._mask_mode(event["server"], event["spec"],
+            event["hook"].get_kwarg("type"))
+
+    def _mask_kick(self, server, channel, target, reason):
+        if target[0] == "cmask":
+            users = target[1]
+        elif target[0] == "cuser":
+            users = [target[1]]
+        self._kick(server, channel, [u.nickname for u in users], reason)
+
+    @utils.hook("received.command.kick")
+    @utils.kwarg("require_access", "high,kick")
+    @utils.kwarg("require_mode", "o")
+    @utils.spec(
+        "!r~channel !<mask>cmask|<nickname>cuser ?<reason>string")
+    def kick(self, event):
+        self._mask_kick(event["server"], event["spec"][0], event["spec"][1],
+            event["spec"][2])
+
+    @utils.hook("received.command.kickban")
+    @utils.kwarg("require_access", "high,kickban")
+    @utils.kwarg("require_mode", "o")
+    @utils.spec(
+        "!r~channel ?duration !<mask>cmask|<nickname>cuser ?<reason>string")
+    def kickban(self, event):
+        self._mask_mode(event["server"], event["spec"], "ban")
+        self._mask_kick(event["server"], event["spec"][0], event["spec"][2],
+            event["spec"][3])
+
+    def _mask_mode(self, server, spec, type):
+        users = args = []
+        if spec[2][0] == "cmask":
+            users = spec[2][1]
+        elif spec[2][0] in ["user", "cuser"]:
+            users = [spec[2][1]]
+        elif spec[2][0] == "word":
+            masks = [spec[2][1]]
+
+        is_mask, mode, prefix = self._find_mode(type, server)
+        if users:
+            if is_mask:
+                args = [self._get_hostmask(spec[0], u) for u in users]
+            else:
+                args = [u.nickname for u in users]
+        spec[0].send_modes(mode, True, args)
+
+        if not spec[1] == None:
+            self.timers.add_persistent("unmode", spec[1], channel=spec[0].id,
+                mode=mode, args=args)
+
+    @utils.hook("received.command.unban", require_access="high,unban",
+        type="ban")
+    @utils.hook("received.command.unquiet", require_access="high,unquiet",
+        type="quiet")
+    @utils.hook("received.command.uninvex", require_access="high,uninvex",
+        type="invex")
+    @utils.kwarg("require_mode", "o")
+    @utils.spec("!r~channel !<nickname>user|<mask>word")
+    def mask_unmode(self, event):
+        is_mask, mode, prefix = self._find_mode(
+            event["hook"].get_kwarg("type"), event["server"])
+
+        users = args = []
+        if event["spec"][1][0] == "user":
+            masks = self._get_hostmask(event["spec"][0], event["spec"][1][1])
+        elif event["spec"][1][0] == "word":
+            masks = self._list_query_event(event["spec"][0],
+                event["spec"][1][1], mode, prefix)
+
+        if masks:
+            event["spec"][0].send_modes(mode, False, masks)
+
+    @utils.hook("received.command.deop", require_access="high,deop", type="op")
+    @utils.hook("received.command.devoice", require_access="low,devoice",
+        type="voice")
+    @utils.kwarg("require_mode", "o")
+    @utils.spec("!r~channel !<nickname>cuser|<mask>cmask")
+    def access_unmode(self, event):
+        if event["spec"][1][0] == "cuser":
+            users = [event["spec"][1][1]]
+        elif event["spec"][1][0] == "cmask":
+            users = event["spec"][1][1]
+
+        _, mode, _ = self._find_mode(
+            event["hook"].get_kwarg("type"), event["server"])
+        valid_nicks = [
+            u.nickname for u in users if event["spec"][0].has_mode(u, mode)]
+
+        if valid_nicks:
+            event["spec"][0].send_modes(mode, False, valid_nicks)
