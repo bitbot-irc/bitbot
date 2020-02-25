@@ -168,7 +168,7 @@ class SpecArgument(object):
         for argument_type in self.types:
             if not (context&argument_type.context) == 0:
                 name = argument_type.name() or argument_type.type
-                if name:
+                if name and not name in names:
                     names.append(name)
         if names:
             return format % "|".join(names)
