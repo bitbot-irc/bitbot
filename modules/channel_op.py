@@ -329,16 +329,16 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("require_mode", "o")
     @utils.spec("!r~channel ?duration !<mask>cmask|<nickname>user|<mask>word")
     def mask_mode(self, event):
-        self._mask_mode(event["server"], event["spec"],
+        self._mask_mode(event["server"], event["user"], event["spec"],
             event["hook"].get_kwarg("type"))
 
     @utils.hook("received.command.op", require_access="high,op", type="op")
     @utils.hook("received.command.voice", require_access="low,voice",
         type="voice")
     @utils.kwarg("require_mode", "o")
-    @utils.spec("!r~channel ?duration !<mask>cmask|<nickname>cuser")
+    @utils.spec("!r~channel ?duration ?<mask>cmask|<nickname>cuser")
     def access_mode(self, event):
-        self._mask_mode(event["server"], event["spec"],
+        self._mask_mode(event["server"], event["user"], event["spec"],
             event["hook"].get_kwarg("type"))
 
     def _mask_kick(self, server, channel, target, reason):
@@ -363,13 +363,15 @@ class Module(ModuleManager.BaseModule):
     @utils.spec(
         "!r~channel ?duration !<mask>cmask|<nickname>cuser ?<reason>string")
     def kickban(self, event):
-        self._mask_mode(event["server"], event["spec"], "ban")
+        self._mask_mode(event["server"], event["user"], event["spec"], "ban")
         self._mask_kick(event["server"], event["spec"][0], event["spec"][2],
             event["spec"][3])
 
-    def _mask_mode(self, server, spec, type):
+    def _mask_mode(self, server, user, spec, type):
         users = args = []
-        if spec[2][0] == "cmask":
+        if spec[2] == None:
+            users = [user]
+        elif spec[2][0] == "cmask":
             users = spec[2][1]
         elif spec[2][0] in ["user", "cuser"]:
             users = [spec[2][1]]
@@ -415,9 +417,11 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.devoice", require_access="low,devoice",
         type="voice")
     @utils.kwarg("require_mode", "o")
-    @utils.spec("!r~channel !<nickname>cuser|<mask>cmask")
+    @utils.spec("!r~channel ?<nickname>cuser|<mask>cmask")
     def access_unmode(self, event):
-        if event["spec"][1][0] == "cuser":
+        if event["spec"][1] == None:
+            users = [event["user"]]
+        elif event["spec"][1][0] == "cuser":
             users = [event["spec"][1][1]]
         elif event["spec"][1][0] == "cmask":
             users = event["spec"][1][1]
