@@ -35,9 +35,10 @@ class Module(ModuleManager.BaseModule):
                 if "items" in page and len(page["items"]):
                     item = page["items"][0]
                     link = item["link"]
-                    title = utils.parse.line_normalise(item["title"])
+                    text = utils.parse.line_normalise(
+                        item["snippet"] or item["title"])
                     event["stdout"].write(
-                        "(%s) %s - %s" % (phrase, title, link))
+                        "%s: %s - %s" % (event["user"].nickname, text, link))
                 else:
                     event["stderr"].write("No results found")
             else:
