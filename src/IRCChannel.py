@@ -221,7 +221,8 @@ class Channel(IRCObject.Object):
     def send_mode(self, mode: str=None, target: typing.List[str]=None):
         return self.server.send_mode(self.name, mode, target)
     def send_modes(self, mode: str, add: bool, args: typing.List[str]):
-        chunk_n = int(self.server.isupport.get("MODES", "3") or "6")
+        chunk_n = min(6,
+            int(self.server.isupport.get("MODES", "3") or "6"))
         for chunk in self._chunks(chunk_n, args):
             mode_str = "%s%s" % ("+" if add else "-", mode*len(chunk))
             self.server.send_mode(self.name, mode_str, chunk)
@@ -229,7 +230,7 @@ class Channel(IRCObject.Object):
     def send_kick(self, target: str, reason: str=None):
         return self.server.send_kick(self.name, target, reason)
     def send_kicks(self, targets: typing.List[str], reason: str=None):
-        chunk_n = self.server.targmax.get("KICK", 1)
+        chunk_n = min(4, self.server.targmax.get("KICK", 1))
         for chunk in self._chunks(chunk_n, targets):
             chan_str = ",".join([self.name]*len(chunk))
             self.server.send_kick(chan_str, ",".join(chunk), reason)
