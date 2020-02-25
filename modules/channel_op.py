@@ -46,8 +46,10 @@ class Module(ModuleManager.BaseModule):
                 channel = server.channels.get(channel_name)
 
                 args = timer.kwargs.get("args", [timer.kwargs.get("arg", None)])
-                channel.send_modes(timer.kwargs.get("mode", "b"), False, args)
-
+                if args:
+                    channel.send_modes(args, False)
+                else:
+                    channel.send_mode(timer.kwargs["mode"], False)
 
     def _kick_reason(self, server, channel):
         return channel.get_setting("default-kick-reason",
@@ -170,14 +172,6 @@ class Module(ModuleManager.BaseModule):
                 event["spec"][0].del_user_setting(target.get_id(), "flags")
                 event["stdout"].write("Cleared flags for %s" % target.nickname)
 
-    def _chunk_n(self, n, l):
-        return [l[i:i+n] for i in range(0, len(l), n)]
-    def _chunk(self, server, l):
-        # if `MODES` is not present - default to 3
-        # if `MODES` is present without an arg, default to 6
-        n = int(server.isupport.get("MODES", "3") or "6")
-        return self._chunk_n(n, l)
-
     @utils.hook("received.join")
     def on_join(self, event):
         self._check_flags(event["server"], event["channel"], event["user"])
@@ -210,11 +204,8 @@ class Module(ModuleManager.BaseModule):
                 if not mode in current_modes:
                     new_modes.append((mode, arg))
 
-            # break up in to chunks of (maximum) 3
-            # https://tools.ietf.org/html/rfc2812.html#section-3.2.3
-            for chunk in self._chunk(server, new_modes):
-                chars, args = list(zip(*chunk))
-                channel.send_mode("+%s" % "".join(chars), list(args))
+            if new_modes:
+                channel.send_modes(new_modes, True)
             if not kick_reason == None:
                 channel.send_kick(user.nickname, kick_reason)
 
@@ -282,7 +273,7 @@ class Module(ModuleManager.BaseModule):
         mode_list = self._list_query_event(event["spec"][0], event["spec"][2],
             mode, prefix)
 
-        event["spec"][0].send_modes(mode, False, mode_list)
+        event["spec"][0].send_modes([(mode, a) for a in mode_list], False)
 
     @utils.hook("received.command.lsearch")
     @utils.kwarg("require_mode", "o")
@@ -385,11 +376,12 @@ class Module(ModuleManager.BaseModule):
             else:
                 args = [
                     u.nickname for u in users if not spec[0].has_mode(u, mode)]
-        spec[0].send_modes(mode, True, args)
+        args = [(mode, a) for a in args]
+        spec[0].send_modes(args, True)
 
         if not spec[1] == None:
             self.timers.add_persistent("unmode", spec[1], channel=spec[0].id,
-                mode=mode, args=args)
+                args=args)
 
     @utils.hook("received.command.unban", require_access="high,unban",
         type="ban")
@@ -411,7 +403,7 @@ class Module(ModuleManager.BaseModule):
                 event["spec"][1][1], mode, prefix)
 
         if masks:
-            event["spec"][0].send_modes(mode, False, masks)
+            event["spec"][0].send_modes([(mode, a) for a in masks], False)
 
     @utils.hook("received.command.deop", require_access="high,deop", type="op")
     @utils.hook("received.command.devoice", require_access="low,devoice",
@@ -426,10 +418,43 @@ class Module(ModuleManager.BaseModule):
         elif event["spec"][1][0] == "cmask":
             users = event["spec"][1][1]
 
+        for i, user in enumerate(users):
+            if event["server"].is_own_nickname(user.nickname):
+                users.append(users.pop(i))
+                break
+
         _, mode, _ = self._find_mode(
             event["hook"].get_kwarg("type"), event["server"])
         valid_nicks = [
             u.nickname for u in users if event["spec"][0].has_mode(u, mode)]
 
         if valid_nicks:
-            event["spec"][0].send_modes(mode, False, valid_nicks)
+            event["spec"][0].send_modes([(mode, a) for a in valid_nicks], False)
+
+    @utils.hook("received.command.down")
+    @utils.spec("!r~channel ?<nickname>cuser|<mask>cmask")
+    def down(self, event):
+        if not event["spec"][1] or event["spec"][1][1] == event["user"]:
+            users = [event["user"]]
+        else:
+            event["check_assert"](
+                utils.Check("channel-mode", "o")|
+                utils.Check("channel-access", "high,down"))
+
+            if event["spec"][1][0] == "cuser":
+                users = [event["spec"][1][1]]
+            elif event["spec"][1][0] == "cmask":
+                users = event["spec"][1][1]
+
+        for i, user in enumerate(users):
+            if event["server"].is_own_nickname(user.nickname):
+                users.append(users.pop(i))
+                break
+
+        modes = []
+        for user in users:
+            user_modes = event["spec"][0].get_user_modes(user)
+            modes.extend([(m, user.nickname) for m in user_modes])
+
+        if modes:
+            event["spec"][0].send_modes(modes, False)

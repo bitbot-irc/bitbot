@@ -215,17 +215,18 @@ class Channel(IRCObject.Object):
     def send_tagmsg(self, tags: dict):
         return self.server.send_tagmsg(self.name, tags)
 
-    def _chunks(self, n: int, l: typing.List[str]):
+    def _chunks(self, n: int, l: typing.List[typing.Tuple[str, str]]):
         return [l[i:i+n] for i in range(0, len(l), n)]
 
     def send_mode(self, mode: str=None, target: typing.List[str]=None):
         return self.server.send_mode(self.name, mode, target)
-    def send_modes(self, mode: str, add: bool, args: typing.List[str]):
+    def send_modes(self, modes: typing.List[typing.Tuple[str, str]], add: bool):
         chunk_n = min(6,
             int(self.server.isupport.get("MODES", "3") or "6"))
-        for chunk in self._chunks(chunk_n, args):
-            mode_str = "%s%s" % ("+" if add else "-", mode*len(chunk))
-            self.server.send_mode(self.name, mode_str, chunk)
+        for chunk in self._chunks(chunk_n, modes):
+            modes, args = list(zip(*chunk))
+            mode_str = "%s%s" % ("+" if add else "-", "".join(modes))
+            self.server.send_mode(self.name, mode_str, args)
 
     def send_kick(self, target: str, reason: str=None):
         return self.server.send_kick(self.name, target, reason)
