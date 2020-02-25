@@ -381,7 +381,8 @@ class Module(ModuleManager.BaseModule):
             if is_mask:
                 args = [self._get_hostmask(spec[0], u) for u in users]
             else:
-                args = [u.nickname for u in users]
+                args = [
+                    u.nickname for u in users if not spec[0].has_mode(u, mode)]
         spec[0].send_modes(mode, True, args)
 
         if not spec[1] == None:
