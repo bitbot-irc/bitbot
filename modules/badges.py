@@ -30,17 +30,18 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.badge")
     @utils.kwarg("help", "List, add and remove badges")
     @utils.spec("!'list ?<nickname>ouser")
+    @utils.spec("!'show !<name>string")
     @utils.spec("!'add !<name>marginstring !'now,today")
     @utils.spec("!'add !<name>marginstring !date")
     @utils.spec("!'remove !<name>string")
     def badge(self, event):
+        now = self._round_up_day(utils.datetime.utcnow())
+
         if event["spec"][0] == "list":
             target = event["spec"][1] or event["user"]
             badges = self._get_badges(target)
             if not badges:
                 raise utils.EventError("%s has no badges" % target.nickname)
-
-            now = self._round_up_day(utils.datetime.utcnow())
 
             outs = []
             for name in sorted(badges.keys()):
@@ -51,33 +52,43 @@ class Module(ModuleManager.BaseModule):
                     % (name, days_since, human))
             event["stdout"].write("badges for %s: %s"
                 % (target.nickname, ", ".join(outs)))
-
         else:
             badges = self._get_badges(event["user"])
+            mut_badges = badges.copy()
+            name = event["spec"][1]
+
             if event["spec"][0] == "add":
                 if event["spec"][2] in ["now", "today"]:
                     dt = utils.datetime.utcnow()
                 else:
                     dt = event["spec"][2]
 
-                exists = event["spec"][1] in badges
+                exists = name in badges
                 action = "updated" if exists else "added"
 
-                badges[event["spec"][1]] = utils.datetime.format.iso8601(dt)
+                mut_badges[name] = utils.datetime.format.iso8601(dt)
                 human = utils.datetime.format.date_human(dt)
                 event["stdout"].write("%s: %s badge %s (%s)"
-                    % (event["user"].nickname, action, event["spec"][1], human))
+                    % (event["user"].nickname, action, name, human))
 
-            elif event["spec"][0] == "remove":
-                if not event["spec"][1] in badges:
+            else:
+                if not name in badges:
                     raise utils.EventError("%s: you don't have a '%s' badge"
-                        % (event["user"].nickname, event["spec"][1]))
+                        % (event["user"].nickname, name))
 
-                human = utils.datetime.format.date_human(
-                    utils.datetime.parse.iso8601(badges.pop(event["spec"][1])))
-                event["stdout"].write("%s: removed badge '%s' (%s)"
-                    % (event["user"].nickname, event["spec"][1], human))
-            self._set_badges(event["user"], badges)
+                dt = utils.datetime.parse.iso8601(badges[name])
+                human = utils.datetime.format.date_human(dt)
+                if event["spec"][0] == "remove":
+                    del mut_badges[name]
+                    event["stdout"].write("%s: removed badge '%s' (%s)"
+                        % (event["user"].nickname, name, human))
+                elif event["spec"][0] == "show":
+                    days_since = self._days_since(now, dt)
+                    event["stdout"].write("%s: your %s badge is on day %d (%s)"
+                        % (event["user"].nickname, name, days_since, human))
+
+            if not mut_badges == badges:
+                self._set_badges(event["user"], mut_badges)
 
     @utils.hook("received.command.badgeclear")
     @utils.kwarg("help", "Clear a user's badges")
