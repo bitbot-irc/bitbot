@@ -3,16 +3,28 @@
 #--depends-on commands
 #--depends-on config
 
+import enum
 from src import ModuleManager, utils
 
 QUIET_METHODS = {
-    "qmode": ["q", "", "728", "729"],
-    "insp":  ["b", "m:", "367", "368"],
-    "unreal":  ["b", "~q:", "367", "368"]
+    "qmode":  ["q", "",    "728", "729"],
+    "insp":   ["b", "m:",  "367", "368"],
+    "unreal": ["b", "~q:", "367", "368"]
+}
+ABAN_METHODS = {
+    "chary":  "$a:",
+    "insp":   "R:",
+    "unreal": "~a:"
 }
 
 KICK_REASON = "your behavior is not conducive to the desired environment"
 NO_QUIETS = "This network doesn't support quiets"
+NO_ABANS = "This network doesn't support account bans"
+
+class TargetType(enum.Enum):
+    NICKNAME = 1
+    MASK = 2
+    ACCOUNT = 3
 
 KICK_REASON_SETTING = utils.Setting("default-kick-reason",
     "Set the default kick reason", example="have a nice trip")
@@ -26,8 +38,11 @@ BAN_FORMATTING = "${n} = nick, ${u} = username, ${h} = hostname, ${a} = account"
     example="~a:${a}"))
 
 @utils.export("serverset", utils.OptionsSetting(
-    list(QUIET_METHODS.keys())+["none"], "quiet-method",
+    list(QUIET_METHODS.keys()), "quiet-method",
     "Set this server's method of muting users"))
+@utils.export("serverset", utils.OptionsSetting(
+    list(ABAN_METHODS.keys()), "aban-method",
+    "Set this server's method of banning users by account"))
 
 @utils.export("botset", KICK_REASON_SETTING)
 @utils.export("serverset", KICK_REASON_SETTING)
@@ -97,14 +112,12 @@ class Module(ModuleManager.BaseModule):
         if server.quiet:
             return server.quiet
 
-        quiet_method = server.get_setting("quiet-method", "none").lower()
+        method = server.get_setting("quiet-method", None)
+        return QUIET_METHODS.get(method, None)
 
-        if quiet_method in QUIET_METHODS:
-            return QUIET_METHODS[quiet_method]
-        elif quiet_method == "none":
-            return None
-        else:
-            raise ValueError("Unknown quiet-method '%s'" % quiet_method)
+    def _aban_method(self, server):
+        method = server.get_setting("aban-method", None)
+        return ABAN_METHODS.get(method, None)
 
     @utils.hook("received.command.invite")
     @utils.kwarg("require_mode", "o")
@@ -295,24 +308,30 @@ class Module(ModuleManager.BaseModule):
 
     def _find_mode(self, type, server):
         if type == "ban":
-            return True, "b", ""
+            return TargetType.MASK, "b", ""
+        elif type == "aban":
+            aban_method = self._aban_method(server)
+            if aban_method == None:
+                raise utils.EventError(NO_ABANS)
+            return TargetType.ACCOUNT, "b", aban_method
         elif type == "invex":
             if not "INVEX" in server.isupport:
                 raise utils.EventError(
                     "invexes are not supported on this network")
-            return True, server.isupport["INVEX"] or "I", ""
+            return TargetType.MASK, server.isupport["INVEX"] or "I", ""
         elif type == "quiet":
             quiet_method = self._quiet_method(server)
             if quiet_method == None:
                 raise utils.EventError(NO_QUIETS)
             mode, prefix, _, _ = quiet_method
-            return True, mode, prefix
+            return TargetType.MASK, mode, prefix
         elif type == "op":
-            return False, "o", None
+            return TargetType.NICKNAME, "o", None
         elif type =="voice":
-            return False, "v", None
+            return TargetType.NICKNAME, "v", None
 
     @utils.hook("received.command.ban", require_access="high,ban", type="ban")
+    @utils.hook("received.command.aban", require_access="high,ban", type="aban")
     @utils.hook("received.command.quiet", require_access="high,quiet",
         type="quiet")
     @utils.hook("received.command.invex", require_access="high,invex",
@@ -348,13 +367,15 @@ class Module(ModuleManager.BaseModule):
         self._mask_kick(event["server"], event["spec"][0], event["spec"][1],
             event["spec"][2])
 
-    @utils.hook("received.command.kickban")
+    @utils.hook("received.command.kickban", type="ban")
+    @utils.hook("received.command.akickban", type="aban")
     @utils.kwarg("require_access", "high,kickban")
     @utils.kwarg("require_mode", "o")
     @utils.spec(
         "!r~channel ?duration !<mask>cmask|<nickname>cuser ?<reason>string")
     def kickban(self, event):
-        self._mask_mode(event["server"], event["user"], event["spec"], "ban")
+        self._mask_mode(event["server"], event["user"], event["spec"],
+            event["hook"].get_kwarg("type"))
         self._mask_kick(event["server"], event["spec"][0], event["spec"][2],
             event["spec"][3])
 
@@ -369,19 +390,23 @@ class Module(ModuleManager.BaseModule):
         elif spec[2][0] == "word":
             masks = [spec[2][1]]
 
-        is_mask, mode, prefix = self._find_mode(type, server)
+        target_type, mode, prefix = self._find_mode(type, server)
         if users:
-            if is_mask:
+            if target_type == TargetType.MASK:
                 args = [self._get_hostmask(spec[0], u) for u in users]
-            else:
+            elif target_type == TargetType.NICKNAME:
                 args = [
                     u.nickname for u in users if not spec[0].has_mode(u, mode)]
-        args = [(mode, a) for a in args]
-        spec[0].send_modes(args, True)
+            elif target_type == TargetType.ACCOUNT:
+                args = [u.account for u in users if not u.account == None]
 
-        if not spec[1] == None:
-            self.timers.add_persistent("unmode", spec[1], channel=spec[0].id,
-                args=args)
+        if args:
+            args = [(mode, "%s%s" % (prefix, a)) for a in args]
+            spec[0].send_modes(args, True)
+
+            if not spec[1] == None:
+                self.timers.add_persistent("unmode", spec[1],
+                    channel=spec[0].id, args=args)
 
     @utils.hook("received.command.unban", require_access="high,unban",
         type="ban")
