@@ -422,7 +422,7 @@ class Module(ModuleManager.BaseModule):
 
         users = args = []
         if event["spec"][1][0] == "user":
-            masks = self._get_hostmask(event["spec"][0], event["spec"][1][1])
+            masks = [self._get_hostmask(event["spec"][0], event["spec"][1][1])]
         elif event["spec"][1][0] == "word":
             masks = self._list_query_event(event["spec"][0],
                 event["spec"][1][1], mode, prefix)
