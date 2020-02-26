@@ -1,3 +1,54 @@
+# TBD - BitBot v1.19.0 ("Command Specs Spark Joy")
+
+Added:
+- Commands Specs. expression language for defining format of command args
+- `.bitbot/mod-data/` for addition data files for modules
+- Concept of core vs additional modules. Core modules can be reloaded but not unloaded
+- `channel_access` groups: `low`/`high`/`admin`
+- Proof of concept reminders on a cron schedule (`cron_reminders.py`)
+- Show how many seconds by which you missed a duck (`ducks.py`)
+- Show gitlab wiki events (`git_webhooks`)
+- Opt-in prune inactive channels after 2 weeks (`inactive_channels.py`)
+- Ability to export decorated functions with @utils.export
+- Configrable chance of randomly triggered markovs (`markov.py`)
+- Ability to rewrite messages as well as block them (`message_filters.py`)
+- Ability to search through recent messages (`messages.py`)
+- `rainbow.py` because rainbow text is fun
+- Track time/commit of load and events handled per module and show it through `!modinfo` (`modules.py`)
+- Support ranges in stepped cron schedules (`cron.py`)
+- Format `ACCOUNT` events (`format_activity.py`)
+- Track channel list modes like ban, quiet, invex, ban exceptions (`mode_lists.py`)
+- Support `WATCH` when available for `nick_regain.py`
+
+Changed:
+- IRCv3's `labeled-response` was ratified
+- IRCv3's `setname` was ratified
+- `channel_log` now logs to `.bitbot/mod-data/channel_log/`
+- `channel_log` can now RSA+AES(CBC) encrypt log files
+- Word tracking is now done per day. use `migration/v01.19.0-words.py` to migrate old data
+- Totally rewrote `badges.py` command interface
+- Huge refactor and rework of `channel_op.py` - most commands can take duration and globs now
+- Improve `factoids.py` (including nested factoids)
+- Split out `src/utils/datetime.py`
+- Show github webhook issue/PR titles in more places (`git_webhooks`)
+- Show google result descriptions instead of title when available (`google.py`)
+- Minimal formatted lines should be relayed (`relay.py`)
+- Totally rewrote `todo.py` command interface
+- `IRCBuffer` now holds 1024 lines of history (was 64; 1024 might be overkill...)
+- Reloaded modules will always be rolled back to previous loaded module if reload fails
+- Generate usage from command spec stings when present (`help.py`)
+- Much cleaner support for handling server `NOTICE`s (`line_handler`)
+- `to_pretty_time` can now do relative time (e.g. including years and months)
+- Souped HTTP responses changed from `lxml` parsing to `html5lib` by default
+- Bool config options now accept 0 and 1
+
+Fixed:
+- Readded lost support for SASL `USERPASS` pseudo algo (`ircv3_sasl`)
+- Minor typo in `healthchecks.py`
+- Minor typo in `votes.py`
+- Crash caused by division by zero in `title.py` difference checking
+- `internal.identified` command was being fired for every message with an `@account` tag (`permissions`)
+
 # 2020-01-20 - BitBot v1.18.2
 
 Changed:
