@@ -1,5 +1,4 @@
 #--depends-on config
-#--depends-on permissions
 
 import enum, re, shlex, string, traceback, typing
 from src import EventManager, IRCLine, ModuleManager, utils
