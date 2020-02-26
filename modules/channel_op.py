@@ -356,6 +356,12 @@ class Module(ModuleManager.BaseModule):
             users = target[1]
         elif target[0] == "cuser":
             users = [target[1]]
+
+        for i, user in enumerate(users):
+            if server.is_own_nickname(user.nickname):
+                users.append(users.pop(i))
+                break
+
         self._kick(server, channel, [u.nickname for u in users], reason)
 
     @utils.hook("received.command.kick")
