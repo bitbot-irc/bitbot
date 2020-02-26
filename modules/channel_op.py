@@ -407,7 +407,7 @@ class Module(ModuleManager.BaseModule):
                 args = [u.account for u in users if not u.account == None]
 
         if args:
-            args = [(mode, "%s%s" % (prefix, a)) for a in args]
+            args = [(mode, "%s%s" % (prefix or "", a)) for a in args]
             spec[0].send_modes(args, True)
 
             if not spec[1] == None:
