@@ -116,8 +116,9 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
     def account_tag(self, event):
         account = ACCOUNT_TAG.get_value(event["line"].tags)
-        if not account == None:
-            self._has_identified(event["server"], event["user"], account)
+        if not self._is_identified(event["user"]):
+            if not account == None:
+                self._has_identified(event["server"], event["user"], account)
 
     def _get_permissions(self, user):
         if self._is_identified(user):
