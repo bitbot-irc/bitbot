@@ -26,16 +26,10 @@ class SedReplace(Sed):
     count: int
 
     def match(self, s):
-        matches = list(self.pattern.finditer(s))
-        if not self.count == 0:
-            matches = matches[:self.count]
-
-        for match in matches:
-            replace_copy = self.replace
-            for token in reversed(_tokens(replace_copy, "&")):
-                replace_copy = (
-                    replace_copy[:token]+match.group(0)+replace_copy[token+1:])
-            s = re.sub(self.pattern, replace_copy, s, 1)
+        replace_copy = self.replace
+        for token in reversed(_tokens(replace_copy, "&")):
+            replace_copy = replace_copy[:token]+r"\g<0>"+replace_copy[token+1:]
+        s = re.sub(self.pattern, replace_copy, s, self.count)
         return s
 
 @dataclasses.dataclass
