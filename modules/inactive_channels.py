@@ -2,11 +2,13 @@ import datetime
 from src import ModuleManager, utils
 
 PRUNE_TIMEDELTA = datetime.timedelta(weeks=2)
-SETTING = utils.BoolSetting("inactive-channels",
+SETTING_NAME = "inactive-channels"
+SETTING = utils.BoolSetting(SETTING_NAME,
     "Whether or not to leave inactive channels after 2 weeks")
 
 @utils.export("botset", SETTING)
 @utils.export("serverset", SETTING)
+@utils.export("channelset", SETTING)
 class Module(ModuleManager.BaseModule):
     def _get_timestamp(self, channel):
         return channel.get_setting("last-message", None)
@@ -26,13 +28,18 @@ class Module(ModuleManager.BaseModule):
     def hourly(self, event):
         parts = []
         now = utils.datetime.utcnow()
-        botwide_setting = self.bot.get_setting("inactive-channels", False)
+        botwide_setting = self.bot.get_setting(SETTING_NAME, False)
 
         for server in self.bot.servers.values():
-            if not server.get_setting("inactive-channels", botwide_setting):
+            serverwide_setting = server.get_setting(
+                SETTING_NAME, botwide_setting)
+            if not serverwide_setting:
                 continue
 
             for channel in server.channels:
+                if not channel.get_setting(SETTING_NAME, serverwide_setting):
+                    continue
+
                 timestamp = self._get_timestamp(channel)
                 if timestamp:
                     dt = utils.datetime.parse.iso8601(timestamp)
