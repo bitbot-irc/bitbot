@@ -215,26 +215,30 @@ class Channel(IRCObject.Object):
     def send_tagmsg(self, tags: dict):
         return self.server.send_tagmsg(self.name, tags)
 
-    def _chunks(self, n: int, l: typing.List[typing.Tuple[str, str]]):
-        return [l[i:i+n] for i in range(0, len(l), n)]
+    def _chunks(self, chunk: int, n: int) -> typing.List[typing.List[int]]:
+        return [list(range(i, i+chunk)) for i in range(0, n, chunk)]
 
     def send_mode(self, mode: str=None, target: typing.List[str]=None):
         return self.server.send_mode(self.name, mode, target)
     def send_modes(self, modes: typing.List[typing.Tuple[str, str]], add: bool):
         chunk_n = min(6,
             int(self.server.isupport.get("MODES", "3") or "6"))
-        for chunk in self._chunks(chunk_n, modes):
-            modes, args = list(zip(*chunk))
-            mode_str = "%s%s" % ("+" if add else "-", "".join(modes))
-            self.server.send_mode(self.name, mode_str, args)
+
+        for chunk in self._chunks(chunk_n, len(modes)):
+            chunk_items = modes[chunk[0]:chunk[0]+len(chunk)]
+            chunk_modes = [i[0] for i in chunk_items]
+            chunk_args = [i[1] for i in chunk_items]
+            mode_str = "%s%s" % ("+" if add else "-", "".join(chunk_modes))
+            self.server.send_mode(self.name, mode_str, chunk_args)
 
     def send_kick(self, target: str, reason: str=None):
         return self.server.send_kick(self.name, target, reason)
     def send_kicks(self, targets: typing.List[str], reason: str=None):
         chunk_n = min(4, self.server.targmax.get("KICK", 1))
-        for chunk in self._chunks(chunk_n, targets):
+        for chunk in self._chunks(chunk_n, len(targets)):
             chan_str = ",".join([self.name]*len(chunk))
-            self.server.send_kick(chan_str, ",".join(chunk), reason)
+            nicks = targets[chunk[0]:chunk[0]+len(chunk)]
+            self.server.send_kick(chan_str, ",".join(nicks), reason)
 
     def send_ban(self, hostmask: str):
         return self.server.send_mode(self.name, "+b", [hostmask])
