@@ -61,15 +61,18 @@ class Module(ModuleManager.BaseModule):
         return options
 
     def _argument_types(self, options, args):
-        current_error = None
+        errors = []
+        current_error = first_error = None
         for argument_type, value, n, error in options:
             if not value == None:
                 return [argument_type, n, value]
             elif error:
-                current_error = error
+                errors.append(error)
             elif n > len(args):
-                current_error = "Not enough arguments"
-        return [None, -1, current_error or "Invalid arguments"]
+                errors.append("Not enough arguments")
+
+        return [None, -1,
+            errors[0] if len(errors) == 1 else "Invalid arguments"]
 
     @utils.hook("preprocess.command")
     @utils.kwarg("priority", EventManager.PRIORITY_HIGH)
