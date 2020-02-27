@@ -78,29 +78,22 @@ class Module(ModuleManager.BaseModule):
                     self._relay(event, channel)
 
     @utils.hook("received.command.relaygroup")
-    @utils.kwarg("min_args", 1)
     @utils.kwarg("help", "Edit configured relay groups")
-    @utils.kwarg("usage", "list")
-    @utils.kwarg("usage", "join <name>")
-    @utils.kwarg("usage", "leave <name>")
     @utils.kwarg("permission", "relay")
+    @utils.spec("!'list")
+    @utils.spec("!'join,leave !<name>wordlower")
     def relay_group(self, event):
-        subcommand = event["args_split"][0].lower()
-
         group_settings = self.bot.find_settings(prefix="relay-group-")
         groups = {}
         for setting, value in group_settings:
             name = setting.replace("relay-group-", "", 1)
             groups[name] = value
 
-        if subcommand == "list":
+        if event["spec"][0] == "list":
             event["stdout"].write("Relay groups: %s" % ", ".join(groups.keys()))
             return
 
-        if not len(event["args_split"]) > 1:
-            raise utils.EventError("Please provide a group name")
-
-        name = event["args_split"][1].lower()
+        name = event["spec"][1]
 
         event["check_assert"](utils.Check("is-channel"))
         current_channel = [event["server"].id, event["target"].name]
@@ -109,7 +102,7 @@ class Module(ModuleManager.BaseModule):
         message = None
         remove = False
 
-        if subcommand == "join":
+        if event["spec"][0] == "join":
             if not name in groups:
                 groups[name] = []
 
@@ -120,7 +113,7 @@ class Module(ModuleManager.BaseModule):
             channel_groups.append(name)
             message = "Joined"
 
-        elif subcommand == "leave":
+        elif event["spec"][0] == "leave":
             if (not name in groups or
                     not current_channel in groups[name] or
                     not name in channel_groups):
@@ -129,8 +122,6 @@ class Module(ModuleManager.BaseModule):
             groups[name].remove(current_channel)
             channel_groups.remove(name)
             message = "Left"
-        else:
-            raise utils.EventError("Unknown subcommand '%s'" % subcommand)
 
         if not message == None:
             if not groups[name]:
