@@ -2,13 +2,20 @@ import datetime
 from src import ModuleManager, utils
 
 PRUNE_TIMEDELTA = datetime.timedelta(weeks=2)
+
 SETTING_NAME = "inactive-channels"
 SETTING = utils.BoolSetting(SETTING_NAME,
     "Whether or not to leave inactive channels after 2 weeks")
 
+MODE_SETTING_NAME = "inactive-channel-modes"
+MODE_SETTING = utils.BoolSetting(MODE_SETTING_NAME,
+    "Whether or not we will leave inactive channels that we have a mode in")
+
 @utils.export("botset", SETTING)
 @utils.export("serverset", SETTING)
 @utils.export("channelset", SETTING)
+@utils.export("serverset", MODE_SETTING)
+@utils.export("channelset", MODE_SETTING)
 class Module(ModuleManager.BaseModule):
     def _get_timestamp(self, channel):
         return channel.get_setting("last-message", None)
@@ -29,6 +36,7 @@ class Module(ModuleManager.BaseModule):
         parts = []
         now = utils.datetime.utcnow()
         botwide_setting = self.bot.get_setting(SETTING_NAME, False)
+        botwide_mode_setting = self.bot.get_setting(MODE_SETTING_NAME, False)
 
         for server in self.bot.servers.values():
             serverwide_setting = server.get_setting(
@@ -36,8 +44,14 @@ class Module(ModuleManager.BaseModule):
             if not serverwide_setting:
                 continue
 
+            mode_setting = server.get_setting(
+                MODE_SETTING_NAME, botwide_mode_setting)
+
+            our_user = server.get_user(server.nickname)
             for channel in server.channels:
                 if not channel.get_setting(SETTING_NAME, serverwide_setting):
+                    continue
+                if not mode_setting and channel.get_user_modes(our_user):
                     continue
 
                 timestamp = self._get_timestamp(channel)
