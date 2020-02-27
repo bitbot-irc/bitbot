@@ -11,7 +11,7 @@ class BitBotMagic(object):
     def add_hook(self, hook: str, kwargs: dict):
         self._hooks.append((hook, kwargs))
     def add_kwarg(self, key: str, value: typing.Any):
-        self._kwargs.append((key, value))
+        self._kwargs.insert(0, (key, value))
 
     def get_hooks(self):
         hooks: typing.List[typing.Tuple[str, typing.List[Tuple[str, typing.Any]]]] = []
