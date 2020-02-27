@@ -133,4 +133,16 @@ class Module(ModuleManager.BaseModule):
                     if count >= best_count:
                         overall_error = current_error
 
-            return utils.consts.PERMISSION_HARD_FAIL, overall_error
+            error_out = overall_error
+
+            if event["is_channel"]:
+                context = utils.parse.SpecArgumentContext.CHANNEL
+            else:
+                context = utils.parse.SpecArgumentContext.PRIVATE
+            usages = " | ".join(
+                [utils.parse.argument_spec_human(s, context) for s in specs])
+
+            command = "%s%s" % (event["command_prefix"], event["command"])
+            error_out = "%s (Usage: %s)" % (overall_error, usages)
+
+            return utils.consts.PERMISSION_HARD_FAIL, error_out
