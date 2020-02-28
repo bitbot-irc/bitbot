@@ -50,7 +50,7 @@ def time_unit(seconds: int) -> typing.Tuple[int, str]:
 
 def to_pretty_time(total_seconds: int, max_units: int=UNIT_MINIMUM,
         direction: typing.Optional[RelativeDirection]=None) -> str:
-    if total_seconds == 0:
+    if total_seconds < 1:
         return "0s"
 
     if not direction == None:
