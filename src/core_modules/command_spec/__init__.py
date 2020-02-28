@@ -139,10 +139,11 @@ class Module(ModuleManager.BaseModule):
                 context = utils.parse.SpecArgumentContext.CHANNEL
             else:
                 context = utils.parse.SpecArgumentContext.PRIVATE
-            usages = " | ".join(
-                [utils.parse.argument_spec_human(s, context) for s in specs])
-
+            usages = [
+                utils.parse.argument_spec_human(s, context) for s in specs]
             command = "%s%s" % (event["command_prefix"], event["command"])
-            error_out = "%s (Usage: %s)" % (overall_error, usages)
+            usages = ["%s%s" % (command, u) for u in usages]
+
+            error_out = "%s (Usage: %s)" % (overall_error, " | ".join(usages))
 
             return utils.consts.PERMISSION_HARD_FAIL, error_out
