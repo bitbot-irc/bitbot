@@ -17,13 +17,11 @@ class Module(ModuleManager.BaseModule):
         if not event["server"].is_own_nickname(event["user"].nickname):
             self._change_seen(event["channel"], event["user"], line)
 
-    @utils.hook("received.command.seen", min_args=1)
+    @utils.hook("received.command.seen")
+    @utils.kwarg("help", "Find out when a user was last seen")
+    @utils.spec("!<nickname>ouser")
     def seen(self, event):
-        """
-        :help: Find out when a user was last seen
-        :usage: <nickname>
-        """
-        user = event["server"].get_user(event["args_split"][0])
+        user = event["spec"][0]
         seen_seconds = user.get_setting("seen")
 
         if seen_seconds:
