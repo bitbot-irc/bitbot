@@ -24,53 +24,39 @@ class Module(ModuleManager.BaseModule):
         self._execute(event["server"], commands, NICK=event["server"].nickname,
             CHAN=event["channel"].name)
 
-    def _perform(self, target, args_split):
-        subcommand = args_split[0].lower()
+    def _perform(self, target, spec):
+        subcommand = spec[0]
         current_perform = target.get_setting("perform", [])
         if subcommand == "list":
             return "Configured commands: %s" % ", ".join(current_perform)
 
         message = None
         if subcommand == "add":
-            if not len(args_split) > 1:
-                raise utils.EventError("Please provide a raw command to add")
-            current_perform.append(" ".join(args_split[1:]))
+            current_perform.append(spec[1])
             message = "Added command"
         elif subcommand == "remove":
-            if not len(args_split) > 1:
-                raise utils.EventError("Please provide an index to remove")
-            if not args_split[1].isdigit():
-                raise utils.EventError("Please provide a number")
-            index = int(args_split[1])
+            index = spec[1]
             if not index < len(current_perform):
                 raise utils.EventError("Index out of bounds")
-            current_perform.pop(index)
-            message = "Removed command"
-        else:
-            raise utils.EventError("Unknown subcommand '%s'" % subcommand)
+            command = current_perform.pop(index)
+            message = "Removed command %d (%s)" % (index, command)
 
         target.set_setting("perform", current_perform)
         return message
 
-    @utils.hook("received.command.perform", min_args=1)
-    @utils.kwarg("min_args", 1)
+    @utils.hook("received.command.perform", permission="perform",
+        help="Edit on-connect command configuration")
+    @utils.hook("received.command.cperform", permission="perform",
+        help="Edit channel on-join command configuration", channel_only=True)
     @utils.kwarg("help", "Edit on-connect command configuration")
-    @utils.kwarg("usage", "list")
-    @utils.kwarg("usage", "add <raw command>")
-    @utils.kwarg("usage", "remove <index>")
-    @utils.kwarg("permission", "perform")
+    @utils.spec("!'list")
+    @utils.spec("!'add !<command>string")
+    @utils.spec("!'remove !<index>int")
     def perform(self, event):
-        event["stdout"].write(self._perform(event["server"],
-            event["args_split"]))
+        if event["command"] == "perform":
+            target = event["server"]
+        elif event["command"] == "cperform":
+            target = event["target"]
 
-    @utils.hook("received.command.cperform", min_args=1)
-    @utils.kwarg("min_args", 1)
-    @utils.kwarg("channel_only", True)
-    @utils.kwarg("help", "Edit channel on-join command configuration")
-    @utils.kwarg("usage", "list")
-    @utils.kwarg("usage", "add <raw command>")
-    @utils.kwarg("usage", "remove <index>")
-    @utils.kwarg("permission", "cperform")
-    def cperform(self, event):
-        event["stdout"].write(self._perform(event["target"],
-            event["args_split"]))
+        out = self._perform(target, event["spec"])
+        event["stdout"].write("%s: %s" % (event["user"].nickname, out))
