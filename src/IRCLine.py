@@ -1,4 +1,4 @@
-import datetime, typing, uuid
+import codecs, datetime, typing, uuid
 from src import EventManager, IRCObject, utils
 
 # this should be 510 (RFC1459, 512 with \r\n) but a server BitBot uses is broken
@@ -150,8 +150,8 @@ class SendableLine(ParsedLine):
         overflow: typing.Optional[str] = None
 
         if (n+len(arg.encode("utf8"))) > LINE_MAX:
-            for i, char in enumerate(arg):
-                n += len(char.encode("utf8"))
+            for i, char in enumerate(codecs.iterencode(arg, "utf8")):
+                n += len(char)
                 if n > LINE_MAX:
                     arg, overflow = arg[:i], arg[i:]
                     if human_trunc and not overflow[0] == " ":
