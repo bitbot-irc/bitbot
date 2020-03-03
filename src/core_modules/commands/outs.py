@@ -6,6 +6,13 @@ class StdOut(object):
         self.prefix = prefix
         self._lines = []
         self._assured = False
+        self._overflowed = False
+
+    def copy_from(self, other):
+        self.prefix = other.prefix
+        self._lines = other._lines
+        self._assured = other._assured
+        self._overflowed = other._overflowed
 
     def assure(self):
         self._assured = True

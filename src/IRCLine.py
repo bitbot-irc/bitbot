@@ -2,7 +2,7 @@ import datetime, typing, uuid
 from src import EventManager, IRCObject, utils
 
 # this should be 510 (RFC1459, 512 with \r\n) but a server BitBot uses is broken
-LINE_MAX = 470
+LINE_MAX = 510
 
 class IRCArgs(object):
     def __init__(self, args: typing.List[str]):
@@ -125,42 +125,44 @@ class ParsedLine(object):
         return tags, " ".join(pieces).replace("\r", "")
     def format(self) -> str:
         tags, line = self._format()
-        line, _ = self._newline_truncate(line)
         if tags:
             return "%s %s" % (tags, line)
         else:
             return line
 
-    def _newline_truncate(self, line: str) -> typing.Tuple[str, str]:
-        line, sep, overflow = line.partition("\n")
-        return (line, overflow)
-    def _line_max(self, hostmask: str, margin: int) -> int:
-        return LINE_MAX-len((":%s " % hostmask).encode("utf8"))-margin
-    def truncate(self, hostmask: str, margin: int=0) -> typing.Tuple[str, str]:
-        valid_bytes = b""
-        valid_index = -1
+class SendableLine(ParsedLine):
+    def __init__(self, command: str, args: typing.List[str],
+            margin: int=0, tags: typing.Dict[str, str]=None):
+        ParsedLine.__init__(self, command, args, None, tags)
+        self._margin = margin
 
-        line_max = self._line_max(hostmask, margin)
+    def push_last(self, arg: str, extra_margin: int=0,
+            human_trunc: bool=False) -> typing.Optional[str]:
+        last_arg = self.args[-1]
+        tags, line = self._format()
+        n = len(line.encode("utf8")) # get length of current line
+        n += self._margin            # margin used for :hostmask
+        n += 1                       # +1 for space on new arg
+        if " " in arg and not " " in last_arg:
+            n += 1                   # +1 for colon on new arg
+        n += extra_margin            # used for things like (more ...)
 
-        tags_formatted, line_formatted = self._format()
-        for i, char in enumerate(line_formatted):
-            encoded_char = char.encode("utf8")
-            if (len(valid_bytes)+len(encoded_char) > line_max
-                    or encoded_char == b"\n"):
-                break
-            else:
-                valid_bytes += encoded_char
-                valid_index = i
-        valid_index += 1
+        overflow: typing.Optional[str] = None
 
-        valid = line_formatted[:valid_index]
-        if tags_formatted:
-            valid = "%s %s" % (tags_formatted, valid)
-        overflow = line_formatted[valid_index:]
-        if overflow and overflow[0] == "\n":
-            overflow = overflow[1:]
-
-        return valid, overflow
+        if (n+len(arg.encode("utf8"))) > LINE_MAX:
+            for i, char in enumerate(arg):
+                n += len(char.encode("utf8"))
+                if n > LINE_MAX:
+                    arg, overflow = arg[:i], arg[i:]
+                    if human_trunc and not overflow[0] == " ":
+                        new_arg, sep, new_overflow = arg.rpartition(" ")
+                        if sep:
+                            arg = new_arg
+                            overflow = new_overflow+overflow
+                    break
+        if arg:
+            self.args[-1] = last_arg+arg
+        return overflow
 
 def parse_line(line: str) -> ParsedLine:
     tags = {} # type: typing.Dict[str, typing.Any]
@@ -220,7 +222,7 @@ class SentLine(IRCObject.Object):
         return self._for_wire()
 
     def _for_wire(self) -> str:
-        return self.parsed_line.truncate(self._hostmask)[0]
+        return str(self.parsed_line)
     def for_wire(self) -> bytes:
         return b"%s\r\n" % self._for_wire().encode("utf8")
 

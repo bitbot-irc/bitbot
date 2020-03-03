@@ -80,6 +80,11 @@ class Server(IRCObject.Object):
     def hostmask(self):
         return "%s!%s@%s" % (self.nickname, self.username, self.hostname)
 
+    def new_line(self, command: str, args: typing.List[str]=None,
+            tags: typing.Dict[str, str]=None) -> IRCLine.SendableLine:
+        return IRCLine.SendableLine(command, args or [],
+            len((":%s " % self.hostmask()).encode("utf8")), tags)
+
     def connect(self):
         self.socket = IRCSocket.Socket(
             self.bot.log,

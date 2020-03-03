@@ -8,8 +8,8 @@ COMMAND_METHOD = "command-method"
 COMMAND_METHODS = ["PRIVMSG", "NOTICE"]
 
 STR_MORE = " (more...)"
+STR_CONTINUED = "(...continued) "
 STR_MORE_LEN = len(STR_MORE.encode("utf8"))
-STR_CONTINUED = "(...continued)"
 WORD_BOUNDARIES = [" "]
 
 NON_ALPHANUMERIC = [char for char in string.printable if not char.isalnum()]
@@ -237,29 +237,25 @@ class Module(ModuleManager.BaseModule):
             color = utils.consts.RED
 
         line_str = obj.pop()
+        prefix = ""
         if obj.prefix:
-            line_str = "[%s] %s" % (
-                utils.irc.color(obj.prefix, color), line_str)
+            prefix = "[%s] " % utils.irc.color(obj.prefix, color)
+            if obj._overflowed:
+                prefix = "%s%s" % (prefix, STR_CONTINUED)
         method = self._command_method(server, target, is_channel)
 
         if not method in ["PRIVMSG", "NOTICE"]:
             raise ValueError("Unknown command-method '%s'" % method)
 
-        line = IRCLine.ParsedLine(method, [target_str, line_str],
-            tags=tags)
-        valid, trunc = line.truncate(server.hostmask(),
-            margin=STR_MORE_LEN)
+        line = server.new_line(method, [target_str, prefix], tags=tags)
 
-        if trunc:
-            if not trunc[0] in WORD_BOUNDARIES:
-                for boundary in WORD_BOUNDARIES:
-                    left, *right = valid.rsplit(boundary, 1)
-                    if right:
-                        valid = left
-                        trunc = right[0]+trunc
-            obj.insert("%s %s" % (STR_CONTINUED, trunc))
-            valid = valid+STR_MORE
-        line = IRCLine.parse_line(valid)
+        overflow = line.push_last(line_str, human_trunc=True,
+            extra_margin=STR_MORE_LEN)
+        if overflow:
+            line.push_last(STR_MORE)
+            obj.insert(overflow)
+            obj._overflowed = True
+
         if obj._assured:
             line.assure()
         server.send(line)

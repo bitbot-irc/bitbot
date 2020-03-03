@@ -20,4 +20,4 @@ class Module(ModuleManager.BaseModule):
     def more(self, event):
         last_stdout = event["target"]._last_stdout
         if last_stdout and last_stdout.has_text():
-            event["stdout"].write_lines(last_stdout.get_all())
+            event["stdout"].copy_from(last_stdout)
