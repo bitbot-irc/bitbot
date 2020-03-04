@@ -33,10 +33,6 @@ BAN_FORMATTING = "${n} = nick, ${u} = username, ${h} = hostname, ${a} = account"
 @utils.export("channelset", utils.Setting("ban-format",
     "Set ban format (%s)" % BAN_FORMATTING, example="*!${u}@${h}"))
 
-@utils.export("channelset", utils.Setting("ban-format-account",
-    "Set ban format for users with accounts (%s)" % BAN_FORMATTING,
-    example="~a:${a}"))
-
 @utils.export("serverset", utils.OptionsSetting(
     list(QUIET_METHODS.keys()), "quiet-method",
     "Set this server's method of muting users"))
@@ -83,11 +79,6 @@ class Module(ModuleManager.BaseModule):
         vars["a"] = vars["account"] = user.account or ""
         return utils.parse.format_token_replace(s, vars)
     def _get_hostmask(self, channel, user):
-        if not user.account == None:
-            account_format = channel.get_setting("ban-format-account", None)
-            if not account_format == None:
-                return self._format_hostmask(user, account_format)
-
         format = channel.get_setting("ban-format", "*!${u}@${h}")
         return self._format_hostmask(user, format)
 
