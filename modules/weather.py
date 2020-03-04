@@ -74,8 +74,8 @@ class Module(ModuleManager.BaseModule):
 
                 # wind speed is in metres per second - 3.6* for KMh
                 wind_speed = 3.6*page["wind"]["speed"]
-                wind_speed_k = "%sKMh" % round(wind_speed, 1)
-                wind_speed_m = "%sMPh" % round(0.6214*wind_speed, 1)
+                wind_speed_k = "%skm/h" % round(wind_speed, 1)
+                wind_speed_m = "%smi/h" % round(0.6214*wind_speed, 1)
 
                 if not nickname == None:
                     location_str = "(%s) %s" % (nickname, location_str)
