@@ -15,6 +15,7 @@ class SpecArgumentContext(enum.IntFlag):
 
 class SpecArgumentType(object):
     context = SpecArgumentContext.ALL
+    _modifier: typing.Optional[str]
 
     def __init__(self, type_name: str, name: typing.Optional[str],
             modifier: typing.Optional[str], exported: typing.Optional[str]):
@@ -24,7 +25,7 @@ class SpecArgumentType(object):
         self.exported = exported
 
     def _set_modifier(self, modifier: typing.Optional[str]):
-        pass
+        self._modifier = modifier
 
     def name(self) -> typing.Optional[str]:
         return self._name
@@ -102,6 +103,18 @@ class SpecArgumentTypeDate(SpecArgumentType):
             return date_human(args[0]), 1
         return None, 1
 
+class SpecArgumentTypeFlag(SpecArgumentType):
+    def _str(self):
+        pref = "-" if len(self._modifier) == 1 else "--"
+        return f"{pref}{self._modifier}"
+    def name(self):
+        return self._str()
+    def simple(self, args):
+        print("flag _str()", self._str())
+        if args and args[0] == self._str():
+            return True, 1
+        return None, 1
+
 class SpecArgumentPrivateType(SpecArgumentType):
     context = SpecArgumentContext.PRIVATE
 
@@ -115,7 +128,8 @@ SPEC_ARGUMENT_TYPES = {
     "int": SpecArgumentTypeInt,
     "date": SpecArgumentTypeDate,
     "duration": SpecArgumentTypeDuration,
-    "pattern": SpecArgumentTypePattern
+    "pattern": SpecArgumentTypePattern,
+    "flag": SpecArgumentTypeFlag
 }
 
 class SpecArgument(object):
