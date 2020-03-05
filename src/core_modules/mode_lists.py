@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.346")
     def on_346(self, event):
         mode = self._invex(event["server"])
-        self._mode_list_mask(event, mode, event["line"].args[3])
+        self._mode_list_mask(event, mode, event["line"].args[2])
     @utils.hook("received.347")
     def on_347(self, event):
         self._mode_list_end(event, self._invex(event["server"]))
