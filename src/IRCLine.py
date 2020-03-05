@@ -142,7 +142,6 @@ class SendableLine(ParsedLine):
         tags, line = self._format()
         n = len(line.encode("utf8")) # get length of current line
         n += self._margin            # margin used for :hostmask
-        n += 1                       # +1 for space on new arg
         if " " in arg and not " " in last_arg:
             n += 1                   # +1 for colon on new arg
         n += extra_margin            # used for things like (more ...)
