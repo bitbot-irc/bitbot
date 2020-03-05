@@ -1,11 +1,11 @@
 import datetime
 from src import ModuleManager, utils
 
-PRUNE_TIMEDELTA = datetime.timedelta(weeks=2)
+PRUNE_TIMEDELTA = datetime.timedelta(weeks=4)
 
 SETTING_NAME = "inactive-channels"
 SETTING = utils.BoolSetting(SETTING_NAME,
-    "Whether or not to leave inactive channels after 2 weeks")
+    "Whether or not to leave inactive channels after 4 weeks")
 
 MODE_SETTING_NAME = "inactive-channel-modes"
 MODE_SETTING = utils.BoolSetting(MODE_SETTING_NAME,
