@@ -205,6 +205,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("raw.received.chghost")
     def chghost(self, event):
         user.chghost(self.events, event)
+    # RPL_VISIBLEHOST, telling us what our hostname (and sometimes username) is
+    @utils.hook("raw.received.396")
+    def handle_396(self, event):
+        core.handle_396(event)
 
     # IRCv3 SETNAME, to change a user's realname
     @utils.hook("raw.received.setname")
