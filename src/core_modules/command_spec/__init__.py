@@ -142,7 +142,7 @@ class Module(ModuleManager.BaseModule):
             usages = [
                 utils.parse.argument_spec_human(s, context) for s in specs]
             command = "%s%s" % (event["command_prefix"], event["command"])
-            usages = ["%s%s" % (command, u) for u in usages]
+            usages = ["%s %s" % (command, u) for u in usages]
 
             error_out = "%s (Usage: %s)" % (overall_error, " | ".join(usages))
 
