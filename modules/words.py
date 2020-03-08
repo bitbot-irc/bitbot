@@ -105,15 +105,17 @@ class Module(ModuleManager.BaseModule):
         self._channel_message(event["server"].get_user(
             event["server"].nickname), event)
 
-    @utils.hook("received.command.words", channel_only=True)
+    @utils.hook("received.command.words")
     @utils.kwarg("help",
         "See how many words you or the given nickname have used")
-    @utils.spec("!-channelonly ?<nickname>ouser")
+    @utils.spec("?<nickname>ouser")
     def words(self, event):
-        target_user = event["spec"][0] or event["user"]
+        if event["spec"][0] and event["is_channel"]:
+            target_user = event["spec"][0]
+        else:
+            target_user = event["user"]
 
         words = dict(self._user_all(target_user))
-        this_channel = words.get(event["target"].id, 0)
 
         total = 0
         for channel_id in words:
@@ -125,9 +127,14 @@ class Module(ModuleManager.BaseModule):
             since = " since %s" % utils.datetime.format.date_human(
                 utils.datetime.timestamp(first_words))
 
-        event["stdout"].write("%s has used %d words (%d in %s)%s" % (
-            target_user.nickname, total, this_channel, event["target"].name,
-            since))
+        if event["is_channel"]:
+            this_channel = words.get(event["target"].id, 0)
+            event["stdout"].write("%s has used %d words (%d in %s)%s" % (
+                target_user.nickname, total, this_channel, event["target"].name,
+                since))
+        else:
+            event["stdout"].write("%s has used %d words%s" % (
+                target_user.nickname, total, since))
 
     @utils.hook("received.command.trackword")
     @utils.kwarg("help", "Start tracking a word")
