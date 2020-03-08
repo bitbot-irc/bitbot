@@ -25,7 +25,7 @@ class Module(ModuleManager.BaseModule):
         if not extended == None:
             return True, extended
         return False, self.exports.get("shorturl-s-%s" % name, None)
-    def _call_shortener(self, shortener_name, url):
+    def _call_shortener(self, server, context, shortener_name, url):
         extended, shortener = self._get_shortener(shortener_name)
         if shortener == None:
             return None
