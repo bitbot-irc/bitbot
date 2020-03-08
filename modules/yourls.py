@@ -1,7 +1,8 @@
+import urllib.parse
 from src import ModuleManager, utils
 
 def _parse(s):
-    parsed = urllib.parse.urlpare(s)
+    parsed = urllib.parse.urlparse(s)
     return urllib.parse.urljoin(s, parsed.path), parsed.query
 
 SETTING = utils.FunctionSetting(_parse, "yourls",
