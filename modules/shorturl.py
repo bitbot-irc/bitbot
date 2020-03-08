@@ -16,23 +16,32 @@ class Module(ModuleManager.BaseModule):
         self.exports.add("botset", setting)
 
     def _shorturl_options_factory(self):
-        shorteners = self.exports.find("shorturl-s-")
-        return [s.replace("shorturl-s-", "", 1) for s in shorteners]
+        shorteners = set(self.exports.find("shorturl-s-"))
+        shorteners.update(self.exports.find("shorturl-x-"))
+        return sorted(s.split("-", 2)[-1] for s in shorteners)
 
     def _get_shortener(self, name):
-        return self.exports.get("shorturl-s-%s" % name, None)
+        extended = self.exports.get("shorturl-x-%s" % name, None)
+        if not extended == None:
+            return True, extended
+        return False, self.exports.get("shorturl-s-%s" % name, None)
     def _call_shortener(self, shortener_name, url):
-        shortener = self._get_shortener(shortener_name)
+        extended, shortener = self._get_shortener(shortener_name)
         if shortener == None:
             return None
-        short_url = shortener(url)
+
+        if extended:
+            short_url = shortener(server, context, url)
+        else:
+            short_url = shortener(url)
+
         if short_url == None:
             return None
         return short_url
 
     @utils.export("shorturl-any")
     def _shorturl_any(self, url):
-        return self._call_shortener("bitly", url) or url
+        return self._call_shortener(server, None, "bitly", url) or url
 
     @utils.export("shorturl")
     def _shorturl(self, server, url, context=None):
@@ -45,7 +54,8 @@ class Module(ModuleManager.BaseModule):
 
         if shortener_name == None:
             return url
-        return self._call_shortener(shortener_name, url) or url
+        return self._call_shortener(
+            server, context, shortener_name, url) or url
 
     @utils.export("shorturl-s-bitly")
     def _bitly(self, url):
