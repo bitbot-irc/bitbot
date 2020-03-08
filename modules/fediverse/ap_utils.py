@@ -62,8 +62,9 @@ def find_actor(username, instance):
 
     try:
         webfinger = activity_request(webfinger_url, type=JRD_TYPE)
-    except:
-        raise FindActorException("Failed to get webfinger for %s" % instance)
+    except Exception as e:
+        raise FindActorException("Failed to get webfinger for %s: %s" %
+            (instance, str(e)))
 
     actor_url = None
     if webfinger.code == 200:
