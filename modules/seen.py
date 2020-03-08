@@ -36,7 +36,7 @@ class Module(ModuleManager.BaseModule):
             since = utils.datetime.format.to_pretty_since(
                 time.time()-seen_seconds, max_units=2)
             event["stdout"].write("%s was last seen %s ago%s" % (
-                event["args_split"][0], since, seen_info or ""))
+                user.nickname, since, seen_info or ""))
         else:
             event["stderr"].write("I have never seen %s before." % (
-                event["args_split"][0]))
+                user.nickname))
