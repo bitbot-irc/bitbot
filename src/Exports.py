@@ -35,7 +35,7 @@ class Exports(object):
         return self._exports.get(setting, []) + sum([
             exports.get(setting, []) for exports in
             self._context_exports.values()], [])
-    def get_one(self, setting: str, default: typing.Any=None
+    def get(self, setting: str, default: typing.Any=None
             ) -> typing.Optional[typing.Any]:
         values = self.get_all(setting)
         return values[0] if values else default
@@ -60,8 +60,8 @@ class ExportsContext(object):
         self._parent._context_add(self.context, setting, value)
     def get_all(self, setting: str) -> typing.List[typing.Any]:
         return self._parent.get_all(setting)
-    def get_one(self, setting: str, default: typing.Any=None
+    def get(self, setting: str, default: typing.Any=None
             ) -> typing.Optional[typing.Any]:
-        return self._parent.get_one(setting, default)
+        return self._parent.get(setting, default)
     def find(self, setting_prefix: str) -> typing.List[typing.Any]:
         return self._parent.find(setting_prefix)

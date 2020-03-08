@@ -138,7 +138,7 @@ class Module(ModuleManager.BaseModule):
 
                     if url:
                         if channel.get_setting("git-shorten-urls", False):
-                            url = self.exports.get_one("shorturl")(server, url,
+                            url = self.exports.get("shorturl")(server, url,
                                 context=channel) or url
                         output = "%s - %s" % (output, url)
 

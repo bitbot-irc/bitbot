@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
 
 
         user_access = target.get_user_setting(user.get_id(), "access", [])
-        identified = self.exports.get_one("is-identified")(user)
+        identified = self.exports.get("is-identified")(user)
         matched = list(set(required_access)&set(user_access))
 
         return ("*" in user_access or matched) and identified

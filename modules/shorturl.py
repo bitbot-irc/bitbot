@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
         return [s.replace("shorturl-s-", "", 1) for s in shorteners]
 
     def _get_shortener(self, name):
-        return self.exports.get_one("shorturl-s-%s" % name, None)
+        return self.exports.get("shorturl-s-%s" % name, None)
     def _call_shortener(self, shortener_name, url):
         shortener = self._get_shortener(shortener_name)
         if shortener == None:

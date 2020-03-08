@@ -441,7 +441,7 @@ class GitHub(object):
         url = ""
         if data["check_run"]["details_url"]:
             url = data["check_run"]["details_url"]
-            url = " - %s" % self.exports.get_one("shorturl-any")(url)
+            url = " - %s" % self.exports.get("shorturl-any")(url)
 
         duration = ""
         if data["check_run"]["completed_at"]:

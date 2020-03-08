@@ -48,7 +48,7 @@ class Module(ModuleManager.BaseModule):
                 if argument_type.type in types.TYPES:
                     func = types.TYPES[argument_type.type]
                 else:
-                    func = self.exports.get_one(
+                    func = self.exports.get(
                         "command-spec.%s" % argument_type.type)
 
                 if func:

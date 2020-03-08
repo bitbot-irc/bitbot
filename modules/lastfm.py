@@ -59,7 +59,7 @@ class Module(ModuleManager.BaseModule):
 
                 time_language = "is listening to" if np else "last listened to"
 
-                yt_url = self.exports.get_one("search-youtube")(
+                yt_url = self.exports.get("search-youtube")(
                     "%s - %s" % (artist, track_name))
                 yt_url_str = ""
                 if yt_url:

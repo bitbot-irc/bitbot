@@ -27,7 +27,7 @@ class Module(ModuleManager.BaseModule):
         link = entry.get("link", None)
         if shorten:
             try:
-                link = self.exports.get_one("shorturl")(server, link)
+                link = self.exports.get("shorturl")(server, link)
             except:
                 pass
         link = " - %s" % link if link else ""

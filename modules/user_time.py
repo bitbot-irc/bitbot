@@ -34,7 +34,7 @@ class Module(ModuleManager.BaseModule):
                     location["timezone"])
 
         if query:
-            location = self.exports.get_one("get-location")(query)
+            location = self.exports.get("get-location")(query)
             if location:
                 return (LocationType.NAME, location["name"],
                     location["timezone"])

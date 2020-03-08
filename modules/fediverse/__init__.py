@@ -95,7 +95,7 @@ class Module(ModuleManager.BaseModule):
             note = note["object"]
 
         cw, author, content, url = ap_utils.parse_note(actor, note, type)
-        shorturl = self.exports.get_one("shorturl")(event["server"], url,
+        shorturl = self.exports.get("shorturl")(event["server"], url,
             context=event["target"])
 
         if cw:

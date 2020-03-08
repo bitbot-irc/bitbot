@@ -23,7 +23,7 @@ def _tweet(exports, server, tweet, from_url):
 
     short_url = ""
     if not from_url:
-        short_url = exports.get_one("shorturl")(server, tweet_link)
+        short_url = exports.get("shorturl")(server, tweet_link)
         short_url = " - %s" % short_url if short_url else ""
     created_at = _timestamp(tweet.created_at)
 

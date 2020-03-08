@@ -71,7 +71,7 @@ class Module(ModuleManager.BaseModule):
                     return -2, title
 
                 if channel.get_setting("title-shorten", False):
-                    short_url = self.exports.get_one("shorturl")(server, url,
+                    short_url = self.exports.get("shorturl")(server, url,
                         context=channel)
                     return page.code, "%s - %s" % (title, short_url)
             return page.code, title

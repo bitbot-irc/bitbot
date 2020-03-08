@@ -12,7 +12,7 @@ class Server(object):
         self.username = username
         self.instance = instance
 
-        url_for = self.exports.get_one("url-for")
+        url_for = self.exports.get("url-for")
 
         key_id = self._ap_keyid_url(url_for)
         private_key = ap_security.PrivateKey(self.bot.config["tls-key"], key_id)
@@ -61,7 +61,7 @@ class Server(object):
     def _toot(self, activity_id):
         content, timestamp = self.bot.get_setting(
             "ap-activity-%s" % activity_id)
-        url_for = self.exports.get_one("url-for")
+        url_for = self.exports.get("url-for")
         self_id = self._ap_self_url(url_for)
         activity_url = self._ap_activity_url(url_for, activity_id)
 

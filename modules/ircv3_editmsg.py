@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
                     timestamp, line.message)
                 line = "- %s" % minimal
 
-                self.exports.get_one("format")("delete", event["server"], line,
+                self.exports.get("format")("delete", event["server"], line,
                     event["target_str"], minimal=minimal, channel=channel,
                     user=event["user"])
 

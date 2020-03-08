@@ -45,7 +45,7 @@ class Module(ModuleManager.BaseModule):
 
 
         if location == None and query:
-            location_info = self.exports.get_one("get-location")(query)
+            location_info = self.exports.get("get-location")(query)
             if not location_info == None:
                 location = [location_info["lat"], location_info["lon"],
                     location_info.get("name", None)]
