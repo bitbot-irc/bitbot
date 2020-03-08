@@ -39,15 +39,17 @@ class FindActorException(Exception):
     pass
 
 def find_actor(username, instance):
-    hostmeta = HOSTMETA_TEMPLATE % instance
-    hostmeta_request = utils.http.Request(HOSTMETA_TEMPLATE % instance)
+    hostmeta_url = HOSTMETA_TEMPLATE % instance
+    hostmeta_request = utils.http.Request(hostmeta_url)
     try:
         hostmeta = utils.http.request(hostmeta_request)
     except:
-        raise FindActorException("Failed to get host-meta for %s" % instance)
+        # failed to GET hostmeta; this is an optional step for servers that do
+        # not host their webfinger at the usual URL (see WEBFINGER_TEMPLATE)
+        hostmeta = None
 
     webfinger_url = None
-    if hostmeta.code == 200:
+    if hostmeta and hostmeta.code == 200:
         for item in hostmeta.soup().find_all("link"):
             if item["rel"] and item["rel"][0] == "lrdd":
                 webfinger_url = item["template"]
