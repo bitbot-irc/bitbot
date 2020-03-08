@@ -71,18 +71,6 @@ class Module(ModuleManager.BaseModule):
         reason = reason or self._kick_reason(server, channel)
         channel.send_kicks(nicknames, reason)
 
-    def _format_hostmask(self, user, s):
-        vars = {}
-        vars["n"] = vars["nickname"] = user.nickname
-        vars["u"] = vars["username"] = user.username
-        vars["h"] = vars["hostname"] = user.hostname
-        vars["a"] = vars["account"] = user.account or ""
-        return utils.parse.format_token_replace(s, vars)
-    def _get_hostmask(self, channel, user):
-        format = channel.get_setting("ban-format", "*!${u}@${h}")
-        return self._format_hostmask(user, format)
-
-
     @utils.hook("received.command.topic")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "low,topic")
@@ -200,7 +188,8 @@ class Module(ModuleManager.BaseModule):
                 elif flag == "V" and identified:
                     modes.append(("v", user.nickname))
                 elif flag == "b":
-                    modes.append(("b", self._get_hostmask(channel, user)))
+                    mask = self.exports.get("ban-mask")(server, channel, user)
+                    modes.append(("b", mask))
                     kick_reason = "User is banned from this channel"
 
             new_modes = []
@@ -390,7 +379,8 @@ class Module(ModuleManager.BaseModule):
         target_type, mode, prefix = self._find_mode(type, server)
         if users:
             if target_type == TargetType.MASK:
-                args = [self._get_hostmask(spec[0], u) for u in users]
+                mask_f = self.exports.get("ban-mask")
+                args = [mask_f(server, spec[0], u) for u in users]
             elif target_type == TargetType.NICKNAME:
                 args = [
                     u.nickname for u in users if not spec[0].has_mode(u, mode)]
@@ -419,7 +409,9 @@ class Module(ModuleManager.BaseModule):
 
         users = args = []
         if event["spec"][1][0] == "user":
-            masks = [self._get_hostmask(event["spec"][0], event["spec"][1][1])]
+            mask_f = self.exports.get("ban-mask")
+            masks = [
+                mask_f(event["server"], event["spec"][0], event["spec"][1][1])]
         elif event["spec"][1][0] == "word":
             masks = self._list_query_event(event["spec"][0],
                 event["spec"][1][1], mode, prefix)
