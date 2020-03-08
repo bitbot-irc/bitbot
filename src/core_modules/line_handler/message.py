@@ -64,7 +64,7 @@ def message(events, event):
 
     action = False
 
-    if message:
+    if not message == None:
         ctcp_message = utils.irc.parse_ctcp(message)
 
         if ctcp_message:
@@ -97,7 +97,7 @@ def message(events, event):
     hook = events.on(direction).on(event_type).on(context)
 
     buffer_line = None
-    if message:
+    if not message == None:
         buffer_line = IRCBuffer.BufferLine(user.nickname, message, action,
             event["line"].tags, from_self, event["line"].command)
 
