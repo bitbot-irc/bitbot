@@ -167,7 +167,7 @@ def handle_437(event):
     _nick_in_use(event["server"])
 
 def handle_396(event):
-    username, sep, hostname = event["line"][1].rpartition("@")
+    username, sep, hostname = event["line"].args[1].rpartition("@")
     event["server"].hostname = hostname
     if sep:
         event["server"].username = username
