@@ -80,9 +80,8 @@ class Module(ModuleManager.BaseModule):
                     ban = True
 
                 if ban:
-                    event["channel"].send_ban("*!%s@%s" % (
-                        event["user"].username,
-                        event["user"].realname))
+                    event["channel"].send_ban(self.exports.get("ban-mask")(
+                        event["server"], event["channel"], event["user"]))
                 if kick:
                     event["channel"].send_kick(event["user"].nickname,
                         "You said a badword!")
