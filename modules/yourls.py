@@ -27,7 +27,7 @@ class Module(ModuleManager.BaseModule):
         if not setting == None:
             shortener_url, token = setting
 
-            page = utils.http.request(shortener_url, post_data={
+            page = utils.http.request(shortener_url, get_params={
                 "signature": token,
                 "action": "shorturl",
                 "url": url,
