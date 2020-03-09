@@ -49,15 +49,17 @@ class IntSetting(Setting):
 
 class IntRangeSetting(IntSetting):
     example: typing.Optional[str] = None
-    def __init__(self, n_min: int, n_max: int, name: str, help: str=None,
-            example: str=None):
+    def __init__(self, n_min: int, n_max: typing.Optional[int], name: str,
+            help: str=None, example: str=None):
         self._n_min = n_min
         self._n_max = n_max
         Setting.__init__(self, name, help, example)
 
     def parse(self, value: str) -> typing.Any:
         out = IntSetting.parse(self, value)
-        if not out == None and self._n_min <= out <= self._n_max:
+        if (not out == None and
+                self._n_min <= out and
+                (self._n_max == None or out <= self._n_max)):
             return out
         return None
 
