@@ -25,9 +25,9 @@ class Module(ModuleManager.BaseModule):
             setting = context.get_setting("yourls", setting)
 
         if not setting == None:
-            url, token = setting
+            shortener_url, token = setting
 
-            page = utils.http.request(URL, post_data={
+            page = utils.http.request(shortener_url, post_data={
                 "signature": token,
                 "action": "shorturl",
                 "url": url,
