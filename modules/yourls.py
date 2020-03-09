@@ -16,9 +16,6 @@ SETTING = utils.FunctionSetting(_parse, "yourls",
 class Module(ModuleManager.BaseModule):
     @utils.export("shorturl-x-yourls")
     def _shorturl(self, server, context, url):
-        if len(url) < 20:
-            return None
-
         setting = server.get_setting("yourls",
             self.bot.get_setting("yourls", None))
         if context:
