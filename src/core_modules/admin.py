@@ -32,9 +32,17 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("permission", "part")
     @utils.kwarg("require_mode", "high")
     @utils.kwarg("require_access", "high,part")
-    @utils.spec("!r~channel")
+    @utils.spec("!-privateonly !<channel>word")
+    @utils.spec("!-channelonly ?<channel>word")
     def part(self, event):
-        event["server"].send_part(event["spec"][0].name)
+        event["server"].send_part(event["spec"][0] or event["target"].name)
+
+    @utils.hook("received.command.join")
+    @utils.kwarg("help", "Join a given channel")
+    @utils.kwarg("permission", "join")
+    @utils.spec("!<channel>word")
+    def join(self, event):
+        event["server"].send_join(event["spec"][0])
 
     def _id_from_alias(self, alias):
         return self.bot.database.servers.get_by_alias(alias)
