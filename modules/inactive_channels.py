@@ -35,7 +35,6 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("cron")
     @utils.kwarg("schedule", "0")
     def hourly(self, event):
-        print("minutely")
         parts = []
         now = utils.datetime.utcnow()
         botwide_days = self.bot.get_setting(SETTING_NAME, None)
