@@ -374,7 +374,7 @@ class Module(ModuleManager.BaseModule):
         elif spec[2][0] in ["user", "cuser"]:
             users = [spec[2][1]]
         elif spec[2][0] == "word":
-            masks = [spec[2][1]]
+            args = [spec[2][1]]
 
         target_type, mode, prefix = self._find_mode(type, server)
         if users:
