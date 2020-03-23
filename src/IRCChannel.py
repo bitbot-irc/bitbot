@@ -210,6 +210,8 @@ class Channel(IRCObject.Object):
 
     def send_message(self, text: str, tags: dict={}):
         return self.server.send_message(self.name, text, tags=tags)
+    def send_action(self, text: str, tags: dict={}):
+        return self.server.send_action(self.name, text, tags=tags)
     def send_notice(self, text: str, tags: dict={}):
         return self.server.send_notice(self.name, text, tags=tags)
     def send_tagmsg(self, tags: dict):

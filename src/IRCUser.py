@@ -77,6 +77,8 @@ class User(IRCObject.Object):
 
     def send_message(self, message: str, tags: dict={}):
         self.server.send_message(self.nickname, message, tags=tags)
+    def send_action(self, message: str, tags: dict={}):
+        self.server.send_action(self.nickname, message, tags=tags)
     def send_notice(self, text: str, tags: dict={}):
         self.server.send_notice(self.nickname, text, tags=tags)
     def send_ctcp_response(self, command: str, args: str):

@@ -390,6 +390,10 @@ class Server(IRCObject.Object):
     def send_message(self, target: str, message: str, tags: dict={}
             ) -> typing.Optional[IRCLine.SentLine]:
         return self.send(self._line("PRIVMSG", [target, message], tags=tags))
+    def send_action(self, target: str, message: str, tags: dict={}
+            ) -> typing.Optional[IRCLine.SentLine]:
+        return self.send(self._line("PRIVMSG",
+            [target, f"\x01ACTION {message}\x01"], tags=tags))
 
     def send_notice(self, target: str, message: str, tags: dict={}
             ) -> typing.Optional[IRCLine.SentLine]:
