@@ -45,13 +45,9 @@ class Module(ModuleManager.BaseModule):
         if not urllib.parse.urlparse(url).scheme:
             url = "http://%s" % url
 
-        hostname = urllib.parse.urlparse(url).hostname
-        if not utils.http.host_permitted(hostname):
-            self.log.warn("Attempted to get forbidden host: %s", [url])
-            return -1, None
-
+        request = utils.http.Request(url, check_hostname=True)
         try:
-            page = utils.http.request(url)
+            page = utils.http.request(request)
         except Exception as e:
             self.log.error("failed to get URL title for %s: %s", [url, str(e)])
             return -1, None

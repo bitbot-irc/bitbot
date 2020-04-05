@@ -69,6 +69,7 @@ class Request(object):
     json_body: bool = False
 
     allow_redirects: bool = True
+    check_hostname: bool = False
     check_content_type: bool = True
     fallback_encoding: typing.Optional[str] = None
     content_type: typing.Optional[str] = None
@@ -169,24 +170,53 @@ def request(request_obj: typing.Union[str, Request], **kwargs) -> Response:
         request_obj = Request(request_obj, **kwargs)
     return _request(request_obj)
 
+class HostNameInvalidError(ValueError):
+    pass
+class TooManyRedirectionsError(Exception):
+    pass
+
 def _request(request_obj: Request) -> Response:
     request_obj.validate()
+
+    def _assert_allowed(url: str):
+        hostname = urllib.parse.urlparse(url).hostname
+        if hostname is None or not host_permitted(hostname):
+            raise HostNameInvalidError(
+                f"hostname {hostname} is not permitted")
+
     def _wrap() -> Response:
         headers = request_obj.get_headers()
-        response = requests.request(
-            request_obj.method,
-            request_obj.url,
-            headers=headers,
-            params=request_obj.get_params,
-            data=request_obj.get_body(),
-            allow_redirects=request_obj.allow_redirects,
-            stream=True,
-            cookies=request_obj.cookies
-        )
-        response_content = response.raw.read(RESPONSE_MAX,
-            decode_content=True)
-        if not response.raw.read(1) == b"":
-            raise ValueError("Response too large")
+
+        redirect = 0
+        current_url = request_obj.url
+        while True:
+            if request_obj.check_hostname:
+                _assert_allowed(current_url)
+
+            response = requests.request(
+                request_obj.method,
+                current_url,
+                headers=headers,
+                params=request_obj.get_params,
+                data=request_obj.get_body(),
+                allow_redirects=False,
+                stream=True,
+                cookies=request_obj.cookies
+            )
+
+            if response.status_code in [301, 302]:
+                redirect += 1
+                if redirect == 5:
+                    raise TooManyRedirectionsError(f"{redirect} redirects")
+                else:
+                    current_url = response.headers["location"]
+                    continue
+
+            response_content = response.raw.read(RESPONSE_MAX,
+                decode_content=True)
+            if not response.raw.read(1) == b"":
+                raise ValueError("Response too large")
+            break
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         our_response = Response(response.status_code, response_content,
