@@ -73,12 +73,12 @@ class Module(ModuleManager.BaseModule):
             self.bot.get_setting(COMMAND_METHOD, default))).upper()
 
     def _find_command_hook(self, server, target, is_channel, command, user,
-            args):
+            command_prefix, args):
         if not self.has_command(command):
             command_event = CommandEvent(command, args)
             self.events.on("get.command").call(command=command_event,
                 server=server, target=target, is_channel=is_channel, user=user,
-                kwargs={})
+                command_prefix=command_prefix, kwargs={})
 
             command = command_event.command
             args = command_event.args
@@ -305,7 +305,7 @@ class Module(ModuleManager.BaseModule):
             try:
                 hook, command, args_split = self._find_command_hook(
                     event["server"], event["channel"], True, command,
-                    event["user"], args)
+                    event["user"], command_prefix, args)
             except BadContextException:
                 event["channel"].send_message(
                     "%s: That command is not valid in a channel" %
@@ -367,7 +367,7 @@ class Module(ModuleManager.BaseModule):
             try:
                 hook, command, args_split = self._find_command_hook(
                     event["server"], event["user"], False, command,
-                    event["user"], args)
+                    event["user"], "", args)
             except BadContextException:
                 event["user"].send_message(
                     "That command is not valid in a PM")
