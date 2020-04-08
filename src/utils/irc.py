@@ -77,10 +77,6 @@ FORMAT_STRIP = [
 ]
 
 def _format_tokens(s: str) -> typing.List[str]:
-    is_color = False
-    foreground: typing.List[str] = []
-    background: typing.List[str] = []
-    is_background = False
     tokens: typing.List[str] = []
 
     s_copy = list(s)
