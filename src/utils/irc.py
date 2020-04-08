@@ -75,48 +75,34 @@ FORMAT_TOKENS = [
 FORMAT_STRIP = [
     "\x08" # backspace
 ]
+
 def _format_tokens(s: str) -> typing.List[str]:
     is_color = False
     foreground: typing.List[str] = []
     background: typing.List[str] = []
     is_background = False
-    matches = [] # type: typing.List[str]
+    tokens: typing.List[str] = []
 
-    for i, char in enumerate(s):
-        last_char = i == len(s)-1
-        if is_color:
-            current_color = background if is_background else foreground
-            color_finished = True
+    s_copy = list(s)
+    while s_copy:
+        token = s_copy.pop(0)
+        if token == "\x03":
+            for i in range(2):
+                if s_copy and s_copy[0].isdigit():
+                    token += s_copy.pop(0)
+            if (len(s_copy) > 1 and
+                    s_copy[0] == "," and
+                    s_copy[1].isdigit()):
+                token += s_copy.pop(0)
+                token += s_copy.pop(0)
+                if s_copy and s_copy[0].isdigit():
+                    token += s_copy.pop(0)
 
-            if char == "," and not is_background:
-                is_background = True
-                color_finished = False
-
-            elif char.isdigit() and len(current_color) < 2:
-                current_color.append(char)
-                color_finished = len(current_color) == 2 and is_background
-
-            if color_finished or last_char:
-                color = "".join(foreground)
-                if background:
-                    color += "".join([","]+background)
-
-                matches.append("\x03%s" % color)
-                is_color = False
-                foreground = []
-                background = []
-                is_background = False
-
-        if char == consts.COLOR:
-            if is_color:
-                matches.append(char)
-            else:
-                is_color = True
-        elif char in FORMAT_TOKENS:
-            matches.append(char)
-        elif char in FORMAT_STRIP:
-            matches.append(char)
-    return matches
+            tokens.append(token)
+        elif (token in FORMAT_TOKENS or
+                token in FORMAT_STRIP):
+            tokens.append(token)
+    return tokens
 
 def _color_match(code: typing.Optional[str], foreground: bool) -> str:
     if not code:
