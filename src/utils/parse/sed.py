@@ -76,6 +76,6 @@ def parse(sed_s: str) -> typing.Optional[Sed]:
         return SedMatch(type, re.compile(pattern, flags))
     return None
 
-def sed(sed_obj: Sed, s: str) -> typing.Tuple[str, typing.Optional[str]]:
+def sed(sed_obj: Sed, s: str) -> typing.Optional[str]:
     out = sed_obj.match(s)
-    return sed_obj.type, out
+    return out

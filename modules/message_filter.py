@@ -31,14 +31,16 @@ class Module(ModuleManager.BaseModule):
         filters = self._get_filters(event["server"], target)
         for filter in filters:
             sed = utils.parse.sed.parse(filter)
-            type, out = utils.parse.sed.sed(sed, message)
 
-            if type == "m" and out:
-                self.log.info("Message matched filter, dropping: %s"
-                    % event["line"].format())
-                event["line"].invalidate()
-                return
-            elif type == "s":
+            if sed.type == "m":
+                out = utils.parse.sed.sed(sed, message_plain)
+                if out:
+                    self.log.info("Message matched filter, dropping: %s"
+                        % event["line"].format())
+                    event["line"].invalidate()
+                    return
+            elif sed.type == "s":
+                out = utils.parse.sed.sed(sed, message)
                 message = out
 
         if not message == original_message:
