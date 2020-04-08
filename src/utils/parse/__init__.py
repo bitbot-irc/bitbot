@@ -131,7 +131,7 @@ def format_tokens(s: str, sigil: str="$"
     return tokens
 
 def format_token_replace(s: str, vars: typing.Dict[str, str],
-        sigil: str="$") -> str:
+        sigil: str="$") -> typing.Tuple[typing.List[str], str]:
     vars = vars.copy()
     vars.update({sigil: sigil})
 
@@ -140,7 +140,10 @@ def format_token_replace(s: str, vars: typing.Dict[str, str],
     tokens.sort(key=lambda x: x[0])
     tokens.reverse()
 
+    not_found: typing.List[str] = []
     for start, end, token in tokens:
         if token in vars:
             s = s[:start] + vars[token] + s[end+1:]
-    return s
+        else:
+            not_found += token
+    return not_found, s

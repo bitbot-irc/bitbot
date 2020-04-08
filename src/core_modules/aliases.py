@@ -3,6 +3,8 @@ from src import EventManager, ModuleManager, utils
 
 SETTING_PREFIX = "command-alias-"
 
+class VariableKeyError(KeyError):
+    pass
 class Module(ModuleManager.BaseModule):
     def _arg_replace(self, s, args_split, kwargs):
         vars = {}
@@ -11,7 +13,11 @@ class Module(ModuleManager.BaseModule):
             vars["%d-" % i] = " ".join(args_split[i:])
         vars["-"] = " ".join(args_split)
         vars.update(kwargs)
-        return utils.parse.format_token_replace(s, vars)
+
+        not_found, new_s = utils.parse.format_token_replace(s, vars)
+        if not_found:
+            raise VariableKeyError(f"not found: {not_found!r}")
+        return new_s
 
     def _get_alias(self, server, target, command):
         setting = "%s%s" % (SETTING_PREFIX, command)
@@ -45,9 +51,14 @@ class Module(ModuleManager.BaseModule):
             if event["command"].args:
                 given_args = event["command"].args.split(" ")
 
-            event["command"].command = alias
-            event["command"].args = self._arg_replace(alias_args, given_args,
-                event["kwargs"])
+            try:
+                event["command"].args = self._arg_replace(alias_args,
+                    given_args, event["kwargs"])
+            except VariableKeyError:
+                pass
+            else:
+                event["command"].command = alias
+
 
     @utils.hook("received.command.alias",
         permission="alias")
