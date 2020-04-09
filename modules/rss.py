@@ -7,10 +7,15 @@ import feedparser
 
 RSS_INTERVAL = 60 # 1 minute
 
+SETTING_BIND = utils.Setting("rss-bindhost",
+    "Which local address to bind to for RSS requests", example="127.0.0.1")
+
 @utils.export("botset", utils.IntSetting("rss-interval",
     "Interval (in seconds) between RSS polls", example="120"))
 @utils.export("channelset", utils.BoolSetting("rss-shorten",
     "Whether or not to shorten RSS urls"))
+@utils.export("serverset", SETTING_BIND)
+@utils.export("channelset", SETTING_BIND)
 class Module(ModuleManager.BaseModule):
     _name = "RSS"
     def on_load(self):
@@ -57,8 +62,10 @@ class Module(ModuleManager.BaseModule):
             return
 
         requests = []
-        for url in hooks.keys():
-            requests.append(utils.http.Request(url, id=url))
+        for url, (server, channel) in hooks.items():
+            bindhost = channel.get_setting("rss-bindhost",
+                server.get_setting("rss-bindhost", None))
+            requests.append(utils.http.Request(url, id=url, bindhost=bindhost))
 
         pages = utils.http.request_many(requests)
 

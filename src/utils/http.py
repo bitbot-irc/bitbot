@@ -3,6 +3,7 @@ import typing, urllib.error, urllib.parse, uuid
 import json as _json
 import bs4, netifaces, requests, tornado.httpclient
 from src import IRCBot, utils
+from requests_toolbelt.adapters import source
 
 REGEX_URL = re.compile("https?://\S+", re.I)
 
@@ -77,6 +78,8 @@ class Request(object):
     useragent: typing.Optional[str] = None
 
     timeout: int=5
+
+    bindhost: typing.Optional[str] = None
 
     def validate(self):
         self.id = self.id or str(uuid.uuid4())
@@ -189,11 +192,17 @@ def _request(request_obj: Request) -> Response:
 
         redirect = 0
         current_url = request_obj.url
+        session = requests.Session()
+        if not request_obj.bindhost is None:
+            new_source = source.SourceAddressAdapter(request_obj.bindhost)
+            session.mount('http://', new_source)
+            session.mount('https://', new_source)
+
         while True:
             if request_obj.check_hostname:
                 _assert_allowed(current_url)
 
-            response = requests.request(
+            response = session.request(
                 request_obj.method,
                 current_url,
                 headers=headers,
@@ -217,6 +226,8 @@ def _request(request_obj: Request) -> Response:
             if not response.raw.read(1) == b"":
                 raise ValueError("Response too large")
             break
+
+        session.close()
 
         headers = utils.CaseInsensitiveDict(dict(response.headers))
         our_response = Response(response.status_code, response_content,
