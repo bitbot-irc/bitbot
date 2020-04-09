@@ -54,28 +54,36 @@ class Module(ModuleManager.BaseModule):
             if server and channel_name in server.channels:
                 channel = server.channels.get(channel_name)
                 for url in urls:
-                    if not url in hooks:
-                        hooks[url] = []
-                    hooks[url].append((server, channel))
+                    bindhost = channel.get_setting("rss-bindhost",
+                        server.get_setting("rss-bindhost", None))
+
+                    if url.startswith("www."):
+                        url = url.replace("www.", "", 1)
+
+                    key = (url, bindhost)
+                    if not key in hooks:
+                        hooks[key] = []
+
+                    hooks[key].append((server, channel))
 
         if not hooks:
             return
 
         requests = []
-        for url, (server, channel) in hooks.items():
-            bindhost = channel.get_setting("rss-bindhost",
-                server.get_setting("rss-bindhost", None))
-            requests.append(utils.http.Request(url, id=url, bindhost=bindhost))
+        for url, bindhost in hooks.keys():
+            requests.append(utils.http.Request(url, id=f"{url} {bindhost}",
+                bindhost=bindhost))
 
         pages = utils.http.request_many(requests)
 
-        for url, channels in hooks.items():
-            if not url in pages:
+        for (url, bindhost), channels in hooks.items():
+            key = f"{url} {bindhost}"
+            if not key in pages:
                 # async url get failed
                 continue
 
             try:
-                data = pages[url].decode()
+                data = pages[key].decode()
             except Exception as e:
                 self.log.error("Failed to decode rss URL %s", [url],
                     exc_info=True)
