@@ -89,7 +89,7 @@ def to_pretty_time(total_seconds: int, max_units: int=UNIT_MINIMUM,
     if hours and len(out) < max_units:
         out.append("%dh" % hours)
     if minutes and len(out) < max_units:
-        out.append("%dmi" % minutes)
+        out.append("%dm" % minutes)
     if seconds and len(out) < max_units:
         out.append("%ds" % seconds)
 
