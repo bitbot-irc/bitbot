@@ -27,7 +27,10 @@ class HookedHandler(logging.StreamHandler):
 class Log(object):
     _hooks: typing.List[typing.Callable[[int, str], None]]
 
-    def __init__(self, to_file: bool, level: str, location: str):
+    def __init__(self, to_file: bool,
+            level: str,
+            location: str,
+            file_levels: typing.List[str]):
         self._hooks = []
 
         logging.addLevelName(LEVELS["trace"], "TRACE")
@@ -52,25 +55,28 @@ class Log(object):
         self.logger.addHandler(hook_handler)
 
         if to_file:
-            trace_path = os.path.join(location, "trace.log")
-            trace_handler = logging.handlers.TimedRotatingFileHandler(
-                trace_path, when="midnight", backupCount=5)
-            trace_handler.setLevel(LEVELS["trace"])
-            trace_handler.setFormatter(formatter)
-            self.logger.addHandler(trace_handler)
+            if "TRACE" in file_levels:
+                trace_path = os.path.join(location, "trace.log")
+                trace_handler = logging.handlers.TimedRotatingFileHandler(
+                    trace_path, when="midnight", backupCount=5)
+                trace_handler.setLevel(LEVELS["trace"])
+                trace_handler.setFormatter(formatter)
+                self.logger.addHandler(trace_handler)
 
-            info_path = os.path.join(location, "info.log")
-            info_handler = logging.handlers.TimedRotatingFileHandler(
-                info_path, when="midnight", backupCount=1)
-            info_handler.setLevel(LEVELS["info"])
-            info_handler.setFormatter(formatter)
-            self.logger.addHandler(info_handler)
+            if "INFO" in file_levels:
+                info_path = os.path.join(location, "info.log")
+                info_handler = logging.handlers.TimedRotatingFileHandler(
+                    info_path, when="midnight", backupCount=1)
+                info_handler.setLevel(LEVELS["info"])
+                info_handler.setFormatter(formatter)
+                self.logger.addHandler(info_handler)
 
-            warn_path = os.path.join(location, "warn.log")
-            warn_handler = logging.FileHandler(warn_path)
-            warn_handler.setLevel(LEVELS["warn"])
-            warn_handler.setFormatter(formatter)
-            self.logger.addHandler(warn_handler)
+            if "WARN" in file_levels:
+                warn_path = os.path.join(location, "warn.log")
+                warn_handler = logging.FileHandler(warn_path)
+                warn_handler.setLevel(LEVELS["warn"])
+                warn_handler.setFormatter(formatter)
+                self.logger.addHandler(warn_handler)
 
     def hook(self, func: typing.Callable[[int, str], None]):
         self._hooks.append(func)
