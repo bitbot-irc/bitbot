@@ -11,6 +11,8 @@
 #lock-file                = {DATA}/bot.lock
 #sock-file                = {DATA}/bot.sock
 
+#log-levels               = TRACE,INFO,WARN
+
 # database - currently only supports sqlite3
 #database                 = sqlite3:{DATA}/bot.db
 
