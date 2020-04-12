@@ -14,7 +14,8 @@ class Module(ModuleManager.BaseModule):
         vars["u"] = vars["username"] = user.username
         vars["h"] = vars["hostname"] = user.hostname
         vars["a"] = vars["account"] = user.account or ""
-        return utils.parse.format_token_replace(s, vars)
+        missing, out = utils.parse.format_token_replace(s, vars)
+        return out
     @utils.export("ban-mask")
     def banmask(self, server, channel, user):
         format = channel.get_setting("ban-format",
