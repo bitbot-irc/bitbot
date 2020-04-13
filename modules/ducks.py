@@ -135,20 +135,26 @@ class Module(ModuleManager.BaseModule):
             stderr.write("%s: %s" % (user.nickname, message))
 
     def _miss_roll(self, channel, user):
-        percentage = channel.get_setting("ducks-chance-miss",
-            DEFAULT_CHANCE_MISS)
-        if random.randrange(0,100) <= percentage:
-            max_cooldown = channel.get_setting("ducks-max-cooldown",
-                DEFAULT_MAX_COOLDOWN)
-            cooldown = random.randrange(1,max_cooldown)
-            user._duck_cooldown[channel] = time.time()+cooldown
+        try:
+            user_cd = user._duck_cooldown[channel]
+        except KeyError:
+            user_cd = 0
+        if user_cd < time.time():
+            percentage = channel.get_setting("ducks-chance-miss",
+                DEFAULT_CHANCE_MISS)
+            if random.randrange(0,100) <= percentage:
+                max_cooldown = channel.get_setting("ducks-max-cooldown",
+                    DEFAULT_MAX_COOLDOWN)
+                cooldown = random.randrange(1,max_cooldown)
+                user._duck_cooldown[channel] = time.time()+cooldown
+                user_cd = user._duck_cooldown[channel]
+            else:
+                user._duck_cooldown[channel] = 0
+                user_cd = user._duck_cooldown[channel]
+        if user_cd >= 0:
+            cooldown_rem = round((user_cd - time.time()),2)
         else:
-            cooldown = 0
-            user._duck_cooldown[channel] = 0
-        if cooldown != 0:
-            cooldown_rem = round((user._duck_cooldown[channel] - time.time()))
-        else:
-            cooldown_rem = user._duck_cooldown[channel]
+            cooldown_rem = user_cd
         return cooldown_rem
 
     @utils.hook("received.command.bef", alias_of="befriend")
@@ -160,7 +166,7 @@ class Module(ModuleManager.BaseModule):
             channel = event["target"]
             user = event["user"]
             cooldown_sec = self._miss_roll(channel, user)
-            if cooldown_sec != 0:
+            if cooldown_sec >= 0:
                 event["stdout"].write(MISS_BEF+" You may try again in "+str(cooldown_sec)+" seconds.")
             else:
                 action = self._duck_action(event["target"], event["user"],
@@ -177,7 +183,7 @@ class Module(ModuleManager.BaseModule):
             channel = event["target"]
             user = event["user"]
             cooldown_sec = self._miss_roll(channel, user)
-            if cooldown_sec != 0:
+            if cooldown_sec >= 0:
                 event["stdout"].write(MISS_TRAP+" You may try again in "+str(cooldown_sec)+" seconds.")
             else:
                 action = self._duck_action(event["target"], event["user"],
@@ -187,12 +193,12 @@ class Module(ModuleManager.BaseModule):
             self._no_duck(event["target"], event["user"], event["stderr"])
 
 # Left here in case someone wants to enable it for testing.
-#    @utils.hook("received.command.getduck")
-#    @utils.kwarg("help", "Get a duck delivered to the channel.")
-#    @utils.spec("!-channelonly")
-#    def getduck(self, event):
-#        channel = event["target"]
-#        self._trigger_duck(channel)
+    @utils.hook("received.command.getduck")
+    @utils.kwarg("help", "Get a duck delivered to the channel.")
+    @utils.spec("!-channelonly")
+    def getduck(self, event):
+        channel = event["target"]
+        self._trigger_duck(channel)
 
     def _target(self, target, is_channel, query):
         if query:
