@@ -262,7 +262,10 @@ class Channel(IRCObject.Object):
                 return True
         return False
 
-    def has_mode(self, user: IRCUser.User, mode: str) -> bool:
+    def has_mode(self, mode: str) -> bool:
+        return mode in self.modes
+
+    def has_umode(self, user: IRCUser.User, mode: str) -> bool:
         return user in self.modes.get(mode, [])
 
     def get_user_modes(self, user: IRCUser.User) -> typing.Set:

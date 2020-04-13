@@ -26,6 +26,28 @@ class TargetType(enum.Enum):
     MASK = 2
     ACCOUNT = 3
 
+def _mlock(s):
+    modes, *args = s.split(" ")
+
+    adds = ""
+    removes = ""
+    add = True
+    for c in modes:
+        if c == "+":
+            add = True
+        elif c == "-":
+            add = False
+        elif add:
+            adds += c
+        else:
+            removes += c
+
+    return (
+        "" if not adds else f"+{''.join(adds)}",
+        "" if not removes else f"-{''.join(removes)}",
+        args
+    )
+
 KICK_REASON_SETTING = utils.Setting("default-kick-reason",
     "Set the default kick reason", example="have a nice trip")
 
@@ -43,6 +65,10 @@ BAN_FORMATTING = "${n} = nick, ${u} = username, ${h} = hostname, ${a} = account"
 @utils.export("botset", KICK_REASON_SETTING)
 @utils.export("serverset", KICK_REASON_SETTING)
 @utils.export("channelset", KICK_REASON_SETTING)
+
+@utils.export("channelset", utils.FunctionSetting(_mlock, "mlock",
+    "Set which modes are locked on and off for the current channel",
+    example="+mnt-z"))
 class Module(ModuleManager.BaseModule):
     _name = "ChanOp"
 
@@ -383,7 +409,7 @@ class Module(ModuleManager.BaseModule):
                 args = [mask_f(server, spec[0], u) for u in users]
             elif target_type == TargetType.NICKNAME:
                 args = [
-                    u.nickname for u in users if not spec[0].has_mode(u, mode)]
+                    u.nickname for u in users if not spec[0].has_umode(u, mode)]
             elif target_type == TargetType.ACCOUNT:
                 args = [u.account for u in users if not u.account == None]
 
@@ -440,7 +466,7 @@ class Module(ModuleManager.BaseModule):
         _, mode, _ = self._find_mode(
             event["hook"].get_kwarg("type"), event["server"])
         valid_nicks = [
-            u.nickname for u in users if event["spec"][0].has_mode(u, mode)]
+            u.nickname for u in users if event["spec"][0].has_umode(u, mode)]
 
         if valid_nicks:
             event["spec"][0].send_modes([(mode, a) for a in valid_nicks], False)
@@ -472,3 +498,43 @@ class Module(ModuleManager.BaseModule):
 
         if modes:
             event["spec"][0].send_modes(modes, False)
+
+    @utils.hook("received.324")
+    @utils.hook("received.mode.channel")
+    def on_modes(self, event):
+        mlock = event["channel"].get_setting("mlock", None)
+        if mlock:
+            changes_adds = ""
+            changes_removes = ""
+            changes_args = []
+            adds, removes, args = mlock
+            args = args.copy() # cached settings objects are mutable
+
+            for mode in adds[1:]:
+                if not event["channel"].has_mode(mode):
+                    if (mode in event["server"].channel_list_modes or
+                            mode in event["server"].channel_parametered_modes or
+                            mode in event["server"].channel_setting_modes):
+                        changes_adds += mode
+                        changes_args.append(args.pop(0))
+                    elif mode in event["server"].channel_modes:
+                        changes_adds += mode
+
+            for mode in removes[1:]:
+                if event["channel"].has_mode(mode):
+                    if (mode in event["server"].channel_list_modes or
+                            mode in event["server"].channel_parametered_modes):
+                        changes_removes += mode
+                        changes_args.append(args.pop(0))
+                    elif (mode in event["server"].channel_setting_modes or
+                            mode in event["server"].channel_modes):
+                        changes_removes += mode
+
+            out = ""
+            if changes_adds:
+                out += f"+{changes_adds}"
+            if changes_removes:
+                out += f"-{changes_removes}"
+
+            if out:
+                event["channel"].send_mode(out, changes_args)
