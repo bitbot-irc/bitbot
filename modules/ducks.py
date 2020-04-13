@@ -192,13 +192,14 @@ class Module(ModuleManager.BaseModule):
         else:
             self._no_duck(event["target"], event["user"], event["stderr"])
 
-# Left here in case someone wants to enable it for testing.
-    @utils.hook("received.command.getduck")
-    @utils.kwarg("help", "Get a duck delivered to the channel.")
-    @utils.spec("!-channelonly")
-    def getduck(self, event):
-        channel = event["target"]
-        self._trigger_duck(channel)
+#TODO: Fix or destroy. Used for testing.            
+#    @utils.hook("received.command.getduck")
+#    @utils.kwarg("help", "Get a duck delivered to the channel.")
+#    @utils.spec("!-channelonly")
+#    @utils.kwarg("require_access", "admin,ducks")
+#    def getduck(self, event):
+#        channel = event["target"]
+#        self._trigger_duck(channel)
 
     def _target(self, target, is_channel, query):
         if query:
