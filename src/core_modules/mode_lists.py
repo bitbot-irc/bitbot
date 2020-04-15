@@ -24,7 +24,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.348")
     def on_348(self, event):
         mode = self._excepts(event["server"])
-        self._mode_list_mask(event, mode, event["line"].args[3])
+        self._mode_list_mask(event, mode, event["line"].args[2])
     @utils.hook("received.349")
     def on_349(self, event):
         self._mode_list_end(event, self._excepts(event["server"]))
