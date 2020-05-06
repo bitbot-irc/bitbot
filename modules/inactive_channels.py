@@ -66,6 +66,7 @@ class Module(ModuleManager.BaseModule):
             channel.send_part("Channel inactive")
             self._del_timestamp(channel)
 
+    @utils.hook("send.message.channel")
     @utils.hook("received.message.channel")
     def channel_message(self, event):
         self._set_timestamp(event["channel"])
