@@ -24,6 +24,8 @@ ARROW_DOWN = "↓"
     "Turn safe search off/on"))
 class Module(ModuleManager.BaseModule):
     def get_video_page(self, video_id):
+        self.log.debug("youtube API request: "
+            "videos.list [contentDetails,snippet,statistics]")
         return utils.http.request(URL_YOUTUBEVIDEO, get_params={
             "part": "contentDetails,snippet,statistics",
             "id": video_id, "key": self.bot.config["google-api-key"]}).json()
@@ -76,7 +78,10 @@ class Module(ModuleManager.BaseModule):
         return None
 
     def get_playlist_page(self, playlist_id):
-         return utils.http.request(URL_YOUTUBEPLAYLIST, get_params={
+        self.log.debug("youtube API request: "
+            "playlists.list [contentDetails,snippet]")
+
+        return utils.http.request(URL_YOUTUBEPLAYLIST, get_params={
             "part": "contentDetails,snippet", "id": playlist_id,
             "key": self.bot.config["google-api-key"]}).json()
     def playlist_details(self, playlist_id):
@@ -108,6 +113,8 @@ class Module(ModuleManager.BaseModule):
     @utils.export("search-youtube")
     def _search_youtube(self, query):
         video_id = ""
+
+        self.log.debug("youtube API request: search.list (A) [snippet]")
 
         search_page = utils.http.request(URL_YOUTUBESEARCH,
             get_params={"q": query, "part": "snippet",
@@ -144,6 +151,9 @@ class Module(ModuleManager.BaseModule):
         if not url:
             safe_setting = event["target"].get_setting("youtube-safesearch", True)
             safe = "moderate" if safe_setting else "none"
+
+            self.log.debug("youtube API request: search.list (B) [snippet]")
+
             search_page = utils.http.request(URL_YOUTUBESEARCH,
                 get_params={"q": search, "part": "snippet", "maxResults": "1",
                 "type": "video", "key": self.bot.config["google-api-key"],
