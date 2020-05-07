@@ -7,8 +7,13 @@ from src import ModuleManager, utils
 
 URL_SCROBBLER = "http://ws.audioscrobbler.com/2.0/"
 
+SETTING_YT = utils.BoolSetting("lastfm-youtube",
+    "Whether or not to search last.fm now-playing results on youtube")
+
 @utils.export("set", utils.Setting("lastfm", "Set last.fm username",
     example="jesopo"))
+@utils.export("botset", SETTING_YT)
+@utils.export("serverset", SETTING_YT)
 class Module(ModuleManager.BaseModule):
     _name = "last.fm"
 
@@ -59,11 +64,13 @@ class Module(ModuleManager.BaseModule):
 
                 time_language = "is listening to" if np else "last listened to"
 
-                yt_url = self.exports.get("search-youtube")(
-                    "%s - %s" % (artist, track_name))
                 yt_url_str = ""
-                if yt_url:
-                    yt_url_str = " - %s" % yt_url
+                if event["server"].get_setting("lastfm-youtube",
+                        self.bot.get_setting("lastfm-youtube", False)):
+                    yt_url = self.exports.get("search-youtube")(
+                        "%s - %s" % (artist, track_name))
+                    if yt_url:
+                        yt_url_str = " - %s" % yt_url
 
                 info_page = utils.http.request(URL_SCROBBLER, get_params={
                     "method": "track.getInfo", "artist": artist,
