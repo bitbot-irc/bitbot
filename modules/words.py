@@ -203,7 +203,9 @@ class Module(ModuleManager.BaseModule):
         user_words = {}
         for user_id, word_count in words:
             _, nickname = self.bot.database.users.by_id(user_id)
-            user_words[nickname] = word_count
+            if not nickname in user_words:
+                user_words[nickname] = 0
+            user_words[nickname] += word_count
 
         top_10 = utils.top_10(user_words,
             convert_key=lambda nickname: self._get_nickname(
