@@ -115,11 +115,14 @@ class Module(ModuleManager.BaseModule):
         else:
             target_user = event["user"]
 
-        words = dict(self._user_all(target_user))
+        word_items = self._user_all(target_user)
 
-        total = 0
-        for channel_id in words:
-            total += words[channel_id]
+        words = {}
+        for channel_id, count in word_items:
+            if not channel_id in words:
+                words[channel_id] = 0
+            words[channel_id] += count
+        total = sum(words.values())
 
         since = ""
         first_words = target_user.get_setting("first-words", None)
