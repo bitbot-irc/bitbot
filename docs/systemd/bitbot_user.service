@@ -15,7 +15,7 @@
 
 [Unit]
 Description=BitBot Service (User)
-Wants=dafault.target
+Wants=default.target
 After=default.target
 
 [Service]
