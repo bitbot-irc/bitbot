@@ -29,4 +29,4 @@ ExecReload=/usr/bin/env python3 %h/bitbot/bitbotctl reload
 Restart=always
 
 [Install]
-WantedBy=dafault.target
+WantedBy=default.target
