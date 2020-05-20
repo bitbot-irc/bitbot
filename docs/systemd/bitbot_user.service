@@ -1,0 +1,32 @@
+# This systemd script was made to be used in Ubuntu 18.04 LTS
+# Check your distro and make the appropriate changes if needed
+# In order to allow the user to run their own systemd scripts
+# you need to type the following as root:
+# loginctl enable-linger $USER (replace $USER with the shell username)
+# User systemd scripts are placed inside /home/$USER/.config/systemd/user
+# All commands are issued as: systemctl --user [start|stop|restart|reload|enable|disable] service_name.service
+# If the folder doesn't exist, type: systemctl --user enable systemd-tmpfiles-clean.timer
+# This will automatically create the folder and enable the tempfiles clean timer,
+# which can be disabled with: systemctl --user disable systemd-tmpfiles-clean.timer
+#
+# After placing this script in the correct location, and with bitbot stopped, type:
+# systemctl --user enable bitbot_user.service --now
+# This will enable the systemd script and launch bitbot
+
+[Unit]
+Description=BitBot Service (User)
+Wants=default.target
+After=default.target
+
+[Service]
+# change any of the 4 following lines as applicable
+# The %h will be replaced with the user home directory
+# like /home/bitbot
+WorkingDirectory=%h/bitbot
+ExecStart=/usr/bin/env python3 %h/bitbot/bitbotd
+ExecStop=/usr/bin/env python3 %h/bitbot/bitbotctl stop
+ExecReload=/usr/bin/env python3 %h/bitbot/bitbotctl reload
+Restart=always
+
+[Install]
+WantedBy=default.target
