@@ -5,7 +5,10 @@ CAP = utils.irc.Capability("message-tags", "draft/message-tags-0.2")
 class Module(ModuleManager.BaseModule):
     def _tagmsg(self, target, state):
         return IRCLine.ParsedLine("TAGMSG", [target],
-            tags={"+draft/typing": state})
+            tags={
+                "+typing": state,
+                "+draft/typing": state
+            })
     def _has_tags(self, server):
         return server.has_capability(CAP)
 
