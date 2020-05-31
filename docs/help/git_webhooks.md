@@ -7,7 +7,7 @@ First, follow instructions at [/docs/help/rest_api.md](/docs/help/rest_api.md)
 
 e.g.
 
-> /msg &lt;bot> apikey github-jesopo /api/github /api/gitea
+> /msg &lt;bot> apikey add github-jesopo /api/github /api/gitea
 
 ### Enable hook in-channel
 
