@@ -126,28 +126,26 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError(
                     "Please provide a number between 1 and 3")
 
-        target = event["args_split"][0]
-        lines = event["target"].buffer.find_many_from(target, line_count)
+        target_user = event["args_split"][0]
+        lines = event["target"].buffer.find_many_from(target_user, line_count)
         if lines:
             lines.reverse()
             target = event["server"]
             if event["target"].get_setting("channel-quotes", False):
                 target = event["target"]
 
-            quotes = self._get_quotes(target, target)
-
             lines_str = []
             for line in lines:
                 lines_str.append(line.format())
             text = " ".join(lines_str)
 
-            quotes.append([event["user"].name, int(time.time()), text])
-
             quote_category = line.sender
             if event["server"].has_user(quote_category):
-                account = event["server"].get_user_nickname(
+                quote_category = event["server"].get_user_nickname(
                     event["server"].get_user(quote_category).get_id())
 
+            quotes = self._get_quotes(target, quote_category)
+            quotes.append([event["user"].name, int(time.time()), text])
             self._set_quotes(target, quote_category, quotes)
 
             event["stdout"].write("Quote added")
