@@ -89,6 +89,10 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("usage", "<category> [= <search>]")
     def quote(self, event):
         category, search = self.category_and_quote(event["args"])
+        if event["server"].has_user(category):
+            category = event["server"].get_user_nickname(
+                event["server"].get_user(category).get_id())
+
         quotes = event["server"].get_setting("quotes-%s" % category, [])
         if event["is_channel"]:
             quotes += self._get_quotes(event["target"], category)
