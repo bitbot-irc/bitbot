@@ -65,23 +65,28 @@ class Module(ModuleManager.BaseModule):
         found_target = None
         found_quote  = None
         if not remove_quote == None:
-            remove_quote_lower = remove_quote.lower()
+            remove_quote_lower = remove_quote.lower().strip()
             for nickname, time_added, quote, target in quotes[:]:
-                if quote.lower() == remove_quote_lower:
+                if remove_quote_lower in quote.lower().strip():
                     found_target = target
                     found_quote  = [nickname, time_added, quote]
                     message = "Removed quote from '%s'"
                     break
         else:
             if quotes:
-                quote = quotes.pop(-1)
-                found_target = quote[-1]
+                nickname, time_added, quote, target = quotes.pop(-1)
+
+                found_target = target
+                found_quote  = [nickname, time_added, quote]
                 message = "Removed last '%s' quote"
 
         if not message == None:
             target_quotes = self._get_quotes(found_target, category)
             target_quotes.remove(found_quote)
             self._set_quotes(found_target, category, target_quotes)
+
+            _, _, quote = found_quote
+            message = f"{message} ({quote})"
             event["stdout"].write(message % category)
         else:
             event["stderr"].write("Quote not found")
