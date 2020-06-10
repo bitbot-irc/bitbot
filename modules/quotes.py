@@ -63,12 +63,13 @@ class Module(ModuleManager.BaseModule):
                 category)
 
         found_target = None
+        found_quote  = None
         if not remove_quote == None:
             remove_quote_lower = remove_quote.lower()
             for nickname, time_added, quote, target in quotes[:]:
                 if quote.lower() == remove_quote_lower:
-                    quotes.remove([nickname, time_added, quote])
                     found_target = target
+                    found_quote  = [nickname, time_added, quote]
                     message = "Removed quote from '%s'"
                     break
         else:
@@ -78,7 +79,9 @@ class Module(ModuleManager.BaseModule):
                 message = "Removed last '%s' quote"
 
         if not message == None:
-            self._set_quotes(found_target, category, quotes)
+            target_quotes = self._get_quotes(found_target, category)
+            target_quotes.remove(found_quote)
+            self._set_quotes(found_target, category, target_quotes)
             event["stdout"].write(message % category)
         else:
             event["stderr"].write("Quote not found")
