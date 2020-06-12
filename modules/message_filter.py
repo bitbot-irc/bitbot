@@ -46,7 +46,8 @@ class Module(ModuleManager.BaseModule):
         if not message == original_message:
             event["line"].args[1] = message
 
-    @utils.hook("received.command.cfilter", channel_only=True)
+    @utils.hook("received.command.cfilter", channel_only=True,
+        require_access="high,filter", require_mode="o")
     @utils.hook("received.command.filter")
     @utils.hook("received.command.bfilter")
     @utils.kwarg("help", "Add a message filter for the current channel")
