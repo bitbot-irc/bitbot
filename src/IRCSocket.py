@@ -69,11 +69,12 @@ class Socket(IRCObject.Object):
             5.0)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
+        self.connected_ip = self._socket.getpeername()[0]
+
         if self._tls:
             self._tls_wrap()
 
         self.connect_time = time.time()
-        self.connected_ip = self._socket.getpeername()[0]
         self.cached_fileno = self._socket.fileno()
         self.connected = True
 

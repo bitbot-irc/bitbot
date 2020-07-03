@@ -204,8 +204,12 @@ class Bot(object):
         try:
             server.connect()
         except Exception as e:
-            self.log.warn("Failed to connect to %s: %s",
-                [str(server), str(e)])
+            ip = ""
+            if server.socket.connected_ip is not None:
+                ip = f" ({server.socket.connected_ip})"
+
+            self.log.warn("Failed to connect to %s%s: %s",
+                [str(server), ip, str(e)])
             self.log.debug("Connection failure reason:", exc_info=True)
             return False
         self.servers[server.fileno()] = server
