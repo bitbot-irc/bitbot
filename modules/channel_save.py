@@ -25,6 +25,9 @@ class Module(ModuleManager.BaseModule):
         if channel_name in channels:
             channels.remove(channel_name)
             server.set_setting("autojoin", channels)
+            return True
+        else:
+            return False
 
     @utils.hook("self.part")
     def on_part(self, event):
@@ -33,3 +36,14 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("self.kick")
     def on_kick(self, event):
         self._remove_channel(event["server"], event["channel"].name)
+
+    @utils.hook("raw.received.470")
+    def on_linkchannel(self, event):
+        initial = event["line"].args[1]
+        initial_lower = event["server"].irc_lower(initial)
+        linked = event["line"].args[2]
+
+        if self._remove_channel(event["server"], initial_lower):
+            self.log.warn(f"{str(event['server'])} "
+                f"channel {initial} linked to {linked} "
+                "- removed from autojoin")
