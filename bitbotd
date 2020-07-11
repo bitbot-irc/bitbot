@@ -49,11 +49,15 @@ if args.version:
 config = Config.Config("bot", args.config)
 config.load()
 
-DATA_DIR = os.path.expanduser(config.get("data-directory", "~/.bitbot"))
-LOG_DIR = config.get("log-directory", "{DATA}/logs/").format(DATA=DATA_DIR)
-DATABASE = config.get("database", "sqlite3:{DATA}/bot.db").format(DATA=DATA_DIR)
-LOCK_FILE = config.get("lock-file", "{DATA}/bot.lock").format(DATA=DATA_DIR)
-SOCK_FILE = config.get("sock-file", "{DATA}/bot.sock").format(DATA=DATA_DIR)
+DATA_DIR = ""
+def _expand(s: str):
+    return os.path.expanduser(s).format(DATA=DATA_DIR)
+
+DATA_DIR  = _expand(config.get("data-directory", "~/.bitbot"))
+LOG_DIR   = _expand(config.get("log-directory", "{DATA}/logs/"))
+DATABASE  = _expand(config.get("database", "sqlite3:{DATA}/bot.db"))
+LOCK_FILE = _expand(config.get("lock-file", "{DATA}/bot.lock"))
+SOCK_FILE = _expand(config.get("sock-file", "{DATA}/bot.sock"))
 
 if not os.path.isdir(LOG_DIR):
     os.mkdir(LOG_DIR)
@@ -111,7 +115,8 @@ extra_modules = [os.path.join(directory, "modules")]
 if args.external:
     extra_modules.append(os.path.abspath(args.external))
 if "external-modules" in config:
-    extra_modules.append(os.path.abspath(config["external-modules"]))
+    conf_extra = os.path.abspath(config["external-modules"])
+    extra_modules.append(_expand(conf_extra))
 
 modules = ModuleManager.ModuleManager(events, exports, timers, config, log,
     core_modules, extra_modules)
