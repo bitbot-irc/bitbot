@@ -23,9 +23,9 @@ After=default.target
 # The %h will be replaced with the user home directory
 # like /home/bitbot
 WorkingDirectory=%h/bitbot
-ExecStart=/usr/bin/env python3 %h/bitbot/bitbotd
-ExecStop=/usr/bin/env python3 %h/bitbot/bitbotctl stop
-ExecReload=/usr/bin/env python3 %h/bitbot/bitbotctl reload
+ExecStart=/usr/bin/env python3 bitbotd
+ExecStop=/usr/bin/env python3 bitbotctl stop
+ExecReload=/usr/bin/env python3 bitbotctl reload
 Restart=always
 
 [Install]
