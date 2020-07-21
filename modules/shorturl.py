@@ -48,9 +48,11 @@ class Module(ModuleManager.BaseModule):
         shortener_name = None
         if context:
             shortener_name = context.get_setting("url-shortener",
-                server.get_setting("url-shortener", "bitly"))
+                server.get_setting("url-shortener",
+                self.bot.get_setting("url-shortener", "bitly")))
         else:
-            shortener_name = server.get_setting("url-shortener", "bitly")
+            shortener_name = server.get_setting("url-shortener",
+                self.bot.get_setting("url-shortener", "bitly"))
 
         if shortener_name == None:
             return url
