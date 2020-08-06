@@ -40,10 +40,18 @@ class DroneBL(DNSBL):
         elif result in ["12", "13", "15", "16"]:
             return "exploits"
 
+class AbuseAtCBL(DNSBL):
+    hostname = "cbl.abuseat.org"
+    def process(self, result):
+        result = result.rsplit(".", 1)[1]
+        if result == "2":
+            return "abuse"
+
 DEFAULT_LISTS = [
     ZenSpamhaus(),
     EFNetRBL(),
-    DroneBL()
+    DroneBL(),
+    AbuseAtCBL()
 ]
 
 def default_lists():
