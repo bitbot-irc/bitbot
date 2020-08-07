@@ -6,7 +6,7 @@ class DNSBL(object):
             self.hostname = hostname
 
     def process(self, result: str):
-        return "unknown"
+        return result
 
 class ZenSpamhaus(DNSBL):
     hostname = "zen.spamhaus.org"
