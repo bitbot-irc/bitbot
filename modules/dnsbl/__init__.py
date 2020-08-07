@@ -14,7 +14,7 @@ class Module(ModuleManager.BaseModule):
         lists = []
         for i, arg in reversed(list(enumerate(args))):
             if arg[0] == "@":
-                hostname = args.pop(i)
+                hostname = args.pop(i)[1:]
                 if hostname in default_lists:
                     lists.insert(0, default_lists[hostname])
                 else:
