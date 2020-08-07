@@ -18,7 +18,7 @@ class Module(ModuleManager.BaseModule):
                 if hostname in default_lists:
                     lists.insert(0, default_lists[hostname])
                 else:
-                    lists.insert(0, lists.DNSBL(hostname))
+                    lists.insert(0, _lists.DNSBL(hostname))
 
         lists = lists or list(default_lists.values())
 
