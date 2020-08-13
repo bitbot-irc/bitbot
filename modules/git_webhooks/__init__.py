@@ -5,7 +5,7 @@
 
 import itertools, json, re, urllib.parse
 from src import ModuleManager, utils
-from . import colors, gitea, github, gitlab
+from . import colors, gitea, gogs, github, gitlab
 
 FORM_ENCODED = "application/x-www-form-urlencoded"
 
