@@ -33,6 +33,7 @@ class Module(ModuleManager.BaseModule):
     def on_load(self):
         self._github = github.GitHub(self.log)
         self._gitea = gitea.Gitea()
+        self._gogs = gogs.Gogs()
         self._gitlab = gitlab.GitLab()
 
     @utils.hook("api.post.github")
@@ -43,6 +44,11 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("api.post.gitea")
     def _api_gitea_webhook(self, event):
         return self._webhook("gitea", "Gitea", self._gitea,
+            event["data"], event["headers"], event["params"])
+
+    @utils.hook("api.post.gogs")
+    def _api_gitea_webhook(self, event):
+        return self._webhook("gogs", "Gogs", self._gitea,
             event["data"], event["headers"], event["params"])
 
     @utils.hook("api.post.gitlab")
