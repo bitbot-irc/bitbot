@@ -1,3 +1,31 @@
+# TBD - BitBot v1.20.0
+
+Added:
+- `ban-enforce.py` to kick people that match a new ban mask
+- MLOCK-like functionality in `channel_op.py`
+- Channels can be opted out of inactivity pruning
+- Optional to disable youtubeifying `!np` output
+- Allow RSS requests to bind to specific source addresses
+- `!words` in PM
+- `yourls.py` for yourl url shortners
+- handle `RPL_VISIBLEHOST`
+
+Changed:
+- `ERR_LINKCHANNEL` (470) now removes the initial channel from autojoin
+- (IRCv3) `+draft/typing` was ratified
+- We're no longer supporting a specific broken charybdis install, for line length calculations
+- Much better line truncation
+- Handle HTTP redirects ourselves, to avoid redirects on to forbidden hosts
+
+Fixed:
+- All bot.conf paths should have ~/{DATA} expanded
+- `host-meta` URL for fediverse accounts should be optional - fallback to default webfinger
+- Message filter `m/` criterias should operate on formatting-stripped lines
+- Quote `!grab`s were wiping the user's category
+- Quote `!quotedel`s were looking at the wrong categories
+- `!words` was squashing results in to a dict, losing days
+- INVEX and EXCEPT lists were looking at the wrong index for masks
+
 # 2020-02-29 - BitBot v1.19.0 ("Command Specs Spark Joy")
 
 Added:
