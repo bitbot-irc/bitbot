@@ -1,7 +1,6 @@
 import codecs, datetime, typing, uuid
 from src import EventManager, IRCObject, utils
 
-# this should be 510 (RFC1459, 512 with \r\n) but a server BitBot uses is broken
 LINE_MAX = 510
 
 class IRCArgs(object):
