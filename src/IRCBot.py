@@ -116,7 +116,8 @@ class Bot(object):
                 self._trigger_both()
             return returned
 
-        func_queue = queue.Queue(1) # type: queue.Queue[str]
+        func_queue: queue.Queue[typing.Tuple[TriggerResult, str]
+            ] = queue.Queue(1)
 
         def _action():
             try:
