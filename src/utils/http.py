@@ -7,7 +7,7 @@ from requests_toolbelt.adapters import source
 
 REGEX_URL = re.compile("https?://\S+", re.I)
 
-PAIRED_CHARACTERS = ["<>", "()"]
+PAIRED_CHARACTERS = [("<", ">"), ("(", ")")]
 
 # best-effort tidying up of URLs
 def url_sanitise(url: str):
