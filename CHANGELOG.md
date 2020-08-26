@@ -1,4 +1,4 @@
-# TBD - BitBot v1.19.0 ("Command Specs Spark Joy")
+# 2020-02-29 - BitBot v1.19.0 ("Command Specs Spark Joy")
 
 Added:
 - Commands Specs. expression language for defining format of command args
