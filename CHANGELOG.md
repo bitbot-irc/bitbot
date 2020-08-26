@@ -1,4 +1,4 @@
-# TBD - BitBot v1.20.0
+# 2020-08-26 - BitBot v1.20.0
 
 Added:
 - `ban-enforce.py` to kick people that match a new ban mask
