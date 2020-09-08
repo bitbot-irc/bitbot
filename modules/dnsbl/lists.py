@@ -13,41 +13,59 @@ class ZenSpamhaus(DNSBL):
     def process(self, result):
         result = result.rsplit(".", 1)[1]
         if result in ["2", "3", "9"]:
-            return "spam"
+            desc = "spam"
         elif result in ["4", "5", "6", "7"]:
-            return "exploits"
+            desc = "exploits"
+        return f"{result} - {desc}"
+
 class EFNetRBL(DNSBL):
     hostname = "rbl.efnetrbl.org"
     def process(self, result):
         result = result.rsplit(".", 1)[1]
         if result == "1":
-            return "proxy"
+            desc = "proxy"
         elif result in ["2", "3"]:
-            return "spamtap"
+            desc = "spamtap"
         elif result == "4":
-            return "tor"
+            desc = "tor"
         elif result == "5":
-            return "flooding"
+            desc = "flooding"
+        return f"{result} - {desc}"
 
+DRONEBL_CATEGORIES = {
+    3:  "IRC drone",
+    5:  "bottler",
+    6:  "unknown spambot or drone",
+    7:  "DDoS drone",
+    8:  "open SOCKS proxy",
+    9:  "open HTTP proxy",
+    10: "proxychain",
+    11: "web page proxy",
+    12: "open DNS resolver",
+    13: "brute force attacker",
+    14: "open WINGATE proxy",
+    15: "compromised router/gateway",
+    16: "autorooting malware",
+    17: "detected botnet IP",
+    18: "DNS/MX on IRC",
+    19: "abused VPN service"
+}
 class DroneBL(DNSBL):
     hostname = "dnsbl.dronebl.org"
     def process(self, result):
-        result = result.rsplit(".", 1)[1]
-        if result in ["8", "9", "10", "11", "14"]:
-            return "proxy"
-        elif result in ["3", "6", "7"]:
-            return "flooding"
-        elif result in ["12", "13", "15", "16"]:
-            return "exploits"
-        elif result == "19":
-            return "abused vpn"
+        result = int(result.rsplit(".", 1)[1])
+        desc   = DRONEBL_CATEGORIES.get(result, "unknown")
+        return f"{result} - {desc}"
 
 class AbuseAtCBL(DNSBL):
     hostname = "cbl.abuseat.org"
     def process(self, result):
         result = result.rsplit(".", 1)[1]
         if result == "2":
-            return "abuse"
+            desc = "abuse"
+        else:
+            desc = "unknown"
+        return f"{result} - {desc}"
 
 DEFAULT_LISTS = [
     ZenSpamhaus(),
