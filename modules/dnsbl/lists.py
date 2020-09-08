@@ -39,6 +39,8 @@ class DroneBL(DNSBL):
             return "flooding"
         elif result in ["12", "13", "15", "16"]:
             return "exploits"
+        elif result == "19":
+            return "abused vpn"
 
 class AbuseAtCBL(DNSBL):
     hostname = "cbl.abuseat.org"
