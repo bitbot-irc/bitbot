@@ -52,12 +52,12 @@ class Module(ModuleManager.BaseModule):
     def _check_list(self, list, address):
         list_address = "%s.%s" % (address, list)
         try:
-            a_record = dns.resolver.query(list_address, "A")[0].to_text()
+            a_record = dns.resolver.resolve(list_address, "A")[0].to_text()
         except dns.resolver.NXDOMAIN:
             return None
 
         try:
-            txt_record = dns.resolver.query(list_address, "TXT")[0].to_text()
+            txt_record = dns.resolver.resolve(list_address, "TXT")[0].to_text()
         except:
             txt_record = None
 
