@@ -19,6 +19,8 @@ class ZenSpamhaus(DNSBL):
             desc = "spam"
         elif result in ["4", "5", "6", "7"]:
             desc = "exploits"
+        else:
+            desc = "unknown"
         return f"{result} - {desc}"
 
 class EFNetRBL(DNSBL):
