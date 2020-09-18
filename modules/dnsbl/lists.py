@@ -50,11 +50,17 @@ class AbuseAtCBL(DNSBL):
             desc = "unknown"
         return f"{result} - {desc}"
 
+class TorExitDan(DNSBL):
+    hostname = "torexit.dan.me.uk"
+    def process(self, a_record, txt_record):
+        return "tor exit"
+
 DEFAULT_LISTS = [
     ZenSpamhaus(),
     EFNetRBL(),
     DroneBL(),
-    AbuseAtCBL()
+    AbuseAtCBL(),
+    TorExitDan()
 ]
 
 def default_lists():
