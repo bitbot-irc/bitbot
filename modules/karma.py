@@ -66,7 +66,8 @@ class Module(ModuleManager.BaseModule):
         self._set_throttle(sender, positive)
         karma_str = self._karma_str(karma)
 
-        karma_total = self._karma_str(self._get_karma(server, target))
+        karma_total = sum(self._get_karma(server, target).values())
+        karma_total = self._karma_str(karma_total)
 
         return True, "%s now has %s karma (%s from %s)" % (
             target, karma_total, karma_str, sender.nickname)
@@ -118,18 +119,30 @@ class Module(ModuleManager.BaseModule):
             target = event["user"].nickname
 
         target = self._get_target(event["server"], target)
-        karma = self._karma_str(self._get_karma(event["server"], target))
+        karma = sum(self._get_karma(event["server"], target).values())
+        karma = self._karma_str(karma)
 
         event["stdout"].write("%s has %s karma" % (target, karma))
 
-    def _get_karma(self, server, target):
+    @utils.hook("received.command.karmawho")
+    @utils.spec("!<target>string")
+    def karmawho(self, event):
+        target = event["spec"][0]
+        karma = self._get_karma(event["server"], target, True)
+        karma = sorted(list(karma.items()), key=lambda k: k[1])
+
+        parts = ["%s (%d)" % (n, v) for n, v in karma]
+        event["stdout"].write("%s has karma from: %s" %
+            (target, ", ".join(parts)))
+
+    def _get_karma(self, server, target, own=False):
         settings = dict(server.get_all_user_settings("karma-%s" % target))
 
         target_lower = server.irc_lower(target)
-        if target_lower in settings:
+        if target_lower in settings and not own:
             del settings[target_lower]
 
-        return sum(settings.values())
+        return settings
 
     @utils.hook("received.command.resetkarma")
     @utils.kwarg("min_args", 2)
