@@ -129,7 +129,9 @@ class Module(ModuleManager.BaseModule):
     def karmawho(self, event):
         target = event["spec"][0]
         karma = self._get_karma(event["server"], target, True)
-        karma = sorted(list(karma.items()), key=lambda k: k[1])
+        karma = sorted(list(karma.items()),
+            key=lambda k: abs(k[1]),
+            reverse=True)
 
         parts = ["%s (%d)" % (n, v) for n, v in karma]
         event["stdout"].write("%s has karma from: %s" %
