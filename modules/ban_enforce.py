@@ -26,7 +26,7 @@ class Module(ModuleManager.BaseModule):
                     matches = list(utils.irc.hostmask_match_many(
                         umasks.keys(), mask))
                     for match in matches:
-                        matches = affected + 1
+                        affected = affected + 1
                         kicks.add(umasks[match])
             if kicks:
                 if affected > realmax:
