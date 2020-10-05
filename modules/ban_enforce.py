@@ -16,11 +16,12 @@ class Module(ModuleManager.BaseModule):
                 if mode[0] == "+" and mode[1] == "b":
                     bans.append(arg)
 
+            affected = 0
+            defaultmax = len(event["channel"].users) // 2
+            realmax = event["channel"].get_setting("ban-enforce-max", defaultmax)
+            
             if bans:
-                affected = 0
                 umasks = {u.hostmask(): u for u in event["channel"].users}
-                defaultmax = len(event["channel"].users) // 2
-                realmax = event["channel"].get_setting("ban-enforce-max", defaultmax)
                 for ban in bans:
                     mask = utils.irc.hostmask_parse(ban)
                     matches = list(utils.irc.hostmask_match_many(
