@@ -17,7 +17,9 @@ class Module(ModuleManager.BaseModule):
             "action": "parse", "format": "json", "page": title, "prop": "wikitext"}).json()
         if api:
             text = api['parse']['wikitext']['*']
-            links = re.findall('\* \[\[(.*)\]\]', text)
+            links = []
+            links.extend(re.findall('\* \[\[(.*)\]\]', text))
+            links.extend(re.findall('\*\[\[(.*)\]\]', text))
             disambigs = []
             if links:
                 for link in links:
