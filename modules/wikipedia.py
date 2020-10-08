@@ -29,12 +29,8 @@ class Module(ModuleManager.BaseModule):
         return len(items) > 2 and ', '.join(items[:-1]) + ', or ' + items[-1] or len(items) > 1 and items[0] + ' or ' + items[1] or items and items[0] or ''
 
     def disambig(self, title, event):
-        if not str(event["target"]).startswith('#'):
-            api = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
-                "action": "parse", "format": "json", "page": title, "prop": "wikitext"}).json()
-        else:
-            api = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["channel"].get_setting("wikipedia-lang", "en")), get_params={
-                "action": "parse", "format": "json", "page": title, "prop": "wikitext"}).json()
+        api = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
+            "action": "parse", "format": "json", "page": title, "prop": "wikitext"}).json()
         if api:
             text = api['parse']['wikitext']['*']
             links = []
@@ -52,7 +48,7 @@ class Module(ModuleManager.BaseModule):
                     disambigs.append(d)
             else:
                 return 'Unable to parse disambiguation page. You may view the page at'
-            if len(disambigs) > event["channel"].get_setting("wikipedia-disambig-max", 10):
+            if len(disambigs) > event["target"].get_setting("wikipedia-disambig-max", 10):
                 return 'Sorry, but this page is too ambiguous. You may view the page at'
             else:
                 return '%s could mean %s -' % (title, self.listify(disambigs))
@@ -65,7 +61,7 @@ class Module(ModuleManager.BaseModule):
         wikilink = re.search("\[\[(.*)\]\]", event["message"])
         if wikilink:
             page = wikilink.group(1)
-        page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["channel"].get_setting("wikipedia-lang", "en")), get_params={
+        page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
             "action": "query", "prop": "extracts|info", "inprop": "url",
             "titles": page, "exintro": "", "explaintext": "",
             "exchars": "500", "redirects": "", "format": "json"}).json()
@@ -94,16 +90,11 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Get information from wikipedia")
     @utils.spec("!<term>lstring")
     def wikipedia(self, event):
-        if not str(event["target"]).startswith('#'):
-            page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
-                "action": "query", "prop": "extracts|info", "inprop": "url",
-                "titles": event["spec"][0], "exintro": "", "explaintext": "",
-                "exchars": "500", "redirects": "", "format": "json"}).json()
-        else:
-            page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["channel"].get_setting("wikipedia-lang", "en")), get_params={
-                "action": "query", "prop": "extracts|info", "inprop": "url",
-                "titles": event["spec"][0], "exintro": "", "explaintext": "",
-                "exchars": "500", "redirects": "", "format": "json"}).json()
+#        if not str(event["target"]).startswith('#'):
+        page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
+            "action": "query", "prop": "extracts|info", "inprop": "url",
+            "titles": event["spec"][0], "exintro": "", "explaintext": "",
+            "exchars": "500", "redirects": "", "format": "json"}).json()
         if page:
             pages = page["query"]["pages"]
             article = list(pages.items())[0][1]
