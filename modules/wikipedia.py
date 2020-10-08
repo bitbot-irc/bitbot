@@ -6,6 +6,9 @@ import json
 
 URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 
+@utils.export("channelset", utils.IntSetting("wikipedia-disambig-max",
+    "Set the number disambiguation pages to show in a message"))
+
 class Module(ModuleManager.BaseModule):
     def listify(self, items):
         if type(items) != list:
@@ -13,7 +16,7 @@ class Module(ModuleManager.BaseModule):
         
         return len(items) > 2 and ', '.join(items[:-1]) + ', or ' + items[-1] or len(items) > 1 and items[0] + ' or ' + items[1] or items and items[0] or ''
 
-    def disambig(self, title):
+    def disambig(self, title, event):
         api = utils.http.request(URL_WIKIPEDIA, get_params={
             "action": "parse", "format": "json", "page": title, "prop": "wikitext"}).json()
         if api:
@@ -33,7 +36,7 @@ class Module(ModuleManager.BaseModule):
                     disambigs.append(d)
             else:
                 return 'Unable to parse disambiguation page. You may view the page at'
-            if len(disambigs) > 15:
+            if len(disambigs) > event["channel"].get_setting("wikipedia-disambig-max", 10):
                 return 'Sorry, but this page is too ambiguous. You may view the page at'
             else:
                 return '%s could mean %s -' % (title, self.listify(disambigs))
@@ -57,7 +60,7 @@ class Module(ModuleManager.BaseModule):
                 info = utils.parse.line_normalise(article["extract"])
                 url = article["fullurl"]
                 if 'may refer to' in info:
-                    event["stdout"].write("%s %s" % (self.disambig(title), url))
+                    event["stdout"].write("%s %s" % (self.disambig(title, event), url))
                 else:
                     event["stdout"].write("%s: %s - %s" % (title, info, url))
             else:
