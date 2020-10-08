@@ -1,6 +1,8 @@
 #--depends-on commands
 
 from src import ModuleManager, utils
+import re
+import json
 
 URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
 
@@ -9,10 +11,10 @@ class Module(ModuleManager.BaseModule):
         if type(items) != list:
            items = list(items)
         return len(items) > 1 and ', '.join(items[:-1]) + ', or ' + items[-1] or items and items[0] or ''
-    
+
     def disambig(self, title):
         api = utils.http.request(URL_WIKIPEDIA, get_params={
-            "action": "parse", "format": "json", "page": page, "prop": "wikitext"}).json()
+            "action": "parse", "format": "json", "page": title, "prop": "wikitext"}).json()
         if api:
             text = api['parse']['wikitext']['*']
             links = re.findall('\* \[\[(.*)\]\]', text)
@@ -38,6 +40,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Get information from wikipedia")
     @utils.spec("!<term>lstring")
     def wikipedia(self, event):
+        print(event["spec"][0])
         page = utils.http.request(URL_WIKIPEDIA, get_params={
             "action": "query", "prop": "extracts|info", "inprop": "url",
             "titles": event["spec"][0], "exintro": "", "explaintext": "",
@@ -52,10 +55,10 @@ class Module(ModuleManager.BaseModule):
                 info = utils.parse.line_normalise(article["extract"])
                 url = article["fullurl"]
                 if 'may refer to' in info:
-                    event["stdout.write("%s %s" % (self.disambig(title), url)
-                event["stdout"].write("%s: %s - %s" % (title, info, url))
+                    event["stdout"].write("%s %s" % (self.disambig(title), url))
+                else:
+                    event["stdout"].write("%s: %s - %s" % (title, info, url))
             else:
                 event["stderr"].write("No results found")
         else:
             raise utils.EventResultsError()
-
