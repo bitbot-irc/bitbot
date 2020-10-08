@@ -4,10 +4,14 @@ from src import ModuleManager, utils
 import re
 import json
 
-URL_WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
+URL_WIKIPEDIA = "https://$lang.wikipedia.org/w/api.php"
 
 @utils.export("channelset", utils.IntSetting("wikipedia-disambig-max",
     "Set the number disambiguation pages to show in a message"))
+
+@utils.export("channelset", utils.Setting("wikipedia-lang",
+    "Choose which language to use for Wikipedia",
+    example="en"))
 
 class Module(ModuleManager.BaseModule):
     def listify(self, items):
@@ -17,7 +21,7 @@ class Module(ModuleManager.BaseModule):
         return len(items) > 2 and ', '.join(items[:-1]) + ', or ' + items[-1] or len(items) > 1 and items[0] + ' or ' + items[1] or items and items[0] or ''
 
     def disambig(self, title, event):
-        api = utils.http.request(URL_WIKIPEDIA, get_params={
+        api = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["channel"].get_setting("wikipedia-lang", "en")), get_params={
             "action": "parse", "format": "json", "page": title, "prop": "wikitext"}).json()
         if api:
             text = api['parse']['wikitext']['*']
@@ -46,7 +50,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Get information from wikipedia")
     @utils.spec("!<term>lstring")
     def wikipedia(self, event):
-        page = utils.http.request(URL_WIKIPEDIA, get_params={
+        page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["channel"].get_setting("wikipedia-lang", "en")), get_params={
             "action": "query", "prop": "extracts|info", "inprop": "url",
             "titles": event["spec"][0], "exintro": "", "explaintext": "",
             "exchars": "500", "redirects": "", "format": "json"}).json()
