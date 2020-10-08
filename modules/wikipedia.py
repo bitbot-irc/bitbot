@@ -10,7 +10,8 @@ class Module(ModuleManager.BaseModule):
     def listify(self, items):
         if type(items) != list:
            items = list(items)
-        return len(items) > 1 and ', '.join(items[:-1]) + ', or ' + items[-1] or items and items[0] or ''
+        
+        return len(items) > 2 and ', '.join(items[:-1]) + ', or ' + items[-1] or len(items) > 1 and items[0] + ' or ' + items[1] or items and items[0] or ''
 
     def disambig(self, title):
         api = utils.http.request(URL_WIKIPEDIA, get_params={
