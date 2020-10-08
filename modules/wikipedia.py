@@ -40,7 +40,6 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Get information from wikipedia")
     @utils.spec("!<term>lstring")
     def wikipedia(self, event):
-        print(event["spec"][0])
         page = utils.http.request(URL_WIKIPEDIA, get_params={
             "action": "query", "prop": "extracts|info", "inprop": "url",
             "titles": event["spec"][0], "exintro": "", "explaintext": "",
