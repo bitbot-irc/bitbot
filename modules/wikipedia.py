@@ -48,10 +48,7 @@ class Module(ModuleManager.BaseModule):
                     disambigs.append(d)
             else:
                 return 'Unable to parse disambiguation page. You may view the page at'
-            if len(disambigs) > event["target"].get_setting("wikipedia-disambig-max", 10):
-                return 'Sorry, but this page is too ambiguous. You may view the page at'
-            else:
-                return '%s could mean %s -' % (title, self.listify(disambigs))
+            return len(disambigs) > event["target"].get_setting("wikipedia-disambig-max", 10) and 'Sorry, but this page is too ambiguous. You may view the page at' or '%s could mean %s -' % (title, self.listify(disambigs))
     
     
     @utils.hook("received.message.channel")
@@ -61,27 +58,27 @@ class Module(ModuleManager.BaseModule):
         wikilink = re.search("\[\[(.*)\]\]", event["message"])
         if wikilink:
             page = wikilink.group(1)
-        page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
-            "action": "query", "prop": "extracts|info", "inprop": "url",
-            "titles": page, "exintro": "", "explaintext": "",
-            "exchars": "500", "redirects": "", "format": "json"}).json()
+            api = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
+                "action": "query", "prop": "extracts|info", "inprop": "url",
+                "titles": page, "exintro": "", "explaintext": "",
+                "exchars": "500", "redirects": "", "format": "json"}).json()
 
-        if page:
-            pages = page["query"]["pages"]
-            article = list(pages.items())[0][1]
-            if not "missing" in article:
-                title, info = article["title"], article["extract"]
-                title = article["title"]
-                info = utils.parse.line_normalise(article["extract"])
-                url = article["fullurl"]
-                if 'may refer to' in info:
-                    event["channel"].send_message("%s %s" % (self.disambig(title, event), url))
+            if api:
+                pages = api["query"]["pages"]
+                article = list(pages.items())[0][1]
+                if not "missing" in article:
+                    title, info = article["title"], article["extract"]
+                    title = article["title"]
+                    info = utils.parse.line_normalise(article["extract"])
+                    url = article["fullurl"].replace(' ', '_')
+                    if 'may refer to' in info:
+                        event["channel"].send_message("%s %s" % (self.disambig(title, event), url))
+                    else:
+                        event["channel"].send_message("%s: %s - %s" % (title, info, url))
                 else:
-                    event["channel"].send_message("%s: %s - %s" % (title, info, url))
+                    event["channel"].send_message("No results found")
             else:
-                event["channel"].send_message("No results found")
-        else:
-            raise utils.EventResultsError()
+                raise utils.EventResultsError()
     
     
     @utils.hook("received.command.wi", alias_of="wiki")
@@ -90,7 +87,6 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Get information from wikipedia")
     @utils.spec("!<term>lstring")
     def wikipedia(self, event):
-#        if not str(event["target"]).startswith('#'):
         page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
             "action": "query", "prop": "extracts|info", "inprop": "url",
             "titles": event["spec"][0], "exintro": "", "explaintext": "",
@@ -102,7 +98,7 @@ class Module(ModuleManager.BaseModule):
                 title, info = article["title"], article["extract"]
                 title = article["title"]
                 info = utils.parse.line_normalise(article["extract"])
-                url = article["fullurl"]
+                url = article["fullurl"].replace(' ', '_')
                 if 'may refer to' in info:
                     event["stdout"].write("%s %s" % (self.disambig(title, event), url))
                 else:
