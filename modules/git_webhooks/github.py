@@ -88,8 +88,9 @@ CHECK_RUN_CONCLUSION = {
 CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 class GitHub(object):
-    def __init__(self, log):
+    def __init__(self, log, exports):
         self.log = log
+        self.exports = exports
 
     def is_private(self, data, headers):
         if "repository" in data:
