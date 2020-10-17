@@ -126,6 +126,8 @@ class GitHub(object):
         category_action = None
         if "review" in data and "state" in data["review"]:
             category = "%s+%s" % (event, data["review"]["state"])
+        elif "check_run" in data and "status" in data["check_run"]:
+            category = "%s+%s" % (event, data["check_run"]["status"])
 
         if action:
             if category:
