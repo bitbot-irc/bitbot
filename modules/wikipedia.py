@@ -88,9 +88,9 @@ class Module(ModuleManager.BaseModule):
     @utils.spec("!<term>lstring")
     def wikipedia(self, event):
         page = utils.http.request(URL_WIKIPEDIA.replace('$lang', event["target"].get_setting("wikipedia-lang", "en")), get_params={
-            "action": "query", "prop": "extracts|info", "inprop": "url",
+            "action": "query", "prop": "extracts|info|pageprops", "inprop": "url",
             "titles": event["spec"][0], "exintro": "", "explaintext": "",
-            "exchars": "500", "redirects": "", "format": "json"}).json()
+            "exchars": "500", "redirects": "", "format": "json", "pageprops": "disambiguation"}).json()
         if page:
             pages = page["query"]["pages"]
             article = list(pages.items())[0][1]
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
                 title = article["title"]
                 info = utils.parse.line_normalise(article["extract"])
                 url = article["fullurl"].replace(' ', '_')
-                if 'may refer to' in info:
+                if "pageprops" in article and "disambiguation" in article["pageprops"]:
                     event["stdout"].write("%s %s" % (self.disambig(title, event), url))
                 else:
                     event["stdout"].write("%s: %s - %s" % (title, info, url))
