@@ -41,7 +41,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.export("shorturl-any")
     def _shorturl_any(self, url):
-        return self._call_shortener(server, None, "bitly", url) or url
+        return self._call_shortener(None, None, "bitly", url) or url
 
     @utils.export("shorturl")
     def _shorturl(self, server, url, context=None):

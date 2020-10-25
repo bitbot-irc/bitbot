@@ -88,8 +88,9 @@ CHECK_RUN_CONCLUSION = {
 CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 class GitHub(object):
-    def __init__(self, log):
+    def __init__(self, log, exports):
         self.log = log
+        self.exports = exports
 
     def is_private(self, data, headers):
         if "repository" in data:
@@ -125,6 +126,8 @@ class GitHub(object):
         category_action = None
         if "review" in data and "state" in data["review"]:
             category = "%s+%s" % (event, data["review"]["state"])
+        elif "check_run" in data and "status" in data["check_run"]:
+            category = "%s+%s" % (event, data["check_run"]["status"])
 
         if action:
             if category:
@@ -438,6 +441,12 @@ class GitHub(object):
         commit = self._short_hash(data["check_run"]["head_sha"])
         commit = utils.irc.color(commit, utils.consts.LIGHTBLUE)
 
+        pr = ""
+        if ("pull_requests" in data["check_run"] and
+                data["check_run"]["pull_requests"]):
+            pr_num = data["check_run"]["pull_requests"][0]["number"]
+            pr = "/PR%s" % utils.irc.color("#%s" % pr_num, colors.COLOR_ID)
+
         url = ""
         if data["check_run"]["details_url"]:
             url = data["check_run"]["details_url"]
@@ -469,8 +478,8 @@ class GitHub(object):
             status_str = utils.irc.color(
                 CHECK_RUN_CONCLUSION[conclusion], conclusion_color)
 
-        return ["[build @%s] %s: %s%s%s" % (
-            commit, name, status_str, duration, url)]
+        return ["[build @%s%s] %s: %s%s%s" % (
+            commit, pr, name, status_str, duration, url)]
 
     def fork(self, full_name, data):
         forker = utils.irc.bold(data["sender"]["login"])

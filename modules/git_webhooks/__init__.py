@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
     _name = "Webhooks"
 
     def on_load(self):
-        self._github = github.GitHub(self.log)
+        self._github = github.GitHub(self.log, self.exports)
         self._gitea = gitea.Gitea()
         self._gitlab = gitlab.GitLab()
 
