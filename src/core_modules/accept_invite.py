@@ -21,7 +21,7 @@ class Module(ModuleManager.BaseModule):
     def chanisbad(self, server, chan):
         now = time.time()
         for s, c, t in badchans:
-            if (s, c) == (server, chan) and (now - t) < 60:
+            if (s, c) == (server, chan) and (now - t) < server.get_setting("invite-ratelimit-time", 60):
                 return True
         return False
 
