@@ -5,7 +5,7 @@
 import datetime, re, urllib.parse
 from src import EventManager, ModuleManager, utils
 
-REGEX_YOUTUBE = re.compile("https?://(?:www\.|m\.)?(?:youtu.be/|youtube.com/)\\S+", re.I)
+REGEX_YOUTUBE = re.compile("https?://(?:www\.|m\.|music\.)?(?:youtu.be/|youtube.com/)\\S+", re.I)
 
 URL_YOUTUBESEARCH = "https://www.googleapis.com/youtube/v3/search"
 URL_YOUTUBEVIDEO = "https://www.googleapis.com/youtube/v3/videos"
