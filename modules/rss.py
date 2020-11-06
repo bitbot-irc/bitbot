@@ -9,11 +9,11 @@ RSS_INTERVAL = 60 # 1 minute
 
 SETTING_BIND = utils.Setting("rss-bindhost",
     "Which local address to bind to for RSS requests", example="127.0.0.1")
-
 @utils.export("botset", utils.IntSetting("rss-interval",
     "Interval (in seconds) between RSS polls", example="120"))
 @utils.export("channelset", utils.BoolSetting("rss-shorten",
     "Whether or not to shorten RSS urls"))
+@utils.export("channelset", utils.Setting("rss-format", "Format of RSS announcements", example="$longtitle: $title - $link [$author]"))
 @utils.export("serverset", SETTING_BIND)
 @utils.export("channelset", SETTING_BIND)
 class Module(ModuleManager.BaseModule):
@@ -22,12 +22,12 @@ class Module(ModuleManager.BaseModule):
         self.timers.add("rss-feeds", self._timer,
             self.bot.get_setting("rss-interval", RSS_INTERVAL))
 
-    def _format_entry(self, server, feed_title, entry, shorten):
+    def _format_entry(self, server, channel, feed_title, entry, shorten):
         title = utils.parse.line_normalise(utils.http.strip_html(
             entry["title"]))
 
-        author = entry.get("author", None)
-        author = " by %s" % author if author else ""
+        author = entry.get("author", "unknown author")
+        author = "%s" % author if author else ""
 
         link = entry.get("link", None)
         if shorten:
@@ -35,11 +35,13 @@ class Module(ModuleManager.BaseModule):
                 link = self.exports.get("shorturl")(server, link)
             except:
                 pass
-        link = " - %s" % link if link else ""
+        link = "%s" % link if link else ""
 
-        feed_title_str = "%s: " % feed_title if feed_title else ""
+        feed_title_str = "%s" % feed_title if feed_title else ""
 
-        return "%s%s%s%s" % (feed_title_str, title, author, link)
+        format = channel.get_setting("rss-format", "$longtitle: $title by $author - $link").replace("$longtitle", feed_title_str).replace("$title", title).replace("$link", link).replace("$author", author)
+
+        return format
 
     def _timer(self, timer):
         start_time = time.monotonic()
@@ -106,7 +108,7 @@ class Module(ModuleManager.BaseModule):
                     valid += 1
 
                     shorten = channel.get_setting("rss-shorten", False)
-                    output = self._format_entry(server, feed_title, entry,
+                    output = self._format_entry(server, channel, feed_title, entry,
                         shorten)
 
                     self.events.on("send.stdout").call(target=channel,
@@ -203,7 +205,7 @@ class Module(ModuleManager.BaseModule):
                 raise utils.EventError("Failed to get RSS entries")
 
             shorten = event["target"].get_setting("rss-shorten", False)
-            out = self._format_entry(event["server"], title, entries[0],
+            out = self._format_entry(event["server"], event["target"], title, entries[0],
                 shorten)
             event["stdout"].write(out)
         else:
