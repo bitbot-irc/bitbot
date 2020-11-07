@@ -38,8 +38,13 @@ class Module(ModuleManager.BaseModule):
         link = "%s" % link if link else ""
 
         feed_title_str = "%s" % feed_title if feed_title else ""
-
-        format = channel.get_setting("rss-format", "$longtitle: $title by $author - $link").replace("$longtitle", feed_title_str).replace("$title", title).replace("$link", link).replace("$author", author)
+        # just in case the format starts keyerroring and you're not sure why
+        self.log.trace("RSS Entry: " + str(entry))
+        try:
+            format = channel.get_setting("rss-format", "$longtitle: $title by $author - $link").replace("$longtitle", feed_title_str).replace("$title", title).replace("$link", link).replace("$author", author).format(**entry)
+        except KeyError:
+            self.log.warn(f"Failed to format RSS entry for {channel}. Falling back to default format.")
+            format = f"{feed_title_str}: {title} by {author} - {link}"
 
         return format
 
