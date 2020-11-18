@@ -1,19 +1,16 @@
 #--depends-on commands
-#--require-config google-api-key
 
 import json, re
 from src import ModuleManager, utils
 
-URL_TRANSLATE = "https://translation.googleapis.com/language/translate/v2"
+URL_TRANSLATE = "http://translate.googleapis.com/translate_a/single"
 URL_LANGUAGES = "https://cloud.google.com/translate/docs/languages"
 REGEX_LANGUAGES = re.compile("(\w+)?:(\w+)? ")
 
-
 class Module(ModuleManager.BaseModule):
-
     @utils.hook("received.command.tr", alias_of="translate")
     @utils.hook("received.command.translate")
-    @utils.spec("?<from:to>lstring !<phrase>lstring")
+    @utils.spec("!<phrase>lstring")
     def translate(self, event):
         """
         :help: Translate the provided phrase or the last line in thie current
@@ -32,19 +29,21 @@ class Module(ModuleManager.BaseModule):
                 target_language = language_match.group(2)
             phrase = phrase.split(" ", 1)[1]
 
-        page = utils.http.request(URL_TRANSLATE,
-                                  method="POST",
-                                  post_data={
-                                      "q": phrase,
-                                      "format": "text",
-                                      "source": source_language,
-                                      "target": target_language,
-                                      "key": self.bot.config["google-api-key"]
-                                  }).json()
+        page = utils.http.request(URL_TRANSLATE, get_params={
+            "client": "gtx", "dt": "t", "q": phrase,
+            "sl": source_language, "tl": target_language})
 
-        if "data" in page:
-            translation = page["data"]["translations"][0]["translatedText"]
-            event["stdout"].write("(%s -> %s) %s" % (source_language, target_language, translation))
+        if page and not page.data.startswith(b"[null,null,"):
+            data = page.decode("utf8")
+            while ",," in data:
+                data = data.replace(",,", ",null,")
+                data = data.replace("[,", "[null,")
+            data_json = json.loads(data)
+            detected_source = data_json[2]
+            event["stdout"].write("(%s -> %s) %s" % (
+                detected_source, target_language.lower(),
+                data_json[0][0][0]))
         else:
             event["stderr"].write("Failed to translate, try checking "
-                                  "source/target languages (" + URL_LANGUAGES + ")")
+                "source/target languages (" + URL_LANGUAGES + ")")
+
