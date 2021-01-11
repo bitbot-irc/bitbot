@@ -14,6 +14,11 @@ REGEX_PARENS = re.compile(r"\(([^)]+)\)(\+\+|--)")
 @utils.export("channelset", utils.BoolSetting("karma-pattern",
     "Enable/disable parsing ++/-- karma format"))
 class Module(ModuleManager.BaseModule):
+    def listify(self, items):
+        if type(items) != list:
+           items = list(items)
+        return len(items) > 2 and ', '.join(items[:-1]) + ', and ' + items[-1] or len(items) > 1 and items[0] + ' and ' + items[1] or items and items[0] or ''
+
     def _karma_str(self, karma):
         karma_str = str(karma)
         if karma < 0:
@@ -134,8 +139,12 @@ class Module(ModuleManager.BaseModule):
             reverse=True)
 
         parts = ["%s (%d)" % (n, v) for n, v in karma]
+        print(parts)
+        if len(parts) == 0:
+            event["stdout"].write("%s has no karma." % target)
+            return
         event["stdout"].write("%s has karma from: %s" %
-            (target, ", ".join(parts)))
+            (target, self.listify(parts)))
 
     def _get_karma(self, server, target, own=False):
         settings = dict(server.get_all_user_settings("karma-%s" % target))
