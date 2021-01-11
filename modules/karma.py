@@ -139,7 +139,6 @@ class Module(ModuleManager.BaseModule):
             reverse=True)
 
         parts = ["%s (%d)" % (n, v) for n, v in karma]
-        print(parts)
         if len(parts) == 0:
             event["stdout"].write("%s has no karma." % target)
             return
