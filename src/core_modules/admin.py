@@ -151,6 +151,27 @@ class Module(ModuleManager.BaseModule):
             return
         event["stdout"].write("Added server '%s'" % alias)
 
+    @utils.hook("received.command.delserver")
+    @utils.kwarg("help", "Delete a server")
+    @utils.kwarg("pemission", "delserver")
+    @utils.spec("!<alias>word")
+    def del_server(self, event):
+        alias = event["spec"][0]
+        sid = self.bot.database.servers.by_alias(alias)
+        if sid == None:
+            event["stderr"].write("Server '%s' does not exist" % alias)
+            return
+        if self._server_from_alias(alias):
+            event["stderr"].write("You must disconnect from %s before deleting it" % alias)
+            return
+        try:
+            self.bot.database.servers.delete(sid)
+        except Exception as e:
+            event["stderr"].write("Failed to delete server")
+            self.log.error("failed to add server \"%s\"", [alias], exc_info=True)
+            return
+        event["stderr"].write("Server '%s' has been deleted" % alias)
+
     @utils.hook("received.command.editserver")
     @utils.kwarg("help", "Edit server details")
     @utils.kwarg("permission", "editserver")
