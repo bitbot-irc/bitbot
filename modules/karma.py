@@ -132,7 +132,7 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.karmawho")
     @utils.spec("!<target>string")
     def karmawho(self, event):
-        target = event["spec"][0]
+        target = event["server"].irc_lower(event["spec"][0])
         karma = self._get_karma(event["server"], target, True)
         karma = sorted(list(karma.items()),
             key=lambda k: abs(k[1]),
