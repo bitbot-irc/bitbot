@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
         sed.replace = utils.irc.bold(sed.replace)
 
         if self._closest_setting(event, "sed-sender-only", False):
-            for_user = event["user"].nickname
+            for_user = event["user"].nickname_lower
 
         match_line = None
         match_message = None
