@@ -17,7 +17,14 @@ class Module(ModuleManager.BaseModule):
     def listify(self, items):
         if type(items) != list:
            items = list(items)
-        return len(items) > 2 and ', '.join(items[:-1]) + ', and ' + items[-1] or len(items) > 1 and items[0] + ' and ' + items[1] or items and items[0] or ''
+        listified = ""
+        if len(items) > 2:
+            listified = ', '.join(items[:-1]) + ', and ' + items[-1]
+        elif len(items) > 1:
+            listified = items[0] + ' and ' + items[1]
+        elif items:
+            listified = items[0]
+        return listified
 
     def _karma_str(self, karma):
         karma_str = str(karma)
