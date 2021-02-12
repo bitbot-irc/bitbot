@@ -1,5 +1,5 @@
 beautifulsoup4  ==4.8.0
-cryptography    ==3.2
+cryptography    >=3.3.2
 dataclasses     ==0.6;python_version<'3.7'
 dnspython       ==2.0.0
 feedparser      ==5.2.1
