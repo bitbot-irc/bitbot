@@ -4,7 +4,7 @@
 import re, traceback
 from src import ModuleManager, utils
 
-REGEX_SED = re.compile("^(?:(\\S+)[:,] )?s/")
+REGEX_SED = re.compile(r"^(?:(\S+)[:,] )?s([/,`#]).*\2")
 
 @utils.export("channelset",
     utils.BoolSetting("sed","Disable/Enable sed in a channel"))
