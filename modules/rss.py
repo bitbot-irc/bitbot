@@ -207,7 +207,7 @@ class Module(ModuleManager.BaseModule):
 
             title, entries = self._get_entries(url)
             if not entries:
-                raise utils.EventError("Failed to get RSS entries")
+                raise utils.EventError("%s has no entries" % url)
 
             shorten = event["target"].get_setting("rss-shorten", False)
             out = self._format_entry(event["server"], event["target"], title, entries[0],
