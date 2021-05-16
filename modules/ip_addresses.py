@@ -21,6 +21,7 @@ def _parse(value):
 @utils.export("channelset", utils.FunctionSetting(_parse, "dns-nameserver",
     "Set DNS nameserver", example="8.8.8.8"))
 class Module(ModuleManager.BaseModule):
+    @utils.hook("received.command.dig", alias_of="dns")
     @utils.hook("received.command.dns", min_args=1)
     def dns(self, event):
         """
