@@ -275,7 +275,7 @@ class GitHub(object):
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
         sender = utils.irc.bold(data["sender"]["login"])
 
-        author = utils.irc.bold(data["sender"]["login"])
+        author = utils.irc.bold(data["pull_request"]["user"]["login"])
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
             colors.COLOR_ID)
         identifier = "%s by %s" % (number, author)
