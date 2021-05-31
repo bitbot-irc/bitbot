@@ -135,16 +135,16 @@ class Module(ModuleManager.BaseModule):
                 for output, url in outputs:
                     output = "(%s) %s" % (
                         utils.irc.color(source, colors.COLOR_REPO), output)
+                    
+                    if channel.get_setting("git-prevent-highlight", False):
+                        output = self._prevent_highlight(server, channel,
+                            output)
 
                     if url:
                         if channel.get_setting("git-shorten-urls", False):
                             url = self.exports.get("shorturl")(server, url,
                                 context=channel) or url
                         output = "%s - %s" % (output, url)
-
-                    if channel.get_setting("git-prevent-highlight", False):
-                        output = self._prevent_highlight(server, channel,
-                            output)
 
                     hide_prefix = channel.get_setting("git-hide-prefix", False)
                     self.events.on("send.stdout").call(target=channel,
