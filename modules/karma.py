@@ -14,6 +14,18 @@ REGEX_PARENS = re.compile(r"\(([^)]+)\)(\+\+|--)")
 @utils.export("channelset", utils.BoolSetting("karma-pattern",
     "Enable/disable parsing ++/-- karma format"))
 class Module(ModuleManager.BaseModule):
+    def listify(self, items):
+        if type(items) != list:
+           items = list(items)
+        listified = ""
+        if len(items) > 2:
+            listified = ', '.join(items[:-1]) + ', and ' + items[-1]
+        elif len(items) > 1:
+            listified = items[0] + ' and ' + items[1]
+        elif items:
+            listified = items[0]
+        return listified
+
     def _karma_str(self, karma):
         karma_str = str(karma)
         if karma < 0:
@@ -127,15 +139,18 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.karmawho")
     @utils.spec("!<target>string")
     def karmawho(self, event):
-        target = event["spec"][0]
+        target = event["server"].irc_lower(event["spec"][0])
         karma = self._get_karma(event["server"], target, True)
         karma = sorted(list(karma.items()),
             key=lambda k: abs(k[1]),
             reverse=True)
 
         parts = ["%s (%d)" % (n, v) for n, v in karma]
+        if len(parts) == 0:
+            event["stdout"].write("%s has no karma." % target)
+            return
         event["stdout"].write("%s has karma from: %s" %
-            (target, ", ".join(parts)))
+            (target, self.listify(parts)))
 
     def _get_karma(self, server, target, own=False):
         settings = dict(server.get_all_user_settings("karma-%s" % target))
