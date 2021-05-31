@@ -83,7 +83,7 @@ class Module(ModuleManager.BaseModule):
                 channel = server.channels.get(channel_name)
 
                 args = timer.kwargs.get("args", [timer.kwargs.get("arg", None)])
-                if args:
+                if any(args):
                     channel.send_modes(args, False)
                 else:
                     channel.send_mode(timer.kwargs["mode"], False)
@@ -238,7 +238,7 @@ class Module(ModuleManager.BaseModule):
 
         if event["spec"][1]:
             self.timers.add_persistent("unmode", event["spec"][1],
-                channel=event["spec"][0].id, mode="m")
+                channel=event["spec"][0].id, mode="-m")
     @utils.hook("received.command.cunmute")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "high,cmute")

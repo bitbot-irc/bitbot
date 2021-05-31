@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
     _name = "Webhooks"
 
     def on_load(self):
-        self._github = github.GitHub(self.log)
+        self._github = github.GitHub(self.log, self.exports)
         self._gitea = gitea.Gitea()
         self._gitlab = gitlab.GitLab()
 
@@ -228,6 +228,9 @@ class Module(ModuleManager.BaseModule):
             if existing_hook:
                 raise utils.EventError("There's already a hook for %s" %
                     hook_name)
+            if hook_name == None:
+                command = "%s%s" % (event["command_prefix"], event["command"])
+                raise utils.EventError("Not enough arguments (Usage: %s add <hook>)" % command)
 
             all_hooks[hook_name] = {
                 "events": DEFAULT_EVENT_CATEGORIES.copy(),

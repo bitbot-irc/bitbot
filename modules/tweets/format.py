@@ -2,7 +2,7 @@ import datetime, html, time
 from src import utils
 
 def _timestamp(dt):
-    seconds_since = time.time()-dt.timestamp()
+    seconds_since = time.time()-dt.replace(tzinfo=datetime.timezone.utc).timestamp()
     timestamp = utils.datetime.format.to_pretty_since(
         seconds_since, max_units=2)
     return "%s ago" % timestamp

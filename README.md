@@ -16,7 +16,7 @@ If you wish to create backups of your BitBot instance (which you should, [borgba
 I run BitBot as-a-service on most popular networks (willing to add more networks!) and offer github/gitea/gitlab webhook to IRC notifications for free to FOSS projects. Contact me for more information!
 
 ## Contact/Support
-Come say hi at [#bitbot on freenode](https://webchat.freenode.net/?channels=#bitbot)
+Come say hi at `#bitbot` on irc.libera.chat
 
 ## License
 This project is licensed under GNU General Public License v2.0 - see [LICENSE](LICENSE) for details.
