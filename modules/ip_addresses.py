@@ -21,6 +21,7 @@ def _parse(value):
 @utils.export("channelset", utils.FunctionSetting(_parse, "dns-nameserver",
     "Set DNS nameserver", example="8.8.8.8"))
 class Module(ModuleManager.BaseModule):
+    @utils.hook("received.command.dig", alias_of="dns")
     @utils.hook("received.command.dns", min_args=1)
     def dns(self, event):
         """
@@ -55,7 +56,7 @@ class Module(ModuleManager.BaseModule):
         for record_type in record_types:
             record_type_strip = record_type.rstrip("?").upper()
             try:
-                query_result = resolver.query(hostname, record_type_strip,
+                query_result = resolver.resolve(hostname, record_type_strip,
                     lifetime=4)
                 query_results = [q.to_text() for q in query_result]
                 results.append([record_type_strip, query_result.rrset.ttl,

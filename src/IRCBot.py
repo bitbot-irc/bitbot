@@ -116,7 +116,8 @@ class Bot(object):
                 self._trigger_both()
             return returned
 
-        func_queue = queue.Queue(1) # type: queue.Queue[str]
+        func_queue: queue.Queue[typing.Tuple[TriggerResult, typing.Any]
+            ] = queue.Queue(1)
 
         def _action():
             try:
@@ -134,7 +135,8 @@ class Bot(object):
         if trigger_threads:
             self._trigger_both()
 
-        if type == TriggerResult.Exception:
+        if (type == TriggerResult.Exception and
+                isinstance(returned, Exception)):
             raise returned
         elif type == TriggerResult.Return:
             return returned
