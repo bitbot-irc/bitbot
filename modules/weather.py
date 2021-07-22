@@ -81,7 +81,7 @@ class Module(ModuleManager.BaseModule):
                     location_str = "(%s) %s" % (nickname, location_str)
 
                 event["stdout"].write(
-                    "%s | %s/%s | %s | Humidity: %s | Wind: %s/%s" % (
+                    "%s | %s/%s | %s | Humidity: %s | Wind: %s (%s)" % (
                     location_str, celsius, fahrenheit, description, humidity,
                     wind_speed_k, wind_speed_m))
             else:

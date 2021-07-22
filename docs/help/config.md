@@ -14,6 +14,9 @@
 
 Generate a TLS keypair and point `bot.conf`'s `tls-key` to the private key and `tls-certificate` to the public key.
 
+Below is an OpenSSL command example that will create a `bitbot-cert.pem` and `bitbot-key.pem` with `10y` validity (self-signed):
+> openssl req -x509 -nodes -sha512 -newkey rsa:4096 -keyout bitbot-key.pem -out bitbot-cert.pem -days 3650 -subj "/CN=YourBotNick"
+
 ### Configure SASL
 
 Configure the bot to use SASL to authenticate (usually used for `NickServ` identification)

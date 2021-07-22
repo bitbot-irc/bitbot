@@ -4,7 +4,7 @@
 import re, traceback
 from src import ModuleManager, utils
 
-REGEX_SED = re.compile("^(?:(\\S+)[:,] )?s/")
+REGEX_SED = re.compile(r"^(?:(\S+)[:,] )?s([/,`#]).*\2")
 
 @utils.export("channelset",
     utils.BoolSetting("sed","Disable/Enable sed in a channel"))
@@ -35,7 +35,7 @@ class Module(ModuleManager.BaseModule):
         sed.replace = utils.irc.bold(sed.replace)
 
         if self._closest_setting(event, "sed-sender-only", False):
-            for_user = event["user"].nickname
+            for_user = event["user"].nickname_lower
 
         match_line = None
         match_message = None
