@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
             return utils.consts.PERMISSION_HARD_FAIL, None
 
     @utils.hook("received.command.ignore", min_args=1)
-    @utils.kwarg("permission", "ignore")
+    @utils.kwarg("permissions", "ignore")
     @utils.kwarg("help", "Ignore commands from a given user")
     @utils.spec("?duration !<nickname>ouser ?<command>wordlower")
     def ignore(self, event):
@@ -73,7 +73,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.unignore")
     @utils.kwarg("help", "Unignore commands from a given user")
-    @utils.kwarg("permission", "unignore")
+    @utils.kwarg("permissions", "unignore")
     @utils.spec("!<nickname>ouser ?<command>wordlower")
     def unignore(self, event):
         setting = "ignore"
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("channel_only", True)
     @utils.kwarg("min_args", 1)
     @utils.kwarg("usage", "<nickname>")
-    @utils.kwarg("permission", "cignore")
+    @utils.kwarg("permissions", "cignore")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "high,cignore")
     def cignore(self, event):
@@ -154,4 +154,3 @@ class Module(ModuleManager.BaseModule):
             event["server"].del_setting(setting)
             event["stdout"].write("No longer ignoring '%s' for %s" %
                 (command, str(event["server"])))
-
