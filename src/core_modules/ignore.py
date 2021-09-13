@@ -43,7 +43,7 @@ class Module(ModuleManager.BaseModule):
             return utils.consts.PERMISSION_HARD_FAIL, None
 
     @utils.hook("received.command.ignore", min_args=1)
-    @utils.kwarg("permissions", "ignore")
+    @utils.kwarg("permission", "ignore")
     @utils.kwarg("help", "Ignore commands from a given user")
     @utils.spec("?duration !<nickname>ouser ?<command>wordlower")
     def ignore(self, event):
@@ -73,7 +73,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.unignore")
     @utils.kwarg("help", "Unignore commands from a given user")
-    @utils.kwarg("permissions", "unignore")
+    @utils.kwarg("permission", "unignore")
     @utils.spec("!<nickname>ouser ?<command>wordlower")
     def unignore(self, event):
         setting = "ignore"
@@ -99,7 +99,7 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("channel_only", True)
     @utils.kwarg("min_args", 1)
     @utils.kwarg("usage", "<nickname>")
-    @utils.kwarg("permissions", "cignore")
+    @utils.kwarg("permission", "cignore")
     @utils.kwarg("require_mode", "o")
     @utils.kwarg("require_access", "high,cignore")
     def cignore(self, event):
@@ -125,7 +125,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.serverignore")
     @utils.kwarg("help", "Ignore a command on the current server")
-    @utils.kwarg("permissions", "serverignore")
+    @utils.kwarg("permission", "serverignore")
     @utils.spec("!<command>wordlower")
     def server_ignore(self, event):
         command = event["spec"][0]
@@ -141,7 +141,7 @@ class Module(ModuleManager.BaseModule):
 
     @utils.hook("received.command.serverunignore")
     @utils.kwarg("help", "Unignore a command on the current server")
-    @utils.kwarg("permissions", "serverunignore")
+    @utils.kwarg("permission", "serverunignore")
     @utils.spec("!<command>wordlower")
     def server_unignore(self, event):
         command = event["spec"][0]
