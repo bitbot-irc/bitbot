@@ -152,10 +152,10 @@ class Module(ModuleManager.BaseModule):
 
                 data  = page["ip"]
                 data += " (%s)" % hostname if hostname else ""
-                data += " | ISP: %s" % page["org"]
-                data += " | Location: %s, %s, %s" % (
-                    page["city"], page["region"], page["country"])
                 data += " (Anycast)" if page.get("anycast", False) == True else ""
+                data += " | City: %s" % page["city"]
+                data += " | Region: %s (%s)" % (page["region"], page["country"])
+                data += " | ISP: %s" % page["org"]
                 data += " | Lon/Lat: %s" % page["loc"]
                 data += " | Timezone: %s" % page["timezone"]
                 event["stdout"].write(data)
