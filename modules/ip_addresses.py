@@ -21,6 +21,17 @@ def _parse(value):
 @utils.export("channelset", utils.FunctionSetting(_parse, "dns-nameserver",
     "Set DNS nameserver", example="8.8.8.8"))
 class Module(ModuleManager.BaseModule):
+    def _get_ip(self, event):
+        ip = event["args_split"][0] if event["args"] else ""
+        if not ip:
+            line = event["target"].buffer.find(REGEX_IP)
+            if line:
+                ip = line.match
+        if not ip:
+            raise utils.EventError("No IP provided")
+
+        return ip
+
     @utils.hook("received.command.dig", alias_of="dns")
     @utils.hook("received.command.dns", min_args=1)
     def dns(self, event):
@@ -79,14 +90,16 @@ class Module(ModuleManager.BaseModule):
             (t, ttl, ", ".join(r)) for t, ttl, r in results]
         event["stdout"].write("(%s) %s" % (hostname, " | ".join(results_str)))
 
-    @utils.hook("received.command.geoip", min_args=1)
+    @utils.hook("received.command.geoip")
     def geoip(self, event):
         """
-        :help: Get geoip data on a given IPv4/IPv6 address
+        :help: Get GeoIP data on a given IPv4/IPv6 address
         :usage: <IP>
         :prefix: GeoIP
         """
-        page = utils.http.request(URL_GEOIP % event["args_split"][0]).json()
+        ip = self._get_ip(event)
+
+        page = utils.http.request(URL_GEOIP % ip).json()
         if page:
             if page["status"] == "success":
                 try:
@@ -117,13 +130,7 @@ class Module(ModuleManager.BaseModule):
         :usage: <IP>
         :prefix: rDNS
         """
-        ip = event["args_split"][0] if event["args"] else ""
-        if not ip:
-            line = event["target"].buffer.find(REGEX_IP)
-            if line:
-                ip = line.match
-        if not ip:
-            raise utils.EventError("No IP provided")
+        ip = self._get_ip(event)
 
         try:
             hostname, alias, ips = socket.gethostbyaddr(ip)
