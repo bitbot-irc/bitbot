@@ -89,17 +89,24 @@ class Module(ModuleManager.BaseModule):
         page = utils.http.request(URL_GEOIP % event["args_split"][0]).json()
         if page:
             if page["status"] == "success":
+                try:
+                    hostname, alias, ips = socket.gethostbyaddr(page["query"])
+                except (socket.herror, socket.gaierror):
+                    pass
+
                 data  = page["query"]
+                if hostname:
+                    data += " (%s)" % hostname
                 data += " | Organisation: %s" % page["org"]
                 data += " | City: %s" % page["city"]
                 data += " | Region: %s (%s)" % (
                     page["regionName"], page["countryCode"])
-                data += " | ISP: %s" % page["isp"]
+                data += " | ISP: %s (%s)" % (page["isp"], page["as"])
                 data += " | Lon/Lat: %s/%s" % (page["lon"], page["lat"])
                 data += " | Timezone: %s" % page["timezone"]
                 event["stdout"].write(data)
             else:
-                event["stderr"].write("No geoip data found")
+                event["stderr"].write("No GeoIP data found")
         else:
             raise utils.EventResultsError()
 
