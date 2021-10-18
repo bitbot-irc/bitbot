@@ -30,7 +30,6 @@ class Module(ModuleManager.BaseModule):
                 ip = line.match
         if not ip:
             raise utils.EventError("No IP provided")
-
         return ip
 
     def _ipinfo_get(self, url):
@@ -111,6 +110,7 @@ class Module(ModuleManager.BaseModule):
         page = utils.http.request(URL_GEOIP % ip).json()
         if page:
             if page["status"] == "success":
+                hostname = None
                 try:
                     hostname, alias, ips = socket.gethostbyaddr(page["query"])
                 except (socket.herror, socket.gaierror):
@@ -156,17 +156,18 @@ class Module(ModuleManager.BaseModule):
                     except (socket.herror, socket.gaierror):
                         pass
 
-                data  = page["ip"]
+                data = page["ip"]
                 if bogon:
                     data += " (Bogon)"
                 else:
                     data += " (%s)" % hostname if hostname else ""
                     data += " (Anycast)" if page.get("anycast", False) == True else ""
-                    data += " | City: %s" % page["city"]
-                    data += " | Region: %s (%s)" % (page["region"], page["country"])
-                    data += " | ISP: %s" % page["org"]
-                    data += " | Lon/Lat: %s" % page["loc"]
-                    data += " | Timezone: %s" % page["timezone"]
+                    if page.get("country", False):
+                        data += " | City: %s" % page["city"]
+                        data += " | Region: %s (%s)" % (page["region"], page["country"])
+                        data += " | ISP: %s" % page.get("org", "Unknown")
+                        data += " | Lon/Lat: %s" % page["loc"]
+                        data += " | Timezone: %s" % page["timezone"]
                 event["stdout"].write(data)
             else:
                 event["stderr"].write("Unsupported endpoint")
