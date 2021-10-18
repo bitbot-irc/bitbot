@@ -142,25 +142,34 @@ class Module(ModuleManager.BaseModule):
 
         page = self._ipinfo_get(URL_IPINFO % ip).json()
         if page:
-            if not page.get("error", None):
+            if page.get("error", False):
+                if isinstance(page["error"], (list, dict)):
+                    event["stderr"].write(page["error"]["message"])
+                else:
+                    event["stderr"].write(page["error"])
+            elif page.get("ip", False):
+                bogon = page.get("bogon", False)
                 hostname = page.get("hostname", None)
-                if not hostname:
+                if not hostname and not bogon:
                     try:
                         hostname, alias, ips = socket.gethostbyaddr(page["ip"])
                     except (socket.herror, socket.gaierror):
                         pass
 
                 data  = page["ip"]
-                data += " (%s)" % hostname if hostname else ""
-                data += " (Anycast)" if page.get("anycast", False) == True else ""
-                data += " | City: %s" % page["city"]
-                data += " | Region: %s (%s)" % (page["region"], page["country"])
-                data += " | ISP: %s" % page["org"]
-                data += " | Lon/Lat: %s" % page["loc"]
-                data += " | Timezone: %s" % page["timezone"]
+                if bogon:
+                    data += " (Bogon)"
+                else:
+                    data += " (%s)" % hostname if hostname else ""
+                    data += " (Anycast)" if page.get("anycast", False) == True else ""
+                    data += " | City: %s" % page["city"]
+                    data += " | Region: %s (%s)" % (page["region"], page["country"])
+                    data += " | ISP: %s" % page["org"]
+                    data += " | Lon/Lat: %s" % page["loc"]
+                    data += " | Timezone: %s" % page["timezone"]
                 event["stdout"].write(data)
             else:
-                event["stderr"].write(page["error"]["message"])
+                event["stderr"].write("Unsupported endpoint")
         else:
             raise utils.EventResultsError()
 
