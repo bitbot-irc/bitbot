@@ -5,6 +5,7 @@ from src import ModuleManager, utils
 import dns.resolver
 
 URL_GEOIP = "http://ip-api.com/json/%s"
+URL_IPINFO = "https://ipinfo.io/%s/json"
 REGEX_IPv6 = r"(?:(?:[a-f0-9]{1,4}:){2,}|[a-f0-9:]*::)[a-f0-9:]*"
 REGEX_IPv4 = r"(?:\d{1,3}\.){3}\d{1,3}"
 REGEX_IP = re.compile("%s|%s" % (REGEX_IPv4, REGEX_IPv6), re.I)
@@ -31,6 +32,14 @@ class Module(ModuleManager.BaseModule):
             raise utils.EventError("No IP provided")
 
         return ip
+
+    def _ipinfo_get(self, url):
+        access_token = self.bot.config.get("ipinfo-token", None)
+        headers = {}
+        if not access_token == None:
+            headers["Authorization"] = "Bearer %s" % access_token
+        request = utils.http.Request(url, headers=headers)
+        return utils.http.request(request)
 
     @utils.hook("received.command.dig", alias_of="dns")
     @utils.hook("received.command.dns", min_args=1)
@@ -108,8 +117,7 @@ class Module(ModuleManager.BaseModule):
                     pass
 
                 data  = page["query"]
-                if hostname:
-                    data += " (%s)" % hostname
+                data += " (%s)" % hostname if hostname else ""
                 data += " | Organisation: %s" % page["org"]
                 data += " | City: %s" % page["city"]
                 data += " | Region: %s (%s)" % (
@@ -120,6 +128,39 @@ class Module(ModuleManager.BaseModule):
                 event["stdout"].write(data)
             else:
                 event["stderr"].write("No GeoIP data found")
+        else:
+            raise utils.EventResultsError()
+
+    @utils.hook("received.command.ipinfo")
+    def ipinfo(self, event):
+        """
+        :help: Get IPinfo.io data on a given IPv4/IPv6 address
+        :usage: <IP>
+        :prefix: IPinfo
+        """
+        ip = self._get_ip(event)
+
+        page = self._ipinfo_get(URL_IPINFO % ip).json()
+        if page:
+            if not page.get("error", None):
+                hostname = page.get("hostname", None)
+                if not hostname:
+                    try:
+                        hostname, alias, ips = socket.gethostbyaddr(page["ip"])
+                    except (socket.herror, socket.gaierror):
+                        pass
+
+                data  = page["ip"]
+                data += " (%s)" % hostname if hostname else ""
+                data += " | ISP: %s" % page["org"]
+                data += " | Location: %s, %s, %s" % (
+                    page["city"], page["region"], page["country"])
+                data += " (Anycast)" if page.get("anycast", False) == True else ""
+                data += " | Lon/Lat: %s" % page["loc"]
+                data += " | Timezone: %s" % page["timezone"]
+                event["stdout"].write(data)
+            else:
+                event["stderr"].write(page["error"]["message"])
         else:
             raise utils.EventResultsError()
 
