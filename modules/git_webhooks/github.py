@@ -172,15 +172,10 @@ class GitHub(object):
         return list(zip(out, [None]*len(out)))
 
     def _short_url(self, url):
-        self.log.debug("git.io shortening: %s" % url)
-        try:
-            page = utils.http.request("https://git.io", method="POST",
-                post_data={"url": url})
-            return page.headers["Location"]
-        except utils.http.HTTPTimeoutException:
-            self.log.warn(
-                "HTTPTimeoutException while waiting for github short URL", [])
-            return url
+        # TODO: find an alternative to git.io
+        # see https://github.com/jesopo/bitbot/issues/338
+        # ~ examknow 1/19/2022
+        return url
 
     def _iso8601(self, s):
         return utils.datetime.parse.iso8601(s)
