@@ -5,6 +5,7 @@ COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
 
+PR_URL = "https://github.com/%s/pull/%s"
 PR_COMMIT_RANGE_URL = "https://github.com/%s/pull/%s/files/%s..%s"
 PR_COMMIT_URL = "https://github.com/%s/pull/%s/commits/%s"
 
@@ -77,19 +78,19 @@ COMMENT_ACTIONS = {
 }
 COMMENT_MAX = 100
 
-CHECK_RUN_CONCLUSION = {
-    "success": "passed",
-    "failure": "failed",
-    "neutral": "finished",
-    "cancelled": "was cancelled",
-    "timed_out": "timed out",
-    "action_required": "requires action"
+CHECK_SUITE_CONCLUSION = {
+    "success": ("passed", colors.COLOR_POSITIVE),
+    "failure": ("failed", colors.COLOR_NEGATIVE),
+    "neutral": ("finished", colors.COLOR_NEUTRAL),
+    "cancelled": ("was cancelled", colors.COLOR_NEGATIVE),
+    "timed_out": ("timed out", colors.COLOR_NEGATIVE),
+    "action_required": ("requires action", colors.COLOR_NEUTRAL)
 }
-CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 class GitHub(object):
-    def __init__(self, log):
+    def __init__(self, log, exports):
         self.log = log
+        self.exports = exports
 
     def is_private(self, data, headers):
         if "repository" in data:
@@ -125,6 +126,8 @@ class GitHub(object):
         category_action = None
         if "review" in data and "state" in data["review"]:
             category = "%s+%s" % (event, data["review"]["state"])
+        elif "check_suite" in data and "conclusion" in data["check_suite"]:
+            category = "%s+%s" % (event, data["check_suite"]["conclusion"])
 
         if action:
             if category:
@@ -159,8 +162,8 @@ class GitHub(object):
             out = self.delete(full_name, data)
         elif event == "release":
             out = self.release(full_name, data)
-        elif event == "check_run":
-            out = self.check_run(data)
+        elif event == "check_suite":
+            out = self.check_suite(full_name, data)
         elif event == "fork":
             out = self.fork(full_name, data)
         elif event == "ping":
@@ -267,7 +270,7 @@ class GitHub(object):
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
         sender = utils.irc.bold(data["sender"]["login"])
 
-        author = utils.irc.bold(data["sender"]["login"])
+        author = utils.irc.bold(data["pull_request"]["user"]["login"])
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
             colors.COLOR_ID)
         identifier = "%s by %s" % (number, author)
@@ -428,44 +431,32 @@ class GitHub(object):
         url = self._short_url(data["release"]["html_url"])
         return ["%s %s a release%s - %s" % (author, action, name, url)]
 
-    def check_run(self, data):
-        name = data["check_run"]["name"]
-        commit = self._short_hash(data["check_run"]["head_sha"])
+    def check_suite(self, full_name, data):
+        suite = data["check_suite"]
+
+        commit = self._short_hash(suite["head_sha"])
         commit = utils.irc.color(commit, utils.consts.LIGHTBLUE)
 
+        pr = ""
         url = ""
-        if data["check_run"]["details_url"]:
-            url = data["check_run"]["details_url"]
-            url = " - %s" % self.exports.get("shorturl-any")(url)
+        if suite["pull_requests"]:
+            pr_num = suite["pull_requests"][0]["number"]
+            pr = "/PR%s" % utils.irc.color("#%s" % pr_num, colors.COLOR_ID)
+            url = self._short_url(PR_URL % (full_name, pr_num))
+            url = " - %s" % url
 
-        duration = ""
-        if data["check_run"]["completed_at"]:
-            started_at = self._iso8601(data["check_run"]["started_at"])
-            completed_at = self._iso8601(data["check_run"]["completed_at"])
-            if completed_at > started_at:
-                seconds = (completed_at-started_at).total_seconds()
-                duration = " in %s" % utils.datetime.format.to_pretty_time(
-                    seconds)
+        name = suite["app"]["name"]
+        conclusion = suite["conclusion"]
+        conclusion, conclusion_color = CHECK_SUITE_CONCLUSION[conclusion]
+        conclusion = utils.irc.color(conclusion, conclusion_color)
 
-        status = data["check_run"]["status"]
-        status_str = ""
-        if status == "queued":
-            status_str = utils.irc.bold("queued")
-        elif status == "in_progress":
-            status_str = utils.irc.bold("started")
-        elif status == "completed":
-            conclusion = data["check_run"]["conclusion"]
-            conclusion_color = colors.COLOR_POSITIVE
-            if conclusion in CHECK_RUN_FAILURES:
-                conclusion_color = colors.COLOR_NEGATIVE
-            if conclusion == "neutral":
-                conclusion_color = colors.COLOR_NEUTRAL
+        created_at = self._iso8601(suite["created_at"])
+        updated_at = self._iso8601(suite["updated_at"])
+        seconds = (updated_at-created_at).total_seconds()
+        duration = utils.datetime.format.to_pretty_time(seconds)
 
-            status_str = utils.irc.color(
-                CHECK_RUN_CONCLUSION[conclusion], conclusion_color)
-
-        return ["[build @%s] %s: %s%s%s" % (
-            commit, name, status_str, duration, url)]
+        return ["[build @%s%s] %s: %s in %s%s" % (
+            commit, pr, name, conclusion, duration, url)]
 
     def fork(self, full_name, data):
         forker = utils.irc.bold(data["sender"]["login"])
