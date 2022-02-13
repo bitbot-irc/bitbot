@@ -98,6 +98,10 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Befriend a duck")
     @utils.spec("!-channelonly")
     def befriend(self, event):
+        if not event["target"].get_setting("ducks-enabled", False):
+            return event["stderr"].write(
+                "Ducks are not enabled in this channel"
+            )
         if event["target"].duck_active:
             action = self._duck_action(event["target"], event["user"],
                 "befriended", "ducks-befriended")
@@ -109,6 +113,10 @@ class Module(ModuleManager.BaseModule):
     @utils.kwarg("help", "Trap a duck")
     @utils.spec("!-channelonly")
     def trap(self, event):
+        if not event["target"].get_setting("ducks-enabled", False):
+            return event["stderr"].write(
+                "Ducks are not enabled in this channel"
+            )
         if event["target"].duck_active:
             action = self._duck_action(event["target"], event["user"],
                 "trapped", "ducks-shot")
