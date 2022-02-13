@@ -5,6 +5,7 @@ from src import ModuleManager, utils
 import dns.resolver
 
 URL_GEOIP = "http://ip-api.com/json/%s"
+URL_IPINFO = "https://ipinfo.io/%s/json"
 REGEX_IPv6 = r"(?:(?:[a-f0-9]{1,4}:){2,}|[a-f0-9:]*::)[a-f0-9:]*"
 REGEX_IPv4 = r"(?:\d{1,3}\.){3}\d{1,3}"
 REGEX_IP = re.compile("%s|%s" % (REGEX_IPv4, REGEX_IPv6), re.I)
@@ -21,6 +22,24 @@ def _parse(value):
 @utils.export("channelset", utils.FunctionSetting(_parse, "dns-nameserver",
     "Set DNS nameserver", example="8.8.8.8"))
 class Module(ModuleManager.BaseModule):
+    def _get_ip(self, event):
+        ip = event["args_split"][0] if event["args"] else ""
+        if not ip:
+            line = event["target"].buffer.find(REGEX_IP)
+            if line:
+                ip = line.match
+        if not ip:
+            raise utils.EventError("No IP provided")
+        return ip
+
+    def _ipinfo_get(self, url):
+        access_token = self.bot.config.get("ipinfo-token", None)
+        headers = {}
+        if not access_token == None:
+            headers["Authorization"] = "Bearer %s" % access_token
+        request = utils.http.Request(url, headers=headers)
+        return utils.http.request(request)
+
     @utils.hook("received.command.dig", alias_of="dns")
     @utils.hook("received.command.dns", min_args=1)
     def dns(self, event):
@@ -79,27 +98,79 @@ class Module(ModuleManager.BaseModule):
             (t, ttl, ", ".join(r)) for t, ttl, r in results]
         event["stdout"].write("(%s) %s" % (hostname, " | ".join(results_str)))
 
-    @utils.hook("received.command.geoip", min_args=1)
+    @utils.hook("received.command.geoip")
     def geoip(self, event):
         """
-        :help: Get geoip data on a given IPv4/IPv6 address
+        :help: Get GeoIP data on a given IPv4/IPv6 address
         :usage: <IP>
         :prefix: GeoIP
         """
-        page = utils.http.request(URL_GEOIP % event["args_split"][0]).json()
+        ip = self._get_ip(event)
+
+        page = utils.http.request(URL_GEOIP % ip).json()
         if page:
             if page["status"] == "success":
+                hostname = None
+                try:
+                    hostname, alias, ips = socket.gethostbyaddr(page["query"])
+                except (socket.herror, socket.gaierror):
+                    pass
+
                 data  = page["query"]
+                data += " (%s)" % hostname if hostname else ""
                 data += " | Organisation: %s" % page["org"]
                 data += " | City: %s" % page["city"]
                 data += " | Region: %s (%s)" % (
                     page["regionName"], page["countryCode"])
-                data += " | ISP: %s" % page["isp"]
+                data += " | ISP: %s (%s)" % (page["isp"], page["as"])
                 data += " | Lon/Lat: %s/%s" % (page["lon"], page["lat"])
                 data += " | Timezone: %s" % page["timezone"]
                 event["stdout"].write(data)
             else:
-                event["stderr"].write("No geoip data found")
+                event["stderr"].write("No GeoIP data found")
+        else:
+            raise utils.EventResultsError()
+
+    @utils.hook("received.command.ipinfo")
+    def ipinfo(self, event):
+        """
+        :help: Get IPinfo.io data on a given IPv4/IPv6 address
+        :usage: <IP>
+        :prefix: IPinfo
+        """
+        ip = self._get_ip(event)
+
+        page = self._ipinfo_get(URL_IPINFO % ip).json()
+        if page:
+            if page.get("error", False):
+                if isinstance(page["error"], (list, dict)):
+                    event["stderr"].write(page["error"]["message"])
+                else:
+                    event["stderr"].write(page["error"])
+            elif page.get("ip", False):
+                bogon = page.get("bogon", False)
+                hostname = page.get("hostname", None)
+                if not hostname and not bogon:
+                    try:
+                        hostname, alias, ips = socket.gethostbyaddr(page["ip"])
+                    except (socket.herror, socket.gaierror):
+                        pass
+
+                data = page["ip"]
+                if bogon:
+                    data += " (Bogon)"
+                else:
+                    data += " (%s)" % hostname if hostname else ""
+                    data += " (Anycast)" if page.get("anycast", False) == True else ""
+                    if page.get("country", False):
+                        data += " | City: %s" % page["city"]
+                        data += " | Region: %s (%s)" % (page["region"], page["country"])
+                        data += " | ISP: %s" % page.get("org", "Unknown")
+                        data += " | Lon/Lat: %s" % page["loc"]
+                        data += " | Timezone: %s" % page["timezone"]
+                event["stdout"].write(data)
+            else:
+                event["stderr"].write("Unsupported endpoint")
         else:
             raise utils.EventResultsError()
 
@@ -110,13 +181,7 @@ class Module(ModuleManager.BaseModule):
         :usage: <IP>
         :prefix: rDNS
         """
-        ip = event["args_split"][0] if event["args"] else ""
-        if not ip:
-            line = event["target"].buffer.find(REGEX_IP)
-            if line:
-                ip = line.match
-        if not ip:
-            raise utils.EventError("No IP provided")
+        ip = self._get_ip(event)
 
         try:
             hostname, alias, ips = socket.gethostbyaddr(ip)
