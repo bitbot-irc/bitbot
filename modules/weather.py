@@ -69,6 +69,7 @@ class Module(ModuleManager.BaseModule):
 
                 celsius = "%dC" % page["main"]["temp"]
                 fahrenheit = "%dF" % ((page["main"]["temp"]*(9/5))+32)
+                kelvin = "%dK" % ((page["main"]["temp"])+273.15)
                 description = page["weather"][0]["description"].title()
                 humidity = "%s%%" % page["main"]["humidity"]
 
@@ -81,10 +82,11 @@ class Module(ModuleManager.BaseModule):
                     location_str = "(%s) %s" % (nickname, location_str)
 
                 event["stdout"].write(
-                    "%s | %s/%s | %s | Humidity: %s | Wind: %s (%s)" % (
-                    location_str, celsius, fahrenheit, description, humidity,
-                    wind_speed_k, wind_speed_m))
+                    "%s | %s/%s/%s | %s | Humidity: %s | Wind: %s/%s" % (
+                    location_str, celsius, fahrenheit, kelvin, description,
+                    humidity, wind_speed_k, wind_speed_m))
             else:
                 event["stderr"].write("No weather information for this location")
         else:
             raise utils.EventResultsError()
+
