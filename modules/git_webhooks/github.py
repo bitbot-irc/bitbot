@@ -222,7 +222,7 @@ class GitHub(object):
 
         if len(commits) == 0 and forced:
             outputs.append(
-                "%s %spushed to %s" % (author, forced_str, branch))
+                "%s %spushed to %s" % (author, forced_str, branch), None)
         elif len(commits) <= 3:
             for commit in commits:
                 hash = commit["id"]
@@ -230,9 +230,9 @@ class GitHub(object):
                 message = commit["message"].split("\n")[0].strip()
                 url = single_url % hash
 
-                outputs.append(
-                    "%s %spushed %s to %s: %s - %s"
-                    % (author, forced_str, hash_colored, branch, message, url))
+                outputs.append((
+                    "%s %spushed %s to %s: %s"
+                    % (author, forced_str, hash_colored, branch, message), url))
         else:
             outputs.append(("%s %spushed %d commits to %s"
                 % (author, forced_str, len(commits), branch), url))
@@ -320,8 +320,8 @@ class GitHub(object):
 
         pr_title = data["pull_request"]["title"]
         url = data["pull_request"]["html_url"]
-        return ["[PR] %s %s: %s" % (
-            sender, action_desc, pr_title), url]
+        return [("[PR] %s %s: %s" % (
+            sender, action_desc, pr_title), url)]
 
     def pull_request_review(self, full_name, data):
         if not data["action"] == "submitted":
@@ -411,7 +411,7 @@ class GitHub(object):
         ref_color = utils.irc.color(ref, colors.COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        return ["%s deleted a %s: %s" % (sender, type, ref_color)]
+        return [("%s deleted a %s: %s" % (sender, type, ref_color), None)]
 
     def release(self, full_name, data):
         action = data["action"]
@@ -458,9 +458,9 @@ class GitHub(object):
             (forker, fork_full_name), url)]
 
     def membership(self, organisation, data):
-        return ["%s %s %s to team %s" %
+        return [("%s %s %s to team %s" %
             (data["sender"]["login"], data["action"], data["member"]["login"],
-            data["team"]["name"])]
+            data["team"]["name"]), None)]
 
     def watch(self, data):
-        return ["%s starred the repository" % data["sender"]["login"]]
+        return [("%s starred the repository" % data["sender"]["login"], None)]
