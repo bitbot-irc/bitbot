@@ -178,7 +178,7 @@ class GitHub(object):
         return utils.datetime.parse.iso8601(s)
 
     def ping(self, data):
-        return ["Received new webhook"]
+        return [("Received new webhook", None)]
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
