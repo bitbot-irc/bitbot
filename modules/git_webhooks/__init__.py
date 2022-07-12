@@ -31,7 +31,7 @@ class Module(ModuleManager.BaseModule):
     _name = "Webhooks"
 
     def on_load(self):
-        self._github = github.GitHub(self.log)
+        self._github = github.GitHub(self.log, self.exports)
         self._gitea = gitea.Gitea()
         self._gitlab = gitlab.GitLab()
 
@@ -135,16 +135,16 @@ class Module(ModuleManager.BaseModule):
                 for output, url in outputs:
                     output = "(%s) %s" % (
                         utils.irc.color(source, colors.COLOR_REPO), output)
+                    
+                    if channel.get_setting("git-prevent-highlight", False):
+                        output = self._prevent_highlight(server, channel,
+                            output)
 
                     if url:
                         if channel.get_setting("git-shorten-urls", False):
                             url = self.exports.get("shorturl")(server, url,
                                 context=channel) or url
                         output = "%s - %s" % (output, url)
-
-                    if channel.get_setting("git-prevent-highlight", False):
-                        output = self._prevent_highlight(server, channel,
-                            output)
 
                     hide_prefix = channel.get_setting("git-hide-prefix", False)
                     self.events.on("send.stdout").call(target=channel,
@@ -228,6 +228,9 @@ class Module(ModuleManager.BaseModule):
             if existing_hook:
                 raise utils.EventError("There's already a hook for %s" %
                     hook_name)
+            if hook_name == None:
+                command = "%s%s" % (event["command_prefix"], event["command"])
+                raise utils.EventError("Not enough arguments (Usage: %s add <hook>)" % command)
 
             all_hooks[hook_name] = {
                 "events": DEFAULT_EVENT_CATEGORIES.copy(),

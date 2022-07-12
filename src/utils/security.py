@@ -25,13 +25,20 @@ def ssl_wrap(sock: socket.socket, cert: str=None, key: str=None,
 def constant_time_compare(a: typing.AnyStr, b: typing.AnyStr) -> bool:
     return hmac.compare_digest(a, b)
 
-import scrypt
+import hashlib
 def password(byte_n: int=32) -> str:
     return binascii.hexlify(os.urandom(byte_n)).decode("utf8")
 def salt(byte_n: int=64) -> str:
     return base64.b64encode(os.urandom(byte_n)).decode("utf8")
 def hash(given_salt: str, data: str):
-    return base64.b64encode(scrypt.hash(data, given_salt)).decode("utf8")
+    hash = hashlib.scrypt(
+        data.encode("utf8"),
+        salt=given_salt.encode("utf8"),
+        n=1<<14,
+        r=8,
+        p=1
+    )
+    return base64.b64encode(hash).decode("ascii")
 def hash_verify(salt: str, data: str, compare: str):
     given_hash = hash(salt, data)
     return constant_time_compare(given_hash, compare)

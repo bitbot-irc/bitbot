@@ -15,6 +15,6 @@ Listen 5000
 
     ProxyRequests off
     ProxyPass / http://[::1]:5001/
-    ProxyPassReverse / http://[::1]:5001
+    ProxyPassReverse / http://[::1]:5001/
     ProxyPreserveHost on
 </VirtualHost>

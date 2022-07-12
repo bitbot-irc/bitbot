@@ -47,14 +47,10 @@ class Module(ModuleManager.BaseModule):
         return org, repo, number
 
     def _short_url(self, url):
-        try:
-            page = utils.http.request("https://git.io", method="POST",
-                post_data={"url": url})
-            return page.headers["Location"]
-        except utils.http.HTTPTimeoutException:
-            self.log.warn(
-                "HTTPTimeoutException while waiting for github short URL", [])
-            return url
+        # TODO: find an alternative to git.io
+        # see https://github.com/jesopo/bitbot/issues/338
+        # ~ examknow 1/19/2022
+        return url
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
