@@ -36,46 +36,49 @@ class Module(ModuleManager.BaseModule):
 
     def video_details(self, video_id):
         page = self.get_video_page(video_id)
-        if page["items"]:
-            item = page["items"][0]
-            snippet = item["snippet"]
-            statistics = item["statistics"]
-            content = item["contentDetails"]
+        try:
+            if page["items"]:
+                item = page["items"][0]
+                snippet = item["snippet"]
+                statistics = item["statistics"]
+                content = item["contentDetails"]
 
-            video_uploaded_at = utils.datetime.parse.iso8601(
-                snippet["publishedAt"])
-            video_uploaded_at = utils.datetime.format.date_human(
-                video_uploaded_at)
+                video_uploaded_at = utils.datetime.parse.iso8601(
+                    snippet["publishedAt"])
+                video_uploaded_at = utils.datetime.format.date_human(
+                    video_uploaded_at)
 
-            video_uploader = snippet["channelTitle"]
-            video_title = utils.irc.bold(snippet["title"])
+                video_uploader = snippet["channelTitle"]
+                video_title = utils.irc.bold(snippet["title"])
 
-            video_views = self._number(statistics.get("viewCount"))
-            video_likes = self._number(statistics.get("likeCount"))
-            video_dislikes = self._number(statistics.get("dislikeCount"))
+                video_views = self._number(statistics.get("viewCount"))
+                video_likes = self._number(statistics.get("likeCount"))
+                video_dislikes = self._number(statistics.get("dislikeCount"))
 
-            video_opinions = ""
-            if video_likes and video_dislikes:
-                likes = utils.irc.color("%s%s" % (video_likes, ARROW_UP),
-                    utils.consts.GREEN)
-                dislikes = utils.irc.color("%s%s" %
-                    (ARROW_DOWN, video_dislikes), utils.consts.RED)
-                video_opinions = " (%s%s)" % (likes, dislikes)
+                video_opinions = ""
+                if video_likes and video_dislikes:
+                    likes = utils.irc.color("%s%s" % (video_likes, ARROW_UP),
+                        utils.consts.GREEN)
+                    dislikes = utils.irc.color("%s%s" %
+                        (ARROW_DOWN, video_dislikes), utils.consts.RED)
+                    video_opinions = " (%s%s)" % (likes, dislikes)
 
-            video_views_str = ""
-            if video_views:
-                video_views_str = ", %s views" % video_views
+                video_views_str = ""
+                if video_views:
+                    video_views_str = ", %s views" % video_views
 
-            td = utils.datetime.parse.iso8601_duration(content["duration"])
-            video_duration = utils.datetime.format.to_pretty_time(
-                td.total_seconds())
+                td = utils.datetime.parse.iso8601_duration(content["duration"])
+                video_duration = utils.datetime.format.to_pretty_time(
+                    td.total_seconds())
 
-            url = URL_YOUTUBESHORT % video_id
+                url = URL_YOUTUBESHORT % video_id
 
-            return "%s (%s) uploaded by %s on %s%s%s" % (
-                video_title, video_duration, video_uploader, video_uploaded_at,
-                video_views_str, video_opinions), url
-        return None
+                return "%s (%s) uploaded by %s on %s%s%s" % (
+                    video_title, video_duration, video_uploader, video_uploaded_at,
+                    video_views_str, video_opinions), url
+            return None
+        except KeyError:
+            return None
 
     def get_playlist_page(self, playlist_id):
         self.log.debug("youtube API request: "
@@ -86,16 +89,19 @@ class Module(ModuleManager.BaseModule):
             "key": self.bot.config["google-api-key"]}).json()
     def playlist_details(self, playlist_id):
         page = self.get_playlist_page(playlist_id)
-        if page["items"]:
-            item = page["items"][0]
-            snippet = item["snippet"]
-            content = item["contentDetails"]
+        try:
+            if page["items"]:
+                item = page["items"][0]
+                snippet = item["snippet"]
+                content = item["contentDetails"]
 
-            count = content["itemCount"]
+                count = content["itemCount"]
 
-            return "%s - %s (%s %s)" % (snippet["channelTitle"],
-                snippet["title"], count, "video" if count == 1 else "videos"
-                ), URL_PLAYLIST % playlist_id
+                return "%s - %s (%s %s)" % (snippet["channelTitle"],
+                    snippet["title"], count, "video" if count == 1 else "videos"
+                    ), URL_PLAYLIST % playlist_id
+        except KeyError:
+            return None
 
     def _from_url(self, url):
         parsed = urllib.parse.urlparse(url)
@@ -148,23 +154,27 @@ class Module(ModuleManager.BaseModule):
 
         from_url = not url == None
 
-        if not url:
-            safe_setting = event["target"].get_setting("youtube-safesearch", True)
-            safe = "moderate" if safe_setting else "none"
 
-            self.log.debug("youtube API request: search.list (B) [snippet]")
+        try:
+            if not url:
+                safe_setting = event["target"].get_setting("youtube-safesearch", True)
+                safe = "moderate" if safe_setting else "none"
 
-            search_page = utils.http.request(URL_YOUTUBESEARCH,
-                get_params={"q": search, "part": "snippet", "maxResults": "1",
-                "type": "video", "key": self.bot.config["google-api-key"],
-                "safeSearch": safe}).json()
-            if search_page:
-                if search_page["pageInfo"]["totalResults"] > 0:
-                    url = URL_VIDEO % search_page["items"][0]["id"]["videoId"]
+                self.log.debug("youtube API request: search.list (B) [snippet]")
+
+                search_page = utils.http.request(URL_YOUTUBESEARCH,
+                    get_params={"q": search, "part": "snippet", "maxResults": "1",
+                    "type": "video", "key": self.bot.config["google-api-key"],
+                    "safeSearch": safe}).json()
+                if search_page:
+                    if search_page["pageInfo"]["totalResults"] > 0:
+                        url = URL_VIDEO % search_page["items"][0]["id"]["videoId"]
+                    else:
+                        raise utils.EventError("No videos found")
                 else:
-                    raise utils.EventError("No videos found")
-            else:
-                raise utils.EventResultsError()
+                    raise utils.EventResultsError()
+        except KeyError:
+            raise utils.EventError("API error")
 
         if url:
             out = self._from_url(url)
