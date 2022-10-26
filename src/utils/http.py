@@ -305,7 +305,7 @@ def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
     awaits = []
     for request in requests:
         awaits.append(_request(request))
-    task = asyncio.wait(awaits, loop=loop, timeout=5)
+    task = asyncio.wait(awaits, timeout=5)
     loop.run_until_complete(task)
     loop.close()
 
@@ -316,7 +316,7 @@ class Client(object):
     request_many = request_many
 
 def strip_html(s: str) -> str:
-    return bs4.BeautifulSoup(s, "html5lib").get_text()
+    return bs4.BeautifulSoup(s, "lxml").get_text()
 
 def resolve_hostname(hostname: str) -> typing.List[str]:
     try:
