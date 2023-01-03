@@ -2,7 +2,7 @@
 
 * Move `docs/bot.conf.example` to `~/.bitbot/bot.conf` and fill in the config options you care about. Ones blank or removed will disable relevant functionality.
 * Run `./bitbotd -a` to add a server.
-* Run `./bitbotd` to start the bot.
+* Run `./bitbotd` to start the bot or `./bitbotd -c /path/to/bot.conf` for non-standard config location (outside of `~/.bitbot`).
 * Run `./bitbotctl command master-password` to get the master admin password (needed to add regular admin accounts)
 * Join `#bitbot` on a server with the bot (or invite it to another channel)
 * `/msg <bot> register <password here>` to register your nickname with the bot
