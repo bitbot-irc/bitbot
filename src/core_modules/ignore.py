@@ -12,12 +12,23 @@ class Module(ModuleManager.BaseModule):
         return channel.get_user_setting(user.get_id(), "ignore", False)
     def _server_command_ignored(self, server, command):
         return server.get_setting("ignore-%s" % command, False)
+    def _channel_command_ignored(self, channel, command):
+        return channel.get_setting("ignore-command-%s" % command, False)
 
-    def _is_command_ignored(self, server, user, command):
-        if self._user_command_ignored(user, command):
+    def _is_command_ignored(self, event):
+        if self._user_command_ignored(event["user"], event["command"]):
             return True
-        elif self._server_command_ignored(server, command):
+        elif self._server_command_ignored(event["server"], event["command"]):
             return True
+        elif event["is_channel"] and self._channel_command_ignored(event["target"], event["command"]):
+            return True
+
+    def _is_valid_command(self, command):
+        hooks = self.events.on("received.command").on(command).get_hooks()
+        if hooks:
+            return True
+        else:
+            return False
 
     @utils.hook("received.message.private")
     @utils.hook("received.message.channel")
@@ -38,8 +49,7 @@ class Module(ModuleManager.BaseModule):
         elif event["is_channel"] and self._user_channel_ignored(event["target"],
                 event["user"]):
             return utils.consts.PERMISSION_HARD_FAIL, None
-        elif self._is_command_ignored(event["server"], event["user"],
-                event["command"]):
+        elif self._is_command_ignored(event):
             return utils.consts.PERMISSION_HARD_FAIL, None
 
     @utils.hook("received.command.ignore", min_args=1)
@@ -122,6 +132,38 @@ class Module(ModuleManager.BaseModule):
             event["target"].set_user_setting(target_user.get_id(), "ignore",
                 True)
             event["stdout"].write("Ignoring %s" % target_user.nickname)
+
+    @utils.hook("received.command.ignorecommand",
+        help="Ignore a command in this channel")
+    @utils.hook("received.command.unignorecommand",
+        help="Unignore a command in this channel")
+    @utils.kwarg("channel_only", True)
+    @utils.kwarg("min_args", 1)
+    @utils.kwarg("usage", "<command>")
+    @utils.kwarg("permission", "cignore")
+    @utils.kwarg("require_mode", "o")
+    @utils.kwarg("require_access", "high,cignore")
+    def cignore_command(self, event):
+        remove = event["command"] == "unignorecommand"
+
+        command = event["args_split"][0]
+        if not self._is_valid_command(command):
+            raise utils.EventError("Unknown command '%s'" % command)
+        is_ignored = self._channel_command_ignored(event["target"], command)
+
+        if remove:
+            if not is_ignored:
+                raise utils.EventError("I'm not ignoring '%s' in this channel" %
+                    target_user.nickname)
+            event["target"].del_setting("ignore-command-%s" % command)
+            event["stdout"].write("Unignored '%s' command" % command)
+        else:
+            if is_ignored:
+                raise utils.EventError("I'm already ignoring '%s' in this channel"
+                    % command)
+            event["target"].set_setting("ignore-command-%s" % command, True)
+            event["stdout"].write("Ignoring '%s' command" % command)
+
 
     @utils.hook("received.command.serverignore")
     @utils.kwarg("help", "Ignore a command on the current server")
