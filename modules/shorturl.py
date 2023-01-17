@@ -4,7 +4,7 @@
 import re
 from src import ModuleManager, utils
 
-URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v3/shorten"
+URL_BITLYSHORTEN = "https://api-ssl.bitly.com/v4/shorten"
 
 class Module(ModuleManager.BaseModule):
     def on_load(self):
@@ -66,11 +66,16 @@ class Module(ModuleManager.BaseModule):
 
         access_token = self.bot.config.get("bitly-api-key", None)
         if access_token:
-            page = utils.http.request(URL_BITLYSHORTEN, get_params={
-                "access_token": access_token, "longUrl": url}).json()
+            resp = utils.http.request(
+                URL_BITLYSHORTEN,
+                method="POST",
+                post_data={"long_url": url},
+                json_body=True,
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
 
-            if page["data"]:
-                return page["data"]["url"]
+            if resp.code == 200:
+                return resp.json()["link"]
         return None
 
     def _find_url(self, target, args):
