@@ -2,7 +2,7 @@
 
 from src import ModuleManager, utils
 
-URL_URBANDICTIONARY = "http://api.urbandictionary.com/v0/define"
+URL_URBANDICTIONARY = "https://api.urbandictionary.com/v0/define"
 
 class Module(ModuleManager.BaseModule):
     _name = "UrbanDictionary"
