@@ -235,7 +235,7 @@ class ModuleManager(object):
             definition.filename)
         module = importlib.util.module_from_spec(import_spec)
         sys.modules[import_name] = module
-        loader = typing.cast(importlib.abc.Loader, import_spec.loader)
+        loader = typing.cast(importlib._abc.Loader, import_spec.loader)
         loader.exec_module(module)
 
         module_object_pointer = getattr(module, "Module", None)
