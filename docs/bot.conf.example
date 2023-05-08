@@ -94,3 +94,6 @@ bitly-api-key            =
 
 # https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
 github-token             =
+
+# https://ipinfo.io/account/token
+ipinfo-token             =

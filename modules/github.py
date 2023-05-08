@@ -47,14 +47,7 @@ class Module(ModuleManager.BaseModule):
         return org, repo, number
 
     def _short_url(self, url):
-        try:
-            page = utils.http.request("https://git.io", method="POST",
-                post_data={"url": url})
-            return page.headers["Location"]
-        except utils.http.HTTPTimeoutException:
-            self.log.warn(
-                "HTTPTimeoutException while waiting for github short URL", [])
-            return url
+        return self.exports.get("shorturl")(self.bot, url) or url
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
