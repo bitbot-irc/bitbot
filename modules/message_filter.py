@@ -15,6 +15,10 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("preprocess.send.privmsg")
     @utils.hook("preprocess.send.notice")
     def channel_message(self, event):
+        if event["line"].assured():
+            # don't run filters/replaces against assured lines
+            return
+
         message = event["line"].args[1]
         original_message = message
         message_plain = utils.irc.strip_font(message)

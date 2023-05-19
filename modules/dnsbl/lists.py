@@ -5,53 +5,62 @@ class DNSBL(object):
         if not hostname == None:
             self.hostname = hostname
 
-    def process(self, result: str):
-        return result
+    def process(self, a_record, txt_record):
+        out = a_record
+        if txt_record is not None:
+            out += f" - {txt_record}"
+        return out
 
 class ZenSpamhaus(DNSBL):
     hostname = "zen.spamhaus.org"
-    def process(self, result):
-        result = result.rsplit(".", 1)[1]
+    def process(self, a_record, txt_record):
+        result = a_record.rsplit(".", 1)[1]
         if result in ["2", "3", "9"]:
-            return "spam"
+            desc = "spam"
         elif result in ["4", "5", "6", "7"]:
-            return "exploits"
+            desc = "exploits"
+        else:
+            desc = "unknown"
+        return f"{result} - {desc}"
+
 class EFNetRBL(DNSBL):
     hostname = "rbl.efnetrbl.org"
-    def process(self, result):
-        result = result.rsplit(".", 1)[1]
+    def process(self, a_record, txt_record):
+        result = a_record.rsplit(".", 1)[1]
         if result == "1":
-            return "proxy"
+            desc = "proxy"
         elif result in ["2", "3"]:
-            return "spamtap"
+            desc = "spamtap"
         elif result == "4":
-            return "tor"
+            desc = "tor"
         elif result == "5":
-            return "flooding"
+            desc = "flooding"
+        return f"{result} - {desc}"
 
 class DroneBL(DNSBL):
     hostname = "dnsbl.dronebl.org"
-    def process(self, result):
-        result = result.rsplit(".", 1)[1]
-        if result in ["8", "9", "10", "11", "14"]:
-            return "proxy"
-        elif result in ["3", "6", "7"]:
-            return "flooding"
-        elif result in ["12", "13", "15", "16"]:
-            return "exploits"
 
 class AbuseAtCBL(DNSBL):
     hostname = "cbl.abuseat.org"
-    def process(self, result):
-        result = result.rsplit(".", 1)[1]
+    def process(self, a_record, txt_record):
+        result = a_record.rsplit(".", 1)[1]
         if result == "2":
-            return "abuse"
+            desc = "abuse"
+        else:
+            desc = "unknown"
+        return f"{result} - {desc}"
+
+class TorExitDan(DNSBL):
+    hostname = "torexit.dan.me.uk"
+    def process(self, a_record, txt_record):
+        return "tor exit"
 
 DEFAULT_LISTS = [
     ZenSpamhaus(),
     EFNetRBL(),
     DroneBL(),
-    AbuseAtCBL()
+    AbuseAtCBL(),
+    TorExitDan()
 ]
 
 def default_lists():

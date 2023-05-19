@@ -5,15 +5,15 @@ def bool_input(s: str):
     return not result or result[0].lower() in ["", "y"]
 
 def add_server():
-    alias = input("alias: ")
-    hostname = input("hostname: ")
+    alias = input("alias (display name): ")
+    hostname = input("hostname (address of server): ")
     port = int(input("port: "))
     tls = bool_input("tls?")
-    password = input("password?: ")
+    password = input("password (optional, leave blank to skip): ")
     nickname = input("nickname: ")
-    username = input("username: ")
-    realname = input("realname: ")
-    bindhost = input("bindhost?: ")
+    username = input("username (optional): ")
+    realname = input("realname (optional): ")
+    bindhost = input("bindhost (optional): ")
 
     return irc.IRCConnectionParameters(-1, alias, hostname, port, password, tls,
         bindhost, nickname, username, realname)

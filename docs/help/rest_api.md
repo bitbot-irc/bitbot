@@ -15,7 +15,7 @@ Either set up a reverse proxy (with persisted Host header) with your favourite H
 #### Apache2
 * Run `$ a2enmod ssl proxy proxy_http` as root
 * Copy example config file from [/docs/rest_api/apache2](/docs/rest_api/apache2) to `/etc/apache2/sites-enabled/`
-* Edit `ServerName`, `SSLCertificateFile and `SSLCertificateKeyFile`
+* Edit `ServerName`, `SSLCertificateFile` and `SSLCertificateKeyFile`
 * `$ service apache2 restart` as root
 
 #### Lighttpd

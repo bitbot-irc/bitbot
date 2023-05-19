@@ -32,7 +32,7 @@ class Module(ModuleManager.BaseModule):
                 for pod in page["queryresult"]["pods"]:
                     text = pod["subpods"][0]["plaintext"]
                     if pod["id"] == "Input" and text:
-                        input = text
+                        input = text.replace("\n", " | ")
                     elif pod.get("primary", False):
                         primaries.append(text)
 

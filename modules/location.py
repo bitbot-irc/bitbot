@@ -2,6 +2,7 @@
 #--require-config opencagedata-api-key
 
 import typing
+import pytz
 from src import ModuleManager, utils
 
 URL_OPENCAGE = "https://api.opencagedata.com/geocode/v1/json"
@@ -19,6 +20,11 @@ class Module(ModuleManager.BaseModule):
         if page and page["results"]:
             result = page["results"][0]
             timezone = result["annotations"]["timezone"]["name"]
+            try:
+                pytz.timezone(timezone)
+            except pytz.exceptions.UnknownTimeZoneError:
+                return None
+
             lat = result["geometry"]["lat"]
             lon = result["geometry"]["lng"]
 

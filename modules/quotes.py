@@ -5,6 +5,9 @@ from src import ModuleManager, utils
 
 @utils.export("channelset", utils.BoolSetting("channel-quotes",
     "Whether or not quotes added from this channel are kept in this channel"))
+@utils.export("set", utils.BoolSetting("quotable",
+    "Whether or not you wish to be quoted"))
+
 class Module(ModuleManager.BaseModule):
     def category_and_quote(self, s):
         category, sep, quote = s.partition("=")
@@ -30,6 +33,11 @@ class Module(ModuleManager.BaseModule):
             if event["is_channel"] and event["target"].get_setting(
                     "channel-quotes", False):
                 target = event["target"]
+
+            if not event["server"].get_user(category).get_setting(
+                    "quotable", True):
+                event["stderr"].write("%s does not wish to be quoted" % category)
+                return
 
             quotes = self._get_quotes(target, category)
             quotes.append([event["user"].name, int(time.time()), quote])
@@ -148,6 +156,10 @@ class Module(ModuleManager.BaseModule):
             text = " ".join(lines_str)
 
             quote_category = line.sender
+            if not event["server"].get_user(quote_category).get_setting(
+                    "quotable", True):
+                event["stderr"].write("%s does not wish to be quoted" % quote_category)
+                return
             if event["server"].has_user(quote_category):
                 quote_category = event["server"].get_user_nickname(
                     event["server"].get_user(quote_category).get_id())
