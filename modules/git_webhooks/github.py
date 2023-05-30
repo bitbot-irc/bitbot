@@ -5,6 +5,7 @@ COMMIT_URL = "https://github.com/%s/commit/%s"
 COMMIT_RANGE_URL = "https://github.com/%s/compare/%s...%s"
 CREATE_URL = "https://github.com/%s/tree/%s"
 
+PR_URL = "https://github.com/%s/pull/%s"
 PR_COMMIT_RANGE_URL = "https://github.com/%s/pull/%s/files/%s..%s"
 PR_COMMIT_URL = "https://github.com/%s/pull/%s/commits/%s"
 
@@ -77,19 +78,19 @@ COMMENT_ACTIONS = {
 }
 COMMENT_MAX = 100
 
-CHECK_RUN_CONCLUSION = {
-    "success": "passed",
-    "failure": "failed",
-    "neutral": "finished",
-    "cancelled": "was cancelled",
-    "timed_out": "timed out",
-    "action_required": "requires action"
+CHECK_SUITE_CONCLUSION = {
+    "success": ("passed", colors.COLOR_POSITIVE),
+    "failure": ("failed", colors.COLOR_NEGATIVE),
+    "neutral": ("finished", colors.COLOR_NEUTRAL),
+    "cancelled": ("was cancelled", colors.COLOR_NEGATIVE),
+    "timed_out": ("timed out", colors.COLOR_NEGATIVE),
+    "action_required": ("requires action", colors.COLOR_NEUTRAL)
 }
-CHECK_RUN_FAILURES = ["failure", "cancelled", "timed_out", "action_required"]
 
 class GitHub(object):
-    def __init__(self, log):
+    def __init__(self, log, exports):
         self.log = log
+        self.exports = exports
 
     def is_private(self, data, headers):
         if "repository" in data:
@@ -125,6 +126,8 @@ class GitHub(object):
         category_action = None
         if "review" in data and "state" in data["review"]:
             category = "%s+%s" % (event, data["review"]["state"])
+        elif "check_suite" in data and "conclusion" in data["check_suite"]:
+            category = "%s+%s" % (event, data["check_suite"]["conclusion"])
 
         if action:
             if category:
@@ -159,8 +162,8 @@ class GitHub(object):
             out = self.delete(full_name, data)
         elif event == "release":
             out = self.release(full_name, data)
-        elif event == "check_run":
-            out = self.check_run(data)
+        elif event == "check_suite":
+            out = self.check_suite(full_name, data)
         elif event == "fork":
             out = self.fork(full_name, data)
         elif event == "ping":
@@ -169,24 +172,13 @@ class GitHub(object):
             out = self.membership(organisation, data)
         elif event == "watch":
             out = self.watch(data)
-        return list(zip(out, [None]*len(out)))
-
-    def _short_url(self, url):
-        self.log.debug("git.io shortening: %s" % url)
-        try:
-            page = utils.http.request("https://git.io", method="POST",
-                post_data={"url": url})
-            return page.headers["Location"]
-        except utils.http.HTTPTimeoutException:
-            self.log.warn(
-                "HTTPTimeoutException while waiting for github short URL", [])
-            return url
+        return out
 
     def _iso8601(self, s):
         return utils.datetime.parse.iso8601(s)
 
     def ping(self, data):
-        return ["Received new webhook"]
+        return [("Received new webhook", None)]
 
     def _change_count(self, n, symbol, color):
         return utils.irc.color("%s%d" % (symbol, n), color)+utils.irc.bold("")
@@ -230,21 +222,20 @@ class GitHub(object):
 
         if len(commits) == 0 and forced:
             outputs.append(
-                "%s %spushed to %s" % (author, forced_str, branch))
+                "%s %spushed to %s" % (author, forced_str, branch), None)
         elif len(commits) <= 3:
             for commit in commits:
                 hash = commit["id"]
                 hash_colored = utils.irc.color(self._short_hash(hash), colors.COLOR_ID)
                 message = commit["message"].split("\n")[0].strip()
-                url = self._short_url(single_url % hash)
+                url = single_url % hash
 
-                outputs.append(
-                    "%s %spushed %s to %s: %s - %s"
-                    % (author, forced_str, hash_colored, branch, message, url))
+                outputs.append((
+                    "%s %spushed %s to %s: %s"
+                    % (author, forced_str, hash_colored, branch, message), url))
         else:
-            outputs.append("%s %spushed %d commits to %s - %s"
-                % (author, forced_str, len(commits), branch,
-                self._short_url(range_url)))
+            outputs.append(("%s %spushed %d commits to %s"
+                % (author, forced_str, len(commits), branch), url))
 
         return outputs
 
@@ -262,9 +253,9 @@ class GitHub(object):
         action = data["action"]
         commit = self._short_hash(data["comment"]["commit_id"])
         commenter = utils.irc.bold(data["comment"]["user"]["login"])
-        url = self._short_url(data["comment"]["html_url"])
-        return ["[commit/%s] %s %s a comment - %s" % (commit, commenter,
-            action, url)]
+        url = data["comment"]["html_url"]
+        return [("[commit/%s] %s %s a comment" % (commit, commenter,
+            action), url)]
 
     def pull_request(self, full_name, data):
         raw_number = data["pull_request"]["number"]
@@ -272,7 +263,7 @@ class GitHub(object):
         colored_branch = utils.irc.color(branch, colors.COLOR_BRANCH)
         sender = utils.irc.bold(data["sender"]["login"])
 
-        author = utils.irc.bold(data["sender"]["login"])
+        author = utils.irc.bold(data["pull_request"]["user"]["login"])
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
             colors.COLOR_ID)
         identifier = "%s by %s" % (number, author)
@@ -328,9 +319,9 @@ class GitHub(object):
             action_desc = "renamed %s" % identifier
 
         pr_title = data["pull_request"]["title"]
-        url = self._short_url(data["pull_request"]["html_url"])
-        return ["[PR] %s %s: %s - %s" % (
-            sender, action_desc, pr_title, url)]
+        url = data["pull_request"]["html_url"]
+        return [("[PR] %s %s: %s" % (
+            sender, action_desc, pr_title), url)]
 
     def pull_request_review(self, full_name, data):
         if not data["action"] == "submitted":
@@ -348,7 +339,7 @@ class GitHub(object):
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         reviewer = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["review"]["html_url"])
+        url = data["review"]["html_url"]
 
         state_desc = state
         if state == "approved":
@@ -358,8 +349,8 @@ class GitHub(object):
         elif state == "dismissed":
             state_desc = "dismissed a review"
 
-        return ["[PR] %s %s on %s: %s - %s" %
-            (reviewer, state_desc, number, pr_title, url)]
+        return [("[PR] %s %s on %s: %s" %
+            (reviewer, state_desc, number, pr_title), url)]
 
     def pull_request_review_comment(self, full_name, data):
         number = utils.irc.color("#%s" % data["pull_request"]["number"],
@@ -367,9 +358,9 @@ class GitHub(object):
         action = data["action"]
         pr_title = data["pull_request"]["title"]
         sender = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["comment"]["html_url"])
-        return ["[PR] %s %s on a review on %s: %s - %s" %
-            (sender, COMMENT_ACTIONS[action], number, pr_title, url)]
+        url = data["comment"]["html_url"]
+        return [("[PR] %s %s on a review on %s: %s" %
+            (sender, COMMENT_ACTIONS[action], number, pr_title), url)]
 
     def issues(self, full_name, data):
         number = utils.irc.color("#%s" % data["issue"]["number"],
@@ -383,9 +374,9 @@ class GitHub(object):
 
         issue_title = data["issue"]["title"]
         author = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["issue"]["html_url"])
-        return ["[issue] %s %s: %s - %s" %
-            (author, action_str, issue_title, url)]
+        url = data["issue"]["html_url"]
+        return [("[issue] %s %s: %s" %
+            (author, action_str, issue_title), url)]
     def issue_comment(self, full_name, data):
         if "changes" in data:
             # don't show this event when nothing has actually changed
@@ -398,30 +389,29 @@ class GitHub(object):
         type = "PR" if "pull_request" in data["issue"] else "issue"
         title = data["issue"]["title"]
         commenter = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(data["comment"]["html_url"])
+        url = data["comment"]["html_url"]
 
         body = ""
         if not action == "deleted":
             body = ": %s" % self._comment(data["comment"]["body"])
 
-        return ["[%s] %s %s on %s (%s)%s - %s" %
-            (type, commenter, COMMENT_ACTIONS[action], number, title, body,
-            url)]
+        return [("[%s] %s %s on %s (%s)%s" %
+            (type, commenter, COMMENT_ACTIONS[action], number, title, body), url)]
 
     def create(self, full_name, data):
         ref = data["ref"]
         ref_color = utils.irc.color(ref, colors.COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        url = self._short_url(CREATE_URL % (full_name, ref))
-        return ["%s created a %s: %s - %s" % (sender, type, ref_color, url)]
+        url = CREATE_URL % (full_name, ref)
+        return [("%s created a %s: %s" % (sender, type, ref_color), url)]
 
     def delete(self, full_name, data):
         ref = data["ref"]
         ref_color = utils.irc.color(ref, colors.COLOR_BRANCH)
         type = data["ref_type"]
         sender = utils.irc.bold(data["sender"]["login"])
-        return ["%s deleted a %s: %s" % (sender, type, ref_color)]
+        return [("%s deleted a %s: %s" % (sender, type, ref_color), None)]
 
     def release(self, full_name, data):
         action = data["action"]
@@ -430,60 +420,47 @@ class GitHub(object):
         if name:
             name = ": %s" % name
         author = utils.irc.bold(data["release"]["author"]["login"])
-        url = self._short_url(data["release"]["html_url"])
-        return ["%s %s a release%s - %s" % (author, action, name, url)]
+        url = data["release"]["html_url"]
+        return [("%s %s a release%s" % (author, action, name), url)]
 
-    def check_run(self, data):
-        name = data["check_run"]["name"]
-        commit = self._short_hash(data["check_run"]["head_sha"])
+    def check_suite(self, full_name, data):
+        suite = data["check_suite"]
+
+        commit = self._short_hash(suite["head_sha"])
         commit = utils.irc.color(commit, utils.consts.LIGHTBLUE)
 
+        pr = ""
         url = ""
-        if data["check_run"]["details_url"]:
-            url = data["check_run"]["details_url"]
-            url = " - %s" % self.exports.get("shorturl-any")(url)
+        if suite["pull_requests"]:
+            pr_num = suite["pull_requests"][0]["number"]
+            pr = "/PR%s" % utils.irc.color("#%s" % pr_num, colors.COLOR_ID)
+            url = PR_URL % (full_name, pr_num)
 
-        duration = ""
-        if data["check_run"]["completed_at"]:
-            started_at = self._iso8601(data["check_run"]["started_at"])
-            completed_at = self._iso8601(data["check_run"]["completed_at"])
-            if completed_at > started_at:
-                seconds = (completed_at-started_at).total_seconds()
-                duration = " in %s" % utils.datetime.format.to_pretty_time(
-                    seconds)
+        name = suite["app"]["name"]
+        conclusion = suite["conclusion"]
+        conclusion, conclusion_color = CHECK_SUITE_CONCLUSION[conclusion]
+        conclusion = utils.irc.color(conclusion, conclusion_color)
 
-        status = data["check_run"]["status"]
-        status_str = ""
-        if status == "queued":
-            status_str = utils.irc.bold("queued")
-        elif status == "in_progress":
-            status_str = utils.irc.bold("started")
-        elif status == "completed":
-            conclusion = data["check_run"]["conclusion"]
-            conclusion_color = colors.COLOR_POSITIVE
-            if conclusion in CHECK_RUN_FAILURES:
-                conclusion_color = colors.COLOR_NEGATIVE
-            if conclusion == "neutral":
-                conclusion_color = colors.COLOR_NEUTRAL
+        created_at = self._iso8601(suite["created_at"])
+        updated_at = self._iso8601(suite["updated_at"])
+        seconds = (updated_at-created_at).total_seconds()
+        duration = utils.datetime.format.to_pretty_time(seconds)
 
-            status_str = utils.irc.color(
-                CHECK_RUN_CONCLUSION[conclusion], conclusion_color)
-
-        return ["[build @%s] %s: %s%s%s" % (
-            commit, name, status_str, duration, url)]
+        return [("[build @%s%s] %s: %s in %s" % (
+            commit, pr, name, conclusion, duration), url)]
 
     def fork(self, full_name, data):
         forker = utils.irc.bold(data["sender"]["login"])
         fork_full_name = utils.irc.color(data["forkee"]["full_name"],
             utils.consts.LIGHTBLUE)
-        url = self._short_url(data["forkee"]["html_url"])
-        return ["%s forked into %s - %s" %
-            (forker, fork_full_name, url)]
+        url = data["forkee"]["html_url"]
+        return [("%s forked into %s" %
+            (forker, fork_full_name), url)]
 
     def membership(self, organisation, data):
-        return ["%s %s %s to team %s" %
+        return [("%s %s %s to team %s" %
             (data["sender"]["login"], data["action"], data["member"]["login"],
-            data["team"]["name"])]
+            data["team"]["name"]), None)]
 
     def watch(self, data):
-        return ["%s starred the repository" % data["sender"]["login"]]
+        return [("%s starred the repository" % data["sender"]["login"], None)]

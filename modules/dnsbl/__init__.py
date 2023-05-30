@@ -43,14 +43,22 @@ class Module(ModuleManager.BaseModule):
         failed = []
         for list in lists:
             record = self._check_list(list.hostname, address)
-            if not record == None:
-                reason = list.process(record) or "unknown"
+            if record is not None:
+                a_record, txt_record = record
+                reason = list.process(a_record, txt_record) or "unknown"
                 failed.append((list.hostname, reason))
         return failed
 
     def _check_list(self, list, address):
         list_address = "%s.%s" % (address, list)
         try:
-            return dns.resolver.query(list_address, "A")[0].to_text()
+            a_record = dns.resolver.resolve(list_address, "A")[0].to_text()
         except dns.resolver.NXDOMAIN:
             return None
+
+        try:
+            txt_record = dns.resolver.resolve(list_address, "TXT")[0].to_text()
+        except:
+            txt_record = None
+
+        return (a_record, txt_record)

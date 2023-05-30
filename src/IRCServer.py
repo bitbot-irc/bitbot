@@ -95,8 +95,12 @@ class Server(IRCObject.Object):
             self.connection_params.bindhost,
             self.connection_params.tls,
             tls_verify=self.get_setting("ssl-verify", True),
-            cert=self.bot.config.get("tls-certificate", None),
-            key=self.bot.config.get("tls-key", None))
+            cert=self.bot.config.get("tls-certificate", '').format(
+                DATA=self.bot.data_directory
+            ) or None,
+            key=self.bot.config.get("tls-key", '').format(
+                DATA=self.bot.data_directory
+            ))
         self.events.on("preprocess.connect").call(server=self)
         self.socket.connect()
 

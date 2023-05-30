@@ -44,7 +44,7 @@ class SedMatch(Sed):
         return None
 
 def _sed_split(s: str) -> typing.List[str]:
-    tokens = _tokens(s, "/")
+    tokens = _tokens(s, s[1])
     if tokens and (not tokens[-1] == (len(s)-1)):
         tokens.append(len(s))
 

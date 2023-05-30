@@ -8,7 +8,7 @@ server {
 
     location / {
         proxy_pass http://[::1]:5001;
-        proxy_set_header Host $host:$port;
+        proxy_set_header Host $host:$server_port;
         proxy_set_header X-Forwarded-For $remote_addr;
     }
 }

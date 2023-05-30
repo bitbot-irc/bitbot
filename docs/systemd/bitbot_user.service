@@ -10,6 +10,8 @@
 # which can be disabled with: systemctl --user disable systemd-tmpfiles-clean.timer
 #
 # After placing this script in the correct location, and with bitbot stopped, type:
+# systemcl --user daemon-reload
+# Afert that start bitbot with:
 # systemctl --user enable bitbot_user.service --now
 # This will enable the systemd script and launch bitbot
 

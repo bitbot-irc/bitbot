@@ -82,7 +82,10 @@ class Module(ModuleManager.BaseModule):
 
                 tags_str = ""
                 if "toptags" in track and track["toptags"]["tag"]:
-                    tags = [t["name"] for t in track["toptags"]["tag"]]
+                    tags_list = track["toptags"]["tag"]
+                    if not type(tags_list) == list:
+                        tags_list = [tags_list]
+                    tags = [t["name"] for t in tags_list]
                     tags_str = " [%s]" % ", ".join(tags)
 
                 play_count_str = ""
