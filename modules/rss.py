@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on shorturl
 
-import difflib, hashlib, time
+import difflib, hashlib, string, time
 from src import ModuleManager, utils
 import feedparser
 
@@ -23,12 +23,6 @@ class Module(ModuleManager.BaseModule):
             self.bot.get_setting("rss-interval", RSS_INTERVAL))
 
     def _format_entry(self, server, channel, feed_title, entry, shorten):
-        title = utils.parse.line_normalise(utils.http.strip_html(
-            entry["title"]))
-
-        author = entry.get("author", "unknown author")
-        author = "%s" % author if author else ""
-
         link = entry.get("link", None)
         if shorten:
             try:
@@ -37,14 +31,22 @@ class Module(ModuleManager.BaseModule):
                 pass
         link = "%s" % link if link else ""
 
-        feed_title_str = "%s" % feed_title if feed_title else ""
+        variables = dict(
+            longtitle=feed_title or "",
+            title=utils.parse.line_normalise(utils.http.strip_html(
+                entry["title"])),
+            link=link or "",
+            author=entry.get("author", "unknown author") or "",
+        )
+
         # just in case the format starts keyerroring and you're not sure why
         self.log.trace("RSS Entry: " + str(entry))
         try:
-            format = channel.get_setting("rss-format", "$longtitle: $title by $author - $link").replace("$longtitle", feed_title_str).replace("$title", title).replace("$link", link).replace("$author", author).format(**entry)
+            template = string.Template(channel.get_setting("rss-format", "$longtitle: $title by $author - $link"))
+            format = template.safe_substitute(variables).format(**entry)
         except KeyError:
             self.log.warn(f"Failed to format RSS entry for {channel}. Falling back to default format.")
-            format = f"{feed_title_str}: {title} by {author} - {link}"
+            format = "{longtitle}: {title} by {author} - {link}".format(**variables)
 
         return format
 
