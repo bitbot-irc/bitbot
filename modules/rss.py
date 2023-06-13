@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on shorturl
 
-import difflib, hashlib, string, time
+import difflib, hashlib, time
 from src import ModuleManager, utils
 import feedparser
 
@@ -42,8 +42,8 @@ class Module(ModuleManager.BaseModule):
         # just in case the format starts keyerroring and you're not sure why
         self.log.trace("RSS Entry: " + str(entry))
         try:
-            template = string.Template(channel.get_setting("rss-format", "$longtitle: $title by $author - $link"))
-            format = template.safe_substitute(variables).format(**entry)
+            template = channel.get_setting("rss-format", "$longtitle: $title by $author - $link")
+            format = format_token_replace(template, variables).format(**entry)
         except KeyError:
             self.log.warn(f"Failed to format RSS entry for {channel}. Falling back to default format.")
             format = "{longtitle}: {title} by {author} - {link}".format(**variables)
