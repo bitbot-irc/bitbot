@@ -13,7 +13,7 @@ SETTING_BIND = utils.Setting("rss-bindhost",
     "Interval (in seconds) between RSS polls", example="120"))
 @utils.export("channelset", utils.BoolSetting("rss-shorten",
     "Whether or not to shorten RSS urls"))
-@utils.export("channelset", utils.Setting("rss-format", "Format of RSS announcements", example="$longtitle: $title - $link [$author]"))
+@utils.export("channelset", utils.Setting("rss-format", "Format of RSS announcements", example="${longtitle}: ${title} - ${link} [${author}]"))
 @utils.export("serverset", SETTING_BIND)
 @utils.export("channelset", SETTING_BIND)
 class Module(ModuleManager.BaseModule):
@@ -38,17 +38,14 @@ class Module(ModuleManager.BaseModule):
             link=link or "",
             author=entry.get("author", "unknown author") or "",
         )
+        variables.update(entry)
 
         # just in case the format starts keyerroring and you're not sure why
         self.log.trace("RSS Entry: " + str(entry))
-        try:
-            template = channel.get_setting("rss-format", "$longtitle: $title by $author - $link")
-            format = format_token_replace(template, variables).format(**entry)
-        except KeyError:
-            self.log.warn(f"Failed to format RSS entry for {channel}. Falling back to default format.")
-            format = "{longtitle}: {title} by {author} - {link}".format(**variables)
+        template = channel.get_setting("rss-format", "$longtitle: $title by $author - $link")
+        _, formatted = utils.parse.format_token_replace(template, variables)
+        return formatted
 
-        return format
 
     def _timer(self, timer):
         start_time = time.monotonic()
