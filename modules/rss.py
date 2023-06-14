@@ -1,7 +1,7 @@
 #--depends-on config
 #--depends-on shorturl
 
-import difflib, hashlib, time
+import difflib, hashlib, time, re
 from src import ModuleManager, utils
 import feedparser
 
@@ -18,7 +18,30 @@ SETTING_BIND = utils.Setting("rss-bindhost",
 @utils.export("channelset", SETTING_BIND)
 class Module(ModuleManager.BaseModule):
     _name = "RSS"
+    def _migrate_formats(self):
+        count = 0
+        migration_sub = re.compile(r"(?:\$|{)+(?P<variable>[^}\s]+)(?:})?")
+        old_formats = self.bot.database.execute_fetchall("""
+            SELECT channel_id, value FROM channel_settings
+            WHERE setting = 'rss-format'
+        """)
+
+        for channel_id, format in old_formats:
+            new_format = migration_re.sub(r"${\1}", format)
+            self.bot.database.execute("""
+                UPDATE channel_settings SET value = ?
+                WHERE setting = 'rss-format'
+                AND channel_id = ?
+            """, [new_format, channel_id])
+            count += 1
+
+        self.log.info("Successfully migrated %d rss-format settings" % count)
+
     def on_load(self):
+        if self.bot.get_setting("rss-fmt-migration", False):
+            self.log.info("Attempting to migrate old rss-format settings")
+            self._migrate_formats()
+            self.bot.set_setting("rss-fmt-migration", True)
         self.timers.add("rss-feeds", self._timer,
             self.bot.get_setting("rss-interval", RSS_INTERVAL))
 
@@ -42,7 +65,7 @@ class Module(ModuleManager.BaseModule):
 
         # just in case the format starts keyerroring and you're not sure why
         self.log.trace("RSS Entry: " + str(entry))
-        template = channel.get_setting("rss-format", "$longtitle: $title by $author - $link")
+        template = channel.get_setting("rss-format", "${longtitle}: ${title} by ${author} - ${link}")
         _, formatted = utils.parse.format_token_replace(template, variables)
         return formatted
 
