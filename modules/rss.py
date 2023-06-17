@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
     _name = "RSS"
     def _migrate_formats(self):
         count = 0
-        migration_re = re.compile(r"(?:\$|{)+(?P<variable>[^}\s]+)(?:})?")
+        migration_re = re.compile(r"(?:\$|{)+(?P<variable>[^}:\s]+)(?:})?")
         old_formats = self.bot.database.execute_fetchall("""
             SELECT channel_id, value FROM channel_settings
             WHERE setting = 'rss-format'
