@@ -20,7 +20,7 @@ class Module(ModuleManager.BaseModule):
     _name = "RSS"
     def _migrate_formats(self):
         count = 0
-        migration_sub = re.compile(r"(?:\$|{)+(?P<variable>[^}\s]+)(?:})?")
+        migration_re = re.compile(r"(?:\$|{)+(?P<variable>[^}\s]+)(?:})?")
         old_formats = self.bot.database.execute_fetchall("""
             SELECT channel_id, value FROM channel_settings
             WHERE setting = 'rss-format'
@@ -38,7 +38,7 @@ class Module(ModuleManager.BaseModule):
         self.log.info("Successfully migrated %d rss-format settings" % count)
 
     def on_load(self):
-        if self.bot.get_setting("rss-fmt-migration", False):
+        if not self.bot.get_setting("rss-fmt-migration", False):
             self.log.info("Attempting to migrate old rss-format settings")
             self._migrate_formats()
             self.bot.set_setting("rss-fmt-migration", True)
