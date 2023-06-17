@@ -301,13 +301,11 @@ def request_many(requests: typing.List[Request]) -> typing.Dict[str, Response]:
         responses[request.id] = Response(response.code, response.body, encoding,
             headers, {})
 
-    loop = asyncio.new_event_loop()
-    awaits = []
-    for request in requests:
-        awaits.append(_request(request))
-    task = asyncio.wait(awaits, timeout=5)
-    loop.run_until_complete(task)
-    loop.close()
+    async def _getResponses(requests):
+        tasks = [asyncio.create_task(_request(request)) for request in requests]
+        done,pending = await asyncio.wait(tasks)
+
+    asyncio.run(_getResponses(requests))
 
     return responses
 
