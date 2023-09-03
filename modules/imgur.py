@@ -150,3 +150,33 @@ class Module(ModuleManager.BaseModule):
             event["stdout"].write(result)
         else:
             raise utils.EventResultsError()
+            
+    @utils.hook("received.command.rehost", channel_only=True)
+    @utils.kwarg("permission", "rehost")
+    def rehost(self, event):
+        channel = event["target"]
+        args = event["args_split"]
+
+        if len(args) is not 1:
+            event["stderr"].write("You must provide exactly one link to rehost.")
+            return
+
+        url = args[0]
+
+        page = utils.http.request(
+            URL_REHOST,
+            method="POST",
+            headers={"Authorization": "Basic %s" % self.bot.config["imgur-api-key"]},
+            post_data={"image": url, "type": "url"},
+        ).json()
+
+        if page["success"] is not True:
+            event["stderr"].write("Image upload successful")
+            return
+
+        upload = page["data"]
+
+        if upload["link"] is not "":
+            event["stdout"].write("Your image was rehosted. URL: %s" % upload["link"])
+        else:
+            event["stderr"].write("Image upload unsuccessful")
