@@ -111,6 +111,8 @@ class Module(ModuleManager.BaseModule):
             return self.video_details(parsed.path[1:])
         elif parsed.path == "/watch" and "v" in query:
             return self.video_details(query["v"][0])
+        elif parsed.path.startswith("/shorts/"):
+            return self.video_details(parsed.path.split("/shorts/", 1)[1])
         elif parsed.path.startswith("/embed/"):
             return self.video_details(parsed.path.split("/embed/", 1)[1])
         elif parsed.path == "/playlist" and "list" in query:
