@@ -4,9 +4,55 @@
 import random, re, time
 from src import EventManager, ModuleManager, utils
 
-DUCK = "・゜゜・。。・゜゜\_o< QUACK!"
+DUCK_TAILS = [
+"・゜゜・。。・゜゜"
+]
+
+DUCK_BODIES = [
+"\_o<",
+"\_O<",
+"\_0<",
+"\___o<"
+]
+
+DUCK_PHRASES = [
+"QUACK!",
+"QUACK QUACK!",
+"FLAPPITY FLAP!",
+"DON'T SHOOT ME!",
+"DUCK SEASON!",
+"RABBIT SEASON!"
+]
+
+MISS_BEF = [
+"The duck didn't want to be friends with you.",
+"The duck is too busy right now.",
+"The duck put you on ignore.",
+"The duck is turning you in for stalking!"
+]
+
+MISS_TRAP = [
+"The duck was too smart for your trap.",
+"Your trap missed the duck.",
+"You trapped a bear by accident.",
+"You need to get your eyes checked.",
+"Your trap didn't work."
+]
+
+USER_FLOODING = [
+"Stop doing that so fast!",
+"Are you mad? Slow down!",
+"Calm down Road Runner.",
+"Turn off your scripts please.",
+"Hit the brakes!",
+"That's enough, Mr. Trigger Finger."
+]
 
 DEFAULT_MIN_MESSAGES = 100
+
+DEFAULT_MAX_COOLDOWN = 10
+
+DEFAULT_CHANCE_MISS = 25
 
 @utils.export("channelset", utils.BoolSetting("ducks-enabled",
     "Whether or not to spawn ducks"))
@@ -16,10 +62,18 @@ DEFAULT_MIN_MESSAGES = 100
     "Whether or not to kick someone talking to non-existent ducks"))
 @utils.export("channelset", utils.BoolSetting("ducks-prevent-highlight",
     "Whether or not to prevent highlighting users with !friends/!enemies"))
+@utils.export("channelset", utils.IntRangeSetting(5, 30, "ducks-max-cooldown",
+    "Maximum amount of time a cooldown can last in seconds."))
+@utils.export("channelset", utils.IntRangeSetting(0, 100, "ducks-chance-miss",
+    "Percent chance that someone will miss."))
 class Module(ModuleManager.BaseModule):
     @utils.hook("new.channel")
     def new_channel(self, event):
         self.bootstrap_channel(event["channel"])
+
+    @utils.hook("new.user")
+    def new_user(self, event):
+        event["user"]._duck_cooldown = {}
 
     def bootstrap_channel(self, channel):
         if not hasattr(channel, "duck_active"):
@@ -61,6 +115,7 @@ class Module(ModuleManager.BaseModule):
         channel = timer.kwargs["channel"]
         channel.duck_active = time.time()
         channel.duck_lines = 0
+        DUCK = random.choice(DUCK_TAILS)+" "+random.choice(DUCK_BODIES)+" "+random.choice(DUCK_PHRASES)
         channel.send_message(DUCK)
 
     def _duck_action(self, channel, user, action, setting):
@@ -93,6 +148,32 @@ class Module(ModuleManager.BaseModule):
         else:
             stderr.write("%s: %s" % (user.nickname, message))
 
+    def _miss_roll(self, channel, user):
+        try:
+            user_cd = user._duck_cooldown[channel]
+        except KeyError:
+            user_cd = 0
+        if user_cd < time.time():
+            percentage = channel.get_setting("ducks-chance-miss",
+                DEFAULT_CHANCE_MISS)
+            if random.randrange(0,100) <= percentage:
+                max_cooldown = channel.get_setting("ducks-max-cooldown",
+                    DEFAULT_MAX_COOLDOWN)
+                cooldown = random.randrange(1,max_cooldown)
+                user._duck_cooldown[channel] = time.time()+cooldown
+                user_cd = user._duck_cooldown[channel]
+            else:
+                user._duck_cooldown[channel] = 0
+                user_cd = user._duck_cooldown[channel]
+            userflooding = False
+        else:
+            userflooding = True
+        if user_cd >= 0:
+            cooldown_rem = round((user_cd - time.time()),2)
+        else:
+            cooldown_rem = user_cd
+        return cooldown_rem, userflooding
+
     @utils.hook("received.command.bef", alias_of="befriend")
     @utils.hook("received.command.befriend")
     @utils.kwarg("help", "Befriend a duck")
@@ -103,9 +184,18 @@ class Module(ModuleManager.BaseModule):
                 "Ducks are not enabled in this channel"
             )
         if event["target"].duck_active:
-            action = self._duck_action(event["target"], event["user"],
-                "befriended", "ducks-befriended")
-            event["stdout"].write(action)
+            channel = event["target"]
+            user = event["user"]
+            cooldown_sec = self._miss_roll(channel, user)
+            if cooldown_sec[0] >= 0:
+                if cooldown_sec[1] == False:
+                    event["stdout"].write(random.choice(MISS_BEF)+" You may try again in "+str(cooldown_sec[0])+" seconds.")
+                else:
+                    event["stdout"].write(random.choice(USER_FLOODING)+" You may try again in "+str(cooldown_sec[0])+" seconds.")
+            else:
+                action = self._duck_action(event["target"], event["user"],
+                    "befriended", "ducks-befriended")
+                event["stdout"].write(action)
         else:
             self._no_duck(event["target"], event["user"], event["stderr"])
 
@@ -118,11 +208,29 @@ class Module(ModuleManager.BaseModule):
                 "Ducks are not enabled in this channel"
             )
         if event["target"].duck_active:
-            action = self._duck_action(event["target"], event["user"],
-                "trapped", "ducks-shot")
-            event["stdout"].write(action)
+            channel = event["target"]
+            user = event["user"]
+            cooldown_sec = self._miss_roll(channel, user)
+            if cooldown_sec[0] >= 0:
+                if cooldown_sec[1] == False:
+                    event["stdout"].write(random.choice(MISS_TRAP)+" You may try again in "+str(cooldown_sec[0])+" seconds.")
+                else:
+                    event["stdout"].write(random.choice(USER_FLOODING)+" You may try again in "+str(cooldown_sec[0])+" seconds.")
+            else:
+                action = self._duck_action(event["target"], event["user"],
+                    "trapped", "ducks-shot")
+                event["stdout"].write(action)
         else:
             self._no_duck(event["target"], event["user"], event["stderr"])
+
+#TODO: Fix or destroy. Used for testing.
+#    @utils.hook("received.command.getduck")
+#    @utils.kwarg("help", "Get a duck delivered to the channel.")
+#    @utils.spec("!-channelonly")
+#    @utils.kwarg("require_access", "admin,ducks")
+#    def getduck(self, event):
+#        channel = event["target"]
+#        self._trigger_duck(channel)
 
     def _target(self, target, is_channel, query):
         if query:
