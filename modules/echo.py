@@ -18,7 +18,6 @@ class Module(ModuleManager.BaseModule):
         event["target"].send_message("\x01ACTION %s\x01" % event["spec"][0])
 
     @utils.hook("received.command.msg")
-    @utils.kwarg("permission", "say")
     @utils.kwarg("remove_empty", False)
     @utils.kwarg("help", "Send a message to a target")
     @utils.spec("!<target>word !<message>string")
